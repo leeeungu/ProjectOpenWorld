@@ -30,6 +30,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 public:
+	UFUNCTION(BlueprintCallable, Category = "Building")
 	void SetbuildingMesh(UStaticMesh* NewMesh);
 protected:
 	virtual void BeginPlay() override;

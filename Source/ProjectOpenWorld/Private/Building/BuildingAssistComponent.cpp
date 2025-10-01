@@ -25,6 +25,8 @@ void UBuildingAssistComponent::BeginPlay()
 	{
 		buildingPreviewActor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		buildingPreviewActor->SetMobility(EComponentMobility::Type::Movable);
+
+		buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
 	}
 	if (GetOwner() && Cast< AController>(GetOwner()))
 	{
@@ -54,7 +56,72 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		))
 		{
 			buildingPreviewActor->SetActorLocation(HitResult.Location);
+			if (targetActor != HitResult.GetActor())
+			{
+				targetActor = HitResult.GetActor();
+				snapSocketTransform.Empty(5);
+				for (auto& Component : targetActor->GetComponents())
+				{
+					UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Component);
+					if (Mesh)
+					{
+						for (auto Socket : Mesh->GetAllSocketNames())
+						{
+							if (Socket.ToString().Contains(TEXT("BuildingPoint")))
+							{
+								snapSocketTransform.Add(Socket, Mesh->GetSocketTransform(Socket));
+							}
+						}
+					}
+				}
+
+			}
+			bool bSnap = false;
+			for (auto& MeshPair : snapSocketTransform)
+			{
+				if (FVector::Dist(HitResult.ImpactPoint, MeshPair.Value.GetLocation()) <= 80.0f)
+				{
+					bSnap = true;
+					snapSocketName = MeshPair.Key;
+					buildingPreviewActor->SetActorLocation(MeshPair.Value.GetLocation());
+					buildingPreviewActor->SetActorRotation(MeshPair.Value.GetRotation());
+					break;
+				}
+			}
+			if (!bSnap)
+			{
+				snapSocketName = NAME_None;
+			}
+			int Vaule = 0;
+			canBuilding = true;
+			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
+			Ignore.Add(targetActor.Get());
+			if (UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(),
+				meshCenter+buildingPreviewActor->GetActorLocation(),
+				meshCenter+buildingPreviewActor->GetActorLocation(),
+				meshSize, buildingPreviewActor->GetActorRotation(),
+				ObjectTypes, true, Ignore, EDrawDebugTrace::Type::ForOneFrame, HitResult, true))
+			{
+				Vaule = 1;
+				canBuilding = false;
+			}
+			if (buildingPreview)
+				buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), Vaule);
+
 		}
+		else
+		{
+			targetActor = nullptr;
+			if (buildingPreview)
+				buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), 1);
+			canBuilding = false;
+		}
+	}
+	else
+	{
+		canBuilding = false;
+		buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), 1);
 	}
 }
 
@@ -64,13 +131,17 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 	{
 		OnOffAssist(true);
 		buildingPreviewActor->GetStaticMeshComponent()->SetStaticMesh(NewStaticMesh);
-		buildingPreviewActor->GetStaticMeshComponent()->SetMaterial(0, buildingPreviewMat.Get());
+		buildingPreviewActor->GetStaticMeshComponent()->SetMaterial(0, buildingPreview.Get());
+		meshSize = NewStaticMesh->GetBoundingBox().GetExtent();
+		meshCenter = NewStaticMesh->GetBoundingBox().GetCenter();
+		if (buildingPreview)
+			buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), 0);
 	}
 }
 
 void UBuildingAssistComponent::SpawnBuilding()
 {
-	if (buildingActive)
+	if (buildingActive && canBuilding)
 	{
 		OnOffAssist(false);
 		FActorSpawnParameters Param{};
@@ -87,6 +158,7 @@ void UBuildingAssistComponent::SpawnBuilding()
 void UBuildingAssistComponent::OnOffAssist(bool bValue)
 {
 	buildingActive = bValue;
+	canBuilding = !bValue;
 	SetComponentTickEnabled(bValue);
 	if (buildingPreviewActor)
 		buildingPreviewActor->SetActorHiddenInGame(!bValue);

@@ -16,11 +16,21 @@ protected:
 	TSoftObjectPtr<AStaticMeshActor> buildingPreviewActor{};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BuildingAssist")
 	TSoftObjectPtr < UMaterial> buildingPreviewMat{};
+
+	UPROPERTY()
+	TSoftObjectPtr <UMaterialInstanceDynamic> buildingPreview{};
 	UPROPERTY()
 	TSoftObjectPtr < APawn> ownerPawn{};
 
 	bool buildingActive{};
+	bool canBuilding{};
 
+	UPROPERTY()
+	TSoftObjectPtr < AActor> targetActor{};
+	TMap<FName, FTransform> snapSocketTransform{};
+	FName snapSocketName{};
+	FVector meshSize{};
+	FVector meshCenter{};
 public: // ActorComponent Function	
 	UBuildingAssistComponent();
 
