@@ -21,7 +21,7 @@ protected:
 	TSoftObjectPtr<UStaticMesh> buildingMesh{};
 	TSoftObjectPtr < UMaterial> buildingMakingMat{};
 	TArray<TSoftObjectPtr <UMaterialInstanceDynamic>> buildingMaking{};
-	float curentPercent{};
+	float curentPercent = 0.3f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	float buildingTime = 3.0f;
 public:	

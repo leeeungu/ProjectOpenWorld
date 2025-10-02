@@ -5,16 +5,18 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Building/BaseBuilding.h"
 #include "LandscapeProxy.h"
+#include "GameFramework/Pawn.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	//Script/Engine.Material'/Game/Building/Material/M_BuildingPreview.M_BuildingPreview'
-	ConstructorHelpers::FObjectFinder< UMaterial> PreviewMat(TEXT("/Game/Building/Material/M_BuildingPreview.M_BuildingPreview"));
+	// //Script/Engine.Material'/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview'
+	ConstructorHelpers::FObjectFinder< UMaterial> PreviewMat(TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
 	if (PreviewMat.Succeeded())
 	{
 		buildingPreviewMat = PreviewMat.Object;
 	}
+	//SetIsReplicated(true);
 }
 
 
@@ -22,7 +24,6 @@ void UBuildingAssistComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	buildingPreviewActor = GetWorld()->SpawnActor<AStaticMeshActor>();
-	buildPointIgnore.Add(ownerPawn.Get());
 	if (buildingPreviewActor)
 	{
 		buildingPreviewActor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -33,6 +34,7 @@ void UBuildingAssistComponent::BeginPlay()
 	if (GetOwner() && Cast< APawn>(GetOwner()))
 	{
 		ownerPawn = Cast< APawn>(GetOwner());
+	//	buildPointIgnore.Add(ownerPawn.Get());
 	}
 	OnOffAssist(false);
 
@@ -41,6 +43,7 @@ void UBuildingAssistComponent::BeginPlay()
 	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
+	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
 	buildCheckIgnore = buildPointIgnore;
 	buildCheckIgnore.Add(nullptr);
@@ -49,6 +52,7 @@ void UBuildingAssistComponent::BeginPlay()
 void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	//if (ownerPawn->getre)
 	canBuilding = false;
 	if (ownerPawn && buildingPreviewActor)
 	{
@@ -188,7 +192,7 @@ bool UBuildingAssistComponent::UpdateSnap(FVector& ResultPoint)
 bool UBuildingAssistComponent::UpdateBuildable()
 {
 	bool bResult = true;
-	buildCheckIgnore[2] = targetActor.Get();
+	buildCheckIgnore.Last() = targetActor.Get();
 	TArray<FHitResult> ArrayPenetratingResult{};
 	meshCenter = buildingPreviewActor->GetStaticMeshComponent()->GetSocketLocation(TEXT("BuildingCenter"))+ FVector(0,0,meshSize.Z);
 	if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),

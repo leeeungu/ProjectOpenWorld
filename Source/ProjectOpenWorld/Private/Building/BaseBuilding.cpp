@@ -7,12 +7,15 @@ ABaseBuilding::ABaseBuilding()
 	buildingMeshComponent = CreateDefaultSubobject< UStaticMeshComponent>("BuildingMesh");
 	if (buildingMeshComponent)
 		buildingMeshComponent->SetupAttachment(RootComponent);
-	//Script/Engine.Material'/Game/Building/Material/M_BuildingMaking.M_BuildingMaking'
-	ConstructorHelpers::FObjectFinder< UMaterial> MakingMat(TEXT("/Game/Building/Material/M_BuildingMaking.M_BuildingMaking"));
+	//Script/Engine.Material'/Game/Building/Mesh/Material/M_BuildingMaking.M_BuildingMaking'
+	ConstructorHelpers::FObjectFinder< UMaterial> MakingMat(TEXT("/Game/Building/Mesh/Material/M_BuildingMaking.M_BuildingMaking"));
 	if (MakingMat.Succeeded())
 	{
 		buildingMakingMat = MakingMat.Object;
 	}
+	//SetReplicates(true);
+	//bNetLoadOnClient = true;
+	//SetReplicateMovement(true);
 }
 
 void ABaseBuilding::BeginPlay()
@@ -53,19 +56,20 @@ void ABaseBuilding::SetbuildingMesh(UStaticMesh* NewMesh)
 	if (buildingMeshComponent && buildingMesh)
 	{
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
-	}
-	if (buildingMakingMat && buildingMeshComponent && buildingMeshComponent->GetStaticMesh())
-	{
-		int nSize = buildingMeshComponent->GetMaterials().Num();
-		buildingMaking.Empty(nSize);
-		for (int i = 0; i < nSize; i++)
+		if (buildingMakingMat)
 		{
-			if (UMaterialInstanceDynamic* Making = buildingMeshComponent->CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
+			int nSize = buildingMeshComponent->GetMaterials().Num();
+			buildingMaking.Empty(nSize);
+			for (int i = 0; i < nSize; i++)
 			{
-				Making->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
-				Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
-					GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z);
-				buildingMaking.Add(Making);
+				if (UMaterialInstanceDynamic* Making = buildingMeshComponent->CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
+				{
+					Making->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
+					Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
+						GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z);
+					Making->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
+					buildingMaking.Add(Making);
+				}
 			}
 		}
 	}
