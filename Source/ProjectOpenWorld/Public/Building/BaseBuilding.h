@@ -20,7 +20,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	TSoftObjectPtr<UStaticMesh> buildingMesh{};
 	TSoftObjectPtr < UMaterial> buildingMakingMat{};
-	TSoftObjectPtr <UMaterialInstanceDynamic> buildingMaking{};
+	TArray<TSoftObjectPtr <UMaterialInstanceDynamic>> buildingMaking{};
 	float curentPercent{};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	float buildingTime = 3.0f;
@@ -32,6 +32,13 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Building")
 	void SetbuildingMesh(UStaticMesh* NewMesh);
+
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	void StartBuilding();
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	void StopBuilding();
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	void EndBuilding();
 protected:
 	virtual void BeginPlay() override;
 	FORCEINLINE UStaticMeshComponent* GetMeshComponent() const { return buildingMeshComponent.Get(); }

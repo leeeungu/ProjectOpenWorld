@@ -18,26 +18,23 @@ ABaseBuilding::ABaseBuilding()
 void ABaseBuilding::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	SetActorTickEnabled(false);
 }
 
 void ABaseBuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (buildingMaking && buildingMeshComponent)
+	if (buildingMeshComponent)
 	{
 		curentPercent += DeltaTime / buildingTime;
 		curentPercent = FMath::Clamp(curentPercent, 0.f, 1.f);
-		buildingMaking->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
-		if (curentPercent >= 1.0f)
+		int nSize = buildingMaking.Num();
+		for (int i = 0; i < nSize; i++)
 		{
-			buildingMeshComponent->SetMaterial(0, nullptr);
-			if (buildingMeshComponent && buildingMesh)
-			{
-				buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
-			}
-			SetActorTickEnabled(false);
+			buildingMaking[i]->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
 		}
+		if (curentPercent >= 1.0f)
+			EndBuilding();
 	}
 }
 
@@ -59,12 +56,44 @@ void ABaseBuilding::SetbuildingMesh(UStaticMesh* NewMesh)
 	}
 	if (buildingMakingMat && buildingMeshComponent && buildingMeshComponent->GetStaticMesh())
 	{
-		if (buildingMaking = buildingMeshComponent->CreateDynamicMaterialInstance(0, buildingMakingMat.Get()))
+		int nSize = buildingMeshComponent->GetMaterials().Num();
+		for (int i = 0; i < nSize; i++)
 		{
-			buildingMaking->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
-			buildingMaking->SetScalarParameterValue(TEXT("MeshWorldHeight"),
-				GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z);
+			if (UMaterialInstanceDynamic* Making = buildingMeshComponent->CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
+			{
+				Making->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
+				Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
+					GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z);
+				buildingMaking.Add(Making);
+			}
 		}
 	}
 }
 
+
+void ABaseBuilding::StopBuilding()
+{
+	SetActorTickEnabled(false);
+}
+void ABaseBuilding::StartBuilding()
+{
+	SetActorTickEnabled(true);
+	curentPercent = 0.0f;
+	int nSize = buildingMaking.Num();
+	for (int i = 0; i < nSize; i++)
+	{
+		UMaterialInstanceDynamic* Making = buildingMaking[i].Get();
+		buildingMeshComponent->SetMaterial(i, Making);
+	}
+}
+void ABaseBuilding::EndBuilding()
+{
+	int nSize = buildingMaking.Num();
+	for (int i = 0; i < nSize; i++)
+	{
+		buildingMeshComponent->SetMaterial(i, nullptr);
+	}
+	if (buildingMeshComponent && buildingMesh)
+		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
+	SetActorTickEnabled(false);
+}

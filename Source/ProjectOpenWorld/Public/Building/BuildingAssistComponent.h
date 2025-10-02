@@ -31,6 +31,11 @@ protected:
 	FName snapSocketName{};
 	FVector meshSize{};
 	FVector meshCenter{};
+
+	TArray<TEnumAsByte<EObjectTypeQuery> > buildPointObjectTypes{};
+	TArray<TEnumAsByte<EObjectTypeQuery> > buildCheckObjectTypes{};
+	TArray<AActor*> buildPointIgnore{};
+	TArray<AActor*> buildCheckIgnore{};
 public: // ActorComponent Function	
 	UBuildingAssistComponent();
 
@@ -43,7 +48,17 @@ public: // Custom Function
 	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
 	void SetBuildingStaticMesh(UStaticMesh* NewStaticMesh);
 	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
+	void StartBuilding();
+	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
+	void EndBuilding();
+	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
 	void SpawnBuilding();
+	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
+	void RotateBuilding(float AddYaw);
 private:
 	void OnOffAssist(bool bValue);
+	bool UpdateTraceHit(FHitResult& HitResult);
+	bool UpdateSnap(FVector& ResultPoint);
+	bool UpdateBuildable();
+	void UpdatePreviewMat();
 };

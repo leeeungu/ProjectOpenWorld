@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Building/BaseBuilding.h"
+#include "LandscapeProxy.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent()
 {
@@ -21,41 +22,122 @@ void UBuildingAssistComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	buildingPreviewActor = GetWorld()->SpawnActor<AStaticMeshActor>();
+	buildPointIgnore.Add(ownerPawn.Get());
 	if (buildingPreviewActor)
 	{
 		buildingPreviewActor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		buildingPreviewActor->SetMobility(EComponentMobility::Type::Movable);
-
+		buildPointIgnore.Add(buildingPreviewActor.Get());
 		buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
 	}
-	if (GetOwner() && Cast< AController>(GetOwner()))
+	if (GetOwner() && Cast< APawn>(GetOwner()))
 	{
-		ownerPawn = Cast< AController>(GetOwner())->GetPawn();
+		ownerPawn = Cast< APawn>(GetOwner());
 	}
 	OnOffAssist(false);
+
+	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
+
+	buildCheckIgnore = buildPointIgnore;
+	buildCheckIgnore.Add(nullptr);
 }
 
 void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	const APlayerCameraManager* CameraManager =
-		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	if (CameraManager && ownerPawn && buildingPreviewActor)
+	canBuilding = false;
+	if (ownerPawn && buildingPreviewActor)
 	{
-		TArray<AActor*> Ignore{};
-		Ignore.Reserve(2);
-		Ignore.Add(ownerPawn.Get());
-		Ignore.Add(buildingPreviewActor.Get());
-		TArray<TEnumAsByte<EObjectTypeQuery> > ObjectTypes{};
-		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 		FHitResult HitResult{};
-		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
-			CameraManager->GetCameraLocation(),
-			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
-			ObjectTypes, true, Ignore, EDrawDebugTrace::Type::None, HitResult, true
-		))
+		FVector MoveLocation{};
+		if (UpdateTraceHit(HitResult))
 		{
-			buildingPreviewActor->SetActorLocation(HitResult.Location);
+			MoveLocation = HitResult.Location;
+			bool bSnap = UpdateSnap(MoveLocation);
+			canBuilding = UpdateBuildable();
+			double Angle = FMath::RadiansToDegrees(FMath::Acos(HitResult.ImpactNormal.Dot(FVector::UpVector)));
+			if (!bSnap && Angle > 15.0)
+			{
+				canBuilding = false;
+			}
+		}
+		else
+		{
+			MoveLocation = HitResult.TraceEnd;
+			targetActor = nullptr;
+		}
+		buildingPreviewActor->SetActorLocation(MoveLocation);
+	}
+	//if (buildingPreviewActor)
+	//	buildingPreviewActor->SetActorHiddenInGame(targetActor == nullptr);
+	UpdatePreviewMat();
+}
+
+void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
+{
+	buildingPreviewActor->GetStaticMeshComponent()->SetStaticMesh(NewStaticMesh);
+	int nSize = buildingPreviewActor->GetStaticMeshComponent()->GetMaterials().Num();
+	for (int i = 0; i < nSize; i++)
+	{
+		buildingPreviewActor->GetStaticMeshComponent()->SetMaterial(i, buildingPreview.Get());
+	}
+	meshSize = NewStaticMesh->GetBoundingBox().GetExtent();
+	UpdatePreviewMat();
+}
+
+void UBuildingAssistComponent::StartBuilding()
+{
+	OnOffAssist(true);
+}
+
+void UBuildingAssistComponent::EndBuilding()
+{
+	OnOffAssist(false);
+}
+
+void UBuildingAssistComponent::SpawnBuilding()
+{
+	if (buildingActive && canBuilding)
+	{
+		FActorSpawnParameters Param{};
+		Param.Instigator = ownerPawn.Get();
+		Param.Owner = ownerPawn.Get();
+		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(ABaseBuilding::StaticClass(), &buildingPreviewActor->GetTransform(), Param));
+		buildingPreviewActor->SetActorRotation(FQuat::Identity);
+		Building->SetbuildingMesh(buildingPreviewActor->GetStaticMeshComponent()->GetStaticMesh());
+		Building->StartBuilding();
+	}
+}
+
+void UBuildingAssistComponent::RotateBuilding(float AddYaw)
+{
+	if (buildingPreviewActor)
+		buildingPreviewActor->AddActorWorldRotation(FRotator{0,AddYaw,0});
+}
+
+void UBuildingAssistComponent::OnOffAssist(bool bValue)
+{
+	buildingActive = bValue;
+	canBuilding = !bValue;
+	SetComponentTickEnabled(bValue);
+	if (buildingPreviewActor)
+		buildingPreviewActor->SetActorHiddenInGame(!bValue);
+}
+
+bool UBuildingAssistComponent::UpdateTraceHit(FHitResult& HitResult)
+{
+	if (const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0))
+	{
+		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
+			CameraManager->GetCameraLocation(), 
+			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
+			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true))
+		{
 			if (targetActor != HitResult.GetActor())
 			{
 				targetActor = HitResult.GetActor();
@@ -76,91 +158,61 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 				}
 
 			}
-			bool bSnap = false;
-			for (auto& MeshPair : snapSocketTransform)
-			{
-				if (FVector::Dist(HitResult.ImpactPoint, MeshPair.Value.GetLocation()) <= 80.0f)
-				{
-					bSnap = true;
-					snapSocketName = MeshPair.Key;
-					buildingPreviewActor->SetActorLocation(MeshPair.Value.GetLocation());
-					buildingPreviewActor->SetActorRotation(MeshPair.Value.GetRotation());
-					break;
-				}
-			}
-			if (!bSnap)
-			{
-				snapSocketName = NAME_None;
-			}
-			int Vaule = 0;
-			canBuilding = true;
-			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-			ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-			Ignore.Add(targetActor.Get());
-			if (UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(),
-				meshCenter+buildingPreviewActor->GetActorLocation(),
-				meshCenter+buildingPreviewActor->GetActorLocation(),
-				meshSize, buildingPreviewActor->GetActorRotation(),
-				ObjectTypes, true, Ignore, EDrawDebugTrace::Type::ForOneFrame, HitResult, true))
-			{
-				Vaule = 1;
-				canBuilding = false;
-			}
-			if (buildingPreview)
-				buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), Vaule);
-
+			return true;
 		}
-		else
+	}
+	return false;
+}
+
+bool UBuildingAssistComponent::UpdateSnap(FVector& ResultPoint)
+{
+	bool bSnap = false;
+	for (auto& MeshPair : snapSocketTransform)
+	{
+		if (FVector::Dist(ResultPoint, MeshPair.Value.GetLocation()) <= 40.0f)
 		{
-			targetActor = nullptr;
-			if (buildingPreview)
-				buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), 1);
-			canBuilding = false;
+			bSnap = true;
+			snapSocketName = MeshPair.Key;
+			ResultPoint = MeshPair.Value.GetLocation();
+			buildingPreviewActor->SetActorRotation(MeshPair.Value.GetRotation());
+			break;
 		}
 	}
-	else
+	if (!bSnap)
 	{
-		canBuilding = false;
-		buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), 1);
+		snapSocketName = NAME_None;
 	}
+	return bSnap;
 }
 
-void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
+bool UBuildingAssistComponent::UpdateBuildable()
 {
-	if (!buildingActive)
+	bool bResult = true;
+	buildCheckIgnore[2] = targetActor.Get();
+	TArray<FHitResult> ArrayPenetratingResult{};
+	meshCenter = buildingPreviewActor->GetStaticMeshComponent()->GetSocketLocation(TEXT("BuildingCenter"))+ FVector(0,0,meshSize.Z);
+	if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
+		meshCenter, //buildingPreviewActor->GetActorLocation(),
+		meshCenter, //buildingPreviewActor->GetActorLocation(),
+		meshSize, buildingPreviewActor->GetActorRotation(),
+		buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true))
 	{
-		OnOffAssist(true);
-		buildingPreviewActor->GetStaticMeshComponent()->SetStaticMesh(NewStaticMesh);
-		buildingPreviewActor->GetStaticMeshComponent()->SetMaterial(0, buildingPreview.Get());
-		meshSize = NewStaticMesh->GetBoundingBox().GetExtent();
-		meshCenter = NewStaticMesh->GetBoundingBox().GetCenter();
-		if (buildingPreview)
-			buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), 0);
+		for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
+		{
+			if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 5.0f)
+			{
+				bResult = false;
+				break;
+			}
+		}
 	}
+	return bResult;
 }
 
-void UBuildingAssistComponent::SpawnBuilding()
+void UBuildingAssistComponent::UpdatePreviewMat()
 {
-	if (buildingActive && canBuilding)
-	{
-		OnOffAssist(false);
-		FActorSpawnParameters Param{};
-		Param.Instigator = ownerPawn.Get();
-		Param.Owner = ownerPawn.Get();
-		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		//Param.Name = TEXT("NewBuilding");
-		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(ABaseBuilding::StaticClass(), &buildingPreviewActor->GetTransform(), Param));
-		buildingPreviewActor->SetActorRotation(FQuat::Identity);
-		Building->SetbuildingMesh(buildingPreviewActor->GetStaticMeshComponent()->GetStaticMesh());
-	}
-}
-
-void UBuildingAssistComponent::OnOffAssist(bool bValue)
-{
-	buildingActive = bValue;
-	canBuilding = !bValue;
-	SetComponentTickEnabled(bValue);
-	if (buildingPreviewActor)
-		buildingPreviewActor->SetActorHiddenInGame(!bValue);
+	int Vale = !canBuilding;
+	if (buildingPreview)
+		buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), Vale);
 }
 
