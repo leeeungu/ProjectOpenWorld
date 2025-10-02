@@ -57,6 +57,7 @@ void ABaseBuilding::SetbuildingMesh(UStaticMesh* NewMesh)
 	if (buildingMakingMat && buildingMeshComponent && buildingMeshComponent->GetStaticMesh())
 	{
 		int nSize = buildingMeshComponent->GetMaterials().Num();
+		buildingMaking.Empty(nSize);
 		for (int i = 0; i < nSize; i++)
 		{
 			if (UMaterialInstanceDynamic* Making = buildingMeshComponent->CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
