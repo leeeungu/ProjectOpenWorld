@@ -6,6 +6,7 @@
 #include "Building/BaseBuilding.h"
 #include "LandscapeProxy.h"
 #include "GameFramework/Pawn.h"
+#include "Building/Component/BuildingProgress.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent()
 {
@@ -58,11 +59,12 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		FHitResult HitResult{};
 		FVector MoveLocation{};
-		if (UpdateTraceHit(HitResult))
+		if (UpdateTraceHit(HitResult)) // 화면 중앙으로 RayCast를 쏴 건축 가능한 거리를 판별
 		{
 			MoveLocation = HitResult.Location;
-			bool bSnap = UpdateSnap(MoveLocation);
-			canBuilding = UpdateBuildable();
+			bool bSnap = UpdateSnap(MoveLocation); // 해당 위치에서 소켓이 있는 메시를 탐색
+			canBuilding = UpdateBuildable(); // 최종적으로 빌드 가능한지 확인
+			// 빌드 가능한 경사각인지 확인
 			double Angle = FMath::RadiansToDegrees(FMath::Acos(HitResult.ImpactNormal.Dot(FVector::UpVector)));
 			if (!bSnap && Angle > 15.0)
 			{
@@ -76,8 +78,6 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		}
 		buildingPreviewActor->SetActorLocation(MoveLocation);
 	}
-	//if (buildingPreviewActor)
-	//	buildingPreviewActor->SetActorHiddenInGame(targetActor == nullptr);
 	UpdatePreviewMat();
 }
 
@@ -96,6 +96,8 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 void UBuildingAssistComponent::StartBuilding()
 {
 	OnOffAssist(true);
+	//FAttachmentTransformRules Rule(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, false);
+	//buildingPreviewActor->AttachToActor(ownerPawn.Get(), Rule);
 }
 
 void UBuildingAssistComponent::EndBuilding()
@@ -113,8 +115,9 @@ void UBuildingAssistComponent::SpawnBuilding()
 		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(ABaseBuilding::StaticClass(), &buildingPreviewActor->GetTransform(), Param));
 		buildingPreviewActor->SetActorRotation(FQuat::Identity);
-		Building->SetbuildingMesh(buildingPreviewActor->GetStaticMeshComponent()->GetStaticMesh());
-		Building->StartBuilding();
+		UBuildingProgress* Progress = Building->GetBuildingProgress();
+		Building->GetBuildingProgress()->SetbuildingMesh(buildingPreviewActor->GetStaticMeshComponent()->GetStaticMesh());
+		Building->GetBuildingProgress()->StartBuilding();
 	}
 }
 
@@ -173,7 +176,7 @@ bool UBuildingAssistComponent::UpdateSnap(FVector& ResultPoint)
 	bool bSnap = false;
 	for (auto& MeshPair : snapSocketTransform)
 	{
-		if (FVector::Dist(ResultPoint, MeshPair.Value.GetLocation()) <= 40.0f)
+		if (FVector::DistSquared(ResultPoint, MeshPair.Value.GetLocation()) <= 40.0f* 40.0f)
 		{
 			bSnap = true;
 			snapSocketName = MeshPair.Key;
@@ -215,8 +218,7 @@ bool UBuildingAssistComponent::UpdateBuildable()
 
 void UBuildingAssistComponent::UpdatePreviewMat()
 {
-	int Vale = !canBuilding;
 	if (buildingPreview)
-		buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), Vale);
+		buildingPreview.Get()->SetScalarParameterValue(TEXT("Buildable"), !canBuilding);
 }
 

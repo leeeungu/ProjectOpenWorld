@@ -14,4 +14,7 @@ class PROJECTOPENWORLD_API IPlayerInputInterface
 {
 	GENERATED_BODY()
 public:
+
+	//UFUNCTION()
+	// MyFunction();
 };
