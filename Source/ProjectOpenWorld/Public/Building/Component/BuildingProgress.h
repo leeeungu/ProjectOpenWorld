@@ -11,6 +11,7 @@ class UStaticMesh;
 class UMaterial;
 class UMaterialInstanceDynamic;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UBuildingProgress : public UActorComponent
@@ -21,15 +22,18 @@ protected:
 	TSoftObjectPtr<UStaticMeshComponent> buildingMeshComponent{};
 	TSoftObjectPtr < UMaterial> buildingMakingMat{};
 	TArray<TSoftObjectPtr <UMaterialInstanceDynamic>> buildingMaking{};
-	float curentPercent = 0.3f;
+	float curentPercent = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	TSoftObjectPtr<UStaticMesh> buildingMesh{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	float buildingTime = 3.0f;
 
+	UPROPERTY(BlueprintAssignable, Category = "Building")
+	FOnBuildingEnd onBuildingEnd;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
+	float buildSpeed = 1.0f;
 public:
 	UBuildingProgress();
-
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void BeginPlay() override;
@@ -50,6 +54,12 @@ public:
 	void EndBuilding();
 
 	bool IsAlreadyStart() const { return !FMath::IsNearlyZero(curentPercent); }
-protected:
+	bool IsBuildingEnd() const { return curentPercent >= 1.0f; }
+
+	const float* GetBuildPercent() const { return &curentPercent; }
+	const float* GetBuildTime() const { return &buildingTime; }
+	
 	FORCEINLINE UStaticMeshComponent* GetMeshComponent() const { return buildingMeshComponent.Get(); }
+private:
+	void SetBuildingPercent(float Value);
 };
