@@ -9,6 +9,7 @@ UBuildingProgress::UBuildingProgress()
 	{
 		buildingMakingMat = MakingMat.Object;
 	}
+	curentPercent = 0.0f;
 }
 
 void UBuildingProgress::BeginPlay()
@@ -18,6 +19,8 @@ void UBuildingProgress::BeginPlay()
 	buildingMeshComponent = GetOwner()->GetComponentByClass<UStaticMeshComponent>();
 	if (buildingMesh)
 		SetbuildingMesh(buildingMesh.Get());
+
+	SetBuildingPercent(curentPercent);
 }
 
 #if WITH_EDITOR
@@ -31,12 +34,7 @@ void UBuildingProgress::PostEditChangeProperty(FPropertyChangedEvent& PropertyCh
 	if (buildingMesh)
 		SetbuildingMesh(buildingMesh.Get());
 
-	int nSize = buildingMaking.Num();
-	for (int i = 0; i < nSize; i++)
-	{
-		if (buildingMaking[i])
-			buildingMaking[i]->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
-	}
+	SetBuildingPercent(0.3);
 }
 #endif
 
@@ -45,19 +43,13 @@ void UBuildingProgress::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (buildingMeshComponent)
 	{
-		curentPercent += DeltaTime / buildingTime;
+		curentPercent += (DeltaTime * buildSpeed) / buildingTime;
 		curentPercent = FMath::Clamp(curentPercent, 0.f, 1.f);
-		int nSize = buildingMaking.Num();
-		for (int i = 0; i < nSize; i++)
-		{
-			if (buildingMaking[i])
-				buildingMaking[i]->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
-		}
+		SetBuildingPercent(curentPercent);
 		if (curentPercent >= 1.0f)
 			EndBuilding();
 	}
 }
-
 
 void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 {
@@ -78,7 +70,6 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 					Making->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
 					Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
 						GetOwner()->GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z);
-					Making->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
 					buildingMeshComponent->SetMaterial(i, Making);
 					buildingMaking.Add(Making);
 				}
@@ -101,13 +92,7 @@ void UBuildingProgress::StartBuilding()
 {
 	SetComponentTickEnabled(true);
 	curentPercent = 0.0f;
-	int nSize = buildingMaking.Num();
-	for (int i = 0; i < nSize; i++)
-	{
-		UMaterialInstanceDynamic* Making = buildingMaking[i].Get();
-		buildingMeshComponent->SetMaterial(i, Making);
-		buildingMaking[i]->SetScalarParameterValue(TEXT("FillPercent"), curentPercent);
-	}
+	SetBuildingPercent(curentPercent);
 }
 
 void UBuildingProgress::EndBuilding()
@@ -120,6 +105,23 @@ void UBuildingProgress::EndBuilding()
 	if (buildingMeshComponent && buildingMesh)
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
 	SetComponentTickEnabled(false);
+	curentPercent = 1.0f;
+	if (onBuildingEnd.IsBound())
+		onBuildingEnd.Broadcast();
+}
+
+void UBuildingProgress::SetBuildingPercent(float Value)
+{
+	int nSize = buildingMaking.Num();
+	for (int i = 0; i < nSize; i++)
+	{
+		if (buildingMaking[i])
+		{
+			UMaterialInstanceDynamic* Making = buildingMaking[i].Get();
+			buildingMeshComponent->SetMaterial(i, Making);
+			buildingMaking[i]->SetScalarParameterValue(TEXT("FillPercent"), Value);
+		}
+	}
 }
 
 

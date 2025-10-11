@@ -7,11 +7,19 @@
 #include "Interaction/InteractionInterface.h"
 #include "BuildingActor.generated.h"
 
+class UBuildingStateWidget;
+
 UCLASS()
 class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IInteractionInterface
 {
 	GENERATED_BODY()
-
+protected:
+	UPROPERTY()
+	UBuildingStateWidget* buildingStateWidget{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Building")
+	TSubclassOf<UBuildingStateWidget> buildingStateWidgetClass{};
+protected:
+	virtual void BeginPlay() override;
 public: // IInteractionInterface
 	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;
