@@ -1,6 +1,6 @@
 ﻿#include "Building/Actor/BuildingActor.h"
 #include "Building/Component/BuildingProgress.h"
-#include "Building/Widget/BuildingStateWidget.h"
+#include "Building/Subsystem/BuildingWidgetSubsystem.h"
 
 void ABuildingActor::BeginPlay()
 {
@@ -9,28 +9,46 @@ void ABuildingActor::BeginPlay()
 
 void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 {
-	if (!GetBuildingProgress()->IsAlreadyStart())
+	if (!pPlayer || !pPlayer->GetLocalPlayer())
+		return;
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem가 Map에서 찾으니 괜찮은 듯
 	{
-		if (!buildingStateWidget && buildingStateWidgetClass && pPlayer)
+		if (!GetBuildingProgress()->IsAlreadyStart())
 		{
-			buildingStateWidget = Cast< UBuildingStateWidget>(CreateWidget(pPlayer, buildingStateWidgetClass));
-			buildingStateWidget->SetPercent(GetBuildingProgress()->GetBuildPercent());
-			buildingStateWidget->SetBuildTime(GetBuildingProgress()->GetBuildTime());
-			GetBuildingProgress()->onBuildingEnd.AddDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
+			if (BuildingWidgetSubsystem)
+				BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
 		}
-		GetBuildingProgress()->StartBuilding();
+		if (!GetBuildingProgress()->IsBuildingEnd())
+		{
+			BuildingWidgetSubsystem->AddBuildTimeWidget();
+		}
 	}
-	if (buildingStateWidget && !GetBuildingProgress()->IsBuildingEnd())
-	{
-		buildingStateWidget->AddToViewport();
-	}
-	GetBuildingProgress()->ResumeBuilding();
 }
 
 void ABuildingActor::OnEndDetected_Implementation(APlayerController* pPlayer)
 {
-	if (buildingStateWidget)
+	if (!pPlayer || !pPlayer->GetLocalPlayer())
+		return;
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>())
 	{
-		buildingStateWidget->RemoveFromParent();
+		BuildingWidgetSubsystem->RemoveBuildTimeWidget();
 	}
+}
+
+void ABuildingActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
+{
+	if (!GetBuildingProgress()->IsAlreadyStart())
+	{
+		GetBuildingProgress()->StartBuilding();
+	}
+}
+
+void ABuildingActor::OnInteraction_Implementation()
+{
+	GetBuildingProgress()->ResumeBuilding();
+}
+
+void ABuildingActor::OnInteractionEnd_Implementation(APlayerController* pPlayer)
+{
+	GetBuildingProgress()->StopBuilding();
 }

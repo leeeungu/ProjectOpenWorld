@@ -10,10 +10,9 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class IInteractionInterface;
+class UInteractionComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
-
 
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
@@ -21,29 +20,33 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	GENERATED_BODY()
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom{};
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera{};
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
+	UInputMappingContext* DefaultMappingContext{};
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
+	UInputAction* JumpAction{};
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+	UInputAction* MoveAction{};
 
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
+	UInputAction* LookAction{};
 
-	TScriptInterface<IInteractionInterface> InteractionTarget{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractionAction{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
+	UInteractionComponent* InteractionComponent{};
 public:
 	ABasePlayer();
 
@@ -57,6 +60,10 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+
+	void OnInteractionStart(const FInputActionValue& Value);
+	void OnInteraction(const FInputActionValue& Value);
+	void OnInteractionEnd(const FInputActionValue& Value);
 
 protected:
 	// APawn interface

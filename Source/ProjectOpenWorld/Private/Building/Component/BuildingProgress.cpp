@@ -87,6 +87,8 @@ void UBuildingProgress::StopBuilding()
 
 void UBuildingProgress::ResumeBuilding()
 {
+	if (curentPercent >= 1.0f)
+		return;
 	isBuilding = true;
 	SetComponentTickEnabled(true);
 }

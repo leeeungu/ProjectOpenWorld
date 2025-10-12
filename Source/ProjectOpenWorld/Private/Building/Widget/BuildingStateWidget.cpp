@@ -1,6 +1,6 @@
 ﻿#include "Building/Widget/BuildingStateWidget.h"
 
-void UBuildingStateWidget::SetPercent(const float* BuildPercent)
+void UBuildingStateWidget::SetBuildPercent(const float* BuildPercent)
 {
 	buildPercent = BuildPercent;
 }

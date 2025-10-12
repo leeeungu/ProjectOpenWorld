@@ -8,14 +8,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Interaction/InteractionInterface.h"
+#include "Interaction/Component/InteractionComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
-
-//////////////////////////////////////////////////////////////////////////
-// ABasePlayer
 
 ABasePlayer::ABasePlayer()
 {
@@ -51,66 +46,21 @@ ABasePlayer::ABasePlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	FHitResult HitResult{};
-	if (const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0))
-	{
-
-		TArray<TEnumAsByte<EObjectTypeQuery> > buildPointObjectTypes{};
-		TArray<AActor*> buildPointIgnore{};
-
-		buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
-		buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-
-		buildPointIgnore.Add(this);
-		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
-			CameraManager->GetCameraLocation(),
-			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1500 + CameraManager->GetCameraLocation(),
-			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::ForOneFrame, HitResult, true))
-		{
-			if (IInteractionInterface* Interaction = Cast<IInteractionInterface>(HitResult.GetActor()))
-			{
-				if (Interaction != InteractionTarget)
-				{
-					if (InteractionTarget)
-						IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), Cast<APlayerController>(GetController()));
-					InteractionTarget = TScriptInterface< IInteractionInterface>(HitResult.GetActor());
-					IInteractionInterface::Execute_OnBeginDetected(HitResult.GetActor(), Cast<APlayerController>(GetController()));
-				}
-			}
-			else if (InteractionTarget)
-			{
-				IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), Cast<APlayerController>(GetController()));
-				InteractionTarget = nullptr;
-			}
-		}
-		else if (InteractionTarget)
-		{
-			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), Cast<APlayerController>(GetController()));
-			InteractionTarget = nullptr;
-		}
-	}
 }
 
 void ABasePlayer::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
-
 void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -131,6 +81,11 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayer::Look);
+
+		//Interaction
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Started, this, &ABasePlayer::OnInteractionStart);
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnInteraction);
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Completed, this, &ABasePlayer::OnInteractionEnd);
 	}
 	else
 	{
@@ -171,5 +126,29 @@ void ABasePlayer::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ABasePlayer::OnInteractionStart(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->OnInteractionStart();
+	}
+}
+
+void ABasePlayer::OnInteraction(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->OnInteractionTriggered();
+	}
+}
+
+void ABasePlayer::OnInteractionEnd(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->OnInteractionCompleted();
 	}
 }

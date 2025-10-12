@@ -11,7 +11,7 @@ class PROJECTOPENWORLD_API UBuildingStateWidget : public UUserWidget
 	const float* buildPercent = nullptr;
 	const float* buildTime = nullptr;
 public:
-	void SetPercent(const float* BuildPercent);
+	void SetBuildPercent(const float* BuildPercent);
 	void SetBuildTime(const float* BuildTime);
 
 	UFUNCTION(BlueprintPure, Category = "Building")
