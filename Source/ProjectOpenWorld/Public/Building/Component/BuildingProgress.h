@@ -27,11 +27,13 @@ protected:
 	TSoftObjectPtr<UStaticMesh> buildingMesh{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	float buildingTime = 3.0f;
-
-	UPROPERTY(BlueprintAssignable, Category = "Building")
-	FOnBuildingEnd onBuildingEnd;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	float buildSpeed = 1.0f;
+	bool isBuilding = false;
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Building")
+	FOnBuildingEnd onBuildingEnd;
 public:
 	UBuildingProgress();
 

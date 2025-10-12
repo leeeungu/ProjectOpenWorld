@@ -19,4 +19,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Building")
 	float GetBuildPercent() const { return buildPercent ? *buildPercent : 0.f; }
 
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Building")
+	void OnBuildingEnd();
+	virtual void OnBuildingEnd_Implementation() {}
 };

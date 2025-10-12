@@ -16,6 +16,7 @@ void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 			buildingStateWidget = Cast< UBuildingStateWidget>(CreateWidget(pPlayer, buildingStateWidgetClass));
 			buildingStateWidget->SetPercent(GetBuildingProgress()->GetBuildPercent());
 			buildingStateWidget->SetBuildTime(GetBuildingProgress()->GetBuildTime());
+			GetBuildingProgress()->onBuildingEnd.AddDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
 		}
 		GetBuildingProgress()->StartBuilding();
 	}
@@ -32,5 +33,4 @@ void ABuildingActor::OnEndDetected_Implementation(APlayerController* pPlayer)
 	{
 		buildingStateWidget->RemoveFromParent();
 	}
-	//GetBuildingProgress()->StopBuilding();
 }

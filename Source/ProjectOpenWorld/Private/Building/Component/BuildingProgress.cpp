@@ -10,12 +10,13 @@ UBuildingProgress::UBuildingProgress()
 		buildingMakingMat = MakingMat.Object;
 	}
 	curentPercent = 0.0f;
+	isBuilding = false;
 }
 
 void UBuildingProgress::BeginPlay()
 {
 	Super::BeginPlay();
-	SetComponentTickEnabled(false);
+	StopBuilding();
 	buildingMeshComponent = GetOwner()->GetComponentByClass<UStaticMeshComponent>();
 	if (buildingMesh)
 		SetbuildingMesh(buildingMesh.Get());
@@ -41,7 +42,7 @@ void UBuildingProgress::PostEditChangeProperty(FPropertyChangedEvent& PropertyCh
 void UBuildingProgress::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (buildingMeshComponent)
+	if (buildingMeshComponent && isBuilding)
 	{
 		curentPercent += (DeltaTime * buildSpeed) / buildingTime;
 		curentPercent = FMath::Clamp(curentPercent, 0.f, 1.f);
@@ -81,15 +82,18 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 void UBuildingProgress::StopBuilding()
 {
 	SetComponentTickEnabled(false);
+	isBuilding = false;
 }
 
 void UBuildingProgress::ResumeBuilding()
 {
+	isBuilding = true;
 	SetComponentTickEnabled(true);
 }
 
 void UBuildingProgress::StartBuilding()
 {
+	isBuilding = true;
 	SetComponentTickEnabled(true);
 	curentPercent = 0.0f;
 	SetBuildingPercent(curentPercent);
@@ -97,6 +101,7 @@ void UBuildingProgress::StartBuilding()
 
 void UBuildingProgress::EndBuilding()
 {
+	isBuilding = false;
 	int nSize = buildingMaking.Num();
 	for (int i = 0; i < nSize; i++)
 	{
