@@ -10,9 +10,11 @@ class PROJECTOPENWORLD_API UBuildingStateWidget : public UUserWidget
 	GENERATED_BODY()
 	const float* buildPercent = nullptr;
 	const float* buildTime = nullptr;
+	const float* buildSpeed = nullptr;
 public:
 	void SetBuildPercent(const float* BuildPercent);
 	void SetBuildTime(const float* BuildTime);
+	void SetBuildSpeed(const float* BuildSpeed);
 
 	UFUNCTION(BlueprintPure, Category = "Building")
 	FText GetBuildTime() const;

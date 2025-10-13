@@ -1,11 +1,12 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BuildingAssistComponent.generated.h"
 
 class AStaticMeshActor;
+class UBuildingInfoWidget;
+class ABaseBuilding;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UBuildingAssistComponent : public UActorComponent
@@ -25,6 +26,11 @@ protected:
 	bool buildingActive{};
 	bool canBuilding{};
 
+	UPROPERTY(EditDefaultsOnly, Category = "BuildingWidget", BlueprintReadOnly)
+	TSubclassOf<UBuildingInfoWidget> BuildingInfoClass{};
+	UBuildingInfoWidget* BuildingInfo{};
+	UPROPERTY(EditDefaultsOnly, Category = "Building", BlueprintReadOnly)
+	TSubclassOf<ABaseBuilding> BuildingClass{};
 	UPROPERTY()
 	TSoftObjectPtr < AActor> targetActor{};
 	TMap<FName, FTransform> snapSocketTransform{};
@@ -55,6 +61,8 @@ public: // Custom Function
 	void SpawnBuilding();
 	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
 	void RotateBuilding(float AddYaw);
+	UFUNCTION(BlueprintPure, Category = "BuildingAssist")
+	bool IsBuildingActive() const { return buildingActive; }
 private:
 	void OnOffAssist(bool bValue);
 	bool UpdateTraceHit(FHitResult& HitResult);

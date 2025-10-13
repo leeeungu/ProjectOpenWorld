@@ -33,6 +33,7 @@ public:
 	void OnInteractionStart();
 	void OnInteractionTriggered();
 	void OnInteractionCompleted();
+	void OnActorCancel();
 protected:
 	virtual void BeginPlay() override;
 };

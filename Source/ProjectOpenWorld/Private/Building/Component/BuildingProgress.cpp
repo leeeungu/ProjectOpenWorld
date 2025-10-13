@@ -75,6 +75,8 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 					buildingMaking.Add(Making);
 				}
 			}
+
+			buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		}
 	}
 }
@@ -115,6 +117,7 @@ void UBuildingProgress::EndBuilding()
 	curentPercent = 1.0f;
 	if (onBuildingEnd.IsBound())
 		onBuildingEnd.Broadcast();
+	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 }
 
 void UBuildingProgress::SetBuildingPercent(float Value)

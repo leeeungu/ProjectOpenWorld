@@ -7,17 +7,31 @@
 #include "LandscapeProxy.h"
 #include "GameFramework/Pawn.h"
 #include "Building/Component/BuildingProgress.h"
+#include "Building/Widget/BuildingInfoWidget.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	// //Script/Engine.Material'/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview'
-	ConstructorHelpers::FObjectFinder< UMaterial> PreviewMat(TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
+	static ConstructorHelpers::FObjectFinder< UMaterial> PreviewMat(TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
 	if (PreviewMat.Succeeded())
 	{
 		buildingPreviewMat = PreviewMat.Object;
 	}
+	//Script/UMGEditor.WidgetBlueprint'/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo'
+	static ConstructorHelpers::FClassFinder< UUserWidget> BuildingWidget(TEXT("/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo_C"));
+	if (BuildingWidget.Succeeded())
+	{
+		BuildingInfoClass = BuildingWidget.Class;
+	}
 	//SetIsReplicated(true);
+
+	//Script/Engine.Blueprint'/Game/Building/Blueprints/Test/Bp_BuildingActor.Bp_BuildingActor'
+	static ConstructorHelpers::FClassFinder< ABaseBuilding> Building(TEXT("/Game/Building/Blueprints/Test/Bp_BuildingActor.Bp_BuildingActor_C"));
+	if (Building.Succeeded())
+	{
+		BuildingClass = Building.Class;
+	}
 }
 
 
@@ -48,12 +62,14 @@ void UBuildingAssistComponent::BeginPlay()
 
 	buildCheckIgnore = buildPointIgnore;
 	buildCheckIgnore.Add(nullptr);
+
+	if (BuildingInfoClass)
+		BuildingInfo =Cast< UBuildingInfoWidget>(CreateWidget(GetWorld(), BuildingInfoClass));
 }
 
 void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	//if (ownerPawn->getre)
 	canBuilding = false;
 	if (ownerPawn && buildingPreviewActor)
 	{
@@ -96,13 +112,18 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 void UBuildingAssistComponent::StartBuilding()
 {
 	OnOffAssist(true);
+	if (BuildingInfo)
+		BuildingInfo->AddToViewport();
 	//FAttachmentTransformRules Rule(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, false);
 	//buildingPreviewActor->AttachToActor(ownerPawn.Get(), Rule);
 }
 
 void UBuildingAssistComponent::EndBuilding()
 {
+	UE_LOG(LogTemp, Error, TEXT("EndBuilding"));
 	OnOffAssist(false);
+	if (BuildingInfo)	
+		BuildingInfo->RemoveFromParent();
 }
 
 void UBuildingAssistComponent::SpawnBuilding()
@@ -113,11 +134,15 @@ void UBuildingAssistComponent::SpawnBuilding()
 		Param.Instigator = ownerPawn.Get();
 		Param.Owner = ownerPawn.Get();
 		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(ABaseBuilding::StaticClass(), &buildingPreviewActor->GetTransform(), Param));
+		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(BuildingClass, &buildingPreviewActor->GetTransform(), Param));
 		buildingPreviewActor->SetActorRotation(FQuat::Identity);
-		UBuildingProgress* Progress = Building->GetBuildingProgress();
-		Building->GetBuildingProgress()->SetbuildingMesh(buildingPreviewActor->GetStaticMeshComponent()->GetStaticMesh());
-		Building->GetBuildingProgress()->StartBuilding();
+
+		if (Building)
+		{
+			UBuildingProgress* Progress = Building->GetBuildingProgress();
+			Building->GetBuildingProgress()->SetbuildingMesh(buildingPreviewActor->GetStaticMeshComponent()->GetStaticMesh());
+		}
+		//Building->GetBuildingProgress()->StartBuilding();
 	}
 }
 
@@ -163,7 +188,6 @@ bool UBuildingAssistComponent::UpdateTraceHit(FHitResult& HitResult)
 						}
 					}
 				}
-
 			}
 			return true;
 		}

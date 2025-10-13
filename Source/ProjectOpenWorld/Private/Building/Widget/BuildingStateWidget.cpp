@@ -10,12 +10,17 @@ void UBuildingStateWidget::SetBuildTime(const float* BuildTime)
 	buildTime = BuildTime;
 }
 
+void UBuildingStateWidget::SetBuildSpeed(const float* BuildSpeed)
+{
+	buildSpeed = BuildSpeed;
+}
+
 FText UBuildingStateWidget::GetBuildTime() const
 {
-	if (!buildTime || !buildPercent)
+	if (!buildTime || !buildPercent || !buildSpeed)
 		return FText{};
 
-	int Time = (*buildTime) * (1-(*buildPercent));
+	int Time = (*buildTime) * (1-(*buildPercent)) / *buildSpeed;
 	FString TimeString = FString(TEXT("00:00:00"));
 	if (Time >= 3600)
 	{

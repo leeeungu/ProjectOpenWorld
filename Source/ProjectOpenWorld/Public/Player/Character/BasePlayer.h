@@ -11,6 +11,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class UInteractionComponent;
+class UBuildingAssistComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -20,11 +21,14 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	GENERATED_BODY()
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom{};
+	TObjectPtr<USpringArmComponent> CameraBoom{};
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera{};
+	TObjectPtr< UCameraComponent> FollowCamera{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; //BuildingAssist
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -45,6 +49,21 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractionAction{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* EscAction{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* KeyCAction{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MouseRAction{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MouseLAction{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MouseWheelAction{};
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	UInteractionComponent* InteractionComponent{};
 public:
@@ -61,10 +80,22 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 
+	UFUNCTION()
 	void OnInteractionStart(const FInputActionValue& Value);
+	UFUNCTION()
 	void OnInteraction(const FInputActionValue& Value);
+	UFUNCTION()
 	void OnInteractionEnd(const FInputActionValue& Value);
-
+	UFUNCTION()
+	void OnActionExit(const FInputActionValue& Value);
+	UFUNCTION()
+	void OnActionKeyC(const FInputActionValue& Value);
+	UFUNCTION()
+	void OnActionMouseWheel(const FInputActionValue& Value);
+	UFUNCTION()
+	void OnActionMouseR(const FInputActionValue& Value);
+	UFUNCTION()
+	void OnActionMouseL(const FInputActionValue& Value);
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -74,8 +105,9 @@ protected:
 
 public:
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE  USpringArmComponent* const  GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
 };
 

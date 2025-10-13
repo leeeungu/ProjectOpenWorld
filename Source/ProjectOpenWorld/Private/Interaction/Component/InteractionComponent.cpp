@@ -87,3 +87,17 @@ void UInteractionComponent::OnInteractionCompleted()
 		IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), PlayerController.Get());
 	}
 }
+
+void UInteractionComponent::OnActorCancel()
+{
+	if (InteractionTarget && InteractionTarget.GetObject())
+	{
+		if (bIsInteraction)
+			IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), PlayerController.Get());
+		else
+			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), PlayerController.Get());
+		Cast<AActor>(InteractionTarget.GetObject())->Destroy();
+		bIsInteraction = false;
+		InteractionTarget = nullptr;
+	}
+}

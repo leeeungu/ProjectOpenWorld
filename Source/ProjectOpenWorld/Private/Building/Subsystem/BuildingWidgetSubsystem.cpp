@@ -8,7 +8,7 @@ DEFINE_LOG_CATEGORY(LogBuildingSubsystem);
 UBuildingWidgetSubsystem::UBuildingWidgetSubsystem() : ULocalPlayerSubsystem{}
 {
 	//Script/UMGEditor.WidgetBlueprint'/Game/Building/Widget/WBP_BuildState.WBP_BuildState'
-	static ConstructorHelpers::FClassFinder<UBuildingStateWidget> widgetClass(TEXT("/Game/Building/Widget/WBP_BuildState.WBP_BuildState_C"));
+	static ConstructorHelpers::FClassFinder<UBuildingStateWidget> widgetClass(TEXT("/Game/Building/Widget/WBP_BuildTimer.WBP_BuildTimer_C"));
 	if (widgetClass.Succeeded())
 	{
 		buildingStateWidgetClass = widgetClass.Class;
@@ -41,15 +41,13 @@ void UBuildingWidgetSubsystem::PlayerControllerChanged(APlayerController* NewPla
 
 void UBuildingWidgetSubsystem::SetBuildingWidgetProperty(UBuildingProgress* ProgressComponent)
 {
-	if (buildingStateWidget)
+	if (buildingStateWidget && ProgressComponent)
 	{
-		if (ProgressComponent)
-		{
-			buildingStateWidget->SetBuildPercent(ProgressComponent->GetBuildPercent());
-			buildingStateWidget->SetBuildTime(ProgressComponent->GetBuildTime());
-			ProgressComponent->onBuildingEnd.Clear();
-			ProgressComponent->onBuildingEnd.AddDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
-		}
+		buildingStateWidget->SetBuildPercent(ProgressComponent->GetBuildPercent());
+		buildingStateWidget->SetBuildTime(ProgressComponent->GetBuildTime());
+		buildingStateWidget->SetBuildSpeed(ProgressComponent->GetBuildSpeed());
+		ProgressComponent->onBuildingEnd.Clear();
+		ProgressComponent->onBuildingEnd.AddDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
 	}
 }
 

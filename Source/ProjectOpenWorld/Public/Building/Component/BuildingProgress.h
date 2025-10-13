@@ -60,6 +60,7 @@ public:
 
 	const float* GetBuildPercent() const { return &curentPercent; }
 	const float* GetBuildTime() const { return &buildingTime; }
+	const float* GetBuildSpeed() const { return &buildSpeed; }
 	
 	FORCEINLINE UStaticMeshComponent* GetMeshComponent() const { return buildingMeshComponent.Get(); }
 private:

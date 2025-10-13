@@ -9,6 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Interaction/Component/InteractionComponent.h"
+#include "Building/BuildingAssistComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -47,6 +48,8 @@ ABasePlayer::ABasePlayer()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
+
+	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponent>(TEXT("BuildingAssist"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -86,6 +89,13 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Started, this, &ABasePlayer::OnInteractionStart);
 		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnInteraction);
 		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Completed, this, &ABasePlayer::OnInteractionEnd);
+
+		EnhancedInputComponent->BindAction(EscAction, ETriggerEvent::Completed, this, &ABasePlayer::OnActionExit);
+		EnhancedInputComponent->BindAction(KeyCAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnActionKeyC);
+
+		EnhancedInputComponent->BindAction(MouseRAction, ETriggerEvent::Started, this, &ABasePlayer::OnActionMouseR);
+		EnhancedInputComponent->BindAction(MouseLAction, ETriggerEvent::Started, this, &ABasePlayer::OnActionMouseL);
+		EnhancedInputComponent->BindAction(MouseWheelAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnActionMouseWheel);
 	}
 	else
 	{
@@ -150,5 +160,49 @@ void ABasePlayer::OnInteractionEnd(const FInputActionValue& Value)
 	if (InteractionComponent)
 	{
 		InteractionComponent->OnInteractionCompleted();
+	}
+}
+
+void ABasePlayer::OnActionExit(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Error, TEXT("OnActionExit"));
+	if (BuildAssistComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BuildAssistComponent"));
+		BuildAssistComponent->EndBuilding();
+	}
+}
+
+void ABasePlayer::OnActionKeyC(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->OnActorCancel();
+	}
+}
+
+void ABasePlayer::OnActionMouseWheel(const FInputActionValue& Value)
+{
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	if (BuildAssistComponent)
+	{
+		BuildAssistComponent->RotateBuilding(LookAxisVector.X * 5.0f);
+	}
+}
+
+void ABasePlayer::OnActionMouseR(const FInputActionValue& Value)
+{
+	if (BuildAssistComponent)
+	{
+		BuildAssistComponent->SpawnBuilding();
+	}
+}
+
+void ABasePlayer::OnActionMouseL(const FInputActionValue& Value)
+{
+	if (BuildAssistComponent)
+	{
+		BuildAssistComponent->SpawnBuilding();
+		BuildAssistComponent->EndBuilding();
 	}
 }
