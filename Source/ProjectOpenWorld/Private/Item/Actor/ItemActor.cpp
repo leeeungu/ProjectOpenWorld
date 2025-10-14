@@ -17,15 +17,17 @@ AItemActor::AItemActor()
 void AItemActor::BeginPlay()
 {
 	ToolTipWidget = CreateWidget(GetWorld(), ToolTipWidgetClass);
-	if (ToolTipWidget)
-	{
-		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemData->GetItemName());
-	}
+	
 	Super::BeginPlay();
 }
 
 void AItemActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 {
+	ItemData.LoadSynchronous();
+	if (ToolTipWidget && ItemData)
+	{
+		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemData->GetItemName());
+	}
 	if (ToolTipWidget)
 	{
 		ToolTipWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -49,8 +51,8 @@ void AItemActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
 	if (!Inventory)
 		return;
 	UE_LOG(LogTemp, Warning, TEXT("NoInventory"));
-	Inventory->AddItem(ItemData.Get());
-	Destroy();
+	if (Inventory->AddItem(ItemData.Get()))
+		Destroy();
 }
 
 

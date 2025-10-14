@@ -19,19 +19,25 @@ bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData)
 	}
 	else
 	{
-		inventoryArray.Push(FInventorySlot(ItemData));
+		FInventorySlot* EmptySlot = inventoryArray.FindByPredicate([](const FInventorySlot& Slot) { return Slot.ItemDataAsset == nullptr; });
+		if (!EmptySlot)
+			return false;
+		EmptySlot->ItemDataAsset = ItemData;
+		EmptySlot->ItemCount = 1;
+		EmptySlot->TotalWeight = ItemData->GetItemWeight();
 	}
-
+	if (onUpdateInventory.IsBound())
+	{
+		onUpdateInventory.Broadcast();
+	}
 	return true;
 }
 
-bool UInventoryComponent::GetInventorySlotData(int Row, int Col, const FInventorySlot*  SlotData)
+bool UInventoryComponent::GetInventorySlotData(int Row, int Col, const FInventorySlot*&  SlotData)
 {
 	int Index = Row * inventoryCol + Col;
 	if (!inventoryArray.IsValidIndex(Index))
-	{
 		return false;
-	}
 	SlotData = &inventoryArray[Index];
 	return true;
 }
@@ -39,5 +45,7 @@ bool UInventoryComponent::GetInventorySlotData(int Row, int Col, const FInventor
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	inventorySize = inventoryRow * inventoryCol;
+	inventoryArray.Init(FInventorySlot(), inventorySize);
 }
 

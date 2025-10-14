@@ -7,6 +7,8 @@
 class UUniformGridPanel;
 class UInventoryComponent;
 class UInventorySlotWidget;
+class UProgressBar;
+class UTextBlock;
 
 UCLASS()
 class PROJECTOPENWORLD_API UInventoryWidget : public UUserWidget
@@ -18,11 +20,21 @@ protected:
 	TSoftObjectPtr<UInventoryComponent> inventoryComponent{};
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory")
-	TSubclassOf<UInventorySlotWidget> inventorySlotClass;
+	TSubclassOf<UInventorySlotWidget> inventorySlotClass{};
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr<UProgressBar> WeightProgressBar{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr<UTextBlock> WeightPercentTextBlock{};
+
 public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 
 	void UpdateInventorySlot(int Row, int Col);
+
+private:
+	UFUNCTION()
+	void UpdateAllInventorySlot();
 };

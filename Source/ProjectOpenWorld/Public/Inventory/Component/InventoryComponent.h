@@ -6,6 +6,7 @@
 #include "InventoryComponent.generated.h"
 
 class UItemPrimaryDataAsset;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -20,11 +21,16 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	float totalInventoryWeight{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
-	float maxInventoryWeight{};
+	float maxInventoryWeight = 300.0f;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "ItemData")
 	int inventoryRow = 7;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "ItemData")
 	int inventoryCol = 6;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
+	int inventorySize{};
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnUpdateInventory	onUpdateInventory{};
 public:	
 	UInventoryComponent();
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -32,10 +38,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool AddItem(UItemPrimaryDataAsset* ItemData);
 
-	bool GetInventorySlotData(int Row, int Col, const  FInventorySlot* SlotData);
+	bool GetInventorySlotData(int Row, int Col, const  FInventorySlot*& SlotData);
 
 	FORCEINLINE int GetInventoryRow() const { return inventoryRow; }
 	FORCEINLINE int GetInventoryCol() const { return inventoryCol; }
+	FORCEINLINE float GetInventoryWeight() const { return totalInventoryWeight; }
+	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight; }
 protected:
 	virtual void BeginPlay() override;
 		
