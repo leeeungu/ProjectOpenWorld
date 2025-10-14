@@ -19,6 +19,8 @@ protected:
 	UBuildingStateWidget* buildingStateWidget{};
 	UPROPERTY()
 	TSubclassOf<UBuildingStateWidget> buildingStateWidgetClass{};
+
+	TSoftObjectPtr<UBuildingProgress> buildProgress{};
 public:
 	UBuildingWidgetSubsystem();
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

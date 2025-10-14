@@ -13,11 +13,7 @@ void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 		return;
 	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem가 Map에서 찾으니 괜찮은 듯
 	{
-		if (!GetBuildingProgress()->IsAlreadyStart())
-		{
-			if (BuildingWidgetSubsystem)
-				BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
-		}
+		BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
 		if (!GetBuildingProgress()->IsBuildingEnd())
 		{
 			BuildingWidgetSubsystem->AddBuildTimeWidget();

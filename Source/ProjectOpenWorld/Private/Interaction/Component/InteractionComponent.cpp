@@ -12,6 +12,11 @@ UInteractionComponent::UInteractionComponent()
 void UInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!IsValid(InteractionTarget.GetObject()))
+	{
+		InteractionTarget = nullptr;
+		bIsInteraction = false;
+	}
 	if (!PlayerController || bIsInteraction || !PlayerCharacter)
 		return;
 	FHitResult HitResult{};
