@@ -23,6 +23,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	float TotalWeight{};
 
+	bool isEmpthySlot = true;
+
 	bool operator==(const FInventorySlot& sDst);
 	bool operator==(const UItemPrimaryDataAsset* pDst);
 };

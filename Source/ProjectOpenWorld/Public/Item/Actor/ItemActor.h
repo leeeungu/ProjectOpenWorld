@@ -19,6 +19,8 @@ protected:
 	TSubclassOf<UUserWidget> ToolTipWidgetClass{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
 	TSoftObjectPtr<UUserWidget> ToolTipWidget{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
+	int itemCount = 1;
 public:	
 	AItemActor();
 //	virtual void Tick(float DeltaTime) override;

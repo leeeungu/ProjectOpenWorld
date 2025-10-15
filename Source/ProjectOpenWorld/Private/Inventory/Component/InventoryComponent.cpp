@@ -6,26 +6,61 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData)
+bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount)
 {
-	if (!ItemData || maxInventoryWeight - ItemData->GetItemWeight() < totalInventoryWeight)
+	if (!ItemData || maxInventoryWeight - (ItemData->GetItemWeight() * ItemCount) < totalInventoryWeight)
 		return false;
 
-	totalInventoryWeight += ItemData->GetItemWeight();
+	float ItemWeights = ItemData->GetItemWeight() * ItemCount;
+	totalInventoryWeight += ItemWeights;
 	if (FInventorySlot* Slot = inventoryArray.FindByKey(FInventorySlot(ItemData)))
 	{
-		Slot->ItemCount++;
-		Slot->TotalWeight += ItemData->GetItemWeight();
+		Slot->ItemCount+= ItemCount;
+		Slot->TotalWeight += ItemWeights;
 	}
 	else
 	{
-		FInventorySlot* EmptySlot = inventoryArray.FindByPredicate([](const FInventorySlot& Slot) { return Slot.ItemDataAsset == nullptr; });
+		FInventorySlot** EmptySlot = inventoryViewArray.FindByPredicate([](const FInventorySlot* Slot) { return Slot->ItemDataAsset == nullptr; });
 		if (!EmptySlot)
 			return false;
-		EmptySlot->ItemDataAsset = ItemData;
-		EmptySlot->ItemCount = 1;
-		EmptySlot->TotalWeight = ItemData->GetItemWeight();
+		(*EmptySlot)->ItemDataAsset = ItemData;
+		(*EmptySlot)->ItemCount = ItemCount;
+		(*EmptySlot)->TotalWeight = ItemWeights;
+		(*EmptySlot)->isEmpthySlot = false;
 	}
+	if (onUpdateInventory.IsBound())
+	{
+		onUpdateInventory.Broadcast();
+	}
+	return true;
+}
+
+bool UInventoryComponent::SetInevntorySlot(int Row, int Col, UItemPrimaryDataAsset* ItemData, int ItemCount)
+{
+	int Index = Row * inventoryCol + Col;
+	if (!inventoryViewArray.IsValidIndex(Index) || !ItemData)
+		return false;
+	FInventorySlot* SlotData = inventoryViewArray[Index];
+	SlotData->ItemDataAsset = ItemData;
+	SlotData->ItemCount = ItemCount;
+	SlotData->TotalWeight = ItemData->GetItemWeight();
+	SlotData->isEmpthySlot = ItemCount > 0;
+
+	if (onUpdateInventory.IsBound())
+	{
+		onUpdateInventory.Broadcast();
+	}
+	return true;
+}
+
+bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol)
+{
+	int SrcIndex = SrcRow * inventoryCol + SrcCol;
+	int DstIndex = DstRow * inventoryCol + DstCol;
+	if (!inventoryViewArray.IsValidIndex(SrcIndex) || !inventoryViewArray.IsValidIndex(DstIndex))
+		return false;
+
+	inventoryViewArray.Swap(SrcIndex, DstIndex);
 	if (onUpdateInventory.IsBound())
 	{
 		onUpdateInventory.Broadcast();
@@ -38,7 +73,7 @@ bool UInventoryComponent::GetInventorySlotData(int Row, int Col, const FInventor
 	int Index = Row * inventoryCol + Col;
 	if (!inventoryArray.IsValidIndex(Index))
 		return false;
-	SlotData = &inventoryArray[Index];
+	SlotData = inventoryViewArray[Index];
 	return true;
 }
 
@@ -47,5 +82,12 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 	inventorySize = inventoryRow * inventoryCol;
 	inventoryArray.Init(FInventorySlot(), inventorySize);
+	inventoryViewArray.Init(nullptr, inventorySize);
+
+	for (int i = 0; i < inventorySize; i++)
+	{
+		inventoryViewArray[i] = &inventoryArray[i];
+	}
+	
 }
 

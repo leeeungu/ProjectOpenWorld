@@ -46,12 +46,13 @@ void AItemActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
 {
 	if (!pPlayer)
 		return;
-	UE_LOG(LogTemp, Warning, TEXT("NopPlayer"));
 	UInventoryComponent* Inventory = pPlayer->GetComponentByClass<UInventoryComponent>();
 	if (!Inventory)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AItemActor::OnInteractionStart - NoInventory"));
 		return;
-	UE_LOG(LogTemp, Warning, TEXT("NoInventory"));
-	if (Inventory->AddItem(ItemData.Get()))
+	}
+	if (Inventory->AddItem(ItemData.Get(), itemCount))
 		Destroy();
 }
 

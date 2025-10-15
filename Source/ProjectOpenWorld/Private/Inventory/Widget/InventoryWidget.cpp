@@ -1,5 +1,6 @@
 ﻿#include "Inventory/Widget/InventoryWidget.h"
 #include "Inventory/Widget/InventorySlotWidget.h"
+#include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -20,19 +21,22 @@ void UInventoryWidget::NativePreConstruct()
 	if (!inventoryComponent)
 	{
 		inventoryGridPanel->ClearChildren();
+		UpdateInventoryWeight();
 		for (int i = 0; i < 7; i++)
 		{
 			for (int k = 0; k < 6; k++)
 			{
-				UInventorySlotWidget* InventorySlot = Cast< UInventorySlotWidget>(CreateWidget(this, inventorySlotClass));
+				UInventoryGirdSlotWidget* InventorySlot = Cast< UInventoryGirdSlotWidget>(CreateWidget(this, inventorySlotClass));
 				if (InventorySlot)
 				{
 					inventoryGridPanel->AddChildToUniformGrid(InventorySlot, i, k);
+					InventorySlot->Init_RowCol(i, k);
 				}
 			}
 		}
 		return;
 	}
+
 	inventoryComponent->onUpdateInventory.RemoveDynamic(this, &UInventoryWidget::UpdateAllInventorySlot);
 	inventoryComponent->onUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateAllInventorySlot);
 	inventoryGridPanel->ClearChildren();
@@ -40,13 +44,15 @@ void UInventoryWidget::NativePreConstruct()
 	{
 		for (int k = 0; k < inventoryComponent->GetInventoryCol(); k++)
 		{
-			UInventorySlotWidget* InventorySlot = Cast< UInventorySlotWidget>(CreateWidget(this, inventorySlotClass));
+			UInventoryGirdSlotWidget* InventorySlot = Cast< UInventoryGirdSlotWidget>(CreateWidget(this, inventorySlotClass));
 			if (InventorySlot)
 			{
 				inventoryGridPanel->AddChildToUniformGrid(InventorySlot, i, k);
+				InventorySlot->Init_RowCol(i, k);
 			}
 		}
 	}
+	UpdateInventoryWeight();
 }
 
 void UInventoryWidget::NativeConstruct()
@@ -81,9 +87,13 @@ void UInventoryWidget::UpdateAllInventorySlot()
 			UpdateInventorySlot(i, k);
 		}
 	}
-	float MaxWeight = inventoryComponent ? inventoryComponent->GetInventoryMaxWeight() : 1.0f;
-	float Weight = inventoryComponent ? inventoryComponent->GetInventoryWeight() : 1.0f;
-	WeightProgressBar->SetPercent(Weight / MaxWeight);
-	FString str = FString::Printf(TEXT("%.1f / %.1f"), Weight, MaxWeight);
-	WeightPercentTextBlock->SetText(FText::FromString(str));
+	UpdateInventoryWeight();
+}
+
+void UInventoryWidget::UpdateInventoryWeight()
+{
+	int MaxWeight = inventoryComponent ? inventoryComponent->GetInventoryMaxWeight() : 0;
+	int CurWeight = inventoryComponent ? inventoryComponent->GetInventoryWeight() : 1;
+	WeightProgressBar->SetPercent(CurWeight / (float)MaxWeight);
+	WeightPercentTextBlock->SetText(FText::Format(FText::FromString(TEXT("{0} / {1}")), CurWeight, MaxWeight));
 }

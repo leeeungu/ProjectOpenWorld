@@ -11,8 +11,5 @@ class PROJECTOPENWORLD_API UInventorySlotWidget : public UUserWidget, public IIn
 	GENERATED_BODY()
 
 public:
-	virtual void SetSlotData_Implementation(const FInventorySlot& Data) override;
-	//UFUNCTION(BlueprintCallable)
-	//void SetInventorySlotData(FInventorySlot SlotData) {}
-	
+	virtual void SetSlotData_Implementation(const FInventorySlot& Data) override {}
 };

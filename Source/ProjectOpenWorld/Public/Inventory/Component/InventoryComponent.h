@@ -17,6 +17,7 @@ class PROJECTOPENWORLD_API UInventoryComponent : public UActorComponent
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	TArray<FInventorySlot> inventoryArray{};
+	TArray<FInventorySlot*> inventoryViewArray{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	float totalInventoryWeight{};
@@ -36,7 +37,12 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool AddItem(UItemPrimaryDataAsset* ItemData);
+	bool AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount = 1);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool SetInevntorySlot(int Row, int Col, UItemPrimaryDataAsset* ItemData, int ItemCount = 1);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol);
+
 
 	bool GetInventorySlotData(int Row, int Col, const  FInventorySlot*& SlotData);
 

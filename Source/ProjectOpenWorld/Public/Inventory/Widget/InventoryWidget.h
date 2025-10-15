@@ -6,7 +6,7 @@
 
 class UUniformGridPanel;
 class UInventoryComponent;
-class UInventorySlotWidget;
+class UInventoryGirdSlotWidget;
 class UProgressBar;
 class UTextBlock;
 
@@ -15,16 +15,16 @@ class PROJECTOPENWORLD_API UInventoryWidget : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr<UUniformGridPanel> inventoryGridPanel{};
 	TSoftObjectPtr<UInventoryComponent> inventoryComponent{};
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory")
-	TSubclassOf<UInventorySlotWidget> inventorySlotClass{};
+	TSubclassOf<UInventoryGirdSlotWidget> inventorySlotClass{};
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr<UProgressBar> WeightProgressBar{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr<UTextBlock> WeightPercentTextBlock{};
 
 public:
@@ -37,4 +37,5 @@ public:
 private:
 	UFUNCTION()
 	void UpdateAllInventorySlot();
+	void UpdateInventoryWeight();
 };

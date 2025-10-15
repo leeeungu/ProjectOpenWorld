@@ -120,7 +120,7 @@ void UBuildingAssistComponent::StartBuilding()
 
 void UBuildingAssistComponent::EndBuilding()
 {
-	UE_LOG(LogTemp, Error, TEXT("EndBuilding"));
+	//UE_LOG(LogTemp, Error, TEXT("EndBuilding"));
 	OnOffAssist(false);
 	if (BuildingInfo)	
 		BuildingInfo->RemoveFromParent();
