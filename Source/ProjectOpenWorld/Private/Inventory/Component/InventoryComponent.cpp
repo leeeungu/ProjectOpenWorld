@@ -16,7 +16,7 @@ bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount
 	if (FInventorySlot* Slot = inventoryArray.FindByKey(FInventorySlot(ItemData)))
 	{
 		Slot->ItemCount+= ItemCount;
-		Slot->TotalWeight += ItemWeights;
+		Slot->ItemTotalWeights += ItemWeights;
 	}
 	else
 	{
@@ -25,7 +25,7 @@ bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount
 			return false;
 		(*EmptySlot)->ItemDataAsset = ItemData;
 		(*EmptySlot)->ItemCount = ItemCount;
-		(*EmptySlot)->TotalWeight = ItemWeights;
+		(*EmptySlot)->ItemTotalWeights = ItemWeights;
 		(*EmptySlot)->isEmpthySlot = false;
 	}
 	if (onUpdateInventory.IsBound())
@@ -38,12 +38,17 @@ bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount
 bool UInventoryComponent::SetInevntorySlot(int Row, int Col, UItemPrimaryDataAsset* ItemData, int ItemCount)
 {
 	int Index = Row * inventoryCol + Col;
-	if (!inventoryViewArray.IsValidIndex(Index) || !ItemData)
+	if (!inventoryViewArray.IsValidIndex(Index) )
 		return false;
 	FInventorySlot* SlotData = inventoryViewArray[Index];
 	SlotData->ItemDataAsset = ItemData;
 	SlotData->ItemCount = ItemCount;
-	SlotData->TotalWeight = ItemData->GetItemWeight();
+	totalInventoryWeight -= SlotData->ItemTotalWeights;
+	SlotData->ItemTotalWeights = 0;
+	if (ItemData)
+	{
+		SlotData->ItemTotalWeights = ItemData->GetItemWeight() * SlotData->ItemCount;
+	}
 	SlotData->isEmpthySlot = ItemCount > 0;
 
 	if (onUpdateInventory.IsBound())
@@ -68,12 +73,21 @@ bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCo
 	return true;
 }
 
-bool UInventoryComponent::GetInventorySlotData(int Row, int Col, const FInventorySlot*&  SlotData)
+bool UInventoryComponent::GetInventorySlotData(int Row, int Col, const FInventorySlot*&  SlotData)	
 {
 	int Index = Row * inventoryCol + Col;
 	if (!inventoryArray.IsValidIndex(Index))
 		return false;
 	SlotData = inventoryViewArray[Index];
+	return true;
+}
+
+bool UInventoryComponent::GetSlotData(int Row, int Col, FInventorySlot& SlotData) const
+{
+	int Index = Row * inventoryCol + Col;
+	if (!inventoryArray.IsValidIndex(Index))
+		return false;
+	SlotData = *inventoryViewArray[Index];
 	return true;
 }
 

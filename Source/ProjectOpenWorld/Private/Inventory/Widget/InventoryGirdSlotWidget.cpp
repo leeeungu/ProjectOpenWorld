@@ -5,6 +5,7 @@
 #include "Inventory/Component/InventoryComponent.h"
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Inventory/Widget/InventoryDDO.h"
 
 UInventoryGirdSlotWidget::UInventoryGirdSlotWidget(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget{ ObjectInitializer }
@@ -52,7 +53,7 @@ void UInventoryGirdSlotWidget::SetSlotData_Implementation(const FInventorySlot& 
 	}
 }
 
-void UInventoryGirdSlotWidget::Init_RowCol(int Row, int Col)
+void UInventoryGirdSlotWidget::SetSlotIndex_Implementation(int Row, int Col)
 {
 	inventoryRow = Row;
 	inventoryCol = Col;
@@ -64,6 +65,14 @@ bool UInventoryGirdSlotWidget::SwapSlot(UInventoryGirdSlotWidget* OtherSlot)
 	if (!inventoryComponent || !OtherSlot)
 		return false;
 	return inventoryComponent->SwapSlot(inventoryRow, inventoryCol, OtherSlot->inventoryRow, OtherSlot->inventoryCol);
+}
+
+bool UInventoryGirdSlotWidget::SwapSlot_Index(int Row, int Col)
+{
+	UInventoryComponent* inventoryComponent = GetOwningPlayer()->GetComponentByClass<UInventoryComponent>();
+	if (!inventoryComponent)
+		return false;
+	return inventoryComponent->SwapSlot(inventoryRow, inventoryCol, Row, Col);
 }
 
 UInventorySlotWidget* UInventoryGirdSlotWidget::GetInventorySlotWidget() const
@@ -90,13 +99,23 @@ FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeom
 void UInventoryGirdSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	UUserWidget::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
+	
+	UInventoryDDO* DDO = Cast< UInventoryDDO>(UWidgetBlueprintLibrary::CreateDragDropOperation(UInventoryDDO::StaticClass()));
+	if (DDO && itemPointer)
+	{
+		DDO->Payload = this;
+		DDO->DefaultDragVisual = GetInventorySlotWidget();
+		IInventorySlotInterface::Execute_SetSlotData(DDO, *itemPointer);
+		IInventorySlotInterface::Execute_SetSlotIndex(DDO, inventoryRow, inventoryCol);
+	}
+	OutOperation = DDO;
 }
 
 bool UInventoryGirdSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	if (UInventoryGirdSlotWidget* GridSlot = Cast< UInventoryGirdSlotWidget>(InOperation->Payload))
+	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
 	{
-		return SwapSlot(GridSlot);
+		return SwapSlot_Index(DDO->GetSlotRow(), DDO->GetSlotCol());
 	}
 	return UUserWidget::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
 }

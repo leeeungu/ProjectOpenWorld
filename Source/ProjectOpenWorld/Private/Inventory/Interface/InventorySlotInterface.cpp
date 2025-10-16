@@ -2,12 +2,12 @@
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
 
 FInventorySlot::FInventorySlot(UItemPrimaryDataAsset* DataAsset) :
-	ItemDataAsset{}, ItemCount{}, TotalWeight{}
+	ItemDataAsset{}, ItemCount{}, ItemTotalWeights{}
 {
 	ItemDataAsset = DataAsset;
 	ItemCount = 1;
 	if (DataAsset)
-		TotalWeight = DataAsset->GetItemWeight();
+		ItemTotalWeights = DataAsset->GetItemWeight() * ItemCount;
 }
 
 bool FInventorySlot::operator==(const FInventorySlot& sDst)

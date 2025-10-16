@@ -19,17 +19,20 @@ protected:
 	TSubclassOf<UInventorySlotWidget> inventorySlotClass{};
 	TSoftObjectPtr<UInventorySlotWidget> inventorySlotUW{};
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
 	int inventoryRow{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
 	int inventoryCol{};
 	const FInventorySlot* itemPointer{};
 public:
 	UInventoryGirdSlotWidget(const FObjectInitializer& ObjectInitializer);
 	virtual void SetSlotData_Implementation(const FInventorySlot& Data) override;
+	virtual void SetSlotIndex_Implementation(int Row, int Col) override;
 
-	void Init_RowCol(int Row, int Col);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(UInventoryGirdSlotWidget* OtherSlot);
-
+	bool SwapSlot_Index(int Row, int Col);
+	
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE UInventorySlotWidget* GetInventorySlotWidget() const;
 protected:

@@ -17,11 +17,11 @@ public:
 
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
-	TSoftObjectPtr<UItemPrimaryDataAsset> ItemDataAsset{};
+	TObjectPtr<UItemPrimaryDataAsset> ItemDataAsset{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	int ItemCount{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
-	float TotalWeight{};
+	float ItemTotalWeights{};
 
 	bool isEmpthySlot = true;
 
@@ -43,4 +43,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 	void SetSlotData(const FInventorySlot& Data);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
+	void SetSlotIndex(int Row, int Col);
 };

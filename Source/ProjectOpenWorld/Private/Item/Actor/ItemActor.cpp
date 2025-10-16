@@ -23,7 +23,7 @@ void AItemActor::BeginPlay()
 
 void AItemActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 {
-	ItemData.LoadSynchronous();
+	//ItemData.LoadSynchronous();
 	if (ToolTipWidget && ItemData)
 	{
 		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemData->GetItemName());

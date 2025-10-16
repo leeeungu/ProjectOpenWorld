@@ -45,10 +45,16 @@ public:
 
 
 	bool GetInventorySlotData(int Row, int Col, const  FInventorySlot*& SlotData);
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	FORCEINLINE bool GetSlotData (int Row, int Col,  FInventorySlot& SlotData) const;
 
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE int GetInventoryRow() const { return inventoryRow; }
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE int GetInventoryCol() const { return inventoryCol; }
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE float GetInventoryWeight() const { return totalInventoryWeight; }
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight; }
 protected:
 	virtual void BeginPlay() override;

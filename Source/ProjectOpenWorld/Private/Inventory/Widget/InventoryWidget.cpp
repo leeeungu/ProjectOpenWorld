@@ -30,7 +30,7 @@ void UInventoryWidget::NativePreConstruct()
 				if (InventorySlot)
 				{
 					inventoryGridPanel->AddChildToUniformGrid(InventorySlot, i, k);
-					InventorySlot->Init_RowCol(i, k);
+					IInventorySlotInterface::Execute_SetSlotIndex(InventorySlot, i, k);
 				}
 			}
 		}
@@ -48,7 +48,7 @@ void UInventoryWidget::NativePreConstruct()
 			if (InventorySlot)
 			{
 				inventoryGridPanel->AddChildToUniformGrid(InventorySlot, i, k);
-				InventorySlot->Init_RowCol(i, k);
+				IInventorySlotInterface::Execute_SetSlotIndex(InventorySlot, i, k);
 			}
 		}
 	}
@@ -71,6 +71,7 @@ void UInventoryWidget::UpdateInventorySlot(int Row, int Col)
 		TScriptInterface<IInventorySlotInterface> SlotData = TScriptInterface< IInventorySlotInterface>(inventoryGridPanel->GetChildAt(Row* inventoryComponent ->GetInventoryCol() + Col));
 		if (SlotData && Data)
 		{
+			IInventorySlotInterface::Execute_SetSlotIndex(SlotData.GetObject(), Row, Col);
 			IInventorySlotInterface::Execute_SetSlotData(SlotData.GetObject(), *Data);
 		}
 	}

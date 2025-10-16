@@ -19,7 +19,7 @@ protected:
 	TSubclassOf<UInventorySlotWidget> InventorySlotWidget{};
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "ItemData")
-	TSoftObjectPtr<UTexture2D> ItemSlotImage{};
+	TObjectPtr<UTexture2D> ItemSlotImage{};
 public:
 	UItemPrimaryDataAsset();
 	UFUNCTION(BlueprintPure, Category = "ItemData")
@@ -30,7 +30,7 @@ public:
 	TSubclassOf<UInventorySlotWidget> GetInventorySlotWidgetClass() const { return InventorySlotWidget; }
 
 	UFUNCTION(BlueprintPure, Category = "ItemData")
-	TSoftObjectPtr<UTexture2D> GetItemSlotImage() const { return ItemSlotImage; }
+	UTexture2D* GetItemSlotImage() const { return ItemSlotImage; }
 
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };

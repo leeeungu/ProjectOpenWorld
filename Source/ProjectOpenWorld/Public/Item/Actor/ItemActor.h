@@ -12,8 +12,8 @@ class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterf
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
-	TSoftObjectPtr<UItemPrimaryDataAsset> ItemData{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
+	TObjectPtr<UItemPrimaryDataAsset> ItemData{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
 	TSubclassOf<UUserWidget> ToolTipWidgetClass{};
