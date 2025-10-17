@@ -1,0 +1,52 @@
+﻿#include "Player/Widget/PlayerStatusProgress.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+
+void UPlayerStatusProgress::NativePreConstruct()
+{
+	UUserWidget::NativePreConstruct();
+	if (StatusText)
+	{
+		StatusText->SetText(FText::FromString(TEXT("0")));
+	}
+	if (MaxStatusText)
+	{
+		MaxStatusText->SetText(FText::FromString(TEXT(" / 1")));
+	}
+	if (StatusProgress)
+	{
+		StatusProgress->SetFillColorAndOpacity(ProgressColor);
+	}
+}
+
+void UPlayerStatusProgress::SetStatusProgress(float* Value, float* MaxValue)
+{
+	StatusRef = Value;
+	MaxStatusRef = MaxValue;
+}
+
+void UPlayerStatusProgress::UpdateStatus()
+{
+	if (!StatusRef || !MaxStatusRef)
+		return;
+
+	if (StatusProgress)
+	{
+		StatusProgress->SetPercent(GetStatusPercent());
+	}
+	if (StatusText)
+	{
+		StatusText->SetText(FText::Format(FText::FromString(TEXT("{0}")), (int)*StatusRef));
+	}
+	if (MaxStatusText)
+	{
+		MaxStatusText->SetText(FText::Format(FText::FromString(TEXT(" / {0}")), (int)*MaxStatusRef));
+	}
+}
+
+float UPlayerStatusProgress::GetStatusPercent() const
+{
+	if (StatusRef && MaxStatusRef)
+		return *StatusRef / *MaxStatusRef;
+	return 0.4f;
+}

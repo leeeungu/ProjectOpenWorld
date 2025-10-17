@@ -50,6 +50,8 @@ ABasePlayer::ABasePlayer()
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 
 	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponent>(TEXT("BuildingAssist"));
+
+	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -60,6 +62,24 @@ void ABasePlayer::Tick(float DeltaTime)
 void ABasePlayer::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
+{
+	if (StatusArray.IsValidIndex((uint8)StatusType))
+	{
+		StatusArray[(uint8)StatusType] = Value;
+	}
+}
+
+bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result)
+{
+	if (StatusArray.IsValidIndex((uint8)StatusType))
+	{
+		Result = StatusArray[(uint8)StatusType];
+		return true;
+	}
+	return false;
 }
 
 void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

@@ -6,6 +6,8 @@
 #include "InventoryComponent.generated.h"
 
 class UItemPrimaryDataAsset;
+class ABasePlayer;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 
 
@@ -21,14 +23,15 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	float totalInventoryWeight{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
-	float maxInventoryWeight = 300.0f;
+	float* maxInventoryWeight;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "ItemData")
 	int inventoryRow = 7;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "ItemData")
 	int inventoryCol = 6;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	int inventorySize{};
+
+	TSoftObjectPtr<ABasePlayer> PlayerCharacter{};
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnUpdateInventory	onUpdateInventory{};
@@ -55,8 +58,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE float GetInventoryWeight() const { return totalInventoryWeight; }
 	UFUNCTION(BlueprintPure, Category = "Inventory")
-	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight; }
+	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight ? *maxInventoryWeight : 1.0f; }
 protected:
 	virtual void BeginPlay() override;
+
+	void UpdateInventoryWeight(float AddValue);
 		
 };

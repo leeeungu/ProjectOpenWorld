@@ -15,11 +15,28 @@ class UBuildingAssistComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
+UENUM(BlueprintType)
+enum class EStatusType : uint8
+{
+	None UMETA(Hidden),
+	Hp,
+	MaxHp,
+	Shield,
+	MaxShield,
+	Health,
+	MaxHealth,
+	Stamina,
+	Attack,
+	Defense,
+	WorkSpeed,
+	MaxWeight,
+	EnumMax UMETA(Hidden)
+};
+
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 {
 	GENERATED_BODY()
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> CameraBoom{};
 
@@ -28,9 +45,8 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	TObjectPtr< UCameraComponent> FollowCamera{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; //BuildingAssist
+	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
 
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext{};
 
@@ -66,6 +82,9 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	UInteractionComponent* InteractionComponent{};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
+	TArray<float> StatusArray{};
 public:
 	ABasePlayer();
 
@@ -109,5 +128,13 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
+	FORCEINLINE  float* GetStatusRef(EStatusType StatusType) {
+		return  StatusArray.IsValidIndex((uint8)StatusType) ? &StatusArray[(uint8)StatusType] : &StatusArray[0];
+	} 
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
+	void SetStatus(EStatusType StatusType, float Value);
+	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
+	bool GetStatus(EStatusType StatusType, float& Result);
 };
 

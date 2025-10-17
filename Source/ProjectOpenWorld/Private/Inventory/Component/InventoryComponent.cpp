@@ -1,5 +1,7 @@
 ﻿#include "Inventory/Component/InventoryComponent.h"
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
+#include "GameFramework/PlayerController.h"
+#include "Player/Character/BasePlayer.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -8,8 +10,13 @@ UInventoryComponent::UInventoryComponent()
 
 bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount)
 {
-	if (!ItemData || maxInventoryWeight - (ItemData->GetItemWeight() * ItemCount) < totalInventoryWeight)
+	if (!ItemData || !maxInventoryWeight)
 		return false;
+
+	if (*maxInventoryWeight - (ItemData->GetItemWeight() * ItemCount) < totalInventoryWeight)
+	{
+
+	}
 
 	float ItemWeights = ItemData->GetItemWeight() * ItemCount;
 	totalInventoryWeight += ItemWeights;
@@ -102,6 +109,21 @@ void UInventoryComponent::BeginPlay()
 	{
 		inventoryViewArray[i] = &inventoryArray[i];
 	}
-	
+	APlayerController* Controller = Cast<APlayerController>(GetOwner());
+	if (!Controller)
+		return;
+	if(PlayerCharacter = Cast< ABasePlayer>(Controller->GetPawn()))
+	{
+		maxInventoryWeight = PlayerCharacter->GetStatusRef(EStatusType::MaxWeight);
+	}
+}
+
+void UInventoryComponent::UpdateInventoryWeight(float AddValue)
+{
+	//
+	//if (*maxInventoryWeight - (ItemData->GetItemWeight() * ItemCount) < totalInventoryWeight)
+	//{
+	//
+	//}
 }
 

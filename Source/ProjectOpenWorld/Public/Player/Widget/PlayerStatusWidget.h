@@ -4,53 +4,60 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerStatusWidget.generated.h"
 
-class UPlayerStatSlot;
-class UPlayerStatProgress;
+class UPlayerStatusSlot;
+class UPlayerStatusProgress;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerStatusWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatProgress> ProgressShield{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatProgress> ProgressHp{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatProgress> ProgressHealth{};
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatSlot> SlotMaxHp{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatSlot> SlotStamina{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatSlot> SlotAttack{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatSlot> SlotDefense{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatSlot> SlotWorkSpeed{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStat", meta = (BindWidgetOption))
-	TObjectPtr<UPlayerStatSlot> SlotMaxWeight{};
-
 public:
-	enum EStatusType
+	enum EStatusProgressType
 	{
-		NONE UMETA(Hidden),
+		ProgressNone,
 		Hp,
-		MaxHp,
 		Shield,
-		MaxShield,
 		Health,
-		MaxHealth,
-		
+		ProgressMax
+	};
+	enum EStatusSlotType
+	{
+		SlotNone,
+		MaxHp,
 		Stamina,
 		Attack,
 		Defense,
 		WorkSpeed,
 		MaxWeight,
+		SlotMax
 	};
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusProgress> ProgressHp{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusProgress> ProgressShield{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusProgress> ProgressHealth{};
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusSlot> SlotMaxHp{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusSlot> SlotStamina{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusSlot> SlotAttack{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusSlot> SlotDefense{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusSlot> SlotWorkSpeed{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UPlayerStatusSlot> SlotMaxWeight{};
 
-	void SetMaxHP(EStatusType StatType, float* Value) {}
+public:
+	UPlayerStatusWidget(const FObjectInitializer& ObjectInitializer);
+
+	void SetStatusProgress(EStatusProgressType StatusType, float& Value, float& MaxValue);
+	void SetStatusSlot(EStatusSlotType StatusType, float& Value);
+
+protected:
+	virtual void NativeConstruct() override;
 };
