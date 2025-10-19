@@ -10,6 +10,9 @@
 #include "InputActionValue.h"
 #include "Interaction/Component/InteractionComponent.h"
 #include "Building/BuildingAssistComponent.h"
+#include "Player/Component/PlayerAnimationComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Player/Animation/PlayerAnimInstance.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -51,12 +54,26 @@ ABasePlayer::ABasePlayer()
 
 	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponent>(TEXT("BuildingAssist"));
 
+	PlayerAnimationComponent = CreateDefaultSubobject<UPlayerAnimationComponent>(TEXT("PlayerAnimationComponent"));
 	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
+	PlayerMoveFunc = &ABasePlayer::MoveTravel;
 }
 
 void ABasePlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ABasePlayer::StartClimb()
+{
+	if (PlayerAnimationComponent->StartClimb())
+		PlayerMoveFunc = &ABasePlayer::MoveClimb;
+}
+
+void ABasePlayer::StartTravel()
+{
+	if(PlayerAnimationComponent->StartTravel())
+		PlayerMoveFunc = &ABasePlayer::MoveTravel;
 }
 
 void ABasePlayer::BeginPlay()
@@ -96,11 +113,12 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ABasePlayer::OnJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayer::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ABasePlayer::OnMoveCompleted);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayer::Look);
@@ -125,9 +143,59 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ABasePlayer::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
+	if (PlayerMoveFunc)
+	{
+		(this->*PlayerMoveFunc)(Value);
+	}
+}
+void ABasePlayer::OnMoveCompleted(const FInputActionValue& Value)
+{
+	if (PlayerMoveFunc == &ABasePlayer::MoveClimb)
+	{
+		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			Instance->SetClimbSpeed(0);
+		}
+	}
+}
+
+void ABasePlayer::MoveClimb(const FInputActionValue& Value)
+{
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	//if (GetCharacterMovement() && GetCharacterMovement()->GetCurrentAcceleration().Z < 10.f)
+	//{
+	//	GetCharacterMovement()->StopMovementImmediately();
+	//}
+	if (!PlayerAnimationComponent->IsClimbing())
+	{
+		StartTravel();
+		return;
+	}
+	if (GetMesh() != nullptr)
+	{
+		FVector Right = GetActorRightVector();
+		FVector Up = GetActorUpVector();
+		FVector MoveDir = (Right * MovementVector.X + Up * MovementVector.Y).GetSafeNormal();
+		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			double DotAngle  = FMath::RadiansToDegrees(FMath::Acos(FVector2D::DotProduct(FVector2D(0, 1), MovementVector.GetSafeNormal())));
+			double Angle = FVector2D::DotProduct(FVector2D(1, 0), MovementVector.GetSafeNormal()) > 0 ? DotAngle : -DotAngle;
+			Instance->SetClimbDirection(Angle);
+			Instance->SetClimbSpeed(MovementVector.GetSafeNormal().Size());
+		}
+		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
+	}
+}
+
+void ABasePlayer::MoveTravel(const FInputActionValue& Value)
+{	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
+	if (PlayerAnimationComponent->IsClimbing())
+	{
+		StartClimb();
+		return;
+	}
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
@@ -185,10 +253,8 @@ void ABasePlayer::OnInteractionEnd(const FInputActionValue& Value)
 
 void ABasePlayer::OnActionExit(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Error, TEXT("OnActionExit"));
 	if (BuildAssistComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BuildAssistComponent"));
 		BuildAssistComponent->EndBuilding();
 	}
 }
@@ -224,5 +290,18 @@ void ABasePlayer::OnActionMouseL(const FInputActionValue& Value)
 	{
 		BuildAssistComponent->SpawnBuilding();
 		BuildAssistComponent->EndBuilding();
+	}
+}
+
+
+void ABasePlayer::OnJump()
+{
+	if (PlayerAnimationComponent && PlayerAnimationComponent->CanClimb())
+	{
+		PlayerAnimationComponent->StartClimb();
+	}
+	else
+	{
+		Jump();
 	}
 }

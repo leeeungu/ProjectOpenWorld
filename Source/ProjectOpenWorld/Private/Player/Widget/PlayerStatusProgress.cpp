@@ -1,6 +1,7 @@
 ﻿#include "Player/Widget/PlayerStatusProgress.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 void UPlayerStatusProgress::NativePreConstruct()
 {
@@ -16,6 +17,11 @@ void UPlayerStatusProgress::NativePreConstruct()
 	if (StatusProgress)
 	{
 		StatusProgress->SetFillColorAndOpacity(ProgressColor);
+	}
+
+	if (StatusImage)
+	{
+		StatusImage->SetBrushFromTexture(StatusTexture);
 	}
 }
 

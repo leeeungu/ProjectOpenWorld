@@ -12,6 +12,7 @@ class UInputAction;
 struct FInputActionValue;
 class UInteractionComponent;
 class UBuildingAssistComponent;
+class UPlayerAnimationComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -44,8 +45,10 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr< UCameraComponent> FollowCamera{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr < UPlayerAnimationComponent>	PlayerAnimationComponent{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext{};
@@ -85,15 +88,25 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	TArray<float> StatusArray{};
+
+	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
 public:
 	ABasePlayer();
 
 
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable )
+	void StartClimb();
+	UFUNCTION(BlueprintCallable )
+	void StartTravel();
 protected:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
+	void OnMoveCompleted(const FInputActionValue& Value);
+	void MoveClimb(const FInputActionValue& Value);
+	void MoveTravel(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
@@ -115,6 +128,8 @@ protected:
 	void OnActionMouseR(const FInputActionValue& Value);
 	UFUNCTION()
 	void OnActionMouseL(const FInputActionValue& Value);
+
+	void OnJump();
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -128,6 +143,10 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
+
+	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
+	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
+	
 	FORCEINLINE  float* GetStatusRef(EStatusType StatusType) {
 		return  StatusArray.IsValidIndex((uint8)StatusType) ? &StatusArray[(uint8)StatusType] : &StatusArray[0];
 	} 

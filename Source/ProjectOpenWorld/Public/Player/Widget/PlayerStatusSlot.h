@@ -7,7 +7,7 @@
 
 class UTextBlock;
 class UImage;
-
+class UTexture2D;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerStatusSlot : public UUserWidget, public IStatusUpdateInterface
@@ -23,6 +23,8 @@ protected:
 	TObjectPtr< UImage> StatusImage{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
 	FText StatusName{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
+	TObjectPtr < UTexture2D> StatusTexture{};
 protected:
 	virtual void NativePreConstruct() override;
 public:

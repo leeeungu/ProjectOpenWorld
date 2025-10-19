@@ -7,6 +7,7 @@
 
 class UProgressBar;
 class UTextBlock;
+class UImage;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerStatusProgress : public UUserWidget, public IStatusUpdateInterface
@@ -21,8 +22,14 @@ protected:
 	TObjectPtr< UTextBlock> StatusText{};
 	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr< UTextBlock> MaxStatusText{};
+
+	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidgetOptional))
+	TObjectPtr< UImage> StatusImage{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
 	FLinearColor ProgressColor{};
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
+	TObjectPtr < UTexture2D> StatusTexture{};
 protected:
 	virtual void NativePreConstruct() override;
 public:

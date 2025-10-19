@@ -7,6 +7,10 @@ void UPlayerStatusSlot::NativePreConstruct()
 	UUserWidget::NativePreConstruct();
 	if (StatusNameText)
 		StatusNameText->SetText(StatusName);
+	if (StatusImage)
+	{
+		StatusImage->SetBrushFromTexture(StatusTexture);
+	}
 }
 
 void UPlayerStatusSlot::UpdateStatus()
