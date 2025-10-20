@@ -169,6 +169,10 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 	if (!PlayerAnimationComponent->IsClimbing())
 	{
 		StartTravel();
+		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			Instance->SetClimbSpeed(0);
+		}
 		return;
 	}
 	if (GetMesh() != nullptr)
@@ -183,6 +187,13 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 			Instance->SetClimbDirection(Angle);
 			Instance->SetClimbSpeed(MovementVector.GetSafeNormal().Size());
 		}
+		const FHitResult* pHit = PlayerAnimationComponent->GetPelvisHit();
+		//FVector Position = pHit->ImpactPoint + pHit->ImpactNormal * GetCapsuleComponent()->GetScaledCapsuleRadius();
+		//float Dis = GetCapsuleComponent()->GetScaledCapsuleRadius();
+		//if (pHit->Distance < GetCapsuleComponent()->GetScaledCapsuleRadius() * 2)
+		//{
+		//}
+			SetActorLocation(PlayerAnimationComponent->GetAVGPosition() + pHit->ImpactNormal * GetCapsuleComponent()->GetScaledCapsuleRadius());
 		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
 	}
 }

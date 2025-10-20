@@ -29,6 +29,7 @@ void ABuildingActor::OnEndDetected_Implementation(APlayerController* pPlayer)
 	{
 		BuildingWidgetSubsystem->RemoveBuildTimeWidget();
 	}
+	GetBuildingProgress()->StopBuilding();
 }
 
 void ABuildingActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
