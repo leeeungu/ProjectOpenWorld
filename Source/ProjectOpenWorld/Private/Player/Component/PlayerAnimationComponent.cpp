@@ -18,18 +18,17 @@ void UPlayerAnimationComponent::BeginPlay()
 	IgnoreArray.Add(OwnerCharacter);
 }
 
-bool UPlayerAnimationComponent::ClimbTick(float DeltaTime)
+bool UPlayerAnimationComponent::ClimbLineCheck()
 {
 	bCanClimb = false;
 
 	FVector ForwardVector = OwnerCharacter->GetActorForwardVector();
 	int i{};
-	ClimbData.AvgNormal = FVector::ZeroVector;
-	ClimbData.AvgPosition = FVector::ZeroVector;
-	int Count{};
 	for (const FName* Socket : ClimbData.arrSocekt)
 	{
-		FVector SocketLocation = OwnerCharacter->GetMesh()->GetSocketLocation(*Socket);
+		FVector SocketLocation = OwnerCharacter->GetActorLocation();
+		if (Socket)
+			SocketLocation = OwnerCharacter->GetMesh()->GetSocketLocation(*Socket);
 		FVector Start = SocketLocation - ForwardVector * ClimbData.StartOffset;
 		FVector End = SocketLocation + ForwardVector * ClimbData.EndOffset;
 		FHitResult& rHit = ClimbData.arrHitResult[i];
@@ -37,61 +36,16 @@ bool UPlayerAnimationComponent::ClimbTick(float DeltaTime)
 			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, rHit, true))
 		{
 			bCanClimb = true;
-			ClimbData.AvgNormal += rHit.ImpactNormal;
-			ClimbData.AvgPosition += rHit.ImpactPoint;
-			Count++;
 		}
 		i++;
 	}
-	ClimbData.AvgNormal.Normalize();
-	ClimbData.AvgPosition = ClimbData.AvgPosition / Count;
-	ClimbData.AvgPosition += ClimbData.AvgNormal * OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
-	//if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), OwnerCharacter->GetActorLocation(), OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * -70,
-	//		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, ClimbDownHit, true))
-	//	{
-	//
-	//		if (FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(OwnerCharacter->GetActorUpVector(), ClimbDownHit.ImpactNormal))) < 30.f)
-	//		{
-	//			bCanClimbDown = false;
-	//		}
-	//	}
-
-	//bHeadHit = false;
-	//if (UKismetSystemLibrary::SphereTraceSingle(GetWorld(), OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * 60, OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * 60 + OwnerCharacter->GetActorForwardVector() * 100,
-	//	30.0f,
-	//	UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, ClimbHeadHit, true))
-	//{
-	//	bCanClimb = true;
-	//	bHeadHit = true;
-	//}
-	//if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), OwnerCharacter->GetActorLocation(), OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * 150,
-	//	UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, ClimbForwardHit, true))
-	//{
-	//	bCanClimb = true;
-	//	bCanClimbDown = true;
-	//	if (bHeadHit && ClimbHeadHit.GetActor() != ClimbForwardHit.GetActor())
-	//	{
-	//		ClimbForwardHit = ClimbHeadHit;
-	//	}
-	//	
-	//	bCanClimbUp = true;
-	//	if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), OwnerCharacter->GetActorLocation(), OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * +90,
-	//		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, ClimbUpHit, true))
-	//	{
-	//		bCanClimbUp = false;
-	//	}
-	//}
-	//else if (bCanClimb && EAnimationState::Climb != AnimationState)
-	//{
-	//	ClimbForwardHit = ClimbHeadHit;
-	//}
 	return bCanClimb;
 }
 
 void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (ClimbTick(DeltaTime))
+	//if (ClimbTick(DeltaTime))
 	{
 		/*if (!bCanClimbDown && EAnimationState::Climb == AnimationState)
 		{
@@ -100,23 +54,23 @@ void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		*/
 		if (EAnimationState::Climb == AnimationState)
 		{
-			FRotator Rotation = OwnerCharacter->GetActorRotation();
-			Rotation.Roll = 0.0f;
-			FRotator NewRotation = (ClimbData.AvgNormal * -1).Rotation();
-			NewRotation.Roll = 0.0f;
-			OwnerCharacter->SetActorRotation(FMath::RInterpTo(Rotation, NewRotation, DeltaTime, 20.0f));
+			
+			
+			
+			
+			
 		}
 
 	}
-	else if (EAnimationState::Climb == AnimationState)
-	{
-		StartTravel();
-	}
+	//if (EAnimationState::Climb == AnimationState)
+	//{
+	//	StartTravel();
+	//}
 }
 
 bool UPlayerAnimationComponent::StartClimb()
 {
-	if (!OwnerCharacter || !bCanClimb)
+	if (!OwnerCharacter || !ClimbLineCheck())
 	{
 		return false;
 	}
@@ -146,6 +100,93 @@ bool UPlayerAnimationComponent::StartTravel()
 	OwnerCharacter->SetActorRotation(NewRotation);
 	// PlayerMoveFunc = &ABasePlayer::MoveTravel;
 	return true;
+}
+
+FVector UPlayerAnimationComponent::GetLeftNoraml() const
+{
+	const FHitResult* ArHits[4] =
+	{
+		&ClimbData.arrHitResult[SClimbRayData::ELHNext],
+		&ClimbData.arrHitResult[SClimbRayData::ERHand],
+		&ClimbData.arrHitResult[SClimbRayData::ELFNext],
+		&ClimbData.arrHitResult[SClimbRayData::ERFoot]
+	};
+
+	FVector P1 = ArHits[0]->ImpactPoint;
+	FVector P2 = ArHits[1]->ImpactPoint;
+	FVector P3 = ArHits[2]->ImpactPoint;
+
+	FVector V1 = P2 - P1;
+	FVector V2 = P3 - P1;
+
+	FVector Normal = FVector::CrossProduct(V1, V2);
+
+	return Normal.GetSafeNormal();
+}
+
+FVector UPlayerAnimationComponent::GetCenterNoraml() const
+{
+	const FHitResult* ArHits[4] = {
+		&ClimbData.arrHitResult[SClimbRayData::ELHand],
+		&ClimbData.arrHitResult[SClimbRayData::ERHand],
+		&ClimbData.arrHitResult[SClimbRayData::ELFoot],
+		&ClimbData.arrHitResult[SClimbRayData::ERFoot]
+	};
+
+	FVector P1 = ArHits[0]->ImpactPoint;
+	FVector P2 = ArHits[1]->ImpactPoint;
+	FVector P3 = ArHits[2]->ImpactPoint;
+
+	FVector V1 = P2 - P1;
+	FVector V2 = P3 - P1;
+
+	FVector Normal = FVector::CrossProduct(V1, V2);
+
+	return Normal.GetSafeNormal();
+}
+
+FVector UPlayerAnimationComponent::GetRightNoraml() const
+{
+	const FHitResult* ArHits[4] = {
+		&ClimbData.arrHitResult[SClimbRayData::ERHNext],
+		&ClimbData.arrHitResult[SClimbRayData::ELHand],
+		&ClimbData.arrHitResult[SClimbRayData::ERFNext],
+		&ClimbData.arrHitResult[SClimbRayData::ELFoot]
+	};
+	FVector P1 = ArHits[0]->ImpactPoint;
+	FVector P2 = ArHits[1]->ImpactPoint;
+	FVector P3 = ArHits[2]->ImpactPoint;
+
+	FVector V1 = P2 - P1;
+	FVector V2 = P3 - P1;
+
+	FVector Normal = FVector::CrossProduct(V1, V2);
+
+	return -Normal.GetSafeNormal();
+}
+
+FVector UPlayerAnimationComponent::GetAVGPosition() const
+{
+	//const FHitResult* ArHits[4] = {
+	//	&ClimbData.arrHitResult[SClimbRayData::ELHand],
+	//	&ClimbData.arrHitResult[SClimbRayData::ERHand],
+	//	&ClimbData.arrHitResult[SClimbRayData::ELFoot],
+	//	&ClimbData.arrHitResult[SClimbRayData::ERFoot]
+	//};
+	if (ClimbData.arrHitResult[SClimbRayData::ERoot].bBlockingHit == false)
+		return OwnerCharacter->GetActorLocation();
+	FVector Position  = ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactPoint + 
+		ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactNormal * OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
+	//int Count{ };
+	//for (const FHitResult* Hit : ArHits)
+	//{
+	//	if (Hit->bBlockingHit)
+	//	{
+	//		Position += Hit->ImpactPoint;
+	//		Count++;
+	//	}
+	//}
+	return Position ;
 }
 
 //void UPlayerAnimationComponent::MoveClimb(const FInputActionValue& Value)
