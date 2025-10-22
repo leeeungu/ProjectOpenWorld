@@ -17,7 +17,7 @@ void UInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 		InteractionTarget = nullptr;
 		bIsInteraction = false;
 	}
-	if (!PlayerController || !PlayerCharacter)
+	if (!PlayerController || !PlayerCharacter || bIsInteraction)
 		return;
 	FHitResult HitResult{};
 	if (CameraManager)
@@ -29,10 +29,10 @@ void UInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 		buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 
 		buildPointIgnore.Add(PlayerCharacter.Get());
-		if (UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(),
+		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * DetectionDistance + CameraManager->GetCameraLocation(),
-			200.0f,
+			//200.0f,
 			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true))
 		{
 			if (IInteractionInterface* Interaction = Cast<IInteractionInterface>(HitResult.GetActor()))
