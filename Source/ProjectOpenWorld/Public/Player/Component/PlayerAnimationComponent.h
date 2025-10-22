@@ -74,11 +74,12 @@ protected:
 
 		FHitResult arrHitResult[14]{};
 		FName* arrSocekt[14]{};
-		int ArraySize = 14;
-		float StartOffset = 40;
+		int ArraySize = 6;
+		float StartOffset = 70;
 		float EndOffset = 150;
 		FVector AvgNormal{};
 		FVector AvgPosition{};
+		FVector ArrNormal[8]{};
 	};
 
 	EAnimationState AnimationState{};
@@ -104,15 +105,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	bool StartTravel();
 
-	//void MoveClimb(const FInputActionValue& Value);
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	FVector LeftHandNormal() const;
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	FVector RightHandNormal() const;
 
-	FVector GetLeftNoraml() const;
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	FVector LeftFootNormal() const;
+
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	FVector RightFootNormal() const;
 	FVector GetCenterNoraml() const;
-	FVector GetRightNoraml() const;
-	bool CanLeftHandClimb() const { return ClimbData.arrHitResult[SClimbRayData::ELHand].bBlockingHit; }
-	bool CanRightHandClimb() const { return ClimbData.arrHitResult[SClimbRayData::ERHand].bBlockingHit; }
-	bool CanLeftFootClimb() const { return ClimbData.arrHitResult[SClimbRayData::ELFoot].bBlockingHit; }
-	bool CanRightFootClimb() const { return ClimbData.arrHitResult[SClimbRayData::ERFoot].bBlockingHit; }
 	const FHitResult*  GetPelvisHit() const { return &ClimbData.arrHitResult[0];}
 	FVector  GetAVGPosition() const;
 	bool ClimbLineCheck();
