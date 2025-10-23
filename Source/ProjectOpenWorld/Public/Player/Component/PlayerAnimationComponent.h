@@ -87,6 +87,8 @@ protected:
 
 	SClimbRayData ClimbData{};
 	bool bCanClimb{ false };
+	bool bEmpthyUp{ false };
+	bool bClimbing{};
 	TArray<AActor*> IgnoreArray{};
 public:
 	UPlayerAnimationComponent();
@@ -118,7 +120,11 @@ public:
 	FVector GetCenterNoraml() const;
 	const FHitResult*  GetPelvisHit() const { return &ClimbData.arrHitResult[0];}
 	FVector  GetAVGPosition() const;
+	FVector  GetAVGNormal() const;
 	bool ClimbLineCheck();
+
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	bool IsEmpthUp() const { return bEmpthyUp;	}
 protected:
 	virtual void BeginPlay() override;
 

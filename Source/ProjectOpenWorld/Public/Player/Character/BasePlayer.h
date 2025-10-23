@@ -89,6 +89,8 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	TArray<float> StatusArray{};
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ClimbMontage{};
 	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
 public:
 	ABasePlayer();

@@ -59,9 +59,18 @@ ABasePlayer::ABasePlayer()
 	PlayerMoveFunc = &ABasePlayer::MoveTravel;
 }
 
+//MOVE_Walking	UMETA(DisplayName = "Walking"), 1
+//MOVE_NavWalking	UMETA(DisplayName = "Navmesh Walking"),2
+//MOVE_Falling	UMETA(DisplayName = "Falling"),3 // jump falling 전부
+//MOVE_Swimming	UMETA(DisplayName = "Swimming"),4
+//MOVE_Flying		UMETA(DisplayName = "Flying"),5
+//MOVE_Custom		UMETA(DisplayName = "Custom"),6
+
+
 void ABasePlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UE_LOG(LogTemp, Warning, TEXT("%d"), GetCharacterMovement()->MovementMode);
 }
 
 void ABasePlayer::StartClimb()
@@ -171,7 +180,13 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		}
 		return;
 	}
-	;
+	if (MovementVector.Y > 0.9f && PlayerAnimationComponent->IsEmpthUp())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(ClimbMontage);
+		StartTravel();
+		return;
+	}
+
 	if (GetMesh() != nullptr)
 	{
 		FVector Right = GetActorRightVector();
@@ -195,8 +210,9 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		}
 		else if (Dis > 67.0f)
 		{
-			AddActorWorldOffset(Hit->Normal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
+			AddActorWorldOffset(Hit->Normal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.0f);
 		}
+		
 		FRotator Rotation = GetActorRotation();
 		Rotation.Roll = 0.0f;
 		FRotator NewRotation = (Normal * -1).Rotation();
@@ -316,11 +332,7 @@ void ABasePlayer::OnActionMouseL(const FInputActionValue& Value)
 
 void ABasePlayer::OnJump()
 {
-	if (PlayerAnimationComponent && PlayerAnimationComponent->CanClimb())
-	{
-		PlayerAnimationComponent->StartClimb();
-	}
-	else
+	if (!PlayerAnimationComponent || !PlayerAnimationComponent->StartClimb())
 	{
 		Jump();
 	}
