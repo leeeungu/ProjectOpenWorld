@@ -24,28 +24,30 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 {
 	bCanClimb = false;
 	bool AllHit = true;
-	FVector ForwardVector = OwnerCharacter->GetActorForwardVector();
-	int i{};
-	for (const FName* Socket : ClimbData.arrSocekt)
 	{
-		FVector SocketLocation = OwnerCharacter->GetActorLocation();
-		if (Socket)
-			SocketLocation = OwnerCharacter->GetMesh()->GetSocketLocation(*Socket);
-		FVector Start = SocketLocation - ForwardVector * ClimbData.StartOffset;
-		FVector End = SocketLocation + ForwardVector * ClimbData.EndOffset;
-		FHitResult& rHit = ClimbData.arrHitResult[i];
-		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), Start, End,
-			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, rHit, true))
+		FVector ForwardVector = OwnerCharacter->GetActorForwardVector();
+		int i{};
+		for (const FName* Socket : ClimbData.arrSocekt)
 		{
-			bCanClimb = true;
+			FVector SocketLocation = OwnerCharacter->GetActorLocation();
+			if (Socket)
+				SocketLocation = OwnerCharacter->GetMesh()->GetSocketLocation(*Socket);
+			FVector Start = SocketLocation - ForwardVector * ClimbData.StartOffset;
+			FVector End = SocketLocation + ForwardVector * ClimbData.EndOffset;
+			FHitResult& rHit = ClimbData.arrHitResult[i];
+			if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), Start, End,
+				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, rHit, true))
+			{
+				bCanClimb = true;
+			}
+			else
+			{
+				AllHit = false;
+			}
+			i++;
+			if (i >= 6)
+				break;
 		}
-		else
-		{
-			AllHit = false;
-		}
-		i++;
-		if (i >= 6)
-			break;
 	}
 	if (bClimbing)
 	{
@@ -91,6 +93,40 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 			{
 				AllHit = false;
 			}
+		}
+		{ // 모서리 처리
+		/*	SClimbRayData::ESocketName Names[2] = { SClimbRayData::ELHand , SClimbRayData::ELFoot };
+			FHitResult rHits[2]{};
+			bool bHasLeft{};
+			int i{};
+			for (SClimbRayData::ESocketName SocektType : Names)
+			{
+				FName* Socket = ClimbData.arrSocekt[(int)SocektType];
+				FVector SocketLocation = OwnerCharacter->GetActorLocation();
+				if (Socket)
+					SocketLocation = OwnerCharacter->GetMesh()->GetSocketLocation(*Socket);
+				FVector Start = SocketLocation - OwnerCharacter->GetActorForwardVector() * ClimbData.StartOffset;
+				FVector End = Start + OwnerCharacter->GetActorRightVector() * -40.0f+ OwnerCharacter->GetActorForwardVector() * ClimbData.EndOffset;
+				FHitResult* rHit = &rHits[i];
+				if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), Start, End,
+					UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, *rHit, true))
+				{
+					bHasLeft = true;
+				}
+				i++;
+			}*/
+
+		 
+			/*if (bHasLeft)
+			{
+				i = 0;
+				for (SClimbRayData::ESocketName SocektType : Names)
+				{
+					ClimbData.arrHitResult[(uint8)SocektType] = rHits[i];
+					i++;
+				}
+			}*/
+		
 		}
 	}
 	return AllHit;

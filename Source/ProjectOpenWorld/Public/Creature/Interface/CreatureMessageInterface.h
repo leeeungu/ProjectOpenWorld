@@ -4,13 +4,23 @@
 #include "UObject/Interface.h"
 #include "CreatureMessageInterface.generated.h"
 
-UENUM()
-enum class EMessageType :uint8
-{
 
+class AActor;
+
+UENUM(Blueprintable)
+enum class EMessageType : uint8
+{
+	NONE,
+	TakeRest,
+	DoBuild,
+	StopBuild,
+	DoAttack,
+	StopAttack,
+	DoCraft,
+	StopCraft,
 };
 
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, BlueprintType)
 class UCreatureMessageInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -20,5 +30,7 @@ class PROJECTOPENWORLD_API ICreatureMessageInterface
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureMessage")
 
+	void ReceiveMessage(EMessageType MessageType, AActor* SendActor, UObject* TargetObject = nullptr);
 };

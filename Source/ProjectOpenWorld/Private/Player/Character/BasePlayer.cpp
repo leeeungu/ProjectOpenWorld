@@ -195,7 +195,7 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 
 		const FHitResult* Hit = PlayerAnimationComponent->GetPelvisHit();
 		FVector Avg = PlayerAnimationComponent->GetAVGPosition();
-		FVector Normal = PlayerAnimationComponent->GetCenterNoraml();
+		FVector Normal = PlayerAnimationComponent->GetAVGNormal();
 		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
 		{
 			double DotAngle = FMath::RadiansToDegrees(FMath::Acos(FVector2D::DotProduct(FVector2D(0, 1), MovementVector.GetSafeNormal())));
@@ -206,11 +206,11 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		float Dis = FVector::Distance(GetActorLocation(), Avg);
 		if (Dis < 65.0f)
 		{
-			AddActorWorldOffset(Hit->Normal * GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
+			AddActorWorldOffset(Hit->ImpactNormal * GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
 		}
 		else if (Dis > 67.0f)
 		{
-			AddActorWorldOffset(Hit->Normal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.0f);
+			AddActorWorldOffset(Hit->ImpactNormal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.0f);
 		}
 		
 		FRotator Rotation = GetActorRotation();
@@ -218,7 +218,7 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		FRotator NewRotation = (Normal * -1).Rotation();
 		NewRotation.Roll = 0.0f;
 		SetActorRotation(FMath::RInterpTo(Rotation, NewRotation, GetWorld()->GetDeltaSeconds(), 20.0f));
-		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
+		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), true);
 	}
 
 }
