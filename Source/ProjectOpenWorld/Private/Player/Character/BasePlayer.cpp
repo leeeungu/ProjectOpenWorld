@@ -189,11 +189,11 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 			Instance->SetClimbSpeed(MovementVector.GetSafeNormal().Size());
 		}
 		float Dis = FVector::Distance(GetActorLocation(), Avg);
-		if (Dis < 60.0f)
+		if (Dis < 65.0f)
 		{
 			AddActorWorldOffset(Hit->Normal * GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
 		}
-		else if (Dis > 65.0f)
+		else if (Dis > 67.0f)
 		{
 			AddActorWorldOffset(Hit->Normal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
 		}
