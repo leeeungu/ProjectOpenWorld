@@ -72,7 +72,7 @@ bool UPlayerAnimationComponent::StartClimb()
 	{
 		return false;
 	}
-	OwnerCharacter->SetActorLocation(ClimbData.arrHitResult[SClimbRayData::ERoot].Location + ClimbData.arrHitResult[SClimbRayData::ERoot].Normal * OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius());
+	OwnerCharacter->AddActorWorldOffset(-ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactNormal * GetWorld()->GetDeltaSeconds());
 	AnimationState = EAnimationState::Climb;
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Custom);
 	OwnerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
