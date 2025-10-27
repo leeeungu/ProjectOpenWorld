@@ -4,60 +4,39 @@
 #include "UObject/Interface.h"
 #include "CreatureActionInterface.generated.h"
 
-class AActor;
-
-//UINTERFACE(MinimalAPI)
-//class UCreatureActionInterface : public UInterface
-//{
-//	GENERATED_BODY()
-//};
+//class AActor;
 //
-//class PROJECTOPENWORLD_API ICreatureActionInterface
-//{
-//	GENERATED_BODY()
-//public:
-//	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureMessage")
-//};
+
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class ECreateRollType : uint8
+{
+	Roll_None = 0,
+	Roll_Buliding = 1,
+	Roll_Mining = 2,
+	Roll_Crafting =4,
+	Roll_Attack = 8,
+};
 
 
-UINTERFACE(MinimalAPI)
-class UBuildingActionInterface : public UInterface
+UENUM(Blueprintable)
+enum class ECreateActionType  : uint8
+{
+	Action_None,
+	Action_Buliding,
+	Action_Mining,
+	Action_Crafting,
+	Action_Attack,
+	Action_Max
+};
+
+UINTERFACE(MinimalAPI, BlueprintType)
+class UCreatureActionInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class PROJECTOPENWORLD_API IBuildingActionInterface
-{
-	GENERATED_BODY()
-public:
-};
-
-
-UINTERFACE(MinimalAPI)
-class UCraftActionInterface : public UInterface
-{
-	GENERATED_BODY()
-};
-
-class PROJECTOPENWORLD_API ICraftActionInterface
-{
-	GENERATED_BODY()
-public:
-	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureMessage")
-	//
-	//void ReceiveMessage(EMessageType MessageType, AActor* SendActor);
-};
-
-
-UINTERFACE(MinimalAPI)
-class UAttackActionInterface : public UInterface
-{
-	GENERATED_BODY()
-};
-
-class PROJECTOPENWORLD_API IAttackActionInterface
+class PROJECTOPENWORLD_API ICreatureActionInterface
 {
 	GENERATED_BODY()
 public:
 };
-

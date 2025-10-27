@@ -1,0 +1,5 @@
+https://pwmodding.wiki/docs/developers/palworld-modding-kit/installation
+
+https://pwmodding.wiki/docs/developers/palworld-modding-kit/installation
+
+git clone https://github.com/localcc/PalworldModdingKit
