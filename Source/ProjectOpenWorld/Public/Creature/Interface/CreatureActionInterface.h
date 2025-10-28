@@ -8,26 +8,29 @@
 //
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class ECreateRollType : uint8
+enum class ECreatureRollType : uint8
 {
 	Roll_None = 0,
 	Roll_Buliding = 1,
 	Roll_Mining = 2,
 	Roll_Crafting =4,
 	Roll_Attack = 8,
+	Roll_Lift = 16,
 };
 
-
 UENUM(Blueprintable)
-enum class ECreateActionType  : uint8
+enum class ECreatureActionType  : uint8
 {
 	Action_None,
 	Action_Buliding,
 	Action_Mining,
 	Action_Crafting,
 	Action_Attack,
+	Action_Lift,
 	Action_Max
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FFinishAction, ECreatureActionType, ActionType, UObject*, TargetObject);
 
 UINTERFACE(MinimalAPI, BlueprintType)
 class UCreatureActionInterface : public UInterface
@@ -39,4 +42,9 @@ class PROJECTOPENWORLD_API ICreatureActionInterface
 {
 	GENERATED_BODY()
 public:
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
+	void ActionStart(ECreatureActionType ActionType, UObject* TargetObject);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
+	void ActionEnd();
 };

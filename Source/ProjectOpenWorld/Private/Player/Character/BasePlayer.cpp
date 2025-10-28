@@ -70,7 +70,7 @@ ABasePlayer::ABasePlayer()
 void ABasePlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UE_LOG(LogTemp, Warning, TEXT("%d"), GetCharacterMovement()->MovementMode);
+	//UE_LOG(LogTemp, Warning, TEXT("%d"), GetCharacterMovement()->MovementMode);
 }
 
 void ABasePlayer::StartClimb()
@@ -275,7 +275,7 @@ void ABasePlayer::OnInteraction(const FInputActionValue& Value)
 {
 	if (InteractionComponent)
 	{
-		InteractionComponent->OnInteractionTriggered();
+		//InteractionComponent->OnInteractionTriggered();
 	}
 }
 

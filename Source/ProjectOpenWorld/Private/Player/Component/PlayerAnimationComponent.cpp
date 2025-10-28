@@ -9,7 +9,7 @@
 
 UPlayerAnimationComponent::UPlayerAnimationComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UPlayerAnimationComponent::BeginPlay()
@@ -54,7 +54,7 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 		{
 			// 바닥 체크
 			FVector Start = OwnerCharacter->GetActorLocation();
-			FVector End = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * -90.0f;
+			FVector End = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * -98.0f;
 			FHitResult rHit{};
 			if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), Start, End,
 				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, rHit, true))
@@ -94,40 +94,6 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 				AllHit = false;
 			}
 		}
-		{ // 모서리 처리
-		/*	SClimbRayData::ESocketName Names[2] = { SClimbRayData::ELHand , SClimbRayData::ELFoot };
-			FHitResult rHits[2]{};
-			bool bHasLeft{};
-			int i{};
-			for (SClimbRayData::ESocketName SocektType : Names)
-			{
-				FName* Socket = ClimbData.arrSocekt[(int)SocektType];
-				FVector SocketLocation = OwnerCharacter->GetActorLocation();
-				if (Socket)
-					SocketLocation = OwnerCharacter->GetMesh()->GetSocketLocation(*Socket);
-				FVector Start = SocketLocation - OwnerCharacter->GetActorForwardVector() * ClimbData.StartOffset;
-				FVector End = Start + OwnerCharacter->GetActorRightVector() * -40.0f+ OwnerCharacter->GetActorForwardVector() * ClimbData.EndOffset;
-				FHitResult* rHit = &rHits[i];
-				if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), Start, End,
-					UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, *rHit, true))
-				{
-					bHasLeft = true;
-				}
-				i++;
-			}*/
-
-		 
-			/*if (bHasLeft)
-			{
-				i = 0;
-				for (SClimbRayData::ESocketName SocektType : Names)
-				{
-					ClimbData.arrHitResult[(uint8)SocektType] = rHits[i];
-					i++;
-				}
-			}*/
-		
-		}
 	}
 	return AllHit;
 }
@@ -135,6 +101,20 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	/*const FHitResult* Hit = GetPelvisHit();
+	FVector Avg = GetAVGPosition();
+	FVector Normal = GetAVGNormal();
+	float Dis = FVector::Distance(OwnerCharacter->GetActorLocation(), Avg);
+	if (Dis < 65.0f)
+	{
+		OwnerCharacter->AddActorWorldOffset(Hit->ImpactNormal * OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
+	}
+	else if (Dis > 67.0f)
+	{
+		OwnerCharacter->AddActorWorldOffset(Hit->ImpactNormal * -OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.0f);
+	}*/
+
 }
 
 bool UPlayerAnimationComponent::StartClimb()
@@ -144,7 +124,14 @@ bool UPlayerAnimationComponent::StartClimb()
 		return false;
 	}
 	bClimbing = true;
-	OwnerCharacter->AddActorWorldOffset(-ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactNormal * GetWorld()->GetDeltaSeconds());
+	SetComponentTickEnabled(true);
+	// 벽에 붙어서 climb 하면 벽 안에 들어가 버려서 떨어 뜨릴려고 수정했는데
+	// 벽과 비스듬하면 여전히 벽에 뭍히는 버그가 있음 (ray를 쏴야할려나, 계산하고 tick에서 보정을 칠까 )
+	if (ClimbData.arrHitResult[SClimbRayData::ERoot].Distance < OwnerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius() * 2.8)
+	{
+	OwnerCharacter->AddActorWorldOffset(ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactNormal * 
+		GetWorld()->GetDeltaSeconds()* ClimbData.arrHitResult[SClimbRayData::ERoot].Distance*20);
+	}
 	FRotator Rotation = OwnerCharacter->GetActorRotation();
 	Rotation.Roll = 0.0f;
 	FRotator NewRotation = (GetCenterNoraml() * -1).Rotation();
@@ -163,6 +150,7 @@ bool UPlayerAnimationComponent::StartTravel()
 	{
 		return false;
 	}
+	SetComponentTickEnabled(false);
 	bClimbing = false;
 	AnimationState = EAnimationState::Travel;
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);

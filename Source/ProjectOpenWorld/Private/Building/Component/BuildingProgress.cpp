@@ -9,8 +9,6 @@ UBuildingProgress::UBuildingProgress()
 	{
 		buildingMakingMat = MakingMat.Object;
 	}
-	curentPercent = 0.0f;
-	isBuilding = false;
 }
 
 void UBuildingProgress::BeginPlay()
@@ -20,7 +18,9 @@ void UBuildingProgress::BeginPlay()
 	buildingMeshComponent = GetOwner()->GetComponentByClass<UStaticMeshComponent>();
 	if (buildingMesh)
 		SetbuildingMesh(buildingMesh.Get());
-
+	buildSpeed = 0.0f;
+	curentPercent = 0.0f;
+	isBuilding = false;
 	SetBuildingPercent(curentPercent);
 }
 
@@ -83,24 +83,30 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 
 void UBuildingProgress::StopBuilding()
 {
-	SetComponentTickEnabled(false);
-	isBuilding = false;
+	buildSpeed -= 1.0f;
+	if (buildSpeed <= 0.f)
+	{
+		buildSpeed = 0.0f;
+		SetComponentTickEnabled(false);
+		isBuilding = false;
+	}
 }
 
 void UBuildingProgress::ResumeBuilding()
 {
-	if (curentPercent >= 1.0f)
-		return;
-	isBuilding = true;
-	SetComponentTickEnabled(true);
+	StartBuilding();
 }
 
 void UBuildingProgress::StartBuilding()
 {
+	if (curentPercent >= 1.0f)
+	{
+		buildSpeed = 0;
+		return;
+	}
+	buildSpeed += 1.0f;
 	isBuilding = true;
 	SetComponentTickEnabled(true);
-	curentPercent = 0.0f;
-	SetBuildingPercent(curentPercent);
 }
 
 void UBuildingProgress::EndBuilding()
