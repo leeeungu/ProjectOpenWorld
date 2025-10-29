@@ -1,11 +1,12 @@
 ﻿#include "Creature/Character/BaseCreature.h"
 #include "Creature/Component/CreatureAction_Building.h"
+#include "Creature/Component/CreatureAttackComponent.h"
 
 void ABaseCreature::BeginPlay()
 {
 	ABaseCharacter::BeginPlay();
 	TSet<UActorComponent*> Coms =  GetComponents();
-
+	AttackComponent =  Cast< UCreatureAttackComponent>(GetComponentByClass<UCreatureAttackComponent>());
 	for (auto Component : Coms)
 	{
 		UCreatureActionComponent* Action = Cast< UCreatureActionComponent>(Component);
@@ -55,13 +56,36 @@ void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AAct
 	default:
 		break;
 	}
-
-	if (ActionComponents[(uint8)Type].GetObject() &&
-		ActionComponents[(uint8)Type].GetObject())
+	if (RollType != Type)
 	{
-		if (bStart)
-			ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)Type].GetObject(), Type, TargetObject);
-		else
-			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)Type].GetObject());
+
+		if (ActionComponents[(uint8)RollType].GetObject() &&
+			ActionComponents[(uint8)RollType].GetObject())
+		{
+			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)RollType].GetObject());
+		}
+		RollType = Type;
+		if (ActionComponents[(uint8)RollType].GetObject() &&
+			ActionComponents[(uint8)RollType].GetObject())
+		{
+			if (bStart)
+				ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)RollType].GetObject(), RollType, TargetObject);
+			else
+				ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)RollType].GetObject());
+		}
 	}
+}
+
+UCreatureAttackComponent* ABaseCreature::GetAttackComponent_Implementation() const
+{
+	return AttackComponent.Get();
+}
+
+float ABaseCreature::GetAttackDamage_Implementation() const
+{
+	if (AttackComponent)
+	{
+		return AttackComponent.Get()->GetDamage();
+	}
+	return 0.0f;
 }

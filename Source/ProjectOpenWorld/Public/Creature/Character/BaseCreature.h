@@ -4,12 +4,13 @@
 #include "GameBase/BaseCharacter.h"
 #include "Creature/Interface/CreatureActionInterface.h"
 #include "Creature/Interface/CreatureMessageInterface.h"
+#include "Creature/Interface/CreatureAttackInterface.h"
 #include "BaseCreature.generated.h"
 
-
+class UCreatureAttackComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface, public ICreatureAttackInterface
 {
 	GENERATED_BODY()
 protected:
@@ -17,8 +18,15 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Meta = (Bitmask, BitmaskEnum = "ECreatureRollType"))
 	int32 CreatureRoll{};
+
+	ECreatureActionType RollType{};
+
+	TSoftObjectPtr< UCreatureAttackComponent> AttackComponent{};
 protected:
 	virtual void BeginPlay() override;
 public:
 	virtual void ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, UObject* TargetObject = nullptr) override;
+
+	virtual UCreatureAttackComponent* GetAttackComponent_Implementation() const override;
+	virtual float GetAttackDamage_Implementation() const override;
 };
