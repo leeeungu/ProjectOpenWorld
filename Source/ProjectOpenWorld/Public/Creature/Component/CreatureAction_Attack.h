@@ -15,9 +15,8 @@ class PROJECTOPENWORLD_API UCreatureAction_Attack : public UCreatureActionCompon
 private:
 	TSoftObjectPtr<APawn> TargetPawn{};
 protected:
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UAnimMontage* Montage{};
 	int Count{};
+	bool bAttackable{};
 public:
 	UCreatureAction_Attack();
 

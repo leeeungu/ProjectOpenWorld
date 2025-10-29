@@ -119,7 +119,7 @@ void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 bool UPlayerAnimationComponent::StartClimb()
 {
-	if (!OwnerCharacter || !ClimbLineCheck())
+	if (!OwnerCharacter || !ClimbLineCheck() ) // 시작 시 climb end 중에 다시 climb 되는 문제가 있음
 	{
 		return false;
 	}
