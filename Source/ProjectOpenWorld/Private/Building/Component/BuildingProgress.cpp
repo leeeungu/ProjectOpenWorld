@@ -47,7 +47,7 @@ void UBuildingProgress::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		curentPercent += (DeltaTime * buildSpeed) / buildingTime;
 		curentPercent = FMath::Clamp(curentPercent, 0.f, 1.f);
 		SetBuildingPercent(curentPercent);
-		if (curentPercent >= 1.0f)
+		if (FMath::IsNearlyEqual(curentPercent ,1.0f))
 			EndBuilding();
 	}
 }

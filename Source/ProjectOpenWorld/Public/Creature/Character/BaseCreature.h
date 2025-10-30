@@ -19,7 +19,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Meta = (Bitmask, BitmaskEnum = "ECreatureRollType"))
 	int32 CreatureRoll{};
 
-	ECreatureActionType RollType{};
+	ECreatureActionType ActionType{};
 
 	TSoftObjectPtr< UCreatureAttackComponent> AttackComponent{};
 protected:
@@ -29,4 +29,7 @@ public:
 
 	virtual UCreatureAttackComponent* GetAttackComponent_Implementation() const override;
 	virtual float GetAttackDamage_Implementation() const override;
+
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	FORCEINLINE ECreatureActionType GetCreatureActionType() const { return ActionType; }
 };

@@ -24,6 +24,7 @@ void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AAct
 	switch (MessageType)
 	{
 	case EMessageType::NONE:
+		Type = ECreatureActionType::Action_None;
 		break;
 	case EMessageType::TakeRest:
 		break;
@@ -56,22 +57,22 @@ void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AAct
 	default:
 		break;
 	}
-	if (RollType != Type)
+	if (ActionType != Type)
 	{
 
-		if (ActionComponents[(uint8)RollType].GetObject() &&
-			ActionComponents[(uint8)RollType].GetObject())
+		if (ActionComponents[(uint8)ActionType].GetObject() &&
+			ActionComponents[(uint8)ActionType].GetObject())
 		{
-			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)RollType].GetObject());
+			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
 		}
-		RollType = Type;
-		if (ActionComponents[(uint8)RollType].GetObject() &&
-			ActionComponents[(uint8)RollType].GetObject())
+		ActionType = Type;
+		if (ActionComponents[(uint8)ActionType].GetObject() &&
+			ActionComponents[(uint8)ActionType].GetObject())
 		{
 			if (bStart)
-				ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)RollType].GetObject(), RollType, TargetObject);
+				ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)ActionType].GetObject(), ActionType, TargetObject);
 			else
-				ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)RollType].GetObject());
+				ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
 		}
 	}
 }
