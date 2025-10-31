@@ -8,6 +8,7 @@
 #include "BuildingActor.generated.h"
 
 class UBuildingStateWidget;
+class APlayerController;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IInteractionInterface
@@ -15,6 +16,10 @@ class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IIntera
 	GENERATED_BODY()
 protected:
 	virtual void BeginPlay() override;
+
+	TSoftObjectPtr<APlayerController> Player{};
+	UFUNCTION()
+	void BuildingEnd();
 public: // IInteractionInterface
 	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;

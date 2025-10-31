@@ -98,6 +98,16 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 	return AllHit;
 }
 
+void UPlayerAnimationComponent::StartArchitecture()
+{
+	AnimationState = EAnimationState::Architecture;
+}
+
+void UPlayerAnimationComponent::ResetAnimationState()
+{
+	AnimationState = EAnimationState::Travel;
+}
+
 void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);

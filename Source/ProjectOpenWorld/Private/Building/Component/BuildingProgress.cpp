@@ -123,7 +123,9 @@ void UBuildingProgress::EndBuilding()
 	curentPercent = 1.0f;
 	if (onBuildingEnd.IsBound())
 		onBuildingEnd.Broadcast();
-	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	//buildingMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//buildingMeshComponent->SetCollisionProfileName(TEXT("BlockAll"));
+	//buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 }
 
 void UBuildingProgress::SetBuildingPercent(float Value)

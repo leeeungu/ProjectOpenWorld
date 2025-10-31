@@ -7,6 +7,8 @@
 class ABuildingActor;
 struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
+class UStaticMeshComponent;
+class UStaticMesh;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UCreatureAction_Building : public UCreatureActionComponent
@@ -16,6 +18,10 @@ private:
 	TSoftObjectPtr<ABuildingActor> TargetBuilding{};
 	bool bActionStart{};
 	bool bBuildingStart{};
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Building")
+	TObjectPtr<UStaticMesh> BuildToolMesh{};
+	TObjectPtr<UStaticMeshComponent> MeshComponent{};
 public:
 	UCreatureAction_Building();
 	virtual void ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override ;

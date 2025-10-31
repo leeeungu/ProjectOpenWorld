@@ -10,7 +10,8 @@ UENUM(BlueprintType)
 enum class EAnimationState : uint8
 {
 	Travel,
-	Climb
+	Climb,
+	Architecture,
 };
 
 
@@ -122,6 +123,10 @@ public:
 	FVector  GetAVGPosition() const;
 	FVector  GetAVGNormal() const;
 	bool ClimbLineCheck();
+
+
+	void StartArchitecture();
+	void ResetAnimationState();
 
 	UFUNCTION(BlueprintPure, Category = "Animation")
 	bool IsEmpthUp() const { return bEmpthyUp;	}

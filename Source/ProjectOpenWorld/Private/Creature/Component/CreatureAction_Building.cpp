@@ -1,15 +1,17 @@
 ﻿#include "Creature/Component/CreatureAction_Building.h"
 #include "AIController.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Building/Actor/BuildingActor.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Creature/Interface/CreatureMessageInterface.h"
+#include "Components/StaticMeshComponent.h"
 
 
 UCreatureAction_Building::UCreatureAction_Building()
 {
 	Action = ECreatureActionType::Action_Buliding;
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 }
 
 void UCreatureAction_Building::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
@@ -36,6 +38,10 @@ void UCreatureAction_Building::ActionEnd_Implementation()
 	if (!bActionStart || !bBuildingStart)
 		return;
 
+	if (MeshComponent)
+	{
+		//MeshComponent->SetVisibility(false);
+	}
 	if (TargetBuilding)
 	{
 		if (bBuildingStart)
@@ -58,7 +64,20 @@ void UCreatureAction_Building::BeginPlay()
 {
 	Super::BeginPlay(); 
 	if (OwnerController)
+	{
 		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UCreatureAction_Building::FinishMoved);
+		if (ACharacter* Character = Cast<ACharacter>(OwnerController->GetPawn()))
+		{
+			if (MeshComponent)
+			{
+				MeshComponent->AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("SWeapon_R"));
+				MeshComponent->SetStaticMesh(BuildToolMesh);
+				MeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
+				MeshComponent->SetVisibility(false);
+
+			}
+		}
+	}
 }
 
 
@@ -67,6 +86,8 @@ void UCreatureAction_Building::FinishMoved(FAIRequestID RequestID, EPathFollowin
 	if (EPathFollowingResult::Type::Success == Result && TargetBuilding && !bBuildingStart && bActionStart)
 	{
 		TargetBuilding->GetBuildingProgress()->StartBuilding();
+		if (MeshComponent)
+			MeshComponent->SetVisibility(true);
 		bBuildingStart = true;
 	}
 }
