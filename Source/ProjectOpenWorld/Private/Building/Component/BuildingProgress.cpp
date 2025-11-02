@@ -75,8 +75,6 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 					buildingMaking.Add(Making);
 				}
 			}
-
-			buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		}
 	}
 }
@@ -123,9 +121,7 @@ void UBuildingProgress::EndBuilding()
 	curentPercent = 1.0f;
 	if (onBuildingEnd.IsBound())
 		onBuildingEnd.Broadcast();
-	//buildingMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//buildingMeshComponent->SetCollisionProfileName(TEXT("BlockAll"));
-	//buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	buildingMeshComponent->SetCanEverAffectNavigation(true);
 }
 
 void UBuildingProgress::SetBuildingPercent(float Value)

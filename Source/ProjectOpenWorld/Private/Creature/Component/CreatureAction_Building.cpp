@@ -28,9 +28,14 @@ void UCreatureAction_Building::ActionStart_Implementation(ECreatureActionType Ac
 	MoveReq.SetAllowPartialPath(true);
 	MoveReq.SetAcceptanceRadius(100.0f);
 	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true);
-	OwnerController->MoveTo(MoveReq);
+	MoveReq.SetCanStrafe(true); 
+	FNavPathSharedPtr OutPath{};
+	OwnerController->MoveTo(MoveReq, &OutPath);
 	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddDynamic(this, &UCreatureAction_Building::ActionEnd);
+	if (!OutPath.IsValid())
+	{
+		FinishMoved(FAIRequestID::InvalidRequest, EPathFollowingResult::Success);
+	}
 }
 
 void UCreatureAction_Building::ActionEnd_Implementation()

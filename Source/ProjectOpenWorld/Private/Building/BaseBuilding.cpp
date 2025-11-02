@@ -9,6 +9,7 @@ ABaseBuilding::ABaseBuilding()
 	if (buildingMeshComponent)
 	{
 		buildingMeshComponent->SetupAttachment(RootComponent);
+		buildingMeshComponent->SetCanEverAffectNavigation(false);
 		buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
 		buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	}
