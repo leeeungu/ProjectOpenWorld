@@ -47,8 +47,10 @@ void UBuildingProgress::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		curentPercent += (DeltaTime * buildSpeed) / buildingTime;
 		curentPercent = FMath::Clamp(curentPercent, 0.f, 1.f);
 		SetBuildingPercent(curentPercent);
-		if (FMath::IsNearlyEqual(curentPercent ,1.0f))
+		if (FMath::IsNearlyEqual(curentPercent, 1.0f))
+		{
 			EndBuilding();
+		}
 	}
 }
 
@@ -109,6 +111,7 @@ void UBuildingProgress::StartBuilding()
 
 void UBuildingProgress::EndBuilding()
 {
+
 	isBuilding = false;
 	int nSize = buildingMaking.Num();
 	for (int i = 0; i < nSize; i++)
@@ -120,7 +123,9 @@ void UBuildingProgress::EndBuilding()
 	SetComponentTickEnabled(false);
 	curentPercent = 1.0f;
 	if (onBuildingEnd.IsBound())
+	{
 		onBuildingEnd.Broadcast();
+	}
 	buildingMeshComponent->SetCanEverAffectNavigation(true);
 }
 

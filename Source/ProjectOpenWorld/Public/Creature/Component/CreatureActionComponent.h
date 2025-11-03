@@ -16,6 +16,7 @@ protected:
 	ECreatureActionType Action{};
 
 	TSoftObjectPtr < AAIController> OwnerController{};
+	bool bActionStart{};
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "CreatureAction")
 	FFinishAction FinishDelegate{};

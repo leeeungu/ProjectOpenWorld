@@ -2,7 +2,6 @@
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
-#include "Creature/Component/CreatureAttackComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Creature/Interface/CreatureAttackInterface.h"
 
@@ -13,23 +12,45 @@ UCreatureAction_Attack::UCreatureAction_Attack()
 
 void UCreatureAction_Attack::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
 {	
+	if (TargetObject != TargetPawn)
+	{
+		bActionStart = false;
+		CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
+		CurAttackData = MapAttackData.Find(CurAttackIndex);
+	}
 	TargetPawn = Cast< APawn>(TargetObject);
-	if (!TargetPawn || !OwnerController || bAttackable)
+	if (!TargetPawn || !OwnerController || bActionStart)
 		return;
-	bAttackable = true;
-	FAIMoveRequest MoveReq(TargetPawn.Get());
-	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(true);
-	MoveReq.SetAcceptanceRadius(100.0f);
-	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true);
-	OwnerController->MoveTo(MoveReq);
+	bActionStart = true;
+	MoveToTarget();
 }
 
 void UCreatureAction_Attack::ActionEnd_Implementation()
 {
 	OwnerController->StopMovement();
-	bAttackable = false;
+	CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
+	CurAttackData = MapAttackData.Find(CurAttackIndex);
+	bActionStart = false;
+}
+
+bool UCreatureAction_Attack::GetAttackDamage(float& fDamage) const
+{
+	if (CurAttackData)
+	{
+		fDamage = CurAttackData->AttackDamage;
+		return true;
+	}
+	return false;
+}
+
+bool UCreatureAction_Attack::GetAttackDelay(float& fTime) const
+{
+	if (CurAttackData)
+	{
+		fTime = CurAttackData->AttackDelay;
+		return true;
+	}
+	return false;
 }
 
 void UCreatureAction_Attack::BeginPlay()
@@ -37,48 +58,24 @@ void UCreatureAction_Attack::BeginPlay()
 	UCreatureActionComponent::BeginPlay();
 	if (OwnerController)
 		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UCreatureAction_Attack::FinishMoved);
+	MapAttackData.GetKeys(ArrayAttackIndex);
 }
 
-void UCreatureAction_Attack::FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UCreatureAction_Attack::SetRandomIndex()
 {
-	if (EPathFollowingResult::Type::Success == Result && TargetPawn && bAttackable)
-	{
-		TScriptInterface<ICreatureAttackInterface> Character = TScriptInterface<ICreatureAttackInterface>(GetOwner());
-		if (Character)
-		{
-			UCreatureAttackComponent * Component = ICreatureAttackInterface::Execute_GetAttackComponent(GetOwner());
-			if (Component)
-			{
-				FCreatureAttackData Data{};
-				if (Component->GetAttackData(0, Data))
-				{
-					Component->SetAttackIndex(0);
-					Component->PlayAttackMontage();
-					FTimerHandle Handle{ };
-					GetWorld()->GetTimerManager().SetTimer(Handle, this, &UCreatureAction_Attack::PlayAttack, Data.AttackDelay);
-					
-				}
-			}
-		}
-	}
-
-	if (EPathFollowingResult::Type::Success == Result && !TargetPawn)
-	{
-		bAttackable = false;
-	}
+	int i = (rand() % (ArrayAttackIndex.Num() - 1 )) + 1;
+	CurAttackIndex = (ECreatureAttackIndex)i;
+	CurAttackData = MapAttackData.Find(CurAttackIndex);
 }
 
-
-void UCreatureAction_Attack::PlayAttack()
+void UCreatureAction_Attack::MoveToTarget()
 {
 	if (!TargetPawn)
 	{
-		bAttackable = false;
-		return;
+		bActionStart = false;
 	}
-	if(!bAttackable)
+	if (!bActionStart)
 		return;
-
 
 	FAIMoveRequest MoveReq(TargetPawn.Get());
 	MoveReq.SetUsePathfinding(true);
@@ -86,5 +83,33 @@ void UCreatureAction_Attack::PlayAttack()
 	MoveReq.SetAcceptanceRadius(100.0f);
 	MoveReq.SetReachTestIncludesAgentRadius(true);
 	MoveReq.SetCanStrafe(true);
-	OwnerController->MoveTo(MoveReq);
+	FNavPathSharedPtr Path{};
+	OwnerController->MoveTo(MoveReq, &Path);
+	if (!Path.IsValid())
+	{
+		OwnerController->StopMovement();
+		bActionStart = false;
+	}
 }
+
+void UCreatureAction_Attack::FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+	if (!bActionStart && CurAttackIndex != ECreatureAttackIndex::CreatureAttackIndex_None)
+		return;
+
+	if (EPathFollowingResult::Type::Success == Result && TargetPawn && bActionStart) // && AttackComponent)
+	{
+		SetRandomIndex();
+		if (StartDelegate.IsBound())
+		{
+			StartDelegate.Broadcast(CurAttackIndex);
+		}
+		//FTimerHandle Handle{ };
+		//GetWorld()->GetTimerManager().SetTimer(Handle, this, &UCreatureAction_Attack::MoveToTarget, 3.0f);
+	}
+	else if (!TargetPawn || EPathFollowingResult::Type::Success != Result)
+	{
+		MoveToTarget();
+	}
+}
+

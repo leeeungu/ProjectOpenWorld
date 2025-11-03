@@ -16,7 +16,6 @@ class PROJECTOPENWORLD_API UCreatureAction_Building : public UCreatureActionComp
 	GENERATED_BODY()
 private:
 	TSoftObjectPtr<ABuildingActor> TargetBuilding{};
-	bool bActionStart{};
 	bool bBuildingStart{};
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Building")
@@ -30,4 +29,7 @@ protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	void FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	UFUNCTION()
+	void BuildEnd();
+
 };

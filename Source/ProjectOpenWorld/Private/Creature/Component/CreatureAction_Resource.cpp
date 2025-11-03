@@ -11,10 +11,15 @@ UCreatureAction_Resource::UCreatureAction_Resource()
 
 void UCreatureAction_Resource::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
 {
-	TargetPawn = Cast< APawn>(TargetObject);
-	if (!TargetPawn || !OwnerController )
+	if (TargetActor != TargetObject)
+	{
+		bActionStart = false;
+	}
+	TargetActor = Cast< APawn>(TargetObject);
+	if (!TargetActor || !OwnerController || bActionStart)
 		return;
-	FAIMoveRequest MoveReq(TargetPawn.Get());
+	bActionStart = false;
+	FAIMoveRequest MoveReq(TargetActor.Get());
 	MoveReq.SetUsePathfinding(true);
 	MoveReq.SetAllowPartialPath(true);
 	MoveReq.SetAcceptanceRadius(100.0f);
@@ -37,7 +42,7 @@ void UCreatureAction_Resource::BeginPlay()
 
 void UCreatureAction_Resource::FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (EPathFollowingResult::Type::Success == Result && TargetPawn)
+	if (EPathFollowingResult::Type::Success == Result && TargetActor)
 	{
 		//TScriptInterface<ICreatureAttackInterface> Character = TScriptInterface<ICreatureAttackInterface>(GetOwner());
 		//if (Character)

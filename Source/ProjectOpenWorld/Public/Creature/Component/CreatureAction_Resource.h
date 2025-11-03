@@ -13,7 +13,7 @@ class PROJECTOPENWORLD_API UCreatureAction_Resource : public UCreatureActionComp
 {
 	GENERATED_BODY()
 private:
-	TSoftObjectPtr<AActor> TargetPawn{};
+	TSoftObjectPtr<AActor> TargetActor{};
 public:
 	UCreatureAction_Resource();
 

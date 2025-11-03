@@ -218,7 +218,7 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		FRotator NewRotation = (Normal * -1).Rotation();
 		NewRotation.Roll = 0.0f;
 		SetActorRotation(FMath::RInterpTo(Rotation, NewRotation, GetWorld()->GetDeltaSeconds(), 20.0f));
-		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), true);
+		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
 	}
 
 }
