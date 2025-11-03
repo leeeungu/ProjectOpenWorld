@@ -59,12 +59,13 @@ void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AAct
 	{
 
 		if (ActionComponents[(uint8)ActionType].GetObject() &&
-			ActionComponents[(uint8)ActionType].GetObject())
+			ActionComponents[(uint8)ActionType].GetObject() && bStart)
 		{
 			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
 		}
 	}
 	ActionType = Type;
+	UE_LOG(LogTemp, Warning, TEXT("Creature Receive Message : %d"), (uint8)ActionType);
 	if (ActionComponents[(uint8)ActionType].GetObject() &&
 		ActionComponents[(uint8)ActionType].GetObject())
 	{

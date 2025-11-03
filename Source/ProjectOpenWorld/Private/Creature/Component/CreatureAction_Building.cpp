@@ -69,17 +69,18 @@ void UCreatureAction_Building::BeginPlay()
 
 void UCreatureAction_Building::FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (!bActionStart)
-	{
-		if (MeshComponent)
-			MeshComponent->SetVisibility(false);
-		ICreatureMessageInterface::Execute_ReceiveMessage(GetOwner(), EMessageType::NONE, nullptr, nullptr);
-		bActionStart = false;
-		bBuildingStart = false;
+	if (!bActionStart || !TargetBuilding)
 		return;
-	}
 
-	if (EPathFollowingResult::Type::Success == Result && TargetBuilding && !bBuildingStart && bActionStart && !TargetBuilding->GetBuildingProgress()->IsBuildingEnd())
+	//{
+	//	if (MeshComponent)
+	//		MeshComponent->SetVisibility(false);
+	//	//ICreatureMessageInterface::Execute_ReceiveMessage(GetOwner(), EMessageType::NONE, nullptr, nullptr);
+	//	bActionStart = false;
+	//	bBuildingStart = false;
+	//}
+
+	if (EPathFollowingResult::Type::Success == Result &&  !bBuildingStart && bActionStart && !TargetBuilding->GetBuildingProgress()->IsBuildingEnd())
 	{
 		TargetBuilding->GetBuildingProgress()->StartBuilding();
 		if (MeshComponent)

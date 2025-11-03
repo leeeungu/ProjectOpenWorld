@@ -63,8 +63,15 @@ void UCreatureAction_Attack::BeginPlay()
 
 void UCreatureAction_Attack::SetRandomIndex()
 {
-	int i = (rand() % (ArrayAttackIndex.Num() - 1 )) + 1;
-	CurAttackIndex = (ECreatureAttackIndex)i;
+	if (ArrayAttackIndex.Num() == 0)
+	{
+		bActionStart = false;
+		CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
+		CurAttackData = MapAttackData.Find(CurAttackIndex);
+		return;
+	}
+	int i = (rand() % ArrayAttackIndex.Num());
+	CurAttackIndex = (ECreatureAttackIndex)ArrayAttackIndex[i];
 	CurAttackData = MapAttackData.Find(CurAttackIndex);
 }
 
