@@ -51,14 +51,18 @@ protected:
 	TSoftObjectPtr < ACharacter> OwnerCharacter{};
 	TArray < ECreatureAttackIndex> ArrayAttackIndex{};
 
+
+	float AttackTime{};
+	bool IsAttackable{};
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Attack")
 	FAttackStart StartDelegate{};
 public:
 	UCreatureAction_Attack();
 
-	virtual void ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
-	virtual void ActionEnd_Implementation() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
+	virtual bool ActionEnd_Implementation() override;
 
 
 	UFUNCTION(BlueprintPure, Category = "Attack")
@@ -73,8 +77,4 @@ protected:
 	virtual void BeginPlay() override;
 
 	void SetRandomIndex();
-	UFUNCTION()
-	void MoveToTarget();
-	UFUNCTION()
-	void FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 };

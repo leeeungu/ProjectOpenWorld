@@ -111,9 +111,9 @@ void UBuildingProgress::StartBuilding()
 
 void UBuildingProgress::EndBuilding()
 {
-
 	isBuilding = false;
 	int nSize = buildingMaking.Num();
+	buildSpeed = 0;
 	for (int i = 0; i < nSize; i++)
 	{
 		buildingMeshComponent->SetMaterial(i, nullptr);
@@ -127,6 +127,11 @@ void UBuildingProgress::EndBuilding()
 		onBuildingEnd.Broadcast();
 	}
 	buildingMeshComponent->SetCanEverAffectNavigation(true);
+}
+
+bool UBuildingProgress::IsBuildingEnd() const
+{
+	return curentPercent >= 1.0f || FMath::IsNearlyEqual(curentPercent,1.0f);
 }
 
 void UBuildingProgress::SetBuildingPercent(float Value)

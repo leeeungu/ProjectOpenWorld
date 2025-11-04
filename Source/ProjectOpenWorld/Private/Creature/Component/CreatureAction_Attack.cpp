@@ -8,29 +8,61 @@
 UCreatureAction_Attack::UCreatureAction_Attack()
 {
 	Action = ECreatureActionType::Action_Attack;
+	IsAttackable = true;
 }
 
-void UCreatureAction_Attack::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
+void UCreatureAction_Attack::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	UCreatureActionComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (bActionStart)
+	{
+		AttackTime -= DeltaTime;
+		if (AttackTime < 0 || FMath::IsNearlyZero(AttackTime))
+		{
+			SetRandomIndex();
+			if (StartDelegate.IsBound())
+			{
+				StartDelegate.Broadcast(CurAttackIndex);
+			}
+		}
+	}
+}
+
+bool UCreatureAction_Attack::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
 {	
-	if (TargetObject != TargetPawn)
+	if (Cast< APawn>(TargetObject) != TargetPawn)
 	{
 		bActionStart = false;
 		CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
-		CurAttackData = MapAttackData.Find(CurAttackIndex);
+		CurAttackData = nullptr;
+		IsAttackable = true;
+		AttackTime = 0.0f;
 	}
 	TargetPawn = Cast< APawn>(TargetObject);
-	if (!TargetPawn || !OwnerController || bActionStart)
-		return;
+	if (!TargetPawn || !IsAttackable)
+	{
+		return false;
+	}
 	bActionStart = true;
-	MoveToTarget();
+	SetRandomIndex();
+	if (StartDelegate.IsBound())
+	{
+		StartDelegate.Broadcast(CurAttackIndex);
+	}
+	return true;
 }
 
-void UCreatureAction_Attack::ActionEnd_Implementation()
+bool UCreatureAction_Attack::ActionEnd_Implementation()
 {
-	OwnerController->StopMovement();
+	if (bActionStart == false)
+		return false;
+	bActionStart = false; 
+	TargetPawn = nullptr;
+	IsAttackable = true;
 	CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
-	CurAttackData = MapAttackData.Find(CurAttackIndex);
-	bActionStart = false;
+	CurAttackData = nullptr;
+	AttackTime = 0.0f;
+	return true;
 }
 
 bool UCreatureAction_Attack::GetAttackDamage(float& fDamage) const
@@ -56,8 +88,6 @@ bool UCreatureAction_Attack::GetAttackDelay(float& fTime) const
 void UCreatureAction_Attack::BeginPlay()
 {
 	UCreatureActionComponent::BeginPlay();
-	if (OwnerController)
-		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UCreatureAction_Attack::FinishMoved);
 	MapAttackData.GetKeys(ArrayAttackIndex);
 }
 
@@ -67,56 +97,17 @@ void UCreatureAction_Attack::SetRandomIndex()
 	{
 		bActionStart = false;
 		CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
-		CurAttackData = MapAttackData.Find(CurAttackIndex);
+		CurAttackData = nullptr;
+		IsAttackable = true;
 		return;
 	}
+	IsAttackable = false;
 	int i = (rand() % ArrayAttackIndex.Num());
 	CurAttackIndex = (ECreatureAttackIndex)ArrayAttackIndex[i];
 	CurAttackData = MapAttackData.Find(CurAttackIndex);
-}
-
-void UCreatureAction_Attack::MoveToTarget()
-{
-	if (!TargetPawn)
+	AttackTime = 0.0f;
+	if (CurAttackData)
 	{
-		bActionStart = false;
-	}
-	if (!bActionStart)
-		return;
-
-	FAIMoveRequest MoveReq(TargetPawn.Get());
-	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(true);
-	MoveReq.SetAcceptanceRadius(100.0f);
-	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true);
-	FNavPathSharedPtr Path{};
-	OwnerController->MoveTo(MoveReq, &Path);
-	if (!Path.IsValid())
-	{
-		OwnerController->StopMovement();
-		bActionStart = false;
+		AttackTime = CurAttackData->AttackDelay;
 	}
 }
-
-void UCreatureAction_Attack::FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-{
-	if (!bActionStart && CurAttackIndex != ECreatureAttackIndex::CreatureAttackIndex_None)
-		return;
-
-	if (EPathFollowingResult::Type::Success == Result && TargetPawn && bActionStart) // && AttackComponent)
-	{
-		SetRandomIndex();
-		if (StartDelegate.IsBound())
-		{
-			StartDelegate.Broadcast(CurAttackIndex);
-		}
-		//FTimerHandle Handle{ };
-		//GetWorld()->GetTimerManager().SetTimer(Handle, this, &UCreatureAction_Attack::MoveToTarget, 3.0f);
-	}
-	else if (!TargetPawn || EPathFollowingResult::Type::Success != Result)
-	{
-		MoveToTarget();
-	}
-}
-

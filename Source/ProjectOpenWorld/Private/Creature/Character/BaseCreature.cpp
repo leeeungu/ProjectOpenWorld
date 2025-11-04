@@ -1,10 +1,12 @@
 ﻿#include "Creature/Character/BaseCreature.h"
 #include "Creature/Component/CreatureAction_Building.h"
+#include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 
 void ABaseCreature::BeginPlay()
 {
 	ABaseCharacter::BeginPlay();
-	TSet<UActorComponent*> Coms =  GetComponents();
+	TSet<UActorComponent*> Coms = GetComponents();
 	for (auto Component : Coms)
 	{
 		UCreatureActionComponent* Action = Cast< UCreatureActionComponent>(Component);
@@ -13,66 +15,73 @@ void ABaseCreature::BeginPlay()
 			ActionComponents[(uint8)Action->GetCreatureAction()] = TScriptInterface<ICreatureActionInterface>(Component);
 		}
 	}
+
+	AAIController* OwnerController = Cast<AAIController>(GetController());
+	if (OwnerController)
+	{
+		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &ABaseCreature::FinishActionMove);
+	}
+}
+
+void ABaseCreature::FinishActionMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+	if (Result != EPathFollowingResult::Type::Success)
+		return;
+	ActionType = NextActionType;
+	NextActionType = ECreatureActionType::Action_None;
+	if (ActionComponents[(uint8)ActionType] && ActionComponents[(uint8)ActionType].GetObject())
+	{
+		if (ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)ActionType].GetObject(), ActionType, TargetObj.Get()) == false)
+		{
+			ResetAction();
+		}
+	}
+}
+
+bool ABaseCreature::MoveToTarget()
+{
+	AAIController* OwnerController = Cast<AAIController>(GetController());
+	if (AActor* TargetActor = Cast< AActor>(TargetObj.Get()))
+	{
+		FAIMoveRequest MoveReq(TargetActor);
+		MoveReq.SetUsePathfinding(true);
+		MoveReq.SetAllowPartialPath(false);
+		MoveReq.SetAcceptanceRadius(100.0f);
+		MoveReq.SetReachTestIncludesAgentRadius(true);
+		if (OwnerController)
+		{
+			FNavPathSharedPtr OutPath{};
+			OwnerController->MoveTo(MoveReq, &OutPath);
+			if (!OutPath.IsValid())
+				return false;
+		}
+	}
+	return true;
 }
 
 void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, UObject* TargetObject)
 {
-	ECreatureActionType Type{};
-	bool bStart{};
-	switch (MessageType)
-	{
-	case EMessageType::NONE:
-		Type = ECreatureActionType::Action_None;
-		break;
-	case EMessageType::TakeRest:
-		break;
-	case EMessageType::DoBuild:
-	{
-		bStart = true;
-		Type = ECreatureActionType::Action_Buliding;
-		break;
-	}
-	case EMessageType::StopBuild:
-	{
-		Type = ECreatureActionType::Action_Buliding;
-		break;
-	}
-	case EMessageType::DoAttack:
-	{
-		Type = ECreatureActionType::Action_Attack;
-		bStart = true;
-		break;
-	}
-	case EMessageType::StopAttack:
-	{
-		Type = ECreatureActionType::Action_Attack;
-		break;
-	}
-	case EMessageType::DoCraft:
-		break;
-	case EMessageType::StopCraft:
-		break;
-	default:
-		break;
-	}
-	if (ActionType != Type)
-	{
+}
 
-		if (ActionComponents[(uint8)ActionType].GetObject() &&
-			ActionComponents[(uint8)ActionType].GetObject() && bStart)
-		{
-			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
-		}
-	}
-	ActionType = Type;
-	UE_LOG(LogTemp, Warning, TEXT("Creature Receive Message : %d"), (uint8)ActionType);
-	if (ActionComponents[(uint8)ActionType].GetObject() &&
+void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, UObject* TargetObject)
+{
+	AAIController* OwnerController = Cast<AAIController>(GetController());
+	if (ActionComponents[(uint8)ActionType] &&
 		ActionComponents[(uint8)ActionType].GetObject())
 	{
-		if (bStart)
-			ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)ActionType].GetObject(), ActionType, TargetObject);
-		else
-			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
+		ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
+	}
+	ResetAction();
+	OwnerController->StopMovement();
+	if (MessageType != ECreatureActionType::Action_None)
+	{
+		ActionType = ECreatureActionType::Action_Move;
+		NextActionType = MessageType;
+		TargetObj = TargetObject;
+		if (!MoveToTarget())
+		{
+			ResetAction();
+		}
 	}
 }
 
@@ -82,4 +91,11 @@ float ABaseCreature::GetAttackDamage_Implementation() const
 		//return AttackComponent.Get()->GetDamage();
 	}
 	return 0.0f;
+}
+
+void ABaseCreature::ResetAction()
+{
+	ActionType = ECreatureActionType::Action_None;
+	NextActionType = ECreatureActionType::Action_None;
+	TargetObj = nullptr;
 }

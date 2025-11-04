@@ -16,20 +16,17 @@ class PROJECTOPENWORLD_API UCreatureAction_Building : public UCreatureActionComp
 	GENERATED_BODY()
 private:
 	TSoftObjectPtr<ABuildingActor> TargetBuilding{};
-	bool bBuildingStart{};
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Building")
 	TObjectPtr<UStaticMesh> BuildToolMesh{};
 	TObjectPtr<UStaticMeshComponent> MeshComponent{};
 public:
 	UCreatureAction_Building();
-	virtual void ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override ;
-	virtual void ActionEnd_Implementation() override;
+	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
+	virtual bool ActionEnd_Implementation() override;
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
-	void FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result);
-	UFUNCTION()
-	void BuildEnd();
+	void EndBuilding();
 
 };

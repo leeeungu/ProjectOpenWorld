@@ -11,14 +11,9 @@ UENUM(Blueprintable)
 enum class EMessageType : uint8
 {
 	NONE,
-	TakeRest,
-	DoBuild,
-	StopBuild,
-	DoAttack,
-	StopAttack,
-	DoCraft,
-	StopCraft,
 };
+
+enum class ECreatureActionType :uint8;
 
 UINTERFACE(MinimalAPI, BlueprintType)
 class UCreatureMessageInterface : public UInterface
@@ -33,4 +28,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureMessage")
 
 	void ReceiveMessage(EMessageType MessageType, AActor* SendActor, UObject* TargetObject = nullptr);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
+
+	void ReceiveActionMessage(ECreatureActionType MessageType, AActor* SendActor, UObject* TargetObject = nullptr);
 };

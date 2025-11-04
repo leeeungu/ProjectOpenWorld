@@ -12,10 +12,8 @@ class PROJECTOPENWORLD_API UCreatureActionComponent : public UActorComponent, pu
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CreatureAction")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CreatureAction")
 	ECreatureActionType Action{};
-
-	TSoftObjectPtr < AAIController> OwnerController{};
 	bool bActionStart{};
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "CreatureAction")
@@ -27,6 +25,6 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	ECreatureActionType GetCreatureAction() { return Action; }
-	virtual void ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override {}
-	virtual void ActionEnd_Implementation() override {}
+	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override { return false; }
+	virtual bool ActionEnd_Implementation() override { return true; }
 };

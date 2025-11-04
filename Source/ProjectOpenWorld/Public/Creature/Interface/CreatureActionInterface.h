@@ -22,8 +22,9 @@ UENUM(Blueprintable)
 enum class ECreatureActionType  : uint8
 {
 	Action_None,
+	Action_Move,
 	Action_Buliding,
-	Action_Mining,
+	Action_Resource,
 	Action_Crafting,
 	Action_Attack,
 	Action_Lift,
@@ -44,7 +45,7 @@ class PROJECTOPENWORLD_API ICreatureActionInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
-	void ActionStart(ECreatureActionType ActionType, UObject* TargetObject);
+	bool ActionStart(ECreatureActionType ActionType, UObject* TargetObject);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
-	void ActionEnd();
+	bool ActionEnd();
 };

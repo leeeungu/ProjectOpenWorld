@@ -56,7 +56,7 @@ public:
 	void EndBuilding();
 
 	bool IsAlreadyStart() const { return !FMath::IsNearlyZero(curentPercent); }
-	bool IsBuildingEnd() const { return curentPercent >= 1.0f; }
+	bool IsBuildingEnd() const;
 
 	const float* GetBuildPercent() const { return &curentPercent; }
 	const float* GetBuildTime() const { return &buildingTime; }

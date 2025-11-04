@@ -6,6 +6,7 @@
 #include "Building/Component/BuildingProgress.h"
 #include "Creature/Interface/CreatureMessageInterface.h"
 #include "Components/StaticMeshComponent.h"
+#include "Creature/Character/BaseCreature.h"
 
 
 UCreatureAction_Building::UCreatureAction_Building()
@@ -14,7 +15,7 @@ UCreatureAction_Building::UCreatureAction_Building()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 }
 
-void UCreatureAction_Building::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
+bool UCreatureAction_Building::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
 {
 	// 호출시 마다 TargetBuilding가 변경될 수 있음
 	if (TargetBuilding != TargetObject)
@@ -22,91 +23,56 @@ void UCreatureAction_Building::ActionStart_Implementation(ECreatureActionType Ac
 		bActionStart = false;
 	}
 	TargetBuilding = Cast< ABuildingActor>(TargetObject);
-	if (!TargetBuilding || !OwnerController || bActionStart)
-		return;
+	if (!TargetBuilding || bActionStart || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())
+		return false;
+
 	bActionStart = true;
-	FAIMoveRequest MoveReq(TargetBuilding.Get());
-	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(true);
-	MoveReq.SetAcceptanceRadius(100.0f);
-	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true); 
-	FNavPathSharedPtr OutPath{};
-	OwnerController->MoveTo(MoveReq, &OutPath);
-	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddDynamic(this, &UCreatureAction_Building::BuildEnd);
-	if (!OutPath.IsValid())
-	{
-		FinishMoved(FAIRequestID::InvalidRequest, EPathFollowingResult::Success);
-	}
+	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddDynamic(this, &UCreatureAction_Building::EndBuilding);
+	TargetBuilding->GetBuildingProgress()->StartBuilding();
+	if (MeshComponent)
+		MeshComponent->SetVisibility(true);
+	return true;
 }
 
-void UCreatureAction_Building::ActionEnd_Implementation()
+bool UCreatureAction_Building::ActionEnd_Implementation()
 {
-	if (!bActionStart || !bBuildingStart)
-		return;
-
-	BuildEnd();
+	if (bActionStart == false )
+		return false;
+	EndBuilding();
+	return true;
 }
 
 void UCreatureAction_Building::BeginPlay()
 {
-	Super::BeginPlay(); 
-	if (OwnerController)
+	Super::BeginPlay();
+	if (ACharacter* Character = Cast<ACharacter>(GetOwner()))
 	{
-		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UCreatureAction_Building::FinishMoved);
-		if (ACharacter* Character = Cast<ACharacter>(OwnerController->GetPawn()))
+		if (MeshComponent)
 		{
-			if (MeshComponent)
-			{
-				MeshComponent->AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("SWeapon_R"));
-				MeshComponent->SetStaticMesh(BuildToolMesh);
-				MeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
-				MeshComponent->SetVisibility(false);
-			}
+			MeshComponent->AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("SWeapon_R"));
+			MeshComponent->SetStaticMesh(BuildToolMesh);
+			MeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
+			MeshComponent->SetVisibility(false);
 		}
 	}
 }
 
-void UCreatureAction_Building::FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UCreatureAction_Building::EndBuilding()
 {
-	if (!bActionStart || !TargetBuilding)
+	if (bActionStart == false)
 		return;
 
-	//{
-	//	if (MeshComponent)
-	//		MeshComponent->SetVisibility(false);
-	//	//ICreatureMessageInterface::Execute_ReceiveMessage(GetOwner(), EMessageType::NONE, nullptr, nullptr);
-	//	bActionStart = false;
-	//	bBuildingStart = false;
-	//}
-
-	if (EPathFollowingResult::Type::Success == Result &&  !bBuildingStart && bActionStart && !TargetBuilding->GetBuildingProgress()->IsBuildingEnd())
+	bActionStart = false;
+	if (TargetBuilding)
 	{
-		TargetBuilding->GetBuildingProgress()->StartBuilding();
-		if (MeshComponent)
-			MeshComponent->SetVisibility(true);
-		bBuildingStart = true;
-	}
-	else
-	{
-		if (MeshComponent)
-			MeshComponent->SetVisibility(false);
-		ICreatureMessageInterface::Execute_ReceiveMessage(GetOwner(), EMessageType::NONE, nullptr, nullptr);
-		bActionStart = false;
-		bBuildingStart = false;
-	}
-}
-
-void UCreatureAction_Building::BuildEnd()
-{
-	if (TargetBuilding && bBuildingStart)
-	{
+		TargetBuilding->GetBuildingProgress()->onBuildingEnd.RemoveDynamic(this, &UCreatureAction_Building::EndBuilding);
 		TargetBuilding->GetBuildingProgress()->StopBuilding();
-		MeshComponent->SetVisibility(false);
-		bBuildingStart = false;
-		bActionStart = false;
-		ICreatureMessageInterface::Execute_ReceiveMessage(GetOwner(), EMessageType::NONE, TargetBuilding.Get(), nullptr);
-		TargetBuilding->GetBuildingProgress()->onBuildingEnd.RemoveDynamic(this, &UCreatureAction_Building::BuildEnd);
 		TargetBuilding = nullptr;
+	}
+	if (MeshComponent)
+		MeshComponent->SetVisibility(false);
+	if (ABaseCreature* pOwner = Cast< ABaseCreature>(GetOwner()))
+	{
+		pOwner->ResetAction();
 	}
 }

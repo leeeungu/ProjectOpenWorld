@@ -17,12 +17,10 @@ private:
 public:
 	UCreatureAction_Resource();
 
-	virtual void ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
-	virtual void ActionEnd_Implementation() override;
-
+	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
+	virtual bool ActionEnd_Implementation() override;
+		
 
 protected:
 	virtual void BeginPlay() override;
-	UFUNCTION()
-	void FinishMoved(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 };

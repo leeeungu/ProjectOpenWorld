@@ -10,7 +10,4 @@ UCreatureActionComponent::UCreatureActionComponent()
 void UCreatureActionComponent::BeginPlay()
 {
 	Super::BeginPlay();	
-	if (!Cast<APawn>(GetOwner()))
-		return;
-	OwnerController = Cast<AAIController>(Cast<APawn>(GetOwner())->GetController());
 }
