@@ -1,27 +1,43 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿#include "Resource/Actor/ResourceActor.h"
+#include "Item/Actor/ItemActor.h"
+#include "Components/StaticMeshComponent.h"
 
-
-#include "Resource/Actor/ResourceActor.h"
-
-// Sets default values
 AResourceActor::AResourceActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	ResourceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	SetRootComponent(ResourceMesh);
 }
 
-// Called when the game starts or when spawned
 void AResourceActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
-void AResourceActor::Tick(float DeltaTime)
+void AResourceActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::Tick(DeltaTime);
-
+	Super::EndPlay(EndPlayReason);
+	if (onExtractEnd.IsBound())
+		onExtractEnd.Broadcast();
 }
+
+void AResourceActor::SpawnRandomItem()
+{
+	if (ItemData.Num() == 0)
+		return;
+	FActorSpawnParameters Param{};
+	Param.Owner = this;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	FVector Location = GetActorLocation();
+	AItemActor* Item = Cast< AItemActor>(GetWorld()->SpawnActor(AItemActor::StaticClass(), &Location, 0, Param));
+	int idx = rand() % ItemData.Num();
+	Item->Init(ItemData[idx], ItemData.Num() + 2);
+	ExtractCount--;
+	if (ExtractCount <= 0)
+	{
+		Destroy();
+	}
+}
+
 

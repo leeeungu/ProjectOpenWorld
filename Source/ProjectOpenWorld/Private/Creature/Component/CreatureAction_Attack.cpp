@@ -9,6 +9,8 @@ UCreatureAction_Attack::UCreatureAction_Attack()
 {
 	Action = ECreatureActionType::Action_Attack;
 	IsAttackable = true;
+	MapAttackData.Empty();
+	MapAttackData.Add({ ECreatureAttackIndex::CreatureAttackIndex_Default	,FCreatureAttackData {} });
 }
 
 void UCreatureAction_Attack::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

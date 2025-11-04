@@ -85,6 +85,18 @@ void ABasePlayer::StartTravel()
 		PlayerMoveFunc = &ABasePlayer::MoveTravel;
 }
 
+void ABasePlayer::UpdateWeight(float InventoryWeight)
+{
+	if (*GetStatusRef(EStatusType::MaxWeight) > InventoryWeight)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 50.0f;
+	}
+}
+
 void ABasePlayer::BeginPlay()
 {
 	Super::BeginPlay();

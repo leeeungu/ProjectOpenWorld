@@ -6,12 +6,20 @@
 #include "ItemActor.generated.h"
 
 class UItemPrimaryDataAsset;
+class UStaticMeshComponent;
+class UWidgetComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	
+	TObjectPtr<UStaticMeshComponent> ItemMesh{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UWidgetComponent> ItemWidget{};
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
 	TObjectPtr<UItemPrimaryDataAsset> ItemData{};
 	
@@ -31,6 +39,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public: // IInteractionInterface
+	void Init(TObjectPtr<UItemPrimaryDataAsset> Data, int Count);
+
 	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnInteractionStart_Implementation(APlayerController* pPlayer) override;

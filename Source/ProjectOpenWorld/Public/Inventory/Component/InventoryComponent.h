@@ -46,7 +46,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol);
 
-
 	bool GetInventorySlotData(int Row, int Col, const  FInventorySlot*& SlotData);
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE bool GetSlotData (int Row, int Col,  FInventorySlot& SlotData) const;
@@ -61,7 +60,4 @@ public:
 	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight ? *maxInventoryWeight : 1.0f; }
 protected:
 	virtual void BeginPlay() override;
-
-	void UpdateInventoryWeight(float AddValue);
-		
 };

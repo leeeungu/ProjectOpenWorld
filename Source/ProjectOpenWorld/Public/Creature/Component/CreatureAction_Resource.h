@@ -4,16 +4,16 @@
 #include "Creature/Component/CreatureActionComponent.h"
 #include "CreatureAction_Resource.generated.h"
 
-class AActor;
+class AResourceActor;
 struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
 
-UCLASS()
+UCLASS(ClassGroup = (CreatureAction), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UCreatureAction_Resource : public UCreatureActionComponent
 {
 	GENERATED_BODY()
 private:
-	TSoftObjectPtr<AActor> TargetActor{};
+	TSoftObjectPtr<AResourceActor> TargetActor{};
 public:
 	UCreatureAction_Resource();
 
@@ -23,4 +23,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	void ExtractResource();
+	UFUNCTION()
+	void ResetAction();
 };

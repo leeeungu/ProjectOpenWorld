@@ -2,6 +2,7 @@
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/Character/BasePlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -13,13 +14,10 @@ bool UInventoryComponent::AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount
 	if (!ItemData || !maxInventoryWeight)
 		return false;
 
-	if (*maxInventoryWeight - (ItemData->GetItemWeight() * ItemCount) < totalInventoryWeight)
-	{
-
-	}
-
 	float ItemWeights = ItemData->GetItemWeight() * ItemCount;
 	totalInventoryWeight += ItemWeights;
+	PlayerCharacter->UpdateWeight(totalInventoryWeight);
+
 	if (FInventorySlot* Slot = inventoryArray.FindByKey(FInventorySlot(ItemData)))
 	{
 		Slot->ItemCount+= ItemCount;
@@ -51,6 +49,7 @@ bool UInventoryComponent::SetInevntorySlot(int Row, int Col, UItemPrimaryDataAss
 	SlotData->ItemDataAsset = ItemData;
 	SlotData->ItemCount = ItemCount;
 	totalInventoryWeight -= SlotData->ItemTotalWeights;
+	PlayerCharacter->UpdateWeight(totalInventoryWeight);
 	SlotData->ItemTotalWeights = 0;
 	if (ItemData)
 	{
@@ -116,14 +115,5 @@ void UInventoryComponent::BeginPlay()
 	{
 		maxInventoryWeight = PlayerCharacter->GetStatusRef(EStatusType::MaxWeight);
 	}
-}
-
-void UInventoryComponent::UpdateInventoryWeight(float AddValue)
-{
-	//
-	//if (*maxInventoryWeight - (ItemData->GetItemWeight() * ItemCount) < totalInventoryWeight)
-	//{
-	//
-	//}
 }
 

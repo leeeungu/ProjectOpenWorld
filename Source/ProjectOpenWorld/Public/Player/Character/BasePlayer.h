@@ -102,6 +102,8 @@ public:
 	void StartClimb();
 	UFUNCTION(BlueprintCallable )
 	void StartTravel();
+
+	void UpdateWeight(float InventoryWeight);
 protected:
 
 	/** Called for movement input */

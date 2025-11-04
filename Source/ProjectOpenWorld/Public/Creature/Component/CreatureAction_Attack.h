@@ -11,7 +11,7 @@ namespace EPathFollowingResult { enum Type : int; }
 UENUM(Blueprintable)
 enum class ECreatureAttackIndex : uint8
 {
-	CreatureAttackIndex_None,
+	CreatureAttackIndex_None UMETA(Hidden),
 	CreatureAttackIndex_Default,
 	CreatureAttackIndex_Skill01,
 	CreatureAttackIndex_Max UMETA(Hidden)
@@ -23,7 +23,7 @@ struct FCreatureAttackData
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "AttackData")
-	float AttackDelay{};
+	float AttackDelay = 1.0f;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "AttackData")
 	float AttackDamage = 1;
 };
@@ -31,14 +31,12 @@ public:
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackStart, ECreatureAttackIndex, Index);
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (CreatureAction), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UCreatureAction_Attack : public UCreatureActionComponent
 {
 	GENERATED_BODY()
 private:
 	TSoftObjectPtr<APawn> TargetPawn{};
-
-	//TSoftObjectPtr < UCreatureAttackComponent> AttackComponent{};
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")

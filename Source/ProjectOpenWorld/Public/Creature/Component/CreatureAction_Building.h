@@ -10,7 +10,7 @@ namespace EPathFollowingResult { enum Type : int; }
 class UStaticMeshComponent;
 class UStaticMesh;
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (CreatureAction), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UCreatureAction_Building : public UCreatureActionComponent
 {
 	GENERATED_BODY()
