@@ -4,8 +4,7 @@
 #include "UObject/Interface.h"
 #include "CreatureActionInterface.generated.h"
 
-//class AActor;
-//
+class AActor;
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class ECreatureRollType : uint8
@@ -27,11 +26,11 @@ enum class ECreatureActionType  : uint8
 	Action_Resource,
 	Action_Crafting,
 	Action_Attack,
-	Action_Lift,
+	Action_Transport,
 	Action_Max
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FFinishAction, ECreatureActionType, ActionType, UObject*, TargetObject);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FFinishAction, ECreatureActionType, ActionType, AActor*, SendActor, AActor*, TargetActor );
 
 UINTERFACE(MinimalAPI, BlueprintType)
 class UCreatureActionInterface : public UInterface
@@ -45,7 +44,7 @@ class PROJECTOPENWORLD_API ICreatureActionInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
-	bool ActionStart(ECreatureActionType ActionType, UObject* TargetObject);
+	bool ActionStart(AActor* SendActor, AActor* TargetActor = nullptr);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
 	bool ActionEnd();
 };

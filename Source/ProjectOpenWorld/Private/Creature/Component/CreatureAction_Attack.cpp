@@ -30,9 +30,9 @@ void UCreatureAction_Attack::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
-bool UCreatureAction_Attack::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
+bool UCreatureAction_Attack::ActionStart_Implementation( AActor* SendActor, AActor* TargetActor)
 {	
-	if (Cast< APawn>(TargetObject) != TargetPawn)
+	if (Cast< APawn>(TargetActor) != TargetPawn)
 	{
 		bActionStart = false;
 		CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
@@ -40,7 +40,7 @@ bool UCreatureAction_Attack::ActionStart_Implementation(ECreatureActionType Acti
 		IsAttackable = true;
 		AttackTime = 0.0f;
 	}
-	TargetPawn = Cast< APawn>(TargetObject);
+	TargetPawn = Cast< APawn>(TargetActor);
 	if (!TargetPawn || !IsAttackable)
 	{
 		return false;

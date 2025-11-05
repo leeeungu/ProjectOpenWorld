@@ -59,7 +59,7 @@ public:
 	UCreatureAction_Attack();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
+	virtual bool ActionStart_Implementation( AActor* SendActor, AActor* TargetActor = nullptr) override;
 	virtual bool ActionEnd_Implementation() override;
 
 

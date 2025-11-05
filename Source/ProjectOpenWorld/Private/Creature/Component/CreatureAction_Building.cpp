@@ -15,14 +15,14 @@ UCreatureAction_Building::UCreatureAction_Building()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 }
 
-bool UCreatureAction_Building::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
+bool UCreatureAction_Building::ActionStart_Implementation(AActor* SendActor, AActor* TargetActor)
 {
 	// 호출시 마다 TargetBuilding가 변경될 수 있음
-	if (TargetBuilding != TargetObject)
+	if (TargetBuilding != TargetActor)
 	{
 		bActionStart = false;
 	}
-	TargetBuilding = Cast< ABuildingActor>(TargetObject);
+	TargetBuilding = Cast< ABuildingActor>(TargetActor);
 	if (!TargetBuilding || bActionStart || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())
 		return false;
 

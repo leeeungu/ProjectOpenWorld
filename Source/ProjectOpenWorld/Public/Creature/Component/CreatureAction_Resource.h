@@ -13,11 +13,11 @@ class PROJECTOPENWORLD_API UCreatureAction_Resource : public UCreatureActionComp
 {
 	GENERATED_BODY()
 private:
-	TSoftObjectPtr<AResourceActor> TargetActor{};
+	TSoftObjectPtr<AResourceActor> TargetResource{};
 public:
 	UCreatureAction_Resource();
 
-	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
+	virtual bool ActionStart_Implementation( AActor* SendActor, AActor* TargetActor = nullptr) override;
 	virtual bool ActionEnd_Implementation() override;
 		
 

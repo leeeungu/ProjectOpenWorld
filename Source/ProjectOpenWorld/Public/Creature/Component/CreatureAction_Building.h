@@ -22,7 +22,7 @@ protected:
 	TObjectPtr<UStaticMeshComponent> MeshComponent{};
 public:
 	UCreatureAction_Building();
-	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override;
+	virtual bool ActionStart_Implementation( AActor* SendActor, AActor* TargetActor = nullptr) override;
 	virtual bool ActionEnd_Implementation() override;
 protected:
 	virtual void BeginPlay() override;

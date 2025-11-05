@@ -31,7 +31,7 @@ void ABaseCreature::FinishActionMove(FAIRequestID RequestID, EPathFollowingResul
 	NextActionType = ECreatureActionType::Action_None;
 	if (ActionComponents[(uint8)ActionType] && ActionComponents[(uint8)ActionType].GetObject())
 	{
-		if (ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)ActionType].GetObject(), ActionType, TargetObj.Get()) == false)
+		if (ICreatureActionInterface::Execute_ActionStart(ActionComponents[(uint8)ActionType].GetObject(), ActionFrom.Get(), TargetActor.Get()) == false)
 		{
 			ResetAction();
 		}
@@ -41,9 +41,9 @@ void ABaseCreature::FinishActionMove(FAIRequestID RequestID, EPathFollowingResul
 bool ABaseCreature::MoveToTarget()
 {
 	AAIController* OwnerController = Cast<AAIController>(GetController());
-	if (AActor* TargetActor = Cast< AActor>(TargetObj.Get()))
+	if (TargetActor)
 	{
-		FAIMoveRequest MoveReq(TargetActor);
+		FAIMoveRequest MoveReq(TargetActor.Get());
 		MoveReq.SetUsePathfinding(true);
 		MoveReq.SetAllowPartialPath(false);
 		MoveReq.SetAcceptanceRadius(100.0f);
@@ -59,25 +59,27 @@ bool ABaseCreature::MoveToTarget()
 	return true;
 }
 
-void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, UObject* TargetObject)
+void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, AActor* TargetObject)
 {
 }
 
-void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, UObject* TargetObject)
+void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject)
 {
 	AAIController* OwnerController = Cast<AAIController>(GetController());
 	if (ActionComponents[(uint8)ActionType] &&
-		ActionComponents[(uint8)ActionType].GetObject())
+		ActionComponents[(uint8)ActionType].GetObject() )
 	{
 		ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
 	}
+
 	ResetAction();
+	ActionFrom = SendActor;
 	OwnerController->StopMovement();
 	if (MessageType != ECreatureActionType::Action_None)
 	{
 		ActionType = ECreatureActionType::Action_Move;
 		NextActionType = MessageType;
-		TargetObj = TargetObject;
+		TargetActor = TargetObject;
 		if (!MoveToTarget())
 		{
 			ResetAction();
@@ -97,5 +99,6 @@ void ABaseCreature::ResetAction()
 {
 	ActionType = ECreatureActionType::Action_None;
 	NextActionType = ECreatureActionType::Action_None;
-	TargetObj = nullptr;
+	TargetActor = nullptr;
+	ActionFrom = nullptr;
 }

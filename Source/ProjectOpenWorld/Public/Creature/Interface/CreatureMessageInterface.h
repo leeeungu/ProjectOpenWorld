@@ -27,9 +27,9 @@ class PROJECTOPENWORLD_API ICreatureMessageInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureMessage")
 
-	void ReceiveMessage(EMessageType MessageType, AActor* SendActor, UObject* TargetObject = nullptr);
+	void ReceiveMessage(EMessageType MessageType, AActor* SendActor, AActor* TargetObject = nullptr);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
 
-	void ReceiveActionMessage(ECreatureActionType MessageType, AActor* SendActor, UObject* TargetObject = nullptr);
+	void ReceiveActionMessage(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject = nullptr);
 };

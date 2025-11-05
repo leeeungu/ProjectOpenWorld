@@ -22,7 +22,9 @@ protected:
 
 	ECreatureActionType ActionType{};
 	ECreatureActionType NextActionType{};
-	TSoftObjectPtr<UObject> TargetObj{};
+
+	TSoftObjectPtr<AActor> ActionFrom{};
+	TSoftObjectPtr<AActor> TargetActor{};
 protected:
 	virtual void BeginPlay() override;
 	
@@ -30,8 +32,8 @@ protected:
 	void FinishActionMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 	bool MoveToTarget();
 public:
-	virtual void ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, UObject* TargetObject = nullptr) override;
-	virtual void ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, UObject* TargetObject = nullptr) override;
+	virtual void ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
+	virtual void ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
 	virtual float GetAttackDamage_Implementation() const override;
 
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")

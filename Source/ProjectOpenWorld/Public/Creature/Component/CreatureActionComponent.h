@@ -25,6 +25,6 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	ECreatureActionType GetCreatureAction() { return Action; }
-	virtual bool ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject) override { return false; }
+	virtual bool ActionStart_Implementation(AActor* SendActor, AActor* TargetActor = nullptr) override { return false; }
 	virtual bool ActionEnd_Implementation() override { return true; }
 };

@@ -11,19 +11,19 @@ UCreatureAction_Resource::UCreatureAction_Resource()
 	Action = ECreatureActionType::Action_Resource;
 }
 
-bool UCreatureAction_Resource::ActionStart_Implementation(ECreatureActionType ActionType, UObject* TargetObject)
+bool UCreatureAction_Resource::ActionStart_Implementation( AActor* SendActor, AActor* TargetActor)
 {
-	if (TargetActor != TargetObject)
+	if (TargetResource != TargetActor)
 	{
-		TargetActor = nullptr;
+		TargetResource = nullptr;
 		bActionStart = false;
 	}
-	TargetActor = Cast< AResourceActor>(TargetObject);
-	if (bActionStart || !TargetActor)
+	TargetResource = Cast< AResourceActor>(TargetActor);
+	if (bActionStart || !TargetResource)
 	{
 		return false;
 	}
-	TargetActor->onExtractEnd.AddDynamic(this, &UCreatureAction_Resource::ResetAction);
+	TargetResource->onExtractEnd.AddDynamic(this, &UCreatureAction_Resource::ResetAction);
 	bActionStart = true;
 	return true;
 }
@@ -32,9 +32,9 @@ bool UCreatureAction_Resource::ActionEnd_Implementation()
 {
 	if (!bActionStart)
 		return false;
-	if (TargetActor)
-		TargetActor->onExtractEnd.RemoveDynamic(this, &UCreatureAction_Resource::ResetAction);
-	TargetActor = nullptr;
+	if (TargetResource)
+		TargetResource->onExtractEnd.RemoveDynamic(this, &UCreatureAction_Resource::ResetAction);
+	TargetResource = nullptr;
 	bActionStart = false;
 	return true;
 }
@@ -46,9 +46,9 @@ void UCreatureAction_Resource::BeginPlay()
 
 void UCreatureAction_Resource::ExtractResource()
 {
-	if (!TargetActor || !bActionStart)
+	if (!TargetResource || !bActionStart)
 		return;
-	TargetActor->SpawnRandomItem();
+	TargetResource->SpawnRandomItem();
 }
 
 
@@ -58,6 +58,6 @@ void UCreatureAction_Resource::ResetAction()
 	{
 		pOwner->ResetAction();
 	}
-	TargetActor = nullptr;
+	TargetResource = nullptr;
 	bActionStart = false;
 }
