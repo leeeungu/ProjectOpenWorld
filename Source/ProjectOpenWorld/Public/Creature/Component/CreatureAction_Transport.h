@@ -1,10 +1,10 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Creature/Component/CreatureActionComponent.h"
 #include "CreatureAction_Transport.generated.h"
 
-UCLASS()
+UCLASS(ClassGroup = (CreatureAction), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UCreatureAction_Transport : public UCreatureActionComponent
 {
 	GENERATED_BODY()

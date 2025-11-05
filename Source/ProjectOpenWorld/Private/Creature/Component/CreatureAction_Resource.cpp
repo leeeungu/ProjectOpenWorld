@@ -1,4 +1,4 @@
-﻿#include "Creature/Component/CreatureAction_Resource.h"
+#include "Creature/Component/CreatureAction_Resource.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
@@ -30,7 +30,7 @@ bool UCreatureAction_Resource::ActionStart_Implementation( AActor* SendActor, AA
 
 bool UCreatureAction_Resource::ActionEnd_Implementation()
 {
-	if (!bActionStart)
+	if (bActionStart == false)
 		return false;
 	if (TargetResource)
 		TargetResource->onExtractEnd.RemoveDynamic(this, &UCreatureAction_Resource::ResetAction);

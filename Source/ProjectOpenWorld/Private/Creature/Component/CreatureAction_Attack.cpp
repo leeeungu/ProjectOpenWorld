@@ -1,4 +1,4 @@
-﻿#include "Creature/Component/CreatureAction_Attack.h"
+#include "Creature/Component/CreatureAction_Attack.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
@@ -43,21 +43,23 @@ bool UCreatureAction_Attack::ActionStart_Implementation( AActor* SendActor, AAct
 	TargetPawn = Cast< APawn>(TargetActor);
 	if (!TargetPawn || !IsAttackable)
 	{
-		return false;
+		return true;
 	}
-	bActionStart = true;
-	SetRandomIndex();
-	if (StartDelegate.IsBound())
+	if (!bActionStart)
 	{
-		StartDelegate.Broadcast(CurAttackIndex);
+		bActionStart = true;
+		SetRandomIndex();
+		if (StartDelegate.IsBound())
+		{
+			StartDelegate.Broadcast(CurAttackIndex);
+		}
 	}
 	return true;
 }
 
 bool UCreatureAction_Attack::ActionEnd_Implementation()
 {
-	if (bActionStart == false)
-		return false;
+	UE_LOG(LogTemp, Warning, TEXT("Attack End"));
 	bActionStart = false; 
 	TargetPawn = nullptr;
 	IsAttackable = true;

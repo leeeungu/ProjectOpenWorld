@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -24,6 +24,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 public:	
+	UFUNCTION(BlueprintPure, Category = "Action")
+	bool GetIsStarted() const { return bActionStart; }
 	ECreatureActionType GetCreatureAction() { return Action; }
 	virtual bool ActionStart_Implementation(AActor* SendActor, AActor* TargetActor = nullptr) override { return false; }
 	virtual bool ActionEnd_Implementation() override { return true; }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -37,6 +37,13 @@ public:
 	virtual float GetAttackDamage_Implementation() const override;
 
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	bool GetIsActionStarted(ECreatureActionType Type);
+
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE ECreatureActionType GetCreatureActionType() const { return ActionType; }
 	void ResetAction();
+
+
+	void ResetActionMode();
+	void TransportActionMode();
 };
