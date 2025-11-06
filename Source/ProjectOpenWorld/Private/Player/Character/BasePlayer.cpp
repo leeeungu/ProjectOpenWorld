@@ -305,6 +305,10 @@ void ABasePlayer::OnActionExit(const FInputActionValue& Value)
 	{
 		BuildAssistComponent->EndBuilding();
 	}
+	if (InteractionComponent)
+	{
+		InteractionComponent->OnInteractionCompleted();
+	}
 }
 
 void ABasePlayer::OnActionKeyC(const FInputActionValue& Value)

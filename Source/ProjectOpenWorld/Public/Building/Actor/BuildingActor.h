@@ -18,6 +18,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	TSoftObjectPtr<APlayerController> Player{};
+	
 	UFUNCTION()
 	void BuildingEnd();
 public: // IInteractionInterface
@@ -49,7 +50,7 @@ public: // IInteractionInterface
 // 
 
 /*
-* 건축 완료 시 => 이번주에 존더 관찰이나 하자
+* 건축 완료 시 => 이번주에 좀더 관찰 하자
 OnBeginDetected 에서 widgetcomponent의 위젯 오픈
 
 OnInteractionStart 하면 건축물의 wiget 오픈

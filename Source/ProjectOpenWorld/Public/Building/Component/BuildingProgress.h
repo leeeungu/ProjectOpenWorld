@@ -13,7 +13,7 @@ class UMaterialInstanceDynamic;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Architecture), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UBuildingProgress : public UActorComponent
 {
 	GENERATED_BODY()

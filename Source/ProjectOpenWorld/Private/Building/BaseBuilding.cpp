@@ -1,6 +1,7 @@
 ﻿#include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
+#include "Building/Component/BuildingActionWidgetComponent.h"
 
 ABaseBuilding::ABaseBuilding()
 {
@@ -14,6 +15,11 @@ ABaseBuilding::ABaseBuilding()
 		buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	}
 	buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
+	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
+	if (BuildActionWidget)
+	{
+		BuildActionWidget->SetupAttachment(GetRootComponent());
+	}
 }
 
 void ABaseBuilding::BeginPlay()

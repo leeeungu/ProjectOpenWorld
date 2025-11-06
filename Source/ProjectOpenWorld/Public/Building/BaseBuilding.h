@@ -9,20 +9,22 @@ class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
 class UMaterials;
 class UBuildingProgress;
+class UBuildingActionWidgetComponent;
 
-
-UCLASS(BlueprintType, Blueprintable)
+UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
 class PROJECTOPENWORLD_API ABaseBuilding : public AActor
 {
 	GENERATED_BODY()
 protected:
 	// 해당 기능을 묶어서 처리면 좋을듯?
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Building", BlueprintGetter = "GetBuildingMeshComponent")
-	UStaticMeshComponent* buildingMeshComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture", BlueprintGetter = "GetBuildingMeshComponent")
+	TObjectPtr < UStaticMeshComponent> buildingMeshComponent{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Building", BlueprintGetter = "GetBuildingProgress")
-	UBuildingProgress* buildingProgressComponent{};
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture", BlueprintGetter = "GetBuildingProgress")
+	TObjectPtr < UBuildingProgress> buildingProgressComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
+	TObjectPtr<UBuildingActionWidgetComponent> BuildActionWidget{};
+
 public:		
 	ABaseBuilding();
 
