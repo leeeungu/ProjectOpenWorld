@@ -1,4 +1,4 @@
-#include "Creature/Character/BaseCreature.h"
+﻿#include "Creature/Character/BaseCreature.h"
 #include "Creature/Component/CreatureAction_Building.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -117,13 +117,6 @@ void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType Mess
 	}
 }
 
-float ABaseCreature::GetAttackDamage_Implementation() const
-{
-	{
-		//return AttackComponent.Get()->GetDamage();
-	}
-	return 0.0f;
-}
 
 bool ABaseCreature::GetIsActionStarted(ECreatureActionType Type)
 {
@@ -151,4 +144,24 @@ void ABaseCreature::ResetActionMode()
 void ABaseCreature::TransportActionMode()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 50.0f;
+}
+
+bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
+{
+	return false;
+}
+
+float ABaseCreature::GetAttackValue_Implementation() const
+{
+	return Attack;
+}
+
+void ABaseCreature::SetAttackValue_Implementation(float NewValue)
+{
+	Attack = NewValue;
+}
+
+void ABaseCreature::RetAttackValue_Implementation()
+{
+	Attack = 1.0f;
 }

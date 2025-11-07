@@ -47,9 +47,11 @@ void UBuildingWidgetSubsystem::SetBuildingWidgetProperty(UBuildingProgress* Prog
 		buildingStateWidget->SetBuildTime(ProgressComponent->GetBuildTime());
 		buildingStateWidget->SetBuildSpeed(ProgressComponent->GetBuildSpeed());
 		if (buildProgress)
-			buildProgress->onBuildingEnd.Clear();
+		{
+			buildProgress->onBuildingEnd.RemoveDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
+		}
 		buildProgress = ProgressComponent;
-		ProgressComponent->onBuildingEnd.AddDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
+		ProgressComponent->onBuildingEnd.AddUniqueDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
 	}
 }
 

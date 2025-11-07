@@ -22,6 +22,7 @@ void UBuildingProgress::BeginPlay()
 	curentPercent = 0.0f;
 	isBuilding = false;
 	SetBuildingPercent(curentPercent);
+
 }
 
 #if WITH_EDITOR
@@ -78,6 +79,7 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 				}
 			}
 		}
+		buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	}
 }
 
@@ -99,6 +101,7 @@ void UBuildingProgress::ResumeBuilding()
 
 void UBuildingProgress::StartBuilding()
 {
+	
 	if (curentPercent >= 1.0f)
 	{
 		buildSpeed = 0;
@@ -124,8 +127,14 @@ void UBuildingProgress::EndBuilding()
 	curentPercent = 1.0f;
 	if (onBuildingEnd.IsBound())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
+		for (UObject* Obj : onBuildingEnd.GetAllObjects())
+		{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *Obj->GetFName().ToString());
+		}
 		onBuildingEnd.Broadcast();
 	}
+	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 	buildingMeshComponent->SetCanEverAffectNavigation(true);
 }
 

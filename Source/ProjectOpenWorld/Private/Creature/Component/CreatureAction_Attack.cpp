@@ -1,16 +1,18 @@
-#include "Creature/Component/CreatureAction_Attack.h"
+﻿#include "Creature/Component/CreatureAction_Attack.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
 #include "Engine/DamageEvents.h"
 #include "Creature/Interface/CreatureAttackInterface.h"
+#include "GameBase/Interface/AttackInterface.h"
 
 UCreatureAction_Attack::UCreatureAction_Attack()
 {
 	Action = ECreatureActionType::Action_Attack;
 	IsAttackable = true;
 	MapAttackData.Empty();
-	MapAttackData.Add({ ECreatureAttackIndex::CreatureAttackIndex_Default	,FCreatureAttackData {} });
+	FCreatureAttackData& Data = MapAttackData.Add({ ECreatureAttackIndex::CreatureAttackIndex_Default	,FCreatureAttackData {} });
+	Data.AttackDamage = 100.0f;
 }
 
 void UCreatureAction_Attack::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -39,6 +41,11 @@ bool UCreatureAction_Attack::ActionStart_Implementation( AActor* SendActor, AAct
 		CurAttackData = nullptr;
 		IsAttackable = true;
 		AttackTime = 0.0f;
+		IAttackInterface* pAttack = Cast< IAttackInterface>(GetOwner());
+		if (pAttack)
+		{
+			IAttackInterface::Execute_RetAttackValue(GetOwner());
+		}
 	}
 	TargetPawn = Cast< APawn>(TargetActor);
 	if (!TargetPawn || !IsAttackable)
@@ -66,18 +73,23 @@ bool UCreatureAction_Attack::ActionEnd_Implementation()
 	CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
 	CurAttackData = nullptr;
 	AttackTime = 0.0f;
+	IAttackInterface* pAttack = Cast< IAttackInterface>(GetOwner());
+	if (pAttack)
+	{
+		IAttackInterface::Execute_RetAttackValue(GetOwner());
+	}
 	return true;
 }
 
-bool UCreatureAction_Attack::GetAttackDamage(float& fDamage) const
-{
-	if (CurAttackData)
-	{
-		fDamage = CurAttackData->AttackDamage;
-		return true;
-	}
-	return false;
-}
+//bool UCreatureAction_Attack::GetAttackDamage(float& fDamage) const
+//{
+//	if (CurAttackData)
+//	{
+//		fDamage = CurAttackData->AttackDamage;
+//		return true;
+//	}
+//	return false;
+//}
 
 bool UCreatureAction_Attack::GetAttackDelay(float& fTime) const
 {
@@ -103,12 +115,23 @@ void UCreatureAction_Attack::SetRandomIndex()
 		CurAttackIndex = ECreatureAttackIndex::CreatureAttackIndex_None;
 		CurAttackData = nullptr;
 		IsAttackable = true;
+		IAttackInterface* pAttack = Cast< IAttackInterface>(GetOwner());
+		if (pAttack)
+		{
+			IAttackInterface::Execute_RetAttackValue(GetOwner());
+		}
 		return;
 	}
 	IsAttackable = false;
+
 	int i = (rand() % ArrayAttackIndex.Num());
 	CurAttackIndex = (ECreatureAttackIndex)ArrayAttackIndex[i];
 	CurAttackData = MapAttackData.Find(CurAttackIndex);
+	IAttackInterface* pAttack = Cast< IAttackInterface>(GetOwner());
+	if (pAttack && CurAttackData)
+	{
+		IAttackInterface::Execute_SetAttackValue(GetOwner(), CurAttackData->AttackDamage);
+	}
 	AttackTime = 0.0f;
 	if (CurAttackData)
 	{

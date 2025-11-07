@@ -25,7 +25,7 @@ bool UCreatureAction_Building::ActionStart_Implementation(AActor* SendActor, AAc
 	TargetBuilding = Cast< ABuildingActor>(TargetActor);
 	if (!TargetBuilding || bActionStart || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())
 		return false;
-
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *GetOwner()->GetFName().ToString());
 	bActionStart = true;
 	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddDynamic(this, &UCreatureAction_Building::EndBuilding);
 	TargetBuilding->GetBuildingProgress()->StartBuilding();
@@ -59,14 +59,15 @@ void UCreatureAction_Building::BeginPlay()
 
 void UCreatureAction_Building::EndBuilding()
 {
+	UE_LOG(LogTemp, Warning, TEXT("End %s"), *GetOwner()->GetFName().ToString());
 	if (bActionStart == false)
 		return;
 
 	bActionStart = false;
 	if (TargetBuilding)
 	{
-		TargetBuilding->GetBuildingProgress()->onBuildingEnd.RemoveDynamic(this, &UCreatureAction_Building::EndBuilding);
 		TargetBuilding->GetBuildingProgress()->StopBuilding();
+		TargetBuilding->GetBuildingProgress()->onBuildingEnd.RemoveDynamic(this, &UCreatureAction_Building::EndBuilding);
 		TargetBuilding = nullptr;
 	}
 	if (MeshComponent)

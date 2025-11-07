@@ -10,5 +10,5 @@ UBuildingActionWidgetComponent::UBuildingActionWidgetComponent() :
 	{
 		SetWidgetClass(ActionClass.Class);
 	}
-
+	SetVisibility(false);
 }

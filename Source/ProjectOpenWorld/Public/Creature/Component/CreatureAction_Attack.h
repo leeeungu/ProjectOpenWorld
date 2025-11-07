@@ -67,9 +67,6 @@ public:
 	ECreatureAttackIndex GetAttackIndex() const { return CurAttackIndex; }
 
 	UFUNCTION(BlueprintPure, Category = "Attack")
-	bool GetAttackDamage(float& fDamage) const;
-
-	UFUNCTION(BlueprintPure, Category = "Attack")
 	bool GetAttackDelay(float& fTime) const;
 protected:
 	virtual void BeginPlay() override;

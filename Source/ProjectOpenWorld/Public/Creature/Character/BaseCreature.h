@@ -1,17 +1,17 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
+#include "GameBase/Interface/AttackInterface.h"
 #include "Creature/Interface/CreatureActionInterface.h"
 #include "Creature/Interface/CreatureMessageInterface.h"
-#include "Creature/Interface/CreatureAttackInterface.h"
 #include "BaseCreature.generated.h"
 
 struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface, public ICreatureAttackInterface
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface,  public IAttackInterface
 {
 	GENERATED_BODY()
 protected:
@@ -25,6 +25,13 @@ protected:
 
 	TSoftObjectPtr<AActor> ActionFrom{};
 	TSoftObjectPtr<AActor> TargetActor{};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
+	float Hp{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
+	float Attack{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
+	float Defend{};
 protected:
 	virtual void BeginPlay() override;
 	
@@ -34,7 +41,6 @@ protected:
 public:
 	virtual void ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
 	virtual void ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
-	virtual float GetAttackDamage_Implementation() const override;
 
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	bool GetIsActionStarted(ECreatureActionType Type);
@@ -46,4 +52,11 @@ public:
 
 	void ResetActionMode();
 	void TransportActionMode();
+
+public:
+	//AttackInterface
+	virtual float GetAttackValue_Implementation() const override;
+	virtual void  SetAttackValue_Implementation(float NewValue) override;
+	virtual void  RetAttackValue_Implementation() override;
+	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 };
