@@ -1,4 +1,4 @@
-ï»¿#include "Building/BuildingAssistComponent.h"
+#include "Building/BuildingAssistComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/StaticMeshActor.h" 
 #include "Kismet/GameplayStatics.h"
@@ -74,13 +74,13 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	if (ownerPawn && buildingPreviewActor)
 	{
 		FHitResult HitResult{};
-		FVector MoveLocation{};
-		if (UpdateTraceHit(HitResult)) // í™”ë©´ ì¤‘ì•™ìœ¼ë¡œ RayCastë¥¼ ì´ ê±´ì¶• ê°€ëŠ¥í•œ ê±°ë¦¬ë¥¼ íŒë³„
+		FVector MoveLocation = { 0,0,meshSize.Z };
+		if (UpdateTraceHit(HitResult)) // È­¸é Áß¾ÓÀ¸·Î RayCast¸¦ ½÷ °ÇÃà °¡´ÉÇÑ °Å¸®¸¦ ÆÇº°
 		{
-			MoveLocation = HitResult.Location;
-			bool bSnap = UpdateSnap(MoveLocation); // í•´ë‹¹ ìœ„ì¹˜ì—ì„œ ì†Œì¼“ì´ ìžˆëŠ” ë©”ì‹œë¥¼ íƒìƒ‰
-			canBuilding = UpdateBuildable(); // ìµœì¢…ì ìœ¼ë¡œ ë¹Œë“œ ê°€ëŠ¥í•œì§€ í™•ì¸
-			// ë¹Œë“œ ê°€ëŠ¥í•œ ê²½ì‚¬ê°ì¸ì§€ í™•ì¸
+			MoveLocation += HitResult.Location;
+			bool bSnap = UpdateSnap(MoveLocation); // ÇØ´ç À§Ä¡¿¡¼­ ¼ÒÄÏÀÌ ÀÖ´Â ¸Þ½Ã¸¦ Å½»ö
+			canBuilding = UpdateBuildable(); // ÃÖÁ¾ÀûÀ¸·Î ºôµå °¡´ÉÇÑÁö È®ÀÎ
+			// ºôµå °¡´ÉÇÑ °æ»ç°¢ÀÎÁö È®ÀÎ
 			double Angle = FMath::RadiansToDegrees(FMath::Acos(HitResult.ImpactNormal.Dot(FVector::UpVector)));
 			if (!bSnap && Angle > 15.0)
 			{
@@ -89,7 +89,7 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		}
 		else
 		{
-			MoveLocation = HitResult.TraceEnd;
+			MoveLocation += HitResult.TraceEnd;
 			targetActor = nullptr;
 		}
 		buildingPreviewActor->SetActorLocation(MoveLocation);
@@ -106,6 +106,7 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 		buildingPreviewActor->GetStaticMeshComponent()->SetMaterial(i, buildingPreview.Get());
 	}
 	meshSize = NewStaticMesh->GetBoundingBox().GetExtent();
+		//buildingPreviewActor->GetStaticMeshComponent()->SetRelativeLocation({ 0,0,meshSize.Z });
 	UpdatePreviewMat();
 }
 
@@ -221,12 +222,12 @@ bool UBuildingAssistComponent::UpdateBuildable()
 	bool bResult = true;
 	buildCheckIgnore.Last() = targetActor.Get();
 	TArray<FHitResult> ArrayPenetratingResult{};
-	meshCenter = buildingPreviewActor->GetStaticMeshComponent()->GetSocketLocation(TEXT("BuildingCenter"))+ FVector(0,0,meshSize.Z);
+	meshCenter = buildingPreviewActor->GetStaticMeshComponent()->GetSocketLocation(TEXT("BuildingCenter")) +FVector(0, 0, meshSize.Z);
 	if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
 		meshCenter, //buildingPreviewActor->GetActorLocation(),
 		meshCenter, //buildingPreviewActor->GetActorLocation(),
 		meshSize, buildingPreviewActor->GetActorRotation(),
-		buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true))
+		buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
 	{
 		for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
 		{

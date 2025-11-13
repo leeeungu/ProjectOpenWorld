@@ -1,4 +1,4 @@
-﻿#include "Building/Component/BuildingProgress.h"
+#include "Building/Component/BuildingProgress.h"
 
 UBuildingProgress::UBuildingProgress()
 {
@@ -60,6 +60,7 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 	buildingMesh = NewMesh;
 	if (buildingMeshComponent && buildingMesh)
 	{
+		curentPercent = 0;
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
 		if (buildingMakingMat)
 		{
@@ -146,6 +147,7 @@ bool UBuildingProgress::IsBuildingEnd() const
 void UBuildingProgress::SetBuildingPercent(float Value)
 {
 	int nSize = buildingMaking.Num();
+	curentPercent = Value;
 	for (int i = 0; i < nSize; i++)
 	{
 		if (buildingMaking[i])
