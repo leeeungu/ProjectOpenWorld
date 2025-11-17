@@ -1,4 +1,4 @@
-ï»¿#include "Building/Actor/BuildingActor.h"
+#include "Building/Actor/BuildingActor.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Subsystem/BuildingWidgetSubsystem.h"
 #include "Player/Character/BasePlayer.h"
@@ -28,7 +28,7 @@ void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 {
 	if (!pPlayer || !pPlayer->GetLocalPlayer())
 		return;
-	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystemê°€ Mapì—ì„œ ì°¾ìœ¼ë‹ˆ ê´œì°®ì€ ë“¯
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
 	{
 		BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
 		if (!GetBuildingProgress()->IsBuildingEnd())

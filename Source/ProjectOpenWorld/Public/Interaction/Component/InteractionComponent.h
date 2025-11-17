@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -14,9 +14,10 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
-private:
+protected:
 	TSoftObjectPtr<APlayerController> PlayerController{};
 	TSoftObjectPtr<ACharacter> PlayerCharacter{};
+	UPROPERTY(VisibleAnywhere)
 	TScriptInterface<IInteractionInterface> InteractionTarget{};
 	TSoftObjectPtr<APlayerCameraManager> CameraManager{};
 	
@@ -34,6 +35,9 @@ public:
 	void OnInteractionTriggered();
 	void OnInteractionCompleted();
 	void OnActorCancel();
+
+	UFUNCTION(BlueprintPure)
+	AActor* GetTargetActor();
 protected:
 	virtual void BeginPlay() override;
 };

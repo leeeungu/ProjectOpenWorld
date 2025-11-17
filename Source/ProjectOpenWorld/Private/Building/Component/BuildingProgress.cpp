@@ -61,7 +61,10 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 	if (buildingMeshComponent && buildingMesh)
 	{
 		curentPercent = 0;
+		buildingMeshComponent->SetMobility(EComponentMobility::Movable);
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
+		buildingMeshComponent->SetMobility(EComponentMobility::Static);
+		buildingMeshComponent->SetCanEverAffectNavigation(true);
 		if (buildingMakingMat)
 		{
 			int nSize = buildingMeshComponent->GetMaterials().Num();
@@ -74,7 +77,7 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 				{
 					Making->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
 					Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
-						GetOwner()->GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z);
+						GetOwner()->GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z + buildingMeshComponent->GetRelativeLocation().Z);
 					buildingMeshComponent->SetMaterial(i, Making);
 					buildingMaking.Add(Making);
 				}

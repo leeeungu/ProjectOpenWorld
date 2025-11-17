@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -22,18 +22,21 @@ protected:
 	TSoftObjectPtr <UMaterialInstanceDynamic> buildingPreview{};
 	UPROPERTY()
 	TSoftObjectPtr < APawn> ownerPawn{};
-
+	TSoftObjectPtr < UStaticMesh> BuildingMesh{};
+	
 	bool buildingActive{};
 	bool canBuilding{};
+	bool bSnapped{};
 
 	UPROPERTY(EditDefaultsOnly, Category = "BuildingWidget", BlueprintReadOnly)
 	TSubclassOf<UBuildingInfoWidget> BuildingInfoClass{};
 	UBuildingInfoWidget* BuildingInfo{};
 	UPROPERTY(EditDefaultsOnly, Category = "Building", BlueprintReadOnly)
 	TSubclassOf<ABaseBuilding> BuildingClass{};
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TSoftObjectPtr < AActor> targetActor{};
 	TMap<FName, FTransform> snapSocketTransform{};
+	TArray<TPair< UStaticMeshComponent*, FName>> ArraySnapSocket{};
 	FName snapSocketName{};
 	FVector meshSize{};
 	FVector meshCenter{};
@@ -63,10 +66,15 @@ public: // Custom Function
 	void RotateBuilding(float AddYaw);
 	UFUNCTION(BlueprintPure, Category = "BuildingAssist")
 	bool IsBuildingActive() const { return buildingActive; }
+
+	UFUNCTION(BlueprintPure, Category = "BuildingAssist")
+	AActor* GetTargetActor() { return targetActor.Get(); }
 private:
 	void OnOffAssist(bool bValue);
 	bool UpdateTraceHit(FHitResult& HitResult);
 	bool UpdateSnap(FVector& ResultPoint);
+	bool UpdatePreviewMesh(FVector& ResultPoint);
+
 	bool UpdateBuildable();
 	void UpdatePreviewMat();
 };

@@ -1,4 +1,4 @@
-﻿#include "Creature/Character/BaseCreature.h"
+#include "Creature/Character/BaseCreature.h"
 #include "Creature/Component/CreatureAction_Building.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -62,7 +62,10 @@ bool ABaseCreature::MoveToTarget()
 			FNavPathSharedPtr OutPath{};
 			OwnerController->MoveTo(MoveReq, &OutPath);
 			if (!OutPath.IsValid())
+			{
+				UE_LOG(LogTemp, Error, TEXT("None Path"));
 				return false;
+			}
 		}
 	}
 	return true;

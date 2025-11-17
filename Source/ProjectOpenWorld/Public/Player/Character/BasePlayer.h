@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -84,7 +84,7 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	UInputAction* MouseWheelAction{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
-	UInteractionComponent* InteractionComponent{};
+	TObjectPtr<UInteractionComponent> InteractionComponent{};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	TArray<float> StatusArray{};

@@ -1,4 +1,4 @@
-﻿#include "Interaction/Component/InteractionComponent.h"
+#include "Interaction/Component/InteractionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
@@ -106,4 +106,10 @@ void UInteractionComponent::OnActorCancel()
 		bIsInteraction = false;
 		InteractionTarget = nullptr;
 	}
+}
+AActor* UInteractionComponent::GetTargetActor() 
+{ 
+	if (!InteractionTarget || !InteractionTarget.GetObject()) 
+		return nullptr; 
+	return Cast<AActor>(InteractionTarget.GetObject()); 
 }

@@ -1,4 +1,4 @@
-ï»¿#include "Player/Character/BasePlayer.h"
+#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -61,7 +61,7 @@ ABasePlayer::ABasePlayer()
 
 //MOVE_Walking	UMETA(DisplayName = "Walking"), 1
 //MOVE_NavWalking	UMETA(DisplayName = "Navmesh Walking"),2
-//MOVE_Falling	UMETA(DisplayName = "Falling"),3 // jump falling ì „ë¶€
+//MOVE_Falling	UMETA(DisplayName = "Falling"),3 // jump falling ÀüºÎ
 //MOVE_Swimming	UMETA(DisplayName = "Swimming"),4
 //MOVE_Flying		UMETA(DisplayName = "Flying"),5
 //MOVE_Custom		UMETA(DisplayName = "Custom"),6
