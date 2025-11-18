@@ -1,4 +1,4 @@
-ï»¿#include "Building/BuildingAssistComponent.h"
+#include "Building/BuildingAssistComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/StaticMeshActor.h" 
 #include "Kismet/GameplayStatics.h"
@@ -76,18 +76,85 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		FVector MoveLocation = buildingPreviewActor->GetActorLocation();
 
-		if (UpdatePreviewMesh(MoveLocation))
+		if (UpdatePreviewMesh(MoveLocation) && targetActor)
 		{
+			// ½º³À ÀÌ°Å³ª ¹°Ã¼¶û Ãæµ¹ ½Ã¿¡¸¸ ½ÇÇà
 			canBuilding = true;
+			FVector Location = MoveLocation;
+			// ½º³À
+			if (bSnapped)
+			{
+				FVector dir = (MoveLocation - (targetActor->GetActorLocation() + meshCenter));
+				if (FMath::IsNearlyZero(dir.X))
+					dir.X = 0;
+				if (dir.X > 0)
+					dir.X = 1;
+				else if (dir.X < 0)
+					dir.X = -1;
+
+				if (FMath::IsNearlyZero(dir.Y))
+					dir.Y = 0;
+				if (dir.Y > 0)
+					dir.Y = 1;
+				else if (dir.Y < 0)
+					dir.Y = -1;
+
+				if (FMath::IsNearlyZero(dir.Z))
+					dir.Z = 0;
+				if (dir.Z > 0)
+					dir.Z = 1;
+				else if (dir.Z < 0)
+					dir.Z = -1;
+
+
+				Location = targetActor->GetActorLocation() + dir * meshSize;// +meshCenter;
+				MoveLocation = Location;
+				FVector Size = meshSize * 0.5f;
+				//if (!FMath::IsNearlyEqual(Size.Z,  meshCenter.Z * 0.5F))
+				//	Size.Z = (Size.Z - meshCenter.Z * 0.5F);
+				TArray<FHitResult> ArrayPenetratingResult{};
+				if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
+					Location + FVector{0,0,meshSize.Z} * 0.5f,
+					Location + FVector{0, 0, meshSize.Z} *0.5f, //buildingPreviewActor->GetActorLocation(),
+					Size, buildingPreviewActor->GetActorRotation(),
+					buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
+				{
+					for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
+					{
+						// ÁöÇü Á¦¿Ü °ãÄ¡´Â Áö Ã¤Å©ÇÏ´Â ÄÚµå
+						if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 10.0f)
+						{
+							//UE_LOG(LogTemp, Error, TEXT("Hit Actor %s"), *PenetratingResult.GetActor()->GetFName().ToString());
+							canBuilding = false;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				MoveLocation -= FVector(0, 0, meshCenter.Z);
+
+			}
+			//if (bSnapped && targetActor)
+			//{
+			//	FVector dir = (MoveLocation - targetActor->GetActorLocation());
+			//	MoveLocation = targetActor->GetActorLocation();
+			//	dir = dir.GetSafeNormal();
+			//	MoveLocation += dir * meshSize * 2;
+			//}
+			//canBuilding = true;
+			//FVector Size = meshSize;
+			////Size.Z = Size.Z * 0.5f;
+			//if (bSnapped)
+			//{
+			//	FVector dir = (Location - targetActor->GetActorLocation());
+			//	Location = targetActor->GetActorLocation() + meshCenter;
+			//	dir = dir.GetSafeNormal();
+			//	Location += dir * meshSize * 2;
+			//}
 		}
-		MoveLocation -= FVector(0, 0, meshCenter.Z + meshSize.Z);
-		if (bSnapped && targetActor)
-		{
-			MoveLocation -= FVector(0, 0, meshSize.Z );
-			FVector dir = (MoveLocation - targetActor->GetActorLocation());
-			dir = FVector(dir.X, dir.Y, 0).GetSafeNormal();
-			MoveLocation += dir * meshSize;
-		}
+		
 		buildingPreviewActor->SetActorLocation(MoveLocation);
 	}
 	UpdatePreviewMat();
@@ -102,13 +169,13 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 	{
 		buildingPreviewActor->GetStaticMeshComponent()->SetMaterial(i, buildingPreview.Get());
 	}
-	meshSize = BuildingMesh->GetBoundingBox().GetExtent();
+	meshSize = BuildingMesh->GetBoundingBox().GetSize();
 	FTransform Relative = buildingPreviewActor->GetStaticMeshComponent()->GetSocketTransform(TEXT("BuildingCenter"), ERelativeTransformSpace::RTS_Component);
 	meshCenter = Relative.GetLocation();
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *meshSize.ToString());
-	meshSize.Z = (meshSize.Z  * 2- meshCenter.Z) * 0.5f;
-	buildingPreviewActor->SetActorRelativeLocation(meshCenter * -1);
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *meshSize.ToString());
+	//meshSize.Z = abs(meshCenter.Z * 0.25f);
+	//buildingPreviewActor->SetActorRelativeLocation(meshCenter * -1);
+	UE_LOG(LogTemp, Warning, TEXT("meshCenter : %s"), *meshCenter.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("MeshSize : %s"), *meshSize.ToString());
 		//buildingPreviewActor->GetStaticMeshComponent()->SetRelativeLocation({ 0,0,meshSize.Z });
 	UpdatePreviewMat();
 }
@@ -139,15 +206,10 @@ void UBuildingAssistComponent::SpawnBuilding()
 		Param.Owner = ownerPawn.Get();
 		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		FTransform Trans = buildingPreviewActor->GetTransform();
-		FVector Location = Trans.GetLocation();
-		Trans.SetLocation(FVector(Location.X, Location.Y, 0));
 		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(BuildingClass, &Trans, Param));
 		buildingPreviewActor->SetActorRotation(FQuat::Identity);
 		if (Building)
 		{
-			Building->GetBuildingMeshComponent()->SetMobility(EComponentMobility::Movable);
-			Building->GetBuildingMeshComponent()->SetRelativeLocation({0,0,Location.Z});
-			Building->GetBuildingMeshComponent()->SetMobility(EComponentMobility::Static);
 			UBuildingProgress* Progress = Building->GetBuildingProgress();
 			Building->GetBuildingProgress()->SetbuildingMesh(BuildingMesh.Get());
 		}
@@ -231,12 +293,14 @@ bool UBuildingAssistComponent::UpdatePreviewMesh(FVector& ResultPoint)
 	{
 		//TArray<FHitResult> ArraygResult{};
 		FHitResult HitResult{};
+		// ¾î¶² ¹°Ã¼¿Í Ãæµ¹ÇÏ´Â Áö
 		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
-			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true))
+			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true)) 
 		{
 			ResultPoint = HitResult.ImpactPoint;
+			// Ãæµ¹ ½Ã ¼ÒÄ¹ÀÌ ÀÖ´ÂÁö
 			if (targetActor != HitResult.GetActor() && targetActor != GetOwner())
 			{
 				targetActor = HitResult.GetActor();
@@ -257,6 +321,8 @@ bool UBuildingAssistComponent::UpdatePreviewMesh(FVector& ResultPoint)
 					}
 				}
 			}
+
+			// Ãæµ¿ ½Ã ¼ÒÄ¹¿¡ ½º³À µÇ´Â Áö
 			bSnapped = false;
 			buildCheckIgnore.Last() = nullptr;
 			if (targetActor == HitResult.GetActor() && targetActor != GetOwner())
@@ -278,46 +344,9 @@ bool UBuildingAssistComponent::UpdatePreviewMesh(FVector& ResultPoint)
 					}
 				}
 			}
-
-			//buildCheckIgnore.Last() = targetActor.Get();
-
-			FVector Size = meshSize;
-			Size.Z = Size.Z * 0.5f;
-			FVector MoveLocation = ResultPoint + FVector(0, 0, Size.Z);
-			if (bSnapped)
-			{
-				MoveLocation = ResultPoint - FVector(0, 0, Size.Z);
-				FVector dir = (MoveLocation - targetActor->GetActorLocation());
-				dir = FVector(dir.X, dir.Y, 0).GetSafeNormal();
-				MoveLocation += dir * Size;
-			}
-
-			
-			TArray<FHitResult> ArrayPenetratingResult{};
-			if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
-				MoveLocation,
-				MoveLocation, //buildingPreviewActor->GetActorLocation(),
-				Size, buildingPreviewActor->GetActorRotation(),
-				buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
-			{
-				for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
-				{
-					// ì§€í˜• ì œì™¸ ê²¹ì¹˜ëŠ” ì§€ ì±„í¬í•˜ëŠ” ì½”ë“œ
-					if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 10.0f)
-					{
-						UE_LOG(LogTemp, Error, TEXT("Hit Actor %s"), *PenetratingResult.GetActor()->GetFName().ToString());
-						return false;
-					}
-				}
-			}
-
-			//double Angle = FMath::RadiansToDegrees(FMath::Acos(HitResult.ImpactNormal.Dot(FVector::UpVector)));
-			//if (!bSnap && Angle > 15.0)
-			//{
-			//	return false;
-			//}
 			return true;
 		}
+		ResultPoint = HitResult.TraceEnd;
 	}
 
 	return false;

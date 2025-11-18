@@ -76,8 +76,12 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 				if (UMaterialInstanceDynamic* Making = buildingMeshComponent->CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
 				{
 					Making->SetScalarParameterValue(TEXT("MeshHeight"), buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z);
+					float MeshWorldHeight = GetOwner()->GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z
+						- GetOwner()->GetActorLocation().Z + buildingMeshComponent->GetStaticMesh()->GetBounds().BoxExtent.Y;
 					Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
-						GetOwner()->GetActorLocation().Z - buildingMeshComponent->GetStaticMesh()->GetBoundingBox().Min.Z + buildingMeshComponent->GetRelativeLocation().Z);
+						MeshWorldHeight );
+
+					UE_LOG(LogTemp, Warning, TEXT("MeshHeight : %s"), *buildingMeshComponent->GetStaticMesh()->GetBounds().ToString());
 					buildingMeshComponent->SetMaterial(i, Making);
 					buildingMaking.Add(Making);
 				}
