@@ -71,94 +71,265 @@ void UBuildingAssistComponent::BeginPlay()
 void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	canBuilding = false;
-	if (ownerPawn && buildingPreviewActor)
-	{
-		FVector MoveLocation = buildingPreviewActor->GetActorLocation();
+	FHitResult Hit;
+	bool bHit{};
 
-		if (UpdatePreviewMesh(MoveLocation) && targetActor)
+	if (const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0))
+	{
+		//TArray<FHitResult> ArraygResult{};
+		FHitResult HitResult{};
+		// 어떤 물체와 충돌하는 지
+		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
+			CameraManager->GetCameraLocation(),
+			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
+			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true))
 		{
-			// 스냅 이거나 물체랑 충돌 시에만 실행
-			canBuilding = true;
-			FVector Location = MoveLocation;
-			// 스냅
+			bHit = true;
+		}
+	}
+
+	if (!bHit)
+	{
+		// 충돌 없으면 Ray 끝 지점에 프리뷰 배치 (자유 배치)
+		// DoPlacementTrace 안에서 End 지정했었다고 가정
+		// 여기서는 Hit 실패 시 End 위치를 따로 리턴하도록 구현해도 됨.
+		// 예시는 카메라 앞 일정 거리라고 가정.
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PC)
+		{
+			const FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
+			const FRotator CamRot = PC->PlayerCameraManager->GetCameraRotation();
+			const FVector End = CamLoc + CamRot.Vector() * 5000.f;
+
+			FTransform FreeTransform;
+			FreeTransform.SetLocation(Hit.TraceEnd);
+			FreeTransform.SetRotation(FQuat::Identity);
+			FreeTransform.SetScale3D(FVector::OneVector);
+
+			buildingPreviewActor->SetActorTransform(FreeTransform);
+		}
+	}
+	else
+	{
+		// Hit된 컴포넌트에서 스냅 시도
+		UStaticMeshComponent* HitSMC = Cast<UStaticMeshComponent>(Hit.GetComponent());
+		if (!HitSMC || !HitSMC->GetStaticMesh())
+		{
+			// StaticMesh가 아니면 그냥 충돌 지점에 자유 배치
+			FTransform FreeTransform;
+			FreeTransform.SetLocation(Hit.TraceEnd);
+			FreeTransform.SetRotation(FQuat::Identity);
+			FreeTransform.SetScale3D(FVector::OneVector);
+			buildingPreviewActor->SetActorTransform(FreeTransform);
+			return;
+		}
+		else
+		{
+			// 스냅 시도
+			FTransform SnapTransform{};
+			bSnapped = FindBestSnapTransform(HitSMC, Hit.ImpactPoint, SnapTransform);
+
 			if (bSnapped)
 			{
-				FVector dir = (MoveLocation - (targetActor->GetActorLocation() + meshCenter));
-				if (FMath::IsNearlyZero(dir.X))
-					dir.X = 0;
-				if (dir.X > 0)
-					dir.X = 1;
-				else if (dir.X < 0)
-					dir.X = -1;
-
-				if (FMath::IsNearlyZero(dir.Y))
-					dir.Y = 0;
-				if (dir.Y > 0)
-					dir.Y = 1;
-				else if (dir.Y < 0)
-					dir.Y = -1;
-
-				if (FMath::IsNearlyZero(dir.Z))
-					dir.Z = 0;
-				if (dir.Z > 0)
-					dir.Z = 1;
-				else if (dir.Z < 0)
-					dir.Z = -1;
-
-
-				Location = targetActor->GetActorLocation() + dir * meshSize;// +meshCenter;
-				MoveLocation = Location;
-				FVector Size = meshSize * 0.5f;
-				//if (!FMath::IsNearlyEqual(Size.Z,  meshCenter.Z * 0.5F))
-				//	Size.Z = (Size.Z - meshCenter.Z * 0.5F);
-				TArray<FHitResult> ArrayPenetratingResult{};
-				if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
-					Location + FVector{0,0,meshSize.Z} * 0.5f,
-					Location + FVector{0, 0, meshSize.Z} *0.5f, //buildingPreviewActor->GetActorLocation(),
-					Size, buildingPreviewActor->GetActorRotation(),
-					buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
-				{
-					for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
-					{
-						// 지형 제외 겹치는 지 채크하는 코드
-						if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 10.0f)
-						{
-							//UE_LOG(LogTemp, Error, TEXT("Hit Actor %s"), *PenetratingResult.GetActor()->GetFName().ToString());
-							canBuilding = false;
-							break;
-						}
-					}
-				}
+				buildingPreviewActor->SetActorTransform(SnapTransform);
+				bSnapped = CanPlaceAtTransform(SnapTransform);
 			}
 			else
 			{
-				MoveLocation -= FVector(0, 0, meshCenter.Z);
+				// 해당 ParentMesh 에 대해 CurrentBuildMesh 를 붙일 룰이 없으니
+				// 그냥 ImpactPoint 에 자유 배치
+				FTransform FreeTransform;
+				FreeTransform.SetLocation(Hit.ImpactPoint);
+				FreeTransform.SetRotation(FQuat::Identity);
+				FreeTransform.SetScale3D(FVector::OneVector);
 
+				buildingPreviewActor->SetActorTransform(FreeTransform);
 			}
-			//if (bSnapped && targetActor)
-			//{
-			//	FVector dir = (MoveLocation - targetActor->GetActorLocation());
-			//	MoveLocation = targetActor->GetActorLocation();
-			//	dir = dir.GetSafeNormal();
-			//	MoveLocation += dir * meshSize * 2;
-			//}
-			//canBuilding = true;
-			//FVector Size = meshSize;
-			////Size.Z = Size.Z * 0.5f;
-			//if (bSnapped)
-			//{
-			//	FVector dir = (Location - targetActor->GetActorLocation());
-			//	Location = targetActor->GetActorLocation() + meshCenter;
-			//	dir = dir.GetSafeNormal();
-			//	Location += dir * meshSize * 2;
-			//}
 		}
-		
-		buildingPreviewActor->SetActorLocation(MoveLocation);
 	}
 	UpdatePreviewMat();
 }
+
+bool UBuildingAssistComponent::FindBestSnapTransform(
+	UStaticMeshComponent* ParentComp,
+	const FVector& HitWorldLocation,
+	FTransform& OutChildWorldTransform) const
+{
+	if (!ParentComp || !ParentComp->GetStaticMesh() || !CurrentBuildMesh)
+	{
+		return false;
+	}
+
+	UStaticMesh* ParentMesh = ParentComp->GetStaticMesh();
+
+	// 1) Parent/Child 조합에 맞는 룰들 필터링
+	TArray<const FSnapRule*> CandidateRules;
+	for (const FSnapRule& Rule : SnapRules)
+	{
+		if (Rule.ParentMesh == ParentMesh && Rule.ChildMesh == CurrentBuildMesh)
+		{
+			CandidateRules.Add(&Rule);
+		}
+	}
+
+	if (CandidateRules.Num() == 0)
+	{
+		return false;
+	}
+
+	const FTransform ParentWorld = ParentComp->GetComponentTransform();
+
+	// 2) HitWorldLocation 을 Parent 로컬 공간으로 변환
+	const FVector HitLocal = ParentWorld.InverseTransformPosition(HitWorldLocation);
+
+	// 3) 가장 가까운 ParentAnchorLocal 위치를 가진 룰 선택
+	const FSnapRule* BestRule = nullptr;
+	float BestDistSq = TNumericLimits<float>::Max();
+
+	for (const FSnapRule* RulePtr : CandidateRules)
+	{
+		const FVector AnchorLocalPos = RulePtr->ParentAnchorLocal.GetLocation();
+		const float DistSq = FVector::DistSquared(HitLocal, AnchorLocalPos);
+
+		if (DistSq < BestDistSq)
+		{
+			BestDistSq = DistSq;
+			BestRule = RulePtr;
+		}
+	}
+
+	if (!BestRule)
+	{
+		return false;
+	}
+
+	if (BestDistSq > FMath::Square(SnapLocalDistanceThreshold))
+	{
+		// 너무 멀면 스냅하지 않음
+		return false;
+	}
+
+	// 4) ParentAnchorWorld 계산
+	const FTransform& ParentAnchorLocal = BestRule->ParentAnchorLocal;
+	const FTransform& ChildAnchorLocal = BestRule->ChildAnchorLocal;
+
+	const FTransform ParentAnchorWorld = ParentAnchorLocal * ParentWorld;
+
+	// 5) ChildWorldTransform 역산
+	// ChildWorld * ChildAnchorLocal = ParentAnchorWorld
+	// → 회전, 위치 순서대로 풀기
+
+	const FQuat ParentAnchorWorldRot = ParentAnchorWorld.GetRotation();
+	const FQuat ChildAnchorLocalRot = ChildAnchorLocal.GetRotation();
+
+	// 회전: ChildWorldRot = ParentAnchorWorldRot * Inverse(ChildAnchorLocalRot)
+	const FQuat ChildWorldRot = ParentAnchorWorldRot * ChildAnchorLocalRot.Inverse();
+
+	// 위치:
+	// ParentAnchorWorldPos = ChildWorldPos + ChildWorldRot * ChildAnchorLocalPos
+	// → ChildWorldPos = ParentAnchorWorldPos - ChildWorldRot * ChildAnchorLocalPos
+	const FVector ParentAnchorWorldPos = ParentAnchorWorld.GetLocation();
+	const FVector ChildAnchorLocalPos = ChildAnchorLocal.GetLocation();
+
+	const FVector ChildAnchorWorldOffset = ChildWorldRot.RotateVector(ChildAnchorLocalPos);
+	const FVector ChildWorldPos = ParentAnchorWorldPos - ChildAnchorWorldOffset;
+
+	OutChildWorldTransform.SetLocation(ChildWorldPos);
+	OutChildWorldTransform.SetRotation(ChildWorldRot);
+	OutChildWorldTransform.SetScale3D(FVector::OneVector); // 필요시 Scale도 룰에 넣어서 계산
+
+	return true;
+}
+//
+//	canBuilding = false;
+//	if (ownerPawn && buildingPreviewActor)
+//	{
+//		FVector MoveLocation = buildingPreviewActor->GetActorLocation();
+//
+//		if (UpdatePreviewMesh(MoveLocation) && targetActor)
+//		{
+//			// 스냅 이거나 물체랑 충돌 시에만 실행
+//			canBuilding = true;
+//			FVector Location = MoveLocation;
+//			// 스냅
+//			if (bSnapped)
+//			{
+//				FVector dir = (MoveLocation - (targetActor->GetActorLocation() + meshCenter));
+//				if (FMath::IsNearlyZero(dir.X))
+//					dir.X = 0;
+//				if (dir.X > 0)
+//					dir.X = 1;
+//				else if (dir.X < 0)
+//					dir.X = -1;
+//
+//				if (FMath::IsNearlyZero(dir.Y))
+//					dir.Y = 0;
+//				if (dir.Y > 0)
+//					dir.Y = 1;
+//				else if (dir.Y < 0)
+//					dir.Y = -1;
+//
+//				if (FMath::IsNearlyZero(dir.Z))
+//					dir.Z = 0;
+//				if (dir.Z > 0)
+//					dir.Z = 1;
+//				else if (dir.Z < 0)
+//					dir.Z = -1;
+//
+//
+//				Location = targetActor->GetActorLocation() + dir * meshSize;// +meshCenter;
+//				MoveLocation = Location;
+//				FVector Size = meshSize * 0.5f;
+//				//if (!FMath::IsNearlyEqual(Size.Z,  meshCenter.Z * 0.5F))
+//				//	Size.Z = (Size.Z - meshCenter.Z * 0.5F);
+//				TArray<FHitResult> ArrayPenetratingResult{};
+//				if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
+//					Location + FVector{0,0,meshSize.Z} * 0.5f,
+//					Location + FVector{0, 0, meshSize.Z} *0.5f, //buildingPreviewActor->GetActorLocation(),
+//					Size, buildingPreviewActor->GetActorRotation(),
+//					buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
+//				{
+//					for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
+//					{
+//						// 지형 제외 겹치는 지 채크하는 코드
+//						if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 10.0f)
+//						{
+//							//UE_LOG(LogTemp, Error, TEXT("Hit Actor %s"), *PenetratingResult.GetActor()->GetFName().ToString());
+//							canBuilding = false;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//			else
+//			{
+//				MoveLocation -= FVector(0, 0, meshCenter.Z);
+//
+//			}
+//			//if (bSnapped && targetActor)
+//			//{
+//			//	FVector dir = (MoveLocation - targetActor->GetActorLocation());
+//			//	MoveLocation = targetActor->GetActorLocation();
+//			//	dir = dir.GetSafeNormal();
+//			//	MoveLocation += dir * meshSize * 2;
+//			//}
+//			//canBuilding = true;
+//			//FVector Size = meshSize;
+//			////Size.Z = Size.Z * 0.5f;
+//			//if (bSnapped)
+//			//{
+//			//	FVector dir = (Location - targetActor->GetActorLocation());
+//			//	Location = targetActor->GetActorLocation() + meshCenter;
+//			//	dir = dir.GetSafeNormal();
+//			//	Location += dir * meshSize * 2;
+//			//}
+//		}
+//		
+//		buildingPreviewActor->SetActorLocation(MoveLocation);
+//	}
+//	UpdatePreviewMat();
+//}
 
 void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 {

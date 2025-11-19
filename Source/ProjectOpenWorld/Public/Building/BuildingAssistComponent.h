@@ -49,7 +49,10 @@ public: // ActorComponent Function
 	UBuildingAssistComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+	bool FindBestSnapTransform(
+		UStaticMeshComponent* ParentComp,
+		const FVector& HitWorldLocation,
+		FTransform& OutChildWorldTransform) const;
 protected:
 	virtual void BeginPlay() override;
 
