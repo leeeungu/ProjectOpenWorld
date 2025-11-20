@@ -11,7 +11,10 @@ struct FSnapRule : public  FTableRowBase
 
     // 월드에 있는 메시 ptr
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UStaticMesh* ParentMesh = nullptr;
+    TObjectPtr < UStaticMesh> ParentMesh = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TObjectPtr<UStaticMesh> ChildMesh = nullptr;
 
     // ParentMesh pivot 기준 로컬 기준점 (붙이는 점)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

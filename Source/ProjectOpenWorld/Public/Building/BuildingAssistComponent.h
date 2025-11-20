@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Building/Component/BuildingPreviewComponent.h"
 #include "BuildingAssistComponent.generated.h"
 
 class AStaticMeshActor;
@@ -14,12 +15,7 @@ class PROJECTOPENWORLD_API UBuildingAssistComponent : public UActorComponent
 	GENERATED_BODY()
 protected:
 	UPROPERTY()
-	TSoftObjectPtr<AStaticMeshActor> buildingPreviewActor{};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BuildingAssist")
-	TSoftObjectPtr < UMaterial> buildingPreviewMat{};
-
-	UPROPERTY()
-	TSoftObjectPtr <UMaterialInstanceDynamic> buildingPreview{};
+	TObjectPtr<UBuildingPreviewComponent> buildingPreviewActor{};
 	UPROPERTY()
 	TSoftObjectPtr < APawn> ownerPawn{};
 	TSoftObjectPtr < UStaticMesh> BuildingMesh{};
@@ -49,10 +45,6 @@ public: // ActorComponent Function
 	UBuildingAssistComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	bool FindBestSnapTransform(
-		UStaticMeshComponent* ParentComp,
-		const FVector& HitWorldLocation,
-		FTransform& OutChildWorldTransform) const;
 protected:
 	virtual void BeginPlay() override;
 
