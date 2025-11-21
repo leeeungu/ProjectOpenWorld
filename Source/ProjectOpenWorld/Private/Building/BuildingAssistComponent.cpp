@@ -1,4 +1,4 @@
-#include "Building/BuildingAssistComponent.h"
+ï»¿#include "Building/BuildingAssistComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/StaticMeshActor.h" 
 #include "Kismet/GameplayStatics.h"
@@ -61,88 +61,16 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	canBuilding = false;
 	if (ownerPawn && buildingPreviewActor)
 	{
-		FVector MoveLocation = buildingPreviewActor->GetComponentLocation();
-
-		if (UpdatePreviewMesh(MoveLocation) && targetActor)
+		FTransform ChildWorld = buildingPreviewActor->GetComponentTransform();
+		FVector MoveLocation = ChildWorld.GetLocation();
+		if (!UpdatePreviewMesh(MoveLocation))
 		{
-			// ½º³À ÀÌ°Å³ª ¹°Ã¼¶û Ãæµ¹ ½Ã¿¡¸¸ ½ÇÇà
-			canBuilding = true;
-			FVector Location = MoveLocation;
-			// ½º³À
-			if (bSnapped)
 			{
-				FVector dir = (MoveLocation - (targetActor->GetActorLocation() + meshCenter));
-				if (FMath::IsNearlyZero(dir.X))
-					dir.X = 0;
-				if (dir.X > 0)
-					dir.X = 1;
-				else if (dir.X < 0)
-					dir.X = -1;
-
-				if (FMath::IsNearlyZero(dir.Y))
-					dir.Y = 0;
-				if (dir.Y > 0)
-					dir.Y = 1;
-				else if (dir.Y < 0)
-					dir.Y = -1;
-
-				if (FMath::IsNearlyZero(dir.Z))
-					dir.Z = 0;
-				if (dir.Z > 0)
-					dir.Z = 1;
-				else if (dir.Z < 0)
-					dir.Z = -1;
-
-
-				Location = targetActor->GetActorLocation() + dir * meshSize;// +meshCenter;
-				MoveLocation = Location;
-				FVector Size = meshSize * 0.5f;
-				//if (!FMath::IsNearlyEqual(Size.Z,  meshCenter.Z * 0.5F))
-				//	Size.Z = (Size.Z - meshCenter.Z * 0.5F);
-				//TArray<FHitResult> ArrayPenetratingResult{};
-				//if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
-				//	Location + FVector{0,0,meshSize.Z} * 0.5f,
-				//	Location + FVector{0, 0, meshSize.Z} *0.5f, //buildingPreviewActor->GetActorLocation(),
-				//	Size, buildingPreviewActor->GetComponentRotation(),
-				//	buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
-				//{
-				//	for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
-				//	{
-				//		// ÁöÇü Á¦¿Ü °ãÄ¡´Â Áö Ã¤Å©ÇÏ´Â ÄÚµå
-				//		if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 10.0f)
-				//		{
-				//			//UE_LOG(LogTemp, Error, TEXT("Hit Actor %s"), *PenetratingResult.GetActor()->GetFName().ToString());
-				//			canBuilding = false;
-				//			break;
-				//		}
-				//	}
-				//}
-			}
-			else
-			{
-				MoveLocation -= FVector(0, 0, meshCenter.Z);
-
-			}
-			if (bSnapped && targetActor)
-			{
-				FVector dir = (MoveLocation - targetActor->GetActorLocation());
-				MoveLocation = targetActor->GetActorLocation();
-				dir = dir.GetSafeNormal();
-				MoveLocation += dir * meshSize * 2;
-			}
-			canBuilding = true;
-			FVector Size = meshSize;
-			//Size.Z = Size.Z * 0.5f;
-			if (bSnapped)
-			{
-				FVector dir = (Location - targetActor->GetActorLocation());
-				Location = targetActor->GetActorLocation() + meshCenter;
-				dir = dir.GetSafeNormal();
-				Location += dir * meshSize * 2;
+				ChildWorld.SetLocation(MoveLocation);
+				buildingPreviewActor->SetWorldTransform(ChildWorld, false, nullptr, ETeleportType::TeleportPhysics);
+				buildingPreviewActor->Modify();
 			}
 		}
-		
-		buildingPreviewActor->SetWorldLocation(MoveLocation);
 	}
 }
 
@@ -160,14 +88,10 @@ void UBuildingAssistComponent::StartBuilding()
 	if (BuildingInfo)
 		BuildingInfo->AddToViewport();
 	buildingPreviewActor->StartPreView();
-
-	//FAttachmentTransformRules Rule(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, false);
-	//buildingPreviewActor->AttachToActor(ownerPawn.Get(), Rule);
 }
 
 void UBuildingAssistComponent::EndBuilding()
 {
-	//UE_LOG(LogTemp, Error, TEXT("EndBuilding"));
 	OnOffAssist(false);
 	if (BuildingInfo)	
 		BuildingInfo->RemoveFromParent();
@@ -190,7 +114,6 @@ void UBuildingAssistComponent::SpawnBuilding()
 			UBuildingProgress* Progress = Building->GetBuildingProgress();
 			Building->GetBuildingProgress()->SetbuildingMesh(BuildingMesh.Get());
 		}
-		//Building->GetBuildingProgress()->StartBuilding();
 	}
 }
 
@@ -212,151 +135,41 @@ void UBuildingAssistComponent::OnOffAssist(bool bValue)
 		buildingPreviewActor->EndPreView();
 }
 
-bool UBuildingAssistComponent::UpdateTraceHit(FHitResult& HitResult)
-{
-	if (const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0))
-	{
-		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
-			CameraManager->GetCameraLocation(), 
-			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
-			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true))
-		{
-			if (targetActor != HitResult.GetActor())
-			{
-				targetActor = HitResult.GetActor();
-				snapSocketTransform.Empty(5);
-				for (auto& Component : targetActor->GetComponents())
-				{
-					UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Component);
-					if (Mesh)
-					{
-						for (auto Socket : Mesh->GetAllSocketNames())
-						{
-							if (Socket.ToString().Contains(TEXT("BuildingPoint")))
-							{
-								snapSocketTransform.Add(Socket, Mesh->GetSocketTransform(Socket));
-							}
-						}
-					}
-				}
-			}
-			return true;
-		}
-	}
-	return false;
-}
-
-bool UBuildingAssistComponent::UpdateSnap(FVector& ResultPoint)
-{
-	bool bSnap = false;
-	for (auto& MeshPair : snapSocketTransform)
-	{
-		if (FVector::DistSquared(ResultPoint, MeshPair.Value.GetLocation()) <= 40.0f* 40.0f)
-		{
-			bSnap = true;
-			snapSocketName = MeshPair.Key;
-			ResultPoint = MeshPair.Value.GetLocation();
-			buildingPreviewActor->SetWorldRotation(MeshPair.Value.GetRotation());
-			break;
-		}
-	}
-	if (!bSnap)
-	{
-		snapSocketName = NAME_None;
-	}
-	return bSnap;
-}
 
 bool UBuildingAssistComponent::UpdatePreviewMesh(FVector& ResultPoint)
 {
+	UStaticMeshComponent* Mesh{};
 	if (const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0))
 	{
 		//TArray<FHitResult> ArraygResult{};
 		FHitResult HitResult{};
-		// ¾î¶² ¹°Ã¼¿Í Ãæµ¹ÇÏ´Â Áö
+		// ì–´ë–¤ ë¬¼ì²´ì™€ ì¶©ëŒí•˜ëŠ” ì§€
 		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
 			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true)) 
 		{
 			ResultPoint = HitResult.ImpactPoint;
-			// Ãæµ¹ ½Ã ¼ÒÄ¹ÀÌ ÀÖ´ÂÁö
+			// ì¶©ëŒ ì‹œ ì†Œìº£ì´ ìžˆëŠ”ì§€
 			if (targetActor != HitResult.GetActor() && targetActor != GetOwner())
 			{
 				targetActor = HitResult.GetActor();
 				//snapSocketTransform.Empty(5);
-				ArraySnapSocket.Empty();
+				bSnapped = false;
 				for (auto& Component : targetActor->GetComponents())
 				{
-					UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Component);
+					Mesh = Cast<UStaticMeshComponent>(Component);
 					if (Mesh)
 					{
-						for (auto Socket : Mesh->GetAllSocketNames())
-						{
-							if (Socket.ToString().Contains(TEXT("BuildingPoint")))
-							{
-								ArraySnapSocket.Add({ Mesh, Socket });
-							}
-						}
+						bSnapped = true;
+						break;;
 					}
 				}
 			}
-
-			// Ãæµ¿ ½Ã ¼ÒÄ¹¿¡ ½º³À µÇ´Â Áö
-			bSnapped = false;
-			buildCheckIgnore.Last() = nullptr;
-			if (targetActor == HitResult.GetActor() && targetActor != GetOwner())
-			{
-				if (!ArraySnapSocket.IsEmpty())
-				{
-					for (auto& Component : ArraySnapSocket)
-					{
-						FTransform SnapTransform = Component.Key->GetSocketTransform(Component.Value);
-						if (FVector::DistSquared(ResultPoint, Component.Key->GetSocketLocation(Component.Value)) <= 80.0f * 80.0f)
-						{
-							bSnapped = true;
-							snapSocketName = Component.Value;
-							ResultPoint = SnapTransform.GetLocation();
-							buildingPreviewActor->SetWorldRotation(SnapTransform.GetRotation());
-							buildCheckIgnore.Last() = targetActor.Get();
-							break;
-						}
-					}
-				}
-			}
-			return true;
 		}
-		ResultPoint = HitResult.TraceEnd;
+		if (!Mesh)
+			ResultPoint = HitResult.TraceEnd;
+		buildingPreviewActor->SetParentMesh(HitResult, Mesh);
 	}
-
-	return false;
+	return Mesh != nullptr;
 }
-
-bool UBuildingAssistComponent::UpdateBuildable()
-{
-	bool bResult = true;
-	buildCheckIgnore.Last() = targetActor.Get();
-	TArray<FHitResult> ArrayPenetratingResult{};
-	meshCenter = buildingPreviewActor->GetSocketLocation(TEXT("BuildingCenter")) +FVector(0, 0, meshSize.Z);
-	if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
-		meshCenter, //buildingPreviewActor->GetActorLocation(),
-		meshCenter, //buildingPreviewActor->GetActorLocation(),
-		meshSize, buildingPreviewActor->GetComponentRotation(),
-		buildCheckObjectTypes, true, buildCheckIgnore, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
-	{
-		for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
-		{
-			if (PenetratingResult.bStartPenetrating && !Cast<ALandscapeProxy>(PenetratingResult.GetActor()) && PenetratingResult.PenetrationDepth > 5.0f)
-			{
-				bResult = false;
-				break;
-			}
-		}
-	}
-	return bResult;
-}
-
-void UBuildingAssistComponent::UpdatePreviewMat()
-{
-}
-

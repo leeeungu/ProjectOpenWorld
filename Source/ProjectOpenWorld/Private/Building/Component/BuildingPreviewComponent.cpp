@@ -1,10 +1,11 @@
-#include "Building/Component/BuildingPreviewComponent.h"
+ï»¿#include "Building/Component/BuildingPreviewComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/DataTableFunctionLibrary.h"
 
 UBuildingPreviewComponent::UBuildingPreviewComponent(const FObjectInitializer& ObjectInitializer) : 
 	UStaticMeshComponent(ObjectInitializer)
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	SetCollisionProfileName(TEXT("NoCollision"));
 
 	static ConstructorHelpers::FObjectFinder< UMaterial> PreviewMat(TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
@@ -18,13 +19,73 @@ UBuildingPreviewComponent::UBuildingPreviewComponent(const FObjectInitializer& O
 	SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	SetGenerateOverlapEvents(false);
 	SetSimulatePhysics(false);
+	EndPreView();
+	//Script/Engine.DataTable'/Game/Building/Data/DT_SnapData.DT_SnapData'
+	static ConstructorHelpers::FObjectFinder< UDataTable> MeshData(TEXT("/Game/Building/Data/DT_SnapData.DT_SnapData"));
+	UDataTable* pDT{};
+	if (MeshData.Succeeded())
+	{
+		pDT = MeshData.Object;
+	}
+	if (pDT)
+	{
+		pDT->GetAllRows< FSnapRule>(TEXT(""), ArrData);
+		SnapParentSet.Reserve(ArrData.Num());
+		SnapParentArray.Reserve(ArrData.Num());
+	}
+}
+
+void UBuildingPreviewComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	UStaticMeshComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!HittedResult.bBlockingHit || !HittedResult.GetActor())
+	{
+		SetComponentTickEnabled(false);
+		return;
+	}
+
+	bSnapped = false;
+	if (!SnapParentArray.IsEmpty() && ParentMesh)
+	{
+		FTransform ParentWorld = ParentMesh->GetComponentTransform();
+		FTransform ComponentTrans = GetComponentTransform();
+		for (const auto& sanpRule : SnapParentArray)
+		{
+			const FTransform& ParentSocketWorld = sanpRule->ParentAnchorLocal * ParentMesh->GetComponentTransform();
+			const FVector ParentSocketWorldPos = ParentSocketWorld.GetLocation();
+			if ( FVector::DistSquared(HitLocation, ParentSocketWorldPos) <= 80.0f * 80.0f)
+			{
+				bSnapped = true;
+				const FTransform& ChildSocketLocal = sanpRule->ChildAnchorLocal;
+
+				// ëª©ì : ChildWorld * ChildSocketLocal = ParentSocketWorld
+
+				// íšŒì „ ê³„ì‚°
+				const FQuat ParentSocketWorldRot = ParentSocketWorld.GetRotation();
+				const FQuat ChildSocketLocalRot = ChildSocketLocal.GetRotation();
+				const FQuat ChildWorldRot = ParentSocketWorldRot * ChildSocketLocalRot.Inverse();
+
+				// ìœ„ì¹˜ ê³„ì‚°
+				const FVector ChildSocketLocalPos = ChildSocketLocal.GetLocation();
+				const FVector ChildSocketWorldOffset = ChildWorldRot.RotateVector(ChildSocketLocalPos);
+				const FVector ChildWorldPos = ParentSocketWorldPos - ChildSocketWorldOffset;
+
+				ComponentTrans.SetLocation(ChildWorldPos);
+				ComponentTrans.SetRotation(ChildWorldRot);
+				SetWorldTransform(ComponentTrans);
+				return;
+			}
+		}
+	}
+	SetWorldLocation(HittedResult.ImpactPoint);
 }
 
 void UBuildingPreviewComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
-
+	DetachFromParent();
+	SetWorldTransform(FTransform::Identity);
 	if (TargetBuildingMesh)	
 		SetBuildingMsh(TargetBuildingMesh.Get());
 }
@@ -33,14 +94,35 @@ void UBuildingPreviewComponent::StartPreView()
 {
 	SetHiddenInGame(false);
 	SetVisibility(true);
-	UE_LOG(LogTemp, Warning, TEXT("%s"),*GetComponentLocation().ToString());
-
 }
 
 void UBuildingPreviewComponent::EndPreView()
 {
 	SetHiddenInGame(true);
 	SetVisibility(false);
+	ParentMesh = nullptr;
+	SnapParentSet.Empty();
+	SnapParentArray.Empty();
+	SetComponentTickEnabled(false);
+}
+
+void UBuildingPreviewComponent::SetParentMesh(FHitResult& Hit, UStaticMeshComponent* NewMesh)
+{
+	HittedResult = Hit;
+	ParentMesh = NewMesh;
+	HitLocation = HittedResult.ImpactPoint;
+	if (!HittedResult.bBlockingHit || !HittedResult.GetActor())
+	{
+		SetComponentTickEnabled(false);
+		return;
+	}
+	SetComponentTickEnabled(true);
+	SnapParentArray.Empty();
+	for (const auto& Data : SnapParentSet)
+	{
+		if(ParentMesh && Data->ParentMesh == ParentMesh->GetStaticMesh() && Data->ChildMesh == TargetBuildingMesh)
+			SnapParentArray.Add(Data);
+	}
 }
 
 void UBuildingPreviewComponent::SetBuildingMsh(UStaticMesh* NewMesh)
@@ -50,6 +132,14 @@ void UBuildingPreviewComponent::SetBuildingMsh(UStaticMesh* NewMesh)
 
 	TargetBuildingMesh = NewMesh;
 	SetStaticMesh(TargetBuildingMesh.Get());
+	SnapParentSet.Empty();
+	for (const auto& Data : ArrData)
+	{
+		if (Data->ChildMesh == TargetBuildingMesh)
+		{
+			SnapParentSet.Add(Data);
+		}
+	}
 
 	int nSize = GetMaterials().Num();
 	for (int i = 0; i < nSize; i++)
@@ -73,7 +163,7 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 	if (bHiddenInGame)
 		return;
 
-	// Preview Mesh°¡ ÀÌµ¿ µÇ°í ±× À§Ä¡¿¡¼­ÀÇ °Ç¼³ °¡´É Ã¤Å©
+	// Preview Meshê°€ ì´ë™ ë˜ê³  ê·¸ ìœ„ì¹˜ì—ì„œì˜ ê±´ì„¤ ê°€ëŠ¥ ì±„í¬
 	bool bResult = true;
 
 	TArray<TEnumAsByte<EObjectTypeQuery> > buildCheckObjectTypes{};

@@ -7,8 +7,10 @@
 class UStaticMeshComponent;
 class UMaterial;
 class UMaterialInstanceDynamic;
+class UStaticMeshSocket;
 
-UCLASS()
+UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
+
 class PROJECTOPENWORLD_API ABuildingPreviewActor : public AActor
 {
 	GENERATED_BODY()
@@ -19,6 +21,8 @@ protected:
 	TSoftObjectPtr <UMaterialInstanceDynamic> buildingPreview{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BuildingAssist")
 	TObjectPtr<UStaticMeshComponent> BuildingMesh{};
+
+	TObjectPtr<UStaticMeshSocket> MeshSocket{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BuildingAssist")
 	TSoftObjectPtr < UStaticMesh> TargetBuildingMesh{};

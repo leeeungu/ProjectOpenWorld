@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
@@ -9,22 +9,26 @@ struct FSnapRule : public  FTableRowBase
 {
     GENERATED_BODY()
 
-    // ¿ùµå¿¡ ÀÖ´Â ¸Ş½Ã ptr
+    // ì›”ë“œì— ìˆëŠ” ë©”ì‹œ ptr
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr < UStaticMesh> ParentMesh = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UStaticMesh> ChildMesh = nullptr;
 
-    // ParentMesh pivot ±âÁØ ·ÎÄÃ ±âÁØÁ¡ (ºÙÀÌ´Â Á¡)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName ParentSocketName{};
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ParentAnchorLocal{};
 
-    // ChildMesh pivot ±âÁØ ·ÎÄÃ ±âÁØÁ¡ (ºÙ´Â Á¡)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName ChildSocketName{};
+    // ChildMesh pivot ê¸°ì¤€ ë¡œì»¬ ê¸°ì¤€ì  (ë¶™ëŠ” ì )
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ChildAnchorLocal{};
 
-    // ³ªÁßÀ» À§ÇÑ ÇÃ·¡±×/±×·ì (Áö±İÀº ¾È ½áµµ µÊ)
+
+    // ë‚˜ì¤‘ì„ ìœ„í•œ í”Œë˜ê·¸/ê·¸ë£¹ (ì§€ê¸ˆì€ ì•ˆ ì¨ë„ ë¨)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Flags = 0;
 };

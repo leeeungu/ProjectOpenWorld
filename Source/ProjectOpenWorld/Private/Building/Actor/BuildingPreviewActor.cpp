@@ -1,4 +1,7 @@
-#include "Building/Actor/BuildingPreviewActor.h"
+﻿#include "Building/Actor/BuildingPreviewActor.h"
+#include "Engine/StaticMeshSocket.h"
+#include "AssetToolsModule.h"
+#include "Subsystems/EditorAssetSubsystem.h"
 
 ABuildingPreviewActor::ABuildingPreviewActor()
 {
@@ -18,6 +21,35 @@ void ABuildingPreviewActor::BeginPlay()
 {
 	Super::BeginPlay();
 	buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
+
+	//if (BuildingMesh && BuildingMesh->GetStaticMesh())
+	//{
+	//	UStaticMesh* Mesh = BuildingMesh->GetStaticMesh();
+	//	UE_LOG(LogTemp, Warning, TEXT("%d"), BuildingMesh->GetStaticMesh()->Sockets.Num());
+	//	Mesh->Modify(); // ⭐ 반드시 먼저 호출 (Undo/Redo + 에셋 수정 시작)
+
+	//	MeshSocket = Mesh->FindSocket(TEXT("TestSocket"));
+	//	if (!MeshSocket)
+	//	{
+	//		MeshSocket = NewObject<UStaticMeshSocket>(Mesh); // Outer = Mesh
+	//		MeshSocket->SocketName = TEXT("TestSocket");
+	//		MeshSocket->RelativeLocation = FVector(0, 0, 0);
+	//		MeshSocket->RelativeRotation = FRotator(0, 0, 0);
+	//		MeshSocket->RelativeScale = FVector(1.f);
+	//		Mesh->AddSocket(MeshSocket);
+	//		BuildingMesh->GetStaticMesh()->Sockets.Empty();
+	//		Mesh->PostEditChange();
+	//		//if (GEditor)
+	//		//{
+	//		//	UEditorAssetSubsystem* Asset = GEditor->GetEditorSubsystem<UEditorAssetSubsystem>();
+	//		//	if (Asset)
+	//		//	{
+	//		//		Asset->SaveLoadedAsset(Mesh);
+	//		//	}
+	//		//}
+	//		Mesh->MarkPackageDirty();
+	//	}
+	//}
 }
 
 void ABuildingPreviewActor::SetBuildingMsh(UStaticMesh* NewMesh)

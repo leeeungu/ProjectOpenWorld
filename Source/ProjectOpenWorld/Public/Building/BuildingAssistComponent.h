@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -24,6 +24,7 @@ protected:
 	bool canBuilding{};
 	bool bSnapped{};
 
+	USceneComponent* ParentComponent{};
 	UPROPERTY(EditDefaultsOnly, Category = "BuildingWidget", BlueprintReadOnly)
 	TSubclassOf<UBuildingInfoWidget> BuildingInfoClass{};
 	UBuildingInfoWidget* BuildingInfo{};
@@ -66,10 +67,5 @@ public: // Custom Function
 	AActor* GetTargetActor() { return targetActor.Get(); }
 private:
 	void OnOffAssist(bool bValue);
-	bool UpdateTraceHit(FHitResult& HitResult);
-	bool UpdateSnap(FVector& ResultPoint);
 	bool UpdatePreviewMesh(FVector& ResultPoint);
-
-	bool UpdateBuildable();
-	void UpdatePreviewMat();
 };

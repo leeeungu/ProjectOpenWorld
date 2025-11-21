@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
+#include "../DataTable/SnapRule.h"
 #include "BuildingPreviewComponent.generated.h"
 
 
@@ -12,20 +13,30 @@ UCLASS(ClassGroup = (Architecture), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UBuildingPreviewComponent : public UStaticMeshComponent
 {
 	GENERATED_BODY()
+	TArray<FSnapRule*> ArrData{};
 protected:
+	TSet<const FSnapRule*> SnapParentSet{};
+	TArray<const FSnapRule*> SnapParentArray{};
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BuildingPreview")
-	TSoftObjectPtr < UMaterial> buildingPreviewMat{};
+	TObjectPtr < UMaterial> buildingPreviewMat{};
 	UPROPERTY()
-	TSoftObjectPtr <UMaterialInstanceDynamic> buildingPreview{};
+	TObjectPtr <UMaterialInstanceDynamic> buildingPreview{};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BuildingPreview")
-	TSoftObjectPtr < UStaticMesh> TargetBuildingMesh{};
+	TObjectPtr < UStaticMesh> TargetBuildingMesh{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BuildingPreview")
+	TObjectPtr < UStaticMeshComponent> ParentMesh{};
 
+	FHitResult HittedResult{};
+	FVector HitLocation{};
 	bool bBuildable{};
+	bool bSnapped{};
 public:
 	UBuildingPreviewComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 protected:
 	virtual void BeginPlay() override;
 
@@ -35,7 +46,8 @@ public:
 	void StartPreView();
 	UFUNCTION(BlueprintCallable, Category = "BuildingPreview")
 	void EndPreView();
-
+	UFUNCTION(BlueprintCallable, Category = "BuildingPreview")
+	void SetParentMesh(FHitResult& Hit, UStaticMeshComponent* NewMesh);
 	UFUNCTION(BlueprintCallable, Category = "BuildingPreview")
 	void SetBuildingMsh(UStaticMesh* NewMesh);
 	UFUNCTION(BlueprintPure, Category = "BuildingPreview")
