@@ -1,126 +1,193 @@
-Ôªø#include "Building/BuildingAssistComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Engine/StaticMeshActor.h" 
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Building/BuildingAssistComponent.h"
+
+#include "Building/Component/BuildingPreviewComponent.h"
 #include "Building/BaseBuilding.h"
-#include "LandscapeProxy.h"
-#include "GameFramework/Pawn.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Widget/BuildingInfoWidget.h"
+
+#include "Engine/StaticMeshActor.h"
+#include "Engine/DataTable.h"
+#include "GameFramework/Pawn.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
+
+#include "LandscapeProxy.h"
+#include "Blueprint/UserWidget.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	//Script/UMGEditor.WidgetBlueprint'/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo'
-	static ConstructorHelpers::FClassFinder< UUserWidget> BuildingWidget(TEXT("/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo_C"));
+
+	// æ»≥ª ¿ß¡¨
+	static ConstructorHelpers::FClassFinder<UUserWidget> BuildingWidget(
+		TEXT("/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo_C"));
 	if (BuildingWidget.Succeeded())
 	{
 		BuildingInfoClass = BuildingWidget.Class;
 	}
-	//SetIsReplicated(true);
 
-	//Script/Engine.Blueprint'/Game/Building/Blueprints/Test/Bp_BuildingActor.Bp_BuildingActor'
-	static ConstructorHelpers::FClassFinder< ABaseBuilding> Building(TEXT("/Game/Building/Blueprints/Test/Bp_BuildingActor.Bp_BuildingActor_C"));
-	if (Building.Succeeded())
+	// ±‚∫ª ∫Ùµ˘ Actor ≈¨∑°Ω∫
+	static ConstructorHelpers::FClassFinder<ABaseBuilding> BuildingBP(
+		TEXT("/Game/Building/Blueprints/Test/Bp_BuildingActor.Bp_BuildingActor_C"));
+	if (BuildingBP.Succeeded())
 	{
-		BuildingClass = Building.Class;
+		BuildingClass = BuildingBP.Class;
 	}
-	ArraySnapSocket.Reserve(50);
-}
 
+	// Snap DataTable ∑Œµ˘
+	static ConstructorHelpers::FObjectFinder<UDataTable> MeshData(
+		TEXT("/Game/Building/Data/DT_SnapData.DT_SnapData"));
+	if (MeshData.Succeeded())
+	{
+		if (UDataTable* DataTable = MeshData.Object)
+		{
+			DataTable->GetAllRows<FSnapRule>(TEXT("SnapData"), SnapDataRows);
+		}
+	}
+
+	// TraceøÎ ObjectTypes
+	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+}
 
 void UBuildingAssistComponent::BeginPlay()
 {
-	Super::BeginPlay();
-	if (GetOwner() && Cast< APawn>(GetOwner()))
+	UActorComponent::BeginPlay();
+
+	if (GetOwner())
 	{
-		ownerPawn = Cast< APawn>(GetOwner());
-	//	buildPointIgnore.Add(ownerPawn.Get());
+		ownerPawn = Cast<APawn>(GetOwner());
 	}
-	buildingPreviewActor = Cast< UBuildingPreviewComponent>(ownerPawn->GetComponentByClass<UBuildingPreviewComponent>());
-	buildingPreviewActor->SetRelativeLocation({ 400,0,0 });
 
-	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
-	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+	if (ownerPawn.IsValid())
+	{
+		// «¡∏Æ∫‰ ƒƒ∆˜≥Õ∆Æ ª˝º∫
+		buildingPreviewActor = Cast<UBuildingPreviewComponent>(
+			ownerPawn->AddComponentByClass(UBuildingPreviewComponent::StaticClass(), false, FTransform::Identity, false));
 
-	buildCheckIgnore = buildPointIgnore;
+		if (buildingPreviewActor)
+		{
+			buildingPreviewActor->SetRelativeLocation(FVector(400.f, 0.f, 0.f));
+		}
+	}
+
+	// Trace Ignore: º“¿Ø¿⁄
 	buildPointIgnore.Add(GetOwner());
-	buildCheckIgnore.Add(nullptr);
+
+	// ∫Ùµ˘ æ»≥ª ¿ß¡¨ ª˝º∫
 	if (BuildingInfoClass)
-		BuildingInfo =Cast< UBuildingInfoWidget>(CreateWidget(GetWorld(), BuildingInfoClass));
+	{
+		BuildingInfo = Cast<UBuildingInfoWidget>(CreateWidget(GetWorld(), BuildingInfoClass));
+	}
 }
 
 void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UActorComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 	canBuilding = false;
-	if (ownerPawn && buildingPreviewActor)
+
+	if (!buildingActive || !ownerPawn.IsValid() || !buildingPreviewActor)
 	{
-		FTransform ChildWorld = buildingPreviewActor->GetComponentTransform();
-		FVector MoveLocation = ChildWorld.GetLocation();
-		if (!UpdatePreviewMesh(MoveLocation))
-		{
-			{
-				ChildWorld.SetLocation(MoveLocation);
-				buildingPreviewActor->SetWorldTransform(ChildWorld, false, nullptr, ETeleportType::TeleportPhysics);
-				buildingPreviewActor->Modify();
-			}
-		}
+		return;
+	}
+
+	// ƒ´∏ﬁ∂Û Trace + Ω∫≥¿ + Preview ¿Ãµø
+	if (UpdatePreview())
+	{
+		// PreviewComponent ∞° OnUpdateTransform ø°º≠ ∞„ƒß ∆«¡§¿ª ≥°≥¬¥Ÿ∞Ì ∞°¡§
+		canBuilding = buildingPreviewActor->IsBuildable();
 	}
 }
 
 void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
 {
-	if (!NewStaticMesh)
+	if (!NewStaticMesh || !buildingPreviewActor)
+	{
 		return;
+	}
+
 	BuildingMesh = NewStaticMesh;
 	buildingPreviewActor->SetBuildingMsh(BuildingMesh.Get());
+
+	// «ˆ¿Á ChildMesh ø° ∏¬¥¬ SnapRuleµÈ∏∏ √ﬂ∑¡µ“
+	SnapRulesForChild.Reset();
+	for (FSnapRule* Row : SnapDataRows)
+	{
+		if (Row && Row->ChildMesh == BuildingMesh.Get())
+		{
+			SnapRulesForChild.Add(Row);
+		}
+	}
 }
 
 void UBuildingAssistComponent::StartBuilding()
 {
 	OnOffAssist(true);
+
 	if (BuildingInfo)
+	{
 		BuildingInfo->AddToViewport();
-	buildingPreviewActor->StartPreView();
+	}
+
+	if (buildingPreviewActor)
+	{
+		buildingPreviewActor->StartPreView();
+	}
 }
 
 void UBuildingAssistComponent::EndBuilding()
 {
 	OnOffAssist(false);
-	if (BuildingInfo)	
+
+	if (BuildingInfo)
+	{
 		BuildingInfo->RemoveFromParent();
-	buildingPreviewActor->EndPreView();
+	}
+
+	if (buildingPreviewActor)
+	{
+		buildingPreviewActor->EndPreView();
+	}
 }
 
 void UBuildingAssistComponent::SpawnBuilding()
 {
-	if (buildingActive && canBuilding)
+	if (!buildingActive || !canBuilding || !BuildingClass || !buildingPreviewActor || !BuildingMesh.IsValid())
 	{
-		FActorSpawnParameters Param{};
-		Param.Instigator = ownerPawn.Get();
-		Param.Owner = ownerPawn.Get();
-		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		FTransform Trans = buildingPreviewActor->GetComponentTransform();
-		ABaseBuilding* Building = Cast< ABaseBuilding>(GetWorld()->SpawnActor(BuildingClass, &Trans, Param));
-		buildingPreviewActor->SetWorldRotation(FQuat::Identity);
-		if (Building)
+		return;
+	}
+
+	FActorSpawnParameters Param;
+	Param.Instigator = ownerPawn.Get();
+	Param.Owner = ownerPawn.Get();
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	const FTransform SpawnTransform = buildingPreviewActor->GetComponentTransform();
+
+	ABaseBuilding* Building = GetWorld()->SpawnActor<ABaseBuilding>(BuildingClass, SpawnTransform, Param);
+	if (Building)
+	{
+		if (UBuildingProgress* Progress = Building->GetBuildingProgress())
 		{
-			UBuildingProgress* Progress = Building->GetBuildingProgress();
-			Building->GetBuildingProgress()->SetbuildingMesh(BuildingMesh.Get());
+			Progress->SetbuildingMesh(BuildingMesh.Get());
 		}
 	}
+
+	// «¡∏Æ∫‰ »∏¿¸ √ ±‚»≠
+	buildingPreviewActor->SetWorldRotation(FQuat::Identity);
 }
 
 void UBuildingAssistComponent::RotateBuilding(float AddYaw)
 {
 	if (buildingPreviewActor)
-		buildingPreviewActor->AddWorldRotation(FRotator{0,AddYaw,0});
+	{
+		buildingPreviewActor->AddWorldRotation(FRotator(0.f, AddYaw, 0.f));
+		YawRotation = UKismetMathLibrary::NormalizeAxis(YawRotation + AddYaw);
+	}
 }
 
 void UBuildingAssistComponent::OnOffAssist(bool bValue)
@@ -129,47 +196,188 @@ void UBuildingAssistComponent::OnOffAssist(bool bValue)
 	canBuilding = !bValue;
 	SetComponentTickEnabled(bValue);
 
+	if (!buildingPreviewActor)
+	{
+		return;
+	}
+
 	if (bValue)
+	{
 		buildingPreviewActor->StartPreView();
+	}
 	else
+	{
 		buildingPreviewActor->EndPreView();
+	}
 }
 
-
-bool UBuildingAssistComponent::UpdatePreviewMesh(FVector& ResultPoint)
+bool UBuildingAssistComponent::UpdatePreview()
 {
-	UStaticMeshComponent* Mesh{};
-	if (const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0))
+	if (!ownerPawn.IsValid() || !buildingPreviewActor)
 	{
-		//TArray<FHitResult> ArraygResult{};
-		FHitResult HitResult{};
-		// Ïñ¥Îñ§ Î¨ºÏ≤¥ÏôÄ Ï∂©ÎèåÌïòÎäî ÏßÄ
-		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
-			CameraManager->GetCameraLocation(),
-			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 1200 + CameraManager->GetCameraLocation(),
-			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true)) 
+		return false;
+	}
+
+	const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	if (!CameraManager)
+	{
+		return false;
+	}
+
+	const FVector CamLocation = CameraManager->GetCameraLocation();
+	const FRotator CamRotation = CameraManager->GetCameraRotation();
+	const FVector TraceStart = CamLocation;
+	const FVector TraceEnd = CamLocation + CamRotation.Vector() * 1200.f;
+
+	FHitResult HitResult;
+	bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(
+		GetWorld(),
+		TraceStart,
+		TraceEnd,
+		buildPointObjectTypes,
+		true,
+		buildPointIgnore,
+		EDrawDebugTrace::Type::None,
+		HitResult,
+		true);
+
+	FTransform PreviewWorld = buildingPreviewActor->GetComponentTransform();
+
+	// ±‚∫ª »∏¿¸¿∫ ±‚¡∏ «¡∏Æ∫‰¿« »∏¿¸ ¿Ø¡ˆ (RotateBuilding¿∏∑Œ ¡∂¿˝)
+	FRotator  CurrentRot = PreviewWorld.GetRotation().Rotator();
+	//FRotator TO FQUAT
+	CurrentRot.Yaw = YawRotation;
+	const FVector CurrentScale = PreviewWorld.GetScale3D();
+
+	if (!bHit)
+	{
+		// æ∆π´ ∞Õµµ ∏¬¡ˆ æ ¿∏∏È TraceEndø° ¿⁄¿Ø πËƒ°
+		PreviewWorld.SetLocation(TraceEnd);
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
+
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		return true;
+	}
+
+	// Hitµ» Actorø°º≠ ParentMesh √£±‚
+	UStaticMeshComponent* ParentMeshComp = nullptr;
+	if (AActor* HitActor = HitResult.GetActor())
+	{
+		for (UActorComponent* Comp : HitActor->GetComponents())
 		{
-			ResultPoint = HitResult.ImpactPoint;
-			// Ï∂©Îèå Ïãú ÏÜåÏ∫£Ïù¥ ÏûàÎäîÏßÄ
-			if (targetActor != HitResult.GetActor() && targetActor != GetOwner())
+			if (UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(Comp))
 			{
-				targetActor = HitResult.GetActor();
-				//snapSocketTransform.Empty(5);
-				bSnapped = false;
-				for (auto& Component : targetActor->GetComponents())
-				{
-					Mesh = Cast<UStaticMeshComponent>(Component);
-					if (Mesh)
-					{
-						bSnapped = true;
-						break;;
-					}
-				}
+				ParentMeshComp = SMC;
+				break;
 			}
 		}
-		if (!Mesh)
-			ResultPoint = HitResult.TraceEnd;
-		buildingPreviewActor->SetParentMesh(HitResult, Mesh);
 	}
-	return Mesh != nullptr;
+
+	const FVector ImpactPoint = HitResult.ImpactPoint;
+
+	// ParentMesh∞° æ¯¿∏∏È ImpactPointø° ¿⁄¿Ø πËƒ°
+	if (!ParentMeshComp || !BuildingMesh.IsValid() || SnapRulesForChild.Num() == 0)
+	{
+		PreviewWorld.SetLocation(ImpactPoint);
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
+
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		return true;
+	}
+
+	// Parent StaticMesh ±‚¡ÿ¿∏∑Œ Ω∫≥¿ ∑Í « ≈Õ∏µ
+	UStaticMesh* ParentStaticMesh = ParentMeshComp->GetStaticMesh();
+	if (!ParentStaticMesh)
+	{
+		PreviewWorld.SetLocation(ImpactPoint);
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
+
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		return true;
+	}
+
+	TArray<const FSnapRule*> SnapRulesForParent;
+	SnapRulesForParent.Reserve(SnapRulesForChild.Num());
+
+	for (const FSnapRule* Rule : SnapRulesForChild)
+	{
+		if (Rule && Rule->ParentMesh == ParentStaticMesh)
+		{
+			SnapRulesForParent.Add(Rule);
+		}
+	}
+
+	// ¿Ã Parentø° ¥Î«— Ω∫≥¿ ∑Í¿Ã æ¯¿∏∏È ImpactPointø° ¿⁄¿Ø πËƒ°
+	if (SnapRulesForParent.Num() == 0)
+	{
+		PreviewWorld.SetLocation(ImpactPoint);
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
+
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		return true;
+	}
+
+	// ∞°¿Â ∞°±ÓøÓ ParentAnchorWorld √£±‚
+	const FTransform ParentWorld = ParentMeshComp->GetComponentTransform();
+
+	const float SnapDistSq = SnapDistance * SnapDistance;
+	const FSnapRule* BestRule = nullptr;
+	float BestDistSq = TNumericLimits<float>::Max();
+	FTransform BestParentAnchorWorld;
+
+	for (const FSnapRule* Rule : SnapRulesForParent)
+	{
+		if (!Rule)
+		{
+			continue;
+		}
+
+		const FTransform ParentAnchorWorld = Rule->ParentAnchorLocal * ParentWorld;
+		const FVector AnchorWorldPos = ParentAnchorWorld.GetLocation();
+
+		const float DistSq = FVector::DistSquared(ImpactPoint, AnchorWorldPos);
+		if (DistSq < BestDistSq)
+		{
+			BestDistSq = DistSq;
+			BestRule = Rule;
+			BestParentAnchorWorld = ParentAnchorWorld;
+		}
+	}
+
+	// Anchor∞° ≥ π´ ∏÷∏È Ω∫≥¿«œ¡ˆ æ ∞Ì ImpactPoint∑Œ ¿⁄¿Ø πËƒ°
+	if (!BestRule || BestDistSq > SnapDistSq)
+	{
+		PreviewWorld.SetLocation(ImpactPoint);
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
+
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+
+		return true;
+	}
+
+	// Ω∫≥¿: ChildWorld * ChildAnchorLocal = ParentAnchorWorld
+	const FTransform& ChildAnchorLocal = BestRule->ChildAnchorLocal;
+
+	const FQuat ParentAnchorWorldRot = BestParentAnchorWorld.GetRotation();
+	const FQuat ChildAnchorLocalRot = ChildAnchorLocal.GetRotation();
+
+	const FQuat ChildWorldRot = ParentAnchorWorldRot * ChildAnchorLocalRot.Inverse();
+
+	const FVector ParentAnchorWorldPos = BestParentAnchorWorld.GetLocation();
+	const FVector ChildAnchorLocalPos = ChildAnchorLocal.GetLocation();
+
+	const FVector ChildAnchorWorldOffset = ChildWorldRot.RotateVector(ChildAnchorLocalPos);
+	const FVector ChildWorldPos = ParentAnchorWorldPos - ChildAnchorWorldOffset;
+
+	PreviewWorld.SetLocation(ChildWorldPos);
+	PreviewWorld.SetRotation(ChildWorldRot);
+	PreviewWorld.SetScale3D(CurrentScale);
+
+	buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+	return true;
 }

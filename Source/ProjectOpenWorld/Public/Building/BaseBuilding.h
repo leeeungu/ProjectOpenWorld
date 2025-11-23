@@ -9,6 +9,7 @@ class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
 class UMaterials;
 class UBuildingProgress;
+class UNavModifierComponent;
 class UBuildingActionWidgetComponent;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
@@ -18,8 +19,6 @@ class PROJECTOPENWORLD_API ABaseBuilding : public AActor
 protected:
 
 	// 해당 기능을 묶어서 처리면 좋을듯?
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
-	TObjectPtr < USceneComponent> Root{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture", BlueprintGetter = "GetBuildingMeshComponent")
 	TObjectPtr < UStaticMeshComponent> buildingMeshComponent{};
 
@@ -27,6 +26,9 @@ protected:
 	TObjectPtr < UBuildingProgress> buildingProgressComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
 	TObjectPtr<UBuildingActionWidgetComponent> BuildActionWidget{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
+	TObjectPtr<UNavModifierComponent> NavModifier{};
 
 public:		
 	ABaseBuilding();

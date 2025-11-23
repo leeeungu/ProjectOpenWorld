@@ -1,4 +1,4 @@
-Ôªø// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -9,7 +9,7 @@ public class ProjectOpenWorld : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Landscape", "UMG",
-            "AIModule", "SlateCore",
+            "AIModule", "SlateCore", "NavigationSystem"
 
         });
 
@@ -18,9 +18,9 @@ public class ProjectOpenWorld : ModuleRules
             PrivateDependencyModuleNames.AddRange(
                 new string[]
                 {
-                    "UnrealEd",             // GEditor, ÏóêÎîîÌÑ∞ Í¥ÄÎ†®
+                    "UnrealEd",             // GEditor, ø°µ≈Õ ∞¸∑√
                     "EditorSubsystem",      // UEditorAssetSubsystem
-                    "EditorScriptingUtilities" // ÌïÑÏöî Ïãú
+                    "EditorScriptingUtilities" // « ø‰ Ω√
                 }
             );
         }

@@ -27,7 +27,7 @@ void ABaseCreature::BeginPlay()
 
 void ABaseCreature::FinishActionMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (Result != EPathFollowingResult::Type::Success)
+	if (!TargetActor || TargetActor->GetDistanceTo(this) > 400.0f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
 		return;
@@ -54,9 +54,10 @@ bool ABaseCreature::MoveToTarget()
 		FAIMoveRequest MoveReq(TargetActor.Get());
 		MoveReq.SetUsePathfinding(true);
 		MoveReq.SetAllowPartialPath(false);
-		MoveReq.SetAcceptanceRadius(100.0f);
+		MoveReq.SetAcceptanceRadius(400.0f);
 		MoveReq.SetReachTestIncludesAgentRadius(true);
 		MoveReq.SetCanStrafe(true);
+		MoveReq.SetReachTestIncludesGoalRadius(true);	
 		if (OwnerController)
 		{
 			FNavPathSharedPtr OutPath{};

@@ -2,17 +2,16 @@
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
+#include "NavModifierComponent.h"
+#include "NavAreas/NavArea_Default.h"
 
 ABaseBuilding::ABaseBuilding()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	Root = CreateDefaultSubobject< USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);
 	//mobility(EComponentMobility::Static);
-	Root->SetMobility(EComponentMobility::Static);
 	buildingMeshComponent = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("BuildingMesh"));
+	SetRootComponent(buildingMeshComponent);
 	buildingMeshComponent->SetMobility(EComponentMobility::Static);
-	buildingMeshComponent->SetupAttachment(Root);
 	buildingMeshComponent->SetCanEverAffectNavigation(false);
 	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
 	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -21,8 +20,12 @@ ABaseBuilding::ABaseBuilding()
 	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
 	if (BuildActionWidget)
 	{
-		BuildActionWidget->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
+		BuildActionWidget->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	}
+
+	
+	NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
+	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }
 
 void ABaseBuilding::BeginPlay()

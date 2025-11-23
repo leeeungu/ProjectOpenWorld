@@ -1,158 +1,102 @@
-Ôªø#include "Building/Component/BuildingPreviewComponent.h"
+#include "Building/Component/BuildingPreviewComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/DataTableFunctionLibrary.h"
+#include "Engine/StaticMesh.h"
 
-UBuildingPreviewComponent::UBuildingPreviewComponent(const FObjectInitializer& ObjectInitializer) : 
-	UStaticMeshComponent(ObjectInitializer)
+UBuildingPreviewComponent::UBuildingPreviewComponent(const FObjectInitializer& ObjectInitializer)
+	: UStaticMeshComponent(ObjectInitializer)
 {
-	PrimaryComponentTick.bCanEverTick = true;
-	SetCollisionProfileName(TEXT("NoCollision"));
+	// ¿Ãµø ¿⁄√º¥¬ Assist ƒƒ∆˜≥Õ∆Æ∞° ¥„¥Á«œπ«∑Œ Tick¿∫ ªÁΩ«ªÛ « ø‰ æ¯¿Ω
+	PrimaryComponentTick.bCanEverTick = false;
 
-	static ConstructorHelpers::FObjectFinder< UMaterial> PreviewMat(TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
+	// «¡∏Æ∫‰¥¬ √Êµπ√º∑Œ µø¿€«œ¡ˆ æ ¿Ω (∞„ƒß ∆«¡§¿∫ OnUpdateTransformø°º≠ ∫∞µµ Trace∑Œ √≥∏Æ)
+	SetCollisionProfileName(TEXT("NoCollision"));
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetGenerateOverlapEvents(false);
+	SetSimulatePhysics(false);
+
+	// «¡∏Æ∫‰øÎ ∏”∆º∏ÆæÛ ∑Œµ˘
+	static ConstructorHelpers::FObjectFinder<UMaterial> PreviewMat(
+		TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
 	if (PreviewMat.Succeeded())
 	{
 		buildingPreviewMat = PreviewMat.Object;
 	}
+
 	SetActive(false);
 	SetVisibility(false);
 	SetHiddenInGame(true);
-	SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
-	SetGenerateOverlapEvents(false);
-	SetSimulatePhysics(false);
-	EndPreView();
-	//Script/Engine.DataTable'/Game/Building/Data/DT_SnapData.DT_SnapData'
-	static ConstructorHelpers::FObjectFinder< UDataTable> MeshData(TEXT("/Game/Building/Data/DT_SnapData.DT_SnapData"));
-	UDataTable* pDT{};
-	if (MeshData.Succeeded())
-	{
-		pDT = MeshData.Object;
-	}
-	if (pDT)
-	{
-		pDT->GetAllRows< FSnapRule>(TEXT(""), ArrData);
-		SnapParentSet.Reserve(ArrData.Num());
-		SnapParentArray.Reserve(ArrData.Num());
-	}
-}
-
-void UBuildingPreviewComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	UStaticMeshComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!HittedResult.bBlockingHit || !HittedResult.GetActor())
-	{
-		SetComponentTickEnabled(false);
-		return;
-	}
-
-	bSnapped = false;
-	if (!SnapParentArray.IsEmpty() && ParentMesh)
-	{
-		FTransform ParentWorld = ParentMesh->GetComponentTransform();
-		FTransform ComponentTrans = GetComponentTransform();
-		for (const auto& sanpRule : SnapParentArray)
-		{
-			const FTransform& ParentSocketWorld = sanpRule->ParentAnchorLocal * ParentMesh->GetComponentTransform();
-			const FVector ParentSocketWorldPos = ParentSocketWorld.GetLocation();
-			if ( FVector::DistSquared(HitLocation, ParentSocketWorldPos) <= 80.0f * 80.0f)
-			{
-				bSnapped = true;
-				const FTransform& ChildSocketLocal = sanpRule->ChildAnchorLocal;
-
-				// Î™©Ï†Å: ChildWorld * ChildSocketLocal = ParentSocketWorld
-
-				// ÌöåÏ†Ñ Í≥ÑÏÇ∞
-				const FQuat ParentSocketWorldRot = ParentSocketWorld.GetRotation();
-				const FQuat ChildSocketLocalRot = ChildSocketLocal.GetRotation();
-				const FQuat ChildWorldRot = ParentSocketWorldRot * ChildSocketLocalRot.Inverse();
-
-				// ÏúÑÏπò Í≥ÑÏÇ∞
-				const FVector ChildSocketLocalPos = ChildSocketLocal.GetLocation();
-				const FVector ChildSocketWorldOffset = ChildWorldRot.RotateVector(ChildSocketLocalPos);
-				const FVector ChildWorldPos = ParentSocketWorldPos - ChildSocketWorldOffset;
-
-				ComponentTrans.SetLocation(ChildWorldPos);
-				ComponentTrans.SetRotation(ChildWorldRot);
-				SetWorldTransform(ComponentTrans);
-				return;
-			}
-		}
-	}
-	SetWorldLocation(HittedResult.ImpactPoint);
 }
 
 void UBuildingPreviewComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
-	DetachFromParent();
+
+	if (buildingPreviewMat)
+	{
+		buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
+	}
+
+	// ø˘µÂ ªÛ ∫Œ∏øÕ ∫–∏Æ, ±‚¡ÿ¿∫ ø˘µÂ Identity
+	DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	SetWorldTransform(FTransform::Identity);
-	if (TargetBuildingMesh)	
+
+	// Ω√¿€ Ω√¡°ø° º≥¡§µ» ∏ﬁΩ¨∞° ¿÷¥Ÿ∏È ¿˚øÎ
+	if (TargetBuildingMesh)
+	{
 		SetBuildingMsh(TargetBuildingMesh.Get());
+	}
+}
+
+void UBuildingPreviewComponent::TickComponent(
+	float DeltaTime,
+	ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	// ¿Ãµø¿∫ Assist ƒƒ∆˜≥Õ∆Æ∞° ¥„¥Á«œπ«∑Œ ø©±‚º≠¥¬ æ∆π´ ∞Õµµ «œ¡ˆ æ ¿Ω
 }
 
 void UBuildingPreviewComponent::StartPreView()
 {
 	SetHiddenInGame(false);
-	SetVisibility(true);
+	SetVisibility(true, true);
 }
 
 void UBuildingPreviewComponent::EndPreView()
 {
 	SetHiddenInGame(true);
-	SetVisibility(false);
-	ParentMesh = nullptr;
-	SnapParentSet.Empty();
-	SnapParentArray.Empty();
-	SetComponentTickEnabled(false);
-}
-
-void UBuildingPreviewComponent::SetParentMesh(FHitResult& Hit, UStaticMeshComponent* NewMesh)
-{
-	HittedResult = Hit;
-	ParentMesh = NewMesh;
-	HitLocation = HittedResult.ImpactPoint;
-	if (!HittedResult.bBlockingHit || !HittedResult.GetActor())
-	{
-		SetComponentTickEnabled(false);
-		return;
-	}
-	SetComponentTickEnabled(true);
-	SnapParentArray.Empty();
-	for (const auto& Data : SnapParentSet)
-	{
-		if(ParentMesh && Data->ParentMesh == ParentMesh->GetStaticMesh() && Data->ChildMesh == TargetBuildingMesh)
-			SnapParentArray.Add(Data);
-	}
+	SetVisibility(false, true);
 }
 
 void UBuildingPreviewComponent::SetBuildingMsh(UStaticMesh* NewMesh)
 {
 	if (!NewMesh)
+	{
 		return;
+	}
 
 	TargetBuildingMesh = NewMesh;
 	SetStaticMesh(TargetBuildingMesh.Get());
-	SnapParentSet.Empty();
-	for (const auto& Data : ArrData)
-	{
-		if (Data->ChildMesh == TargetBuildingMesh)
-		{
-			SnapParentSet.Add(Data);
-		}
-	}
 
-	int nSize = GetMaterials().Num();
-	for (int i = 0; i < nSize; i++)
+	// ∏µÁ ∏”∆º∏ÆæÛ ΩΩ∑‘ø° «¡∏Æ∫‰øÎ µø¿˚ ∏”∆º∏ÆæÛ ¿˚øÎ
+	if (buildingPreview)
 	{
-		SetMaterial(i, buildingPreview.Get());
+		const int32 NumMats = GetMaterials().Num();
+		for (int32 Index = 0; Index < NumMats; ++Index)
+		{
+			SetMaterial(Index, buildingPreview);
+		}
 	}
 }
 
 void UBuildingPreviewComponent::SetBuildable(bool bValue)
 {
+	bBuildable = bValue;
+
 	if (buildingPreview)
 	{
-		bBuildable = bValue;
+		// ∏”∆º∏ÆæÛ ∆ƒ∂ÛπÃ≈Õ: 1¿Ã∏È ª°∞≠(∫“∞°), 0¿Ã∏È √ ∑œ(∞°¥…) Ωƒ¿∏∑Œ ªÁøÎ ¡ﬂ¿Ãæ˙¥Ÿ∞Ì ∞°¡§
 		buildingPreview->SetScalarParameterValue(TEXT("Buildable"), !bValue);
 	}
 }
@@ -160,33 +104,65 @@ void UBuildingPreviewComponent::SetBuildable(bool bValue)
 void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
 	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
-	if (bHiddenInGame)
-		return;
 
-	// Preview MeshÍ∞Ä Ïù¥Îèô ÎêòÍ≥† Í∑∏ ÏúÑÏπòÏóêÏÑúÏùò Í±¥ÏÑ§ Í∞ÄÎä• Ï±ÑÌÅ¨
+	if (bHiddenInGame || !TargetBuildingMesh)
+	{
+		return;
+	}
+
+	// «ˆ¿Á ¿ßƒ°ø°º≠¿« ∞„ƒß(πËƒ° ∞°¥… ø©∫Œ)∏∏ ∆«¡§
 	bool bResult = true;
 
-	TArray<TEnumAsByte<EObjectTypeQuery> > buildCheckObjectTypes{};
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-	buildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+	// ∞„ƒß ∞ÀªÁ ¥ÎªÛ ObjectTypes
+	TArray<TEnumAsByte<EObjectTypeQuery>> BuildCheckObjectTypes;
+	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
+	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
-	TArray<FHitResult> ArrayPenetratingResult{};
-	if (UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(),
-		GetComponentLocation()+ FVector(0,0, TargetBuildingMesh->GetBoundingBox().GetSize().Z * 0.5f),
-		GetComponentLocation()+ FVector(0,0, TargetBuildingMesh->GetBoundingBox().GetSize().Z * 0.5f),
-		TargetBuildingMesh->GetBoundingBox().GetSize() *0.5f, GetComponentRotation(),
-		buildCheckObjectTypes, true, {}, EDrawDebugTrace::Type::ForOneFrame, ArrayPenetratingResult, true, FLinearColor::Black))
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(GetOwner());
+
+	TArray<FHitResult> PenetratingHits;
+
+	FBox BoundBox = TargetBuildingMesh->GetBoundingBox();
+	const FVector HalfSize = BoundBox.GetSize() * 0.5f;
+
+	// «¡∏Æ∫‰ ¡ﬂΩ… ¿ßƒ°(ªÏ¬¶ ¿ß∑Œ ø√∑¡º≠ π⁄Ω∫ ¡ﬂΩ… ¡§∑ƒ)
+	const FVector Start = GetComponentLocation() + FVector(0.f, 0.f, HalfSize.Z);
+	const FVector End = Start;
+
+	const FRotator Rot = GetComponentRotation();
+
+	if (UKismetSystemLibrary::BoxTraceMultiForObjects(
+		GetWorld(),
+		Start,
+		End,
+		HalfSize,
+		Rot,
+		BuildCheckObjectTypes,
+		true,
+		IgnoreActors,
+		EDrawDebugTrace::Type::ForOneFrame,
+		PenetratingHits,
+		true,
+		FLinearColor::Black))
 	{
-		for (const FHitResult& PenetratingResult : ArrayPenetratingResult)
+		for (const FHitResult& Hit : PenetratingHits)
 		{
-			if (PenetratingResult.bStartPenetrating &&  PenetratingResult.PenetrationDepth > 5.0f && PenetratingResult.GetComponent() != this)
+			if (Hit.bStartPenetrating &&
+				Hit.PenetrationDepth > 80.f &&
+				Hit.GetComponent() != this)
 			{
 				bResult = false;
+				UE_LOG(LogTemp, Warning,
+					TEXT("BuildingPreview - OnUpdateTransform: Penetrating Hit Detected! Actor: %s, Depth: %.2f"),
+					*Hit.GetActor()->GetName(),
+					Hit.PenetrationDepth);
 				break;
 			}
 		}
 	}
+
 	SetBuildable(bResult);
 }
