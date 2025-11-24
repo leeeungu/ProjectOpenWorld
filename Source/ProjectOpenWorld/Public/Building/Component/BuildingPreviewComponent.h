@@ -21,7 +21,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UStaticMesh> TargetBuildingMesh{};
 
+	FTransform BottomTrans{};
 	// 현재 위치가 배치 가능(true) / 불가(false) 상태인지
+
 	UPROPERTY()
 	bool bBuildable = false;
 

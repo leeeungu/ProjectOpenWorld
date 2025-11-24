@@ -69,6 +69,8 @@ protected:
 	// 현재 ChildMesh(=BuildingMesh)에 대해 유효한 모든 룰
 	TArray<const FSnapRule*> SnapRulesForChild;
 
+	FTransform BottomTrans{};
+
 	// Snap 거리 임계값(ImpactPoint와 ParentAnchorWorld 사이 거리)
 	UPROPERTY(EditAnywhere, Category = "Building|Snap")
 	float SnapDistance = 100.f;

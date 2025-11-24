@@ -79,6 +79,7 @@ void UBuildingPreviewComponent::SetBuildingMsh(UStaticMesh* NewMesh)
 	TargetBuildingMesh = NewMesh;
 	SetStaticMesh(TargetBuildingMesh.Get());
 
+	BottomTrans = GetSocketTransform(TEXT("Bottom"), ERelativeTransformSpace::RTS_Component);
 	// 모든 머티리얼 슬롯에 프리뷰용 동적 머티리얼 적용
 	if (buildingPreview)
 	{
@@ -125,11 +126,11 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 
 	TArray<FHitResult> PenetratingHits;
 
-	FBox BoundBox = TargetBuildingMesh->GetBoundingBox();
-	const FVector HalfSize = BoundBox.GetSize() * 0.5f;
+	FVector HalfSize = TargetBuildingMesh->GetBoundingBox().GetSize() * 0.5f;
+	HalfSize.Z = (TargetBuildingMesh->GetBoundingBox().GetSize().Z - BottomTrans.GetLocation().Z)  * 0.5f;
 
 	// 프리뷰 중심 위치(살짝 위로 올려서 박스 중심 정렬)
-	const FVector Start = GetComponentLocation() + FVector(0.f, 0.f, HalfSize.Z);
+	const FVector Start = GetComponentLocation() + FVector(0.f, 0.f, HalfSize.Z) + FVector{0, 0, BottomTrans.GetLocation().Z};
 	const FVector End = Start;
 
 	const FRotator Rot = GetComponentRotation();
