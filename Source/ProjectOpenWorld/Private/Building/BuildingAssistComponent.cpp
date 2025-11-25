@@ -51,6 +51,7 @@ UBuildingAssistComponent::UBuildingAssistComponent()
 	// Trace용 ObjectTypes
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	EndBuilding();
 }
 
 void UBuildingAssistComponent::BeginPlay()
@@ -238,7 +239,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		buildPointObjectTypes,
 		true,
 		buildPointIgnore,
-		EDrawDebugTrace::Type::None,
+		EDrawDebugTrace::Type::ForOneFrame,
 		HitResult,
 		true);
 
@@ -269,8 +270,11 @@ bool UBuildingAssistComponent::UpdatePreview()
 		{
 			if (UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(Comp))
 			{
-				ParentMeshComp = SMC;
-				break;
+				if (SMC != buildingPreviewActor)
+				{
+					ParentMeshComp = SMC;
+					break;
+				}
 			}
 		}
 	}
@@ -300,19 +304,18 @@ bool UBuildingAssistComponent::UpdatePreview()
 		return true;
 	}
 
-	TArray<const FSnapRule*> SnapRulesForParent;
-	SnapRulesForParent.Reserve(SnapRulesForChild.Num());
-
+	const FSnapRule* MainRule{};
 	for (const FSnapRule* Rule : SnapRulesForChild)
 	{
 		if (Rule && Rule->ParentMesh == ParentStaticMesh)
 		{
-			SnapRulesForParent.Add(Rule);
+			MainRule = Rule;
+			break;
 		}
 	}
 
 	// 이 Parent에 대한 스냅 룰이 없으면 ImpactPoint에 자유 배치
-	if (SnapRulesForParent.Num() == 0) // !Snaped
+	if (!MainRule) // !Snaped
 	{
 		PreviewWorld.SetLocation(ImpactPoint);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
@@ -327,42 +330,44 @@ bool UBuildingAssistComponent::UpdatePreview()
 
 	const float SnapDistSq = SnapDistance * SnapDistance;
 	const FSnapRule* BestRule = nullptr;
+	int Index{};
+	int BestIndex{};
 	float BestDistSq = TNumericLimits<float>::Max();
 	FTransform BestParentAnchorWorld;
+	float Min = TNumericLimits<float>::Max();
 
-	for (const FSnapRule* Rule : SnapRulesForParent)
+	for (const FSnapAnchorData& Data : MainRule->ArrayAnchors)
 	{
-		if (!Rule)
-		{
-			continue;
-		}
-		FTransform ParentAnchorWorld{};
-		FVector AnchorWorldPos{};
-		if (Rule->ParentAnchorType == ESnapAnchor::NONE)
+		FTransform ParentAnchorWorld = MainRule->ParentAnchorLocal * ParentWorld;
+		FVector AnchorWorldPos = ParentAnchorWorld.GetLocation();
+		FVector PreviewLocation = HitResult.ImpactPoint;
+
+		if (Data.ParentAnchor != ESnapAnchor::NONE)
 		{
 
-			ParentAnchorWorld = Rule->ParentAnchorLocal * ParentWorld;
-			AnchorWorldPos = ParentAnchorWorld.GetLocation();
-		}
-		else
-		{
 			// 정규 Anchor 오프셋: -1 ~ 1
-			FVector ParentOffset = FSnapRule::AnchorToOffset(Rule->ParentAnchorType, Rule->ParentMesh->GetBoundingBox().GetSize());; // FVector(1, -1, 1)
+			FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize());; // FVector(1, -1, 1)
+			FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize());;
 
-			// 회전 포함 Parent Anchor World 좌표
-			const FTransform ParentTransform = HitResult.GetActor()->GetTransform();
-			AnchorWorldPos = ParentTransform .GetLocation() + ParentTransform.TransformPosition(ParentOffset);
-			UE_LOG(LogTemp, Warning, TEXT("SanpPoint %s"), *ParentOffset.ToString());
+			ParentAnchorWorld = HitResult.GetActor()->GetTransform();
+			AnchorWorldPos = ParentAnchorWorld.TransformPosition(ParentOffset);
+
+			const FVector Parent = ParentAnchorWorld.TransformPosition(ParentOffset);
+			const FVector RotatedChildAnchor = ParentAnchorWorld.GetRotation() * (ChildOffset);
+			PreviewLocation = Parent - RotatedChildAnchor;
 		}
 
 		const float DistSq = FVector::DistSquared(HitResult.ImpactPoint, AnchorWorldPos);
-		if (DistSq < BestDistSq)
+		const float Dist = FVector::DistSquared(PreviewLocation, GetOwner()->GetActorLocation());
+		if (DistSq < BestDistSq ) //&& Dist < Min)
 		{
 			BestDistSq = DistSq;
-			BestRule = Rule;
+			BestRule = MainRule;
 			BestParentAnchorWorld = ParentAnchorWorld;
-			break;
+			BestIndex = Index;
+			Min = Dist;
 		}
+		Index++;
 	}
 
 	// Anchor가 너무 멀면 스냅하지 않고 ImpactPoint로 자유 배치
@@ -376,6 +381,27 @@ bool UBuildingAssistComponent::UpdatePreview()
 
 		return true;
 	}
+	if (BestRule->ArrayAnchors.IsValidIndex(BestIndex))
+	{
+		FVector ParentOffset = FSnapRule::AnchorToOffset(BestRule->ArrayAnchors[BestIndex].ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize());;
+		FVector ChildOffset = FSnapRule::AnchorToOffset(BestRule->ArrayAnchors[BestIndex].ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize());;
+
+		// 회전 포함 Parent Anchor World 좌표
+		const FVector ParentAnchorWorld = BestParentAnchorWorld.TransformPosition(ParentOffset);
+
+		// 회전 보정: ChildAnchorLocal을 Parent 기준으로 회전
+		const FVector RotatedChildAnchor = BestParentAnchorWorld.GetRotation() * (ChildOffset);
+
+		// 최종 위치 = ParentAnchorWorld - (회전된 ChildAnchorLocal)
+		//const FVector ChildWorldPos = ParentAnchorWorld - RotatedChildAnchor;
+
+		PreviewWorld.SetLocation(ParentAnchorWorld - RotatedChildAnchor);
+
+		CurrentRot = BestParentAnchorWorld.GetRotation().Rotator();
+		CurrentRot.Yaw += FSnapRule::AnchorYaw(BestRule->ArrayAnchors[BestIndex].ChildYaw);
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+	}
+	else
 	{
 		// 스냅: ChildWorld * ChildAnchorLocal = ParentAnchorWorld
 		const FTransform& ChildAnchorLocal = BestRule->ChildAnchorLocal;
@@ -394,30 +420,6 @@ bool UBuildingAssistComponent::UpdatePreview()
 		PreviewWorld.SetLocation(ChildWorldPos);
 		PreviewWorld.SetRotation(ChildWorldRot);
 		PreviewWorld.SetScale3D(CurrentScale);
-	}
-	if(false)
-	{
-		// 정규 Anchor 오프셋: -1 ~ 1
-		FVector ParentOffset = FSnapRule::AnchorToOffset(BestRule->ParentAnchorType, BestRule->ParentMesh->GetBoundingBox().GetSize());; // FVector(1, -1, 1)
-		FVector ChildOffset  = FSnapRule::AnchorToOffset(BestRule->ChildAnchorType, BestRule->ChildMesh->GetBoundingBox().GetSize());; // FVector(1, -1, 1)
-
-		const FVector ParentExtent = BestRule->ParentMesh->GetBoundingBox().GetExtent();
-		const FVector ChildExtent = BestRule->ChildMesh->GetBoundingBox().GetExtent();
-
-		const FVector ParentAnchorLocal = ParentOffset * ParentExtent;
-		const FVector ChildAnchorLocal = ChildOffset * ChildExtent;
-
-		// 회전 포함 Parent Anchor World 좌표
-		const FTransform ParentTransform = buildingPreviewActor->GetComponentTransform();
-		const FVector ParentAnchorWorld = ParentTransform.TransformPosition(ParentAnchorLocal);
-
-		// 회전 보정: ChildAnchorLocal을 Parent 기준으로 회전
-		const FVector RotatedChildAnchor = ParentTransform.GetRotation().RotateVector(ChildAnchorLocal);
-
-		// 최종 위치 = ParentAnchorWorld - (회전된 ChildAnchorLocal)
-		const FVector ChildWorldPos = ParentAnchorWorld - RotatedChildAnchor;
-
-		PreviewWorld.SetLocation(ParentAnchorWorld - ChildAnchorLocal);
 	}
 
 	buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);

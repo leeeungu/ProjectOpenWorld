@@ -45,6 +45,38 @@ enum class ESnapAnchor : uint8
     brd UMETA(DisplayName = "Back Right Down")
 };
 
+UENUM(BlueprintType)
+enum class ESnapYaw: uint8
+{
+    d0     UMETA(DisplayName = "0"),
+    d30     UMETA(DisplayName = "+30"),
+    d60     UMETA(DisplayName = "+60"),
+    d90     UMETA(DisplayName = "+90"),
+    d120     UMETA(DisplayName = "+120"),
+    d150     UMETA(DisplayName = "+150"),
+    d180     UMETA(DisplayName = "+180"),
+    d210     UMETA(DisplayName = "+210"),
+    d240     UMETA(DisplayName = "+240"),
+    d270     UMETA(DisplayName = "+270"),
+    d300     UMETA(DisplayName = "+300"),
+    d330     UMETA(DisplayName = "+330"),
+};
+
+
+USTRUCT(BlueprintType)
+struct FSnapAnchorData
+{
+    GENERATED_USTRUCT_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ESnapAnchor ParentAnchor{};
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ESnapAnchor  ChildAnchor{};
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ESnapYaw ChildYaw{};
+};
+
 USTRUCT(BlueprintType)
 struct FSnapRule : public  FTableRowBase
 {
@@ -57,28 +89,23 @@ struct FSnapRule : public  FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UStaticMesh> ChildMesh = nullptr;
 
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FName ParentSocketName{};
+    TArray<FSnapAnchorData>  ArrayAnchors{};
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ParentAnchorLocal{};
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ESnapAnchor  ParentAnchorType{};
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FName ChildSocketName{};
-    // ChildMesh pivot 기준 로컬 기준점 (붙는 점)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FTransform ChildAnchorLocal{};
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ESnapAnchor  ChildAnchorType{};
 
-    // 나중을 위한 플래그/그룹 (지금은 안 써도 됨)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 Flags = 0;
+    //// 나중을 위한 플래그/그룹 (지금은 안 써도 됨)
+    //UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    //int32 Flags = 0;
 
    static FORCEINLINE FVector AnchorToOffset(ESnapAnchor  Anchor, const FVector& Extent)
     {
-       if (ESnapAnchor::NONE <= Anchor)
+       if (ESnapAnchor::NONE == Anchor)
            return FVector::ZeroVector; // NONE or invalid
         auto GetAxis = [](TCHAR c, float HalfExtent)
             {
@@ -105,5 +132,10 @@ struct FSnapRule : public  FTableRowBase
         }
         return FVector(X, Y, Z);
     }
+
+   static FORCEINLINE float AnchorYaw(ESnapYaw  YawType)
+   {
+       return (uint8)(YawType) * 30.f;
+   }
 
 };
