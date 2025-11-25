@@ -105,14 +105,12 @@ void UBuildingPreviewComponent::SetBuildable(bool bValue)
 void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
 	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
-
 	if (bHiddenInGame || !TargetBuildingMesh)
 	{
 		return;
 	}
 
 	// 현재 위치에서의 겹침(배치 가능 여부)만 판정
-	bool bResult = true;
 
 	// 겹침 검사 대상 ObjectTypes
 	TArray<TEnumAsByte<EObjectTypeQuery>> BuildCheckObjectTypes;
@@ -135,35 +133,31 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 
 	const FRotator Rot = GetComponentRotation();
 
-	if (UKismetSystemLibrary::BoxTraceMultiForObjects(
+	bool bHit = UKismetSystemLibrary::BoxTraceMultiForObjects(
 		GetWorld(),
-		Start,
-		End,
-		HalfSize,
-		Rot,
+		Start, End, HalfSize, Rot, 
+		//UEngineTypes::ConvertToTraceType(ECC_Visibility),
 		BuildCheckObjectTypes,
-		true,
-		IgnoreActors,
-		EDrawDebugTrace::Type::ForOneFrame,
-		PenetratingHits,
-		true,
-		FLinearColor::Black))
+		true, IgnoreActors,
+		EDrawDebugTrace::Type::ForDuration, PenetratingHits, true,
+		FLinearColor::Black, FLinearColor::Green, 5.0f);
+	bool bOvelap{};
+	if (bHit)
 	{
 		for (const FHitResult& Hit : PenetratingHits)
 		{
+			// PenetrationDepth 값 문제로 중복 설치가 되는 문제가 있음
 			if (Hit.bStartPenetrating &&
 				Hit.PenetrationDepth > 80.f &&
 				Hit.GetComponent() != this)
 			{
 				bResult = false;
-				UE_LOG(LogTemp, Warning,
-					TEXT("BuildingPreview - OnUpdateTransform: Penetrating Hit Detected! Actor: %s, Depth: %.2f"),
-					*Hit.GetActor()->GetName(),
-					Hit.PenetrationDepth);
+				bOvelap = true;
 				break;
 			}
 		}
 	}
-
+	if (!bOvelap)
+		bResult = true;
 	SetBuildable(bResult);
 }

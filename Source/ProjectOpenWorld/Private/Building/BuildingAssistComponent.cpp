@@ -249,7 +249,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 	FRotator  CurrentRot = PreviewWorld.GetRotation().Rotator();
 	//FRotator TO FQUAT
 	CurrentRot.Yaw = YawRotation;
-	const FVector CurrentScale = PreviewWorld.GetScale3D();
+	FVector CurrentScale = FVector::OneVector;
 
 	if (!bHit) // no hit
 	{
@@ -261,7 +261,6 @@ bool UBuildingAssistComponent::UpdatePreview()
 		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
 		return true;
 	}
-
 	// Hit된 Actor에서 ParentMesh 찾기
 	UStaticMeshComponent* ParentMeshComp = nullptr;
 	if (AActor* HitActor = HitResult.GetActor())
@@ -278,7 +277,6 @@ bool UBuildingAssistComponent::UpdatePreview()
 			}
 		}
 	}
-
 	const FVector ImpactPoint = HitResult.ImpactPoint - BottomTrans.GetLocation();
 
 	// ParentMesh가 없으면 ImpactPoint에 자유 배치
@@ -344,17 +342,13 @@ bool UBuildingAssistComponent::UpdatePreview()
 
 		if (Data.ParentAnchor != ESnapAnchor::NONE)
 		{
-
-			// 정규 Anchor 오프셋: -1 ~ 1
-			FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize());; // FVector(1, -1, 1)
-			FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize());;
+			FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize()); // FVector(1, -1, 1)
+			FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize()) + Data.ChildOffset;
 
 			ParentAnchorWorld = HitResult.GetActor()->GetTransform();
 			AnchorWorldPos = ParentAnchorWorld.TransformPosition(ParentOffset);
-
-			const FVector Parent = ParentAnchorWorld.TransformPosition(ParentOffset);
-			const FVector RotatedChildAnchor = ParentAnchorWorld.GetRotation() * (ChildOffset);
-			PreviewLocation = Parent - RotatedChildAnchor;
+			const FVector RotatedChildAnchor = ParentAnchorWorld.GetRotation() * ChildOffset;
+			PreviewLocation = AnchorWorldPos - RotatedChildAnchor;
 		}
 
 		const float DistSq = FVector::DistSquared(HitResult.ImpactPoint, AnchorWorldPos);
@@ -378,19 +372,20 @@ bool UBuildingAssistComponent::UpdatePreview()
 		PreviewWorld.SetScale3D(CurrentScale);
 
 		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
-
 		return true;
 	}
 	if (BestRule->ArrayAnchors.IsValidIndex(BestIndex))
 	{
-		FVector ParentOffset = FSnapRule::AnchorToOffset(BestRule->ArrayAnchors[BestIndex].ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize());;
-		FVector ChildOffset = FSnapRule::AnchorToOffset(BestRule->ArrayAnchors[BestIndex].ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize());;
+		CurrentScale = BestParentAnchorWorld.GetScale3D();
+		const FSnapAnchorData& Data = BestRule->ArrayAnchors[BestIndex];
+		FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize());;
+		FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize()) + Data.ChildOffset;
 
 		// 회전 포함 Parent Anchor World 좌표
-		const FVector ParentAnchorWorld = BestParentAnchorWorld.TransformPosition(ParentOffset);
+		const FVector ParentAnchorWorld = BestParentAnchorWorld.TransformPosition(ParentOffset * CurrentScale);
 
 		// 회전 보정: ChildAnchorLocal을 Parent 기준으로 회전
-		const FVector RotatedChildAnchor = BestParentAnchorWorld.GetRotation() * (ChildOffset);
+		const FVector RotatedChildAnchor = BestParentAnchorWorld.GetRotation() * (ChildOffset * CurrentScale);
 
 		// 최종 위치 = ParentAnchorWorld - (회전된 ChildAnchorLocal)
 		//const FVector ChildWorldPos = ParentAnchorWorld - RotatedChildAnchor;
@@ -398,8 +393,9 @@ bool UBuildingAssistComponent::UpdatePreview()
 		PreviewWorld.SetLocation(ParentAnchorWorld - RotatedChildAnchor);
 
 		CurrentRot = BestParentAnchorWorld.GetRotation().Rotator();
-		CurrentRot.Yaw += FSnapRule::AnchorYaw(BestRule->ArrayAnchors[BestIndex].ChildYaw);
+		CurrentRot.Yaw += FSnapRule::AnchorYaw(Data.ChildYaw);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
 	}
 	else
 	{
@@ -422,6 +418,6 @@ bool UBuildingAssistComponent::UpdatePreview()
 		PreviewWorld.SetScale3D(CurrentScale);
 	}
 
-	buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+	buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 	return true;
 }

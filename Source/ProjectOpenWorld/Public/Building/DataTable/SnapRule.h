@@ -75,6 +75,9 @@ struct FSnapAnchorData
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ESnapYaw ChildYaw{};
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector ChildOffset{};
 };
 
 USTRUCT(BlueprintType)

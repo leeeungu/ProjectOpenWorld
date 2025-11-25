@@ -47,4 +47,6 @@ public:
 protected:
 	// 프리뷰 머티리얼 인스턴스 설정
 	void SetBuildable(bool bValue);
+	bool bResult = true;
+
 };
