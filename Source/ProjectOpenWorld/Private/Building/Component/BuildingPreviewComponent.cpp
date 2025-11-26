@@ -139,7 +139,7 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 		//UEngineTypes::ConvertToTraceType(ECC_Visibility),
 		BuildCheckObjectTypes,
 		true, IgnoreActors,
-		EDrawDebugTrace::Type::ForDuration, PenetratingHits, true,
+		EDrawDebugTrace::Type::None, PenetratingHits, true,
 		FLinearColor::Black, FLinearColor::Green, 5.0f);
 	bool bOvelap{};
 	if (bHit)
