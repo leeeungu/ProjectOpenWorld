@@ -332,13 +332,13 @@ bool UBuildingAssistComponent::UpdatePreview()
 	int BestIndex{};
 	float BestDistSq = TNumericLimits<float>::Max();
 	FTransform BestParentAnchorWorld;
-	float Min = TNumericLimits<float>::Max();
-
+	float Min = TNumericLimits<float>::Min();
+	//FString Temp{};
 	for (const FSnapAnchorData& Data : MainRule->ArrayAnchors)
 	{
 		FTransform ParentAnchorWorld = MainRule->ParentAnchorLocal * ParentWorld;
 		FVector AnchorWorldPos = ParentAnchorWorld.GetLocation();
-		FVector PreviewLocation = HitResult.ImpactPoint;
+		FVector PreviewLocation = ImpactPoint;
 
 		if (Data.ParentAnchor != ESnapAnchor::NONE)
 		{
@@ -349,20 +349,41 @@ bool UBuildingAssistComponent::UpdatePreview()
 			AnchorWorldPos = ParentAnchorWorld.TransformPosition(ParentOffset);
 			const FVector RotatedChildAnchor = ParentAnchorWorld.GetRotation() * ChildOffset;
 			PreviewLocation = AnchorWorldPos - RotatedChildAnchor;
+
 		}
 
-		const float DistSq = FVector::DistSquared(HitResult.ImpactPoint, AnchorWorldPos);
-		const float Dist = FVector::DistSquared(PreviewLocation, GetOwner()->GetActorLocation());
-		if (DistSq < BestDistSq ) //&& Dist < Min)
+		const float DistSq = FVector::DistSquared(ImpactPoint, AnchorWorldPos);
+		FVector AnchorToPreview = (PreviewLocation - AnchorWorldPos).GetSafeNormal();
+		FVector AnchorToPlayer = (GetOwner()->GetActorLocation() - AnchorWorldPos).GetSafeNormal();
+		const float dot = FVector::DotProduct(AnchorToPreview, AnchorToPlayer);
+		//DrawDebugLine(GetWorld(), AnchorWorldPos, PreviewLocation, FColor::Magenta, false, 1.0f);
+		//DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), ImpactPoint, FColor::Cyan ,false, 1.0f);
+		//FString Name = StaticEnum<ESnapAnchor >()->GetNameStringByValue(static_cast<int64>(Data.ParentAnchor)).ToLower();
+		//FString FloatAsString = FString::SanitizeFloat(dot);
+		//Temp += Name + " dot  : " + FloatAsString + " /";
+		if (FMath::IsNearlyEqual(DistSq, BestDistSq))
+		{
+			if (dot > Min)
+			{
+				BestDistSq = DistSq;
+				BestRule = MainRule;
+				BestParentAnchorWorld = ParentAnchorWorld;
+				BestIndex = Index;
+				Min = dot;
+			}
+		}
+		else if (DistSq < BestDistSq )
 		{
 			BestDistSq = DistSq;
 			BestRule = MainRule;
 			BestParentAnchorWorld = ParentAnchorWorld;
 			BestIndex = Index;
-			Min = Dist;
+			Min = dot;
 		}
+	
 		Index++;
 	}
+	//UE_LOG(LogTemp, Warning, TEXT("%s"),  *Temp);
 
 	// Anchor가 너무 멀면 스냅하지 않고 ImpactPoint로 자유 배치
 	if (!BestRule || BestDistSq > SnapDistSq)
