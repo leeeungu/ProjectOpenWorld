@@ -239,7 +239,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		buildPointObjectTypes,
 		true,
 		buildPointIgnore,
-		EDrawDebugTrace::Type::ForOneFrame,
+		EDrawDebugTrace::Type::None,
 		HitResult,
 		true);
 
@@ -353,9 +353,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		}
 
 		const float DistSq = FVector::DistSquared(ImpactPoint, AnchorWorldPos);
-		FVector AnchorToPreview = (PreviewLocation - AnchorWorldPos).GetSafeNormal();
-		FVector AnchorToPlayer = (GetOwner()->GetActorLocation() - AnchorWorldPos).GetSafeNormal();
-		const float dot = FVector::DotProduct(AnchorToPreview, AnchorToPlayer);
+		const float dot = FVector::DotProduct((PreviewLocation - AnchorWorldPos).GetSafeNormal(), (GetOwner()->GetActorLocation() - AnchorWorldPos).GetSafeNormal());
 		//DrawDebugLine(GetWorld(), AnchorWorldPos, PreviewLocation, FColor::Magenta, false, 1.0f);
 		//DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), ImpactPoint, FColor::Cyan ,false, 1.0f);
 		//FString Name = StaticEnum<ESnapAnchor >()->GetNameStringByValue(static_cast<int64>(Data.ParentAnchor)).ToLower();
