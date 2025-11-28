@@ -140,7 +140,8 @@ def create_or_load_pal_abp(template_abp, pal_folder, pal_name):
         return None
 
     # 템플릿 ABP의 GeneratedClass 를 부모로 사용
-    parent_class = template_abp.get_editor_property("generated_class")
+
+    parent_class = template_abp.generated_class()
     if not parent_class:
         unreal.log_error(f"[오류] 템플릿 ABP의 generated_class 조회 실패: {TEMPLATE_ABP_PATH}")
         return None
@@ -197,7 +198,7 @@ def apply_overrides_for_pal(pal_abp,
             override_asset = editor_lib.load_asset(pal_anim_path)
             unreal.log(f"  [OVERRIDE] {global_anim.get_name()} → {pal_anim_name}")
         else:
-            override_asset = None
+            override_asset = global_anim
             unreal.log_warning(f"  [OVERRIDE] {global_anim.get_name()} → NULL (Pal Anim 없음: {pal_anim_path})")
 
         # AnimBlueprint 인스턴스 메서드 사용
@@ -212,7 +213,7 @@ def apply_overrides_for_pal(pal_abp,
             override_bs = editor_lib.load_asset(pal_bs_path)
             unreal.log(f"  [OVERRIDE] {global_bs.get_name()} → {pal_bs_name}")
         else:
-            override_bs = None
+            override_bs = global_bs
             unreal.log_warning(f"  [OVERRIDE] {global_bs.get_name()} → NULL (Pal BS 없음: {pal_bs_path})")
         
         pal_abp.add_node_asset_override(global_bs, override_bs, False)

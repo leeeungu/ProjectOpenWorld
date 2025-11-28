@@ -1,65 +1,75 @@
 import unreal
 
-MONSTER_ROOT = "/Game/Pal/Model/Monster"
+# ==========================================================
+#  수정하고 싶은 폴더 경로 + 제거할 PREFIX 입력
+# ==========================================================
 
-# 행동 이름에서 두 토큰을 묶어야 하는 suffix들
-SUFFIX_2WORD = ["Start", "Loop", "End", "Stop", "Finish"]
+ANIM_DIR = "/Game/Pal/Model/Monster/ChickenPal/Animation"   # ← 원하는 경로
+REMOVE_PREFIX = "ChickenPal_Anim_SK_ChickenPal_"                             # ← 지우고 싶던 prefix
 
-def process_animation_folder(anim_path: str, pal_name: str) -> int:
-    unreal.log(f"----------------------------------------------")
-    unreal.log(f"[처리 시작] {anim_path} (PalName = {pal_name})")
-    unreal.log(f"----------------------------------------------")
 
-    asset_paths = unreal.EditorAssetLibrary.list_assets(
-        anim_path,
-        recursive=True,
-        include_folder=False
-    )
+# ==========================================================
+#  유틸
+# ==========================================================
+
+editor_lib = unreal.EditorAssetLibrary
+
+
+def remove_prefix_from_assets(anim_dir: str, prefix: str):
+    unreal.log(f"==============================================")
+    unreal.log(f"[PREFIX 제거 시작] DIR = {anim_dir} / PREFIX = '{prefix}'")
+    unreal.log(f"==============================================")
+
+    asset_paths = editor_lib.list_assets(anim_dir, recursive=True, include_folder=False)
+
+    if not asset_paths:
+        unreal.log_warning(f"[WARN] 에셋 없음: {anim_dir}")
+        return
 
     changed = 0
 
     for asset_path in asset_paths:
-        asset = unreal.EditorAssetLibrary.load_asset(asset_path)
-
-        # AnimSequence만 처리
-        if not isinstance(asset, unreal.AnimSequence):
+        asset = editor_lib.load_asset(asset_path)
+        if not asset:
             continue
 
         old_name = asset.get_name()
-        old_path = asset.get_path_name()
+        old_full_path = asset.get_path_name()
 
-        # 이미 AS_규칙이면 스킵
-        #if old_name.startswith(f"AS_{pal_name}_"):
-        #   continue
-
-        # '_'가 아예 없으면 스킵
-        if "_" not in old_name:
-            unreal.log_warning(f"[SKIP '_' 없음] {old_name}")
+        # prefix 없으면 스킵
+        if not old_name.startswith(prefix):
             continue
 
-        parts = old_name.split("_")
+        new_name = old_name[len(prefix):]  # prefix 제거
+        new_path = f"{asset_path.rsplit('/',1)[0]}/{new_name}.{new_name}"
 
-        # 기본은 마지막 토큰
-        action = parts[-1]
-
-        # 마지막 토큰이 Start/Loop/End/Stop/Finish 이고, 토큰이 2개 이상이면
-        if len(parts) >= 2 and parts[-1] in SUFFIX_2WORD:
-            action = parts[-2] + "_" + parts[-1]   # 예: Attack_Start
-
-        new_name = f"AS_{pal_name}_{action}"
-        new_path = f"{anim_path}/{new_name}"
-
-        if old_name == new_name:
+        # 이미 존재하면 충돌이므로 스킵
+        if editor_lib.does_asset_exist(new_path):
+            unreal.log_warning(f"[충돌] {new_name} 이미 존재 → 스킵")
             continue
 
-        if unreal.EditorAssetLibrary.does_asset_exist(new_path):
-            unreal.log_warning(f"[충돌] {new_name} 이미 있음")
-            continue
-
-        if unreal.EditorAssetLibrary.rename_asset(old_path, new_path):
-            unreal.log(f"[이름 변경] {old_name} → {new_name}")
+        # rename
+        ok = editor_lib.rename_asset(old_full_path, new_path)
+        if ok:
             changed += 1
+            unreal.log(f"[이름 변경] {old_name} → {new_name}")
         else:
             unreal.log_warning(f"[RENAME 실패] {old_name}")
+        
 
-    return changed
+    unreal.log(f"----------------------------------------------")
+    unreal.log(f"[완료] 변경된 에셋 수 : {changed}")
+    unreal.log(f"----------------------------------------------")
+
+
+
+# ==========================================================
+# main
+# ==========================================================
+
+def main():
+    remove_prefix_from_assets(ANIM_DIR, REMOVE_PREFIX)
+
+
+if __name__ == "__main__":
+    main()
