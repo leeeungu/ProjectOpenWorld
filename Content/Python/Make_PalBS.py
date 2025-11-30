@@ -1,19 +1,27 @@
 import unreal
-
+from PalConfig import (
+    GLOBAL_ANIM_DIR,
+    MONSTER_ROOT,
+    PAL_NAME,
+    GLOBAL_AS_PREFIX,
+    GLOBAL_BS_PREFIX,
+    PAL_AS_PREFIX,
+    PAL_BS_PREFIX,
+)
 # ============================================================
 # 설정
 # ============================================================
 
-GLOBAL_ANIM_DIR   = "/Game/Pal/Model/Global/Animation"
-MONSTER_ROOT      = "/Game/Pal/Model/Monster"
+#GLOBAL_ANIM_DIR   = "/Game/Pal/Model/Global/Animation"
+#MONSTER_ROOT      = "/Game/Pal/Model/Monster"
 
 # Global 이름 규칙
-GLOBAL_AS_PREFIX  = "AS_MM_"   # Global AnimSequence
-GLOBAL_BS_PREFIX  = "BS_MM_"   # Global BlendSpace
+#GLOBAL_AS_PREFIX  = "AS_MM_"   # Global AnimSequence
+#GLOBAL_BS_PREFIX  = "BS_MM_"   # Global BlendSpace
 
 # Pal 이름 규칙
-PAL_AS_PREFIX     = "AS_"      # AS_<PalName>_<Action>
-PAL_BS_PREFIX     = "BS_"      # BS_<PalName>_<Action>
+#PAL_AS_PREFIX     = "AS_"      # AS_<PalName>_<Action>
+#PAL_BS_PREFIX     = "BS_"      # BS_<PalName>_<Action>
 
 editor_lib  = unreal.EditorAssetLibrary
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -105,7 +113,7 @@ def configure_axes_for_pal_bs(pal_bs: unreal.BlendSpace):
     horiz.set_editor_property("min",0)
     horiz.set_editor_property("max",  1.0)
     horiz.set_editor_property("grid_num",  4)
-    horiz.set_editor_property("snap_to_grid",  True)
+
 
     # 수정된 배열 다시 반영
     pal_bs.set_editor_property("blend_parameters", params)
@@ -244,16 +252,17 @@ def main():
         unreal.log_error("[오류] Global BlendSpace 없음")
         return
 
-    pal_folders = registry.get_sub_paths(MONSTER_ROOT, recurse=False)
+    #pal_folders = registry.get_sub_paths(MONSTER_ROOT, recurse=False)
+    pal_folder =MONSTER_ROOT + "/" + PAL_NAME
 
-    for pal_folder in pal_folders:
-        pal_name = pal_folder.split("/")[-1]
-        unreal.log(f"------ {pal_name} 처리 시작 ------")
+    #for pal_folder in pal_folders:
+    pal_name = pal_folder.split("/")[-1]
+    unreal.log(f"------ {pal_name} 처리 시작 ------")
 
-        for global_bs in global_bs_list:
-            create_or_update_pal_bs(global_bs, pal_folder, pal_name)
+    for global_bs in global_bs_list:
+       create_or_update_pal_bs(global_bs, pal_folder, pal_name)
 
-        unreal.log(f"------ {pal_name} 처리 종료 ------")
+    unreal.log(f"------ {pal_name} 처리 종료 ------")
 
     unreal.log("==============================================")
     unreal.log("[완료] Global BS → Pal BS 전체 처리 종료")

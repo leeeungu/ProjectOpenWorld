@@ -1,22 +1,30 @@
 import unreal
-
+from PalConfig import (
+    GLOBAL_ANIM_DIR,
+    MONSTER_ROOT,
+    PAL_NAME,
+    GLOBAL_AS_PREFIX,
+    GLOBAL_BS_PREFIX,
+    PAL_AS_PREFIX,
+    PAL_BS_PREFIX,
+)
 # ------------------------------------------------------------
 # 설정
 # ------------------------------------------------------------
 
-GLOBAL_ANIM_DIR   = "/Game/Pal/Model/Global/Animation"
-MONSTER_ROOT      = "/Game/Pal/Model/Monster"
-
+#GLOBAL_ANIM_DIR   = "/Game/Pal/Model/Global/Animation"
+#MONSTER_ROOT      = "/Game/Pal/Model/Monster"
+#PAL_NAME = "Anubis"
 TEMPLATE_ABP_NAME = "ABP_Global_Template"
 TEMPLATE_ABP_PATH = f"{GLOBAL_ANIM_DIR}/{TEMPLATE_ABP_NAME}.{TEMPLATE_ABP_NAME}"
 
 # Global 에서 쓰는 이름 규칙
-GLOBAL_AS_PREFIX  = "AS_MM_"        # AnimSequence
-GLOBAL_BS_PREFIX  = "BS_MM_"    # BlendSpace
+#GLOBAL_AS_PREFIX  = "AS_MM_"        # AnimSequence
+#GLOBAL_BS_PREFIX  = "BS_MM_"    # BlendSpace
 
 # Pal 에서 사용할 이름 규칙
-PAL_AS_PREFIX     = "AS_"           # AS_<PalName>_<Action>
-PAL_BS_PREFIX     = "BS_"           # BS_<PalName>_<Action>
+#PAL_AS_PREFIX     = "AS_"           # AS_<PalName>_<Action>
+#PAL_BS_PREFIX     = "BS_"           # BS_<PalName>_<Action>
 
 editor_lib  = unreal.EditorAssetLibrary
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -241,18 +249,19 @@ def main():
     global_seq_map, global_bs_map = collect_template_assets_from_abp(template_abp)
 
     # Monster 루트 하위의 각 팰 폴더 처리
-    pal_folders = registry.get_sub_paths(MONSTER_ROOT, recurse=False)
+    #pal_folders = registry.get_sub_paths(MONSTER_ROOT, recurse=False)
 
-    for pal_folder in pal_folders:
-        pal_name = pal_folder.split("/")[-1]
-        unreal.log(f"------ {pal_name} 처리 시작 ------")
+    pal_folder = MONSTER_ROOT + "/" + PAL_NAME
+    #for pal_folder in pal_folders:
+    pal_name = pal_folder.split("/")[-1]
+    unreal.log(f"------ {pal_name} 처리 시작 ------")
 
-        # 1. 자식 AnimBP 생성 또는 로드
-        pal_abp = create_or_load_pal_abp(template_abp, pal_folder, pal_name)
-        if not pal_abp:
-            unreal.log_warning(f"[SKIP] AnimBP 생성/로드 실패: {pal_name}")
-            continue
+    # 1. 자식 AnimBP 생성 또는 로드
+    pal_abp = create_or_load_pal_abp(template_abp, pal_folder, pal_name)
+    if not pal_abp:
+        unreal.log_warning(f"[SKIP] AnimBP 생성/로드 실패: {pal_name}")
 
+    else:
         # 2. 에셋 오버라이드 적용
         apply_overrides_for_pal(
             pal_abp       = pal_abp,
@@ -263,6 +272,7 @@ def main():
         )
 
         unreal.log(f"------ {pal_name} 처리 종료 ------")
+
 
     unreal.log("==============================================")
     unreal.log("[완료] AnimBP 생성 및 에셋 오버라이드 전체 종료")

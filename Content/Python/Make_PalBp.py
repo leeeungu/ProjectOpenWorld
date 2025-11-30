@@ -1,12 +1,19 @@
 import unreal
 
+from PalConfig import (
+    GLOBAL_ANIM_DIR,
+    MONSTER_ROOT,
+    PAL_NAME,
+)
+
 # ============================================================
 # 설정
 # Animation 폴더가 있어야 pal로 취급됨
 # Mesh도 자동 설정이니 조심하자
 # ============================================================
 
-MONSTER_ROOT        = "/Game/Pal/Model/Monster"
+#MONSTER_ROOT        = "/Game/Pal/Model/Monster"
+#PAL_NAME = "Anubis"
 
 # ❗ 여기서는 "클래스 경로"를 사용합니다. (_C 붙은 경로)
 PARENT_CLASS_PATH   = "/Game/Pal/Map/Test/Bp_TestCreature.Bp_TestCreature_C"
@@ -45,6 +52,15 @@ def find_skeletal_mesh(pal_folder, pal_name):
     unreal.log_warning(f"[Mesh 없음] {mesh_path}")
     return None
 
+def find_AimBp(pal_folder, pal_name):
+    ABP_path = f"{pal_folder}/ABP_{pal_name}"
+    if editor_lib.does_asset_exist(ABP_path):
+        ABP = editor_lib.load_asset(ABP_path)
+        if isinstance(ABP, unreal.AnimBlueprint):
+            return ABP
+    unreal.log_warning(f"[ABP 없음] {ABP_path}")
+    return None
+
 
 # ------------------------------------------------------------
 # 자식 BP 생성 또는 기존 BP 로드
@@ -55,7 +71,6 @@ def create_or_load_child_bp(pal_folder, pal_name, parent_class):
 
     # 이미 존재하면 로드해서 반환
     if editor_lib.does_asset_exist(child_path):
-        unreal.log_warning(f"[SKIP 생성] 이미 존재: {child_path}")
         bp = editor_lib.load_asset(child_path)
         return bp if isinstance(bp, unreal.Blueprint) else None
 
@@ -132,8 +147,6 @@ def set_bp_mesh(blueprint: unreal.Blueprint, skeletal_mesh: unreal.SkeletalMesh)
 
     if changed:
         editor_lib.save_asset(blueprint.get_path_name())
-    else:
-        unreal.log_warning(f"[경고] {blueprint.get_name()} 안에서 SkeletalMeshComponent를 찾지 못했거나 이미 동일 Mesh")
 
     return changed
 
@@ -151,32 +164,31 @@ def main():
         return
 
     # Monster/<PalName> 하위 폴더 목록
-    pal_folders = registry.get_sub_paths(MONSTER_ROOT, False)
+    #pal_folders = registry.get_sub_paths(MONSTER_ROOT, False)
 
     total_bp   = 0
     total_mesh = 0
 
-    for pal_folder in pal_folders:
-        # 예: /Game/Pal/Model/Monster/SheepBall
-        pal_name    = pal_folder.split("/")[-1]
-        anim_folder = f"{pal_folder}/Animation"
+    pal_folder =MONSTER_ROOT + "/" + PAL_NAME
+    # 예: /Game/Pal/Model/Monster/SheepBall
+    pal_name    = pal_folder.split("/")[-1]
+    anim_folder = f"{pal_folder}/Animation"
 
-        # Animation 폴더가 있어야 "펠"로 취급
-        if not editor_lib.does_directory_exist(anim_folder):
-            continue
-
+    # Animation 폴더가 있어야 "펠"로 취급
+    if not editor_lib.does_directory_exist(anim_folder):
+        unreal.log_warning(f"[SKIP] AnimBP 생성/로드 실패: {pal_name}")
+    else:
         # 1) 자식 BP 생성 또는 기존 BP 로드
         bp = create_or_load_child_bp(pal_folder, pal_name, parent_class)
-        if not bp:
-            continue
-        total_bp += 1
+        if bp:
+            total_bp += 1
 
-        # 2) 해당 팔의 SkeletalMesh 찾기
-        mesh = find_skeletal_mesh(pal_folder, pal_name)
+            # 2) 해당 팔의 SkeletalMesh 찾기
+            mesh = find_skeletal_mesh(pal_folder, pal_name)
 
-        # 3) Mesh 설정
-        if set_bp_mesh(bp, mesh):
-            total_mesh += 1
+            # 3) Mesh 설정
+            if set_bp_mesh(bp, mesh):
+                total_mesh += 1
 
     unreal.log("====================================================")
     unreal.log(f"처리된 BP 수     : {total_bp}")
