@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "Creature/Interface/CreatureActionInterface.h"
 #include "Creature/Interface/CreatureMessageInterface.h"
+#include "Pal/Component/PalAllyCommandComponent.h"
 #include "BaseCreature.generated.h"
 
 struct FAIRequestID;
