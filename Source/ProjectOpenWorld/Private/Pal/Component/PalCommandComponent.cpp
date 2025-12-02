@@ -3,7 +3,7 @@
 UPalCommandComponent::UPalCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	PushCommandFunc = &UPalCommandComponent::PushCommand;
+	SetPushCommandFunc(&UPalCommandComponent::PushCommand);
 }
 
 void UPalCommandComponent::ResetCommand(FPalCommand& pData)
@@ -44,10 +44,7 @@ void UPalCommandComponent::PushCommand(const FPalCommand& NewCommand)
 	pEmpthy->pInstigatorActor = NewCommand.pInstigatorActor;
 	pEmpthy->pTarget = NewCommand.pTarget;
 	QueueCommand.Enqueue(pEmpthy);
-	if (CurrentCommand == &DummyCommand)
-	{
-		PopCommand();
-	}
+	PopCommand();
 }
 
 void UPalCommandComponent::PopCommand()
@@ -76,10 +73,12 @@ void UPalCommandComponent::PushCommand_DequqOld(const FPalCommand& NewCommand)
 	pEmpthy->pInstigatorActor = NewCommand.pInstigatorActor;
 	pEmpthy->pTarget = NewCommand.pTarget;
 	QueueCommand.Enqueue(pEmpthy);
-	if (CurrentCommand == &DummyCommand)
-	{
-		PopCommand();
-	}
+	PopCommand();
+}
+
+void UPalCommandComponent::SetPushCommandFunc(void(UPalCommandComponent::* Func)(const FPalCommand&))
+{
+	PushCommandFunc = Func;
 }
 
 void UPalCommandComponent::PushCommand_Attack(AActor* pInstigatorActor, AActor* pTarget)

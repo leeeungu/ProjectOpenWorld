@@ -2,31 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Pal/Data/PalCommandData.h"
 #include "PalCommandComponent.generated.h"
 
-UENUM(BlueprintType)
-enum class EPalCommandKind : uint8
-{
-	None,
-	Move,
-	Attack,
-	Interact,
-	Work,
-};
-
-
-USTRUCT(BlueprintType)
-struct FPalCommand
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	EPalCommandKind CommandKind{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	AActor* pInstigatorActor{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	AActor* pTarget{};
-};
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalCommandComponent : public UActorComponent
@@ -41,7 +19,6 @@ private:
 	TQueue<FPalCommand*> QueueEmpty{};
 	TQueue<FPalCommand*> QueueCommand{};
 	FPalCommand DummyCommand{};
-protected:
 	FPalCommand* CurrentCommand{};
 	void (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
 public:	
@@ -55,8 +32,10 @@ protected:
 	void PushCommand(const FPalCommand& NewCommand);
 	void PopCommand();
 
-	// use if you want deque Old Command when pushed new Command
 	void PushCommand_DequqOld(const FPalCommand& NewCommand);
+	void SetPushCommandFunc(void (UPalCommandComponent::* Func)(const FPalCommand&));
+	inline FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
+	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
 public:	
 	UFUNCTION(BlueprintPure)
 	FPalCommand GetCurrentCommand() const { return *CurrentCommand;  }
@@ -69,8 +48,4 @@ public:
 	
 	virtual void OnStartCurrentCommand()  {}
 	virtual void OnEndCurrentCommand()  {}
-	// Called every frame
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
 };
