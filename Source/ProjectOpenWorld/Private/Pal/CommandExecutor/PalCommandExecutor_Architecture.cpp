@@ -1,5 +1,5 @@
 #include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
-#include "Building/Actor/BuildingActor.h"
+#include "Building/BaseBuilding.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
@@ -19,7 +19,7 @@ void UPalCommandExecutor_Architecture::Initialize(UPalCommandComponent* CommandC
 
 void UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 {
-	TargetBuilding = Cast< ABuildingActor>(Command.pTarget);
+	TargetBuilding = Cast< ABaseBuilding>(Command.pTarget);
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd() || !OwnerPal)
 		return;
 	

@@ -11,7 +11,7 @@ class PROJECTOPENWORLD_API UPalAllyCommandComponent : public UPalCommandComponen
 	GENERATED_BODY()
 private:
 	TArray< TArray<TObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};
-	TObjectPtr<UPalCommandExecutorBase> CurrentExcute{};
+	UPalCommandExecutorBase* CurrentExcute{};
 public:
 	UPalAllyCommandComponent()  = default;
 protected:

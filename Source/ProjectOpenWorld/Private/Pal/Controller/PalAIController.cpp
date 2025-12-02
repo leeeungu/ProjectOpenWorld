@@ -11,8 +11,7 @@ bool APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius 
 	MoveReq.SetCanStrafe(true);
 	MoveReq.SetReachTestIncludesGoalRadius(true);
 	FNavPathSharedPtr OutPath{};
-	MoveTo(MoveReq, &OutPath);
-	if (!OutPath.IsValid())
+	if (EPathFollowingRequestResult::Failed == MoveTo(MoveReq, &OutPath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("MoveToActor :: None Path"));
 		return false;

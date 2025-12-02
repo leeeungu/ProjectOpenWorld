@@ -40,10 +40,16 @@ protected:
 public:	
 	FPalCommand GetCurrentCommand() const { return *CurrentCommand;  }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure, Category = "PalCommand")
+	FORCEINLINE EPalCommandKind GetCurrentCommandKind() const { return CurrentCommand->CommandKind; }
+
+	UFUNCTION(BlueprintPure, Category = "PalCommand")
+	FORCEINLINE uint8 GetCurrentSubCommandType() const { return CurrentCommand->SubCommandType; }
+
+	UFUNCTION(BlueprintCallable, Category = "PalCommand")
 	void PushCommand(const FPalCommand& NewCommand);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "PalCommand")
 	void FinishCommand();
 	
 	virtual void OnStartCurrentCommand()  {}

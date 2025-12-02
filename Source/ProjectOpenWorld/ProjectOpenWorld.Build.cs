@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using UnrealBuildTool.Rules;
 
 public class ProjectOpenWorld : ModuleRules
 {
@@ -20,7 +21,7 @@ public class ProjectOpenWorld : ModuleRules
                 {
                     "UnrealEd",             // GEditor, 에디터 관련
                     "EditorSubsystem",      // UEditorAssetSubsystem
-                    "EditorScriptingUtilities" // 필요 시
+                  //  "EditorScriptingUtilities" // 필요 시
                 }
             );
         }

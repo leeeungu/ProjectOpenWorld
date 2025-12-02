@@ -13,13 +13,13 @@ void UPalAllyCommandComponent::BeginPlay()
 	CommandExecutors[(uint8)EPalCommandKind::Work].Init(nullptr, (uint8)ESubWorkType::Max_WorkType);
 
 	UPalCommandExecutorBase* Base{};
-	Base = CommandExecutors[(uint8)EPalCommandKind::Move][(uint8)ESubMoveType::Location] = NewObject<UPalCommandExecutor_MoveLocation>(this);
+	Base = CommandExecutors[(uint8)EPalCommandKind::Move][(uint8)ESubMoveType::Location] = NewObject<UPalCommandExecutor_MoveLocation>(this,TEXT("MoveLocation"));
 	Base->Initialize(this);
-	Base = CommandExecutors[(uint8)EPalCommandKind::Move][(uint8)ESubMoveType::Actor] = NewObject<UPalCommandExecutor_MoveActor>(this);
+	Base = CommandExecutors[(uint8)EPalCommandKind::Move][(uint8)ESubMoveType::Actor] =  NewObject<UPalCommandExecutor_MoveActor>(this, TEXT("MoveActor"));
 	Base->Initialize(this);
-
-	Base = CommandExecutors[(uint8)EPalCommandKind::Work][(uint8)ESubWorkType::Architecture] = NewObject<UPalCommandExecutor_Architecture>(this);
+	Base = CommandExecutors[(uint8)EPalCommandKind::Work][(uint8)ESubWorkType::Architecture] = NewObject<UPalCommandExecutor_Architecture>(this, TEXT("Architecture"));
 	Base->Initialize(this);
+	Base = nullptr;
 }
 
 void UPalAllyCommandComponent::OnStartCurrentCommand()
@@ -31,8 +31,7 @@ void UPalAllyCommandComponent::OnStartCurrentCommand()
 	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
 		return;
 
-	UPalCommandExecutorBase* Excute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType];
-	CurrentExcute = Excute;
+	CurrentExcute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType];
 	if (CurrentExcute)
 	{
 		CurrentExcute->StartCommand(*Current);

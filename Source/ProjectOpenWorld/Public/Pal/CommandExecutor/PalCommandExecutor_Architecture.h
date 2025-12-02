@@ -4,7 +4,7 @@
 #include "Pal/CommandExecutor/PalCommandExecutorBase.h"
 #include "PalCommandExecutor_Architecture.generated.h"
 
-class ABuildingActor;
+class ABaseBuilding;
 class ABaseCreature;
 class APalAIController;
 struct FAIRequestID;
@@ -15,7 +15,7 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_Architecture : public UPalCommand
 {
 	GENERATED_BODY()
 protected:
-	ABuildingActor* TargetBuilding{};
+	ABaseBuilding* TargetBuilding{};
 	APalAIController* OwnerController{};
 	ABaseCreature* OwnerPal{};
 	bool bActionStart = false;

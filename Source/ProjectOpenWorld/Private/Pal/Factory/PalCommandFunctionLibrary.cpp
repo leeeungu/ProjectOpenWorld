@@ -16,7 +16,7 @@ FPalCommand UPalCommandFunctionLibrary::CommandMoveToActor(AActor* pInstigator, 
 		return FPalCommand();
 	FPalCommand command{};
 	command.CommandKind = EPalCommandKind::Move;
-	command.SubCommandType = (uint8)ESubMoveType::Location;
+	command.SubCommandType = (uint8)ESubMoveType::Actor;
 	command.pTarget = pTargetActor;
 	command.pInstigatorActor = pInstigator;
 	return command;

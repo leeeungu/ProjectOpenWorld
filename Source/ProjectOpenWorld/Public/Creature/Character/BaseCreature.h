@@ -19,20 +19,20 @@ class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatu
 {
 	GENERATED_BODY()
 protected:
-	TScriptInterface<ICreatureActionInterface> ActionComponents[(uint8)ECreatureActionType::Action_Max]{};
+	//TScriptInterface<ICreatureActionInterface> ActionComponents[(uint8)ECreatureActionType::Action_Max]{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> ArchitectureMeshComponent{};
-	UPROPERTY(EditDefaultsOnly, Meta = (Bitmask, BitmaskEnum = "ECreatureRollType"))
-	int32 CreatureRoll{};
+	//UPROPERTY(EditDefaultsOnly, Meta = (Bitmask, BitmaskEnum = "ECreatureRollType"))
+	//int32 CreatureRoll{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr < UPalAllyCommandComponent> CommandComponent{};
 
-	ECreatureActionType ActionType{};
-	ECreatureActionType NextActionType{};
-
-	TSoftObjectPtr<AActor> ActionFrom{};
-	TSoftObjectPtr<AActor> TargetActor{};
+	//ECreatureActionType ActionType{};
+	//ECreatureActionType NextActionType{};
+	//
+	//TSoftObjectPtr<AActor> ActionFrom{};
+	//TSoftObjectPtr<AActor> TargetActor{};
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Hp{};
@@ -55,8 +55,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	bool GetIsActionStarted(ECreatureActionType Type);
 
-	UFUNCTION(BlueprintPure, Category = "CreatureAction")
-	FORCEINLINE ECreatureActionType GetCreatureActionType() const { return ActionType; }
+	//UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	//FORCEINLINE ECreatureActionType GetCreatureActionType() const { return ActionType; }
 	void ResetAction();
 
 

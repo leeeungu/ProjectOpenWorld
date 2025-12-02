@@ -8,7 +8,7 @@
 void ABaseCreature::BeginPlay()
 {
 	ABaseCharacter::BeginPlay();
-	TSet<UActorComponent*> Coms = GetComponents();
+	/*TSet<UActorComponent*> Coms = GetComponents();
 	for (auto Component : Coms)
 	{
 		UCreatureActionComponent* Action = Cast< UCreatureActionComponent>(Component);
@@ -16,7 +16,7 @@ void ABaseCreature::BeginPlay()
 		{
 			ActionComponents[(uint8)Action->GetCreatureAction()] = TScriptInterface<ICreatureActionInterface>(Component);
 		}
-	}
+	}*/
 
 	AAIController* OwnerController = Cast<AAIController>(GetController());
 	if (OwnerController)
@@ -28,7 +28,7 @@ void ABaseCreature::BeginPlay()
 
 void ABaseCreature::FinishActionMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (!TargetActor || TargetActor->GetDistanceTo(this) > 400.0f)
+	/*if (!TargetActor || TargetActor->GetDistanceTo(this) > 400.0f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
 		return;
@@ -44,12 +44,12 @@ void ABaseCreature::FinishActionMove(FAIRequestID RequestID, EPathFollowingResul
 
 			ResetAction();
 		}
-	}
+	}*/
 }
 
 bool ABaseCreature::MoveToTarget()
 {
-	AAIController* OwnerController = Cast<AAIController>(GetController());
+	/*AAIController* OwnerController = Cast<AAIController>(GetController());
 	if (TargetActor)
 	{
 		FAIMoveRequest MoveReq(TargetActor.Get());
@@ -69,7 +69,7 @@ bool ABaseCreature::MoveToTarget()
 				return false;
 			}
 		}
-	}
+	}*/
 	return true;
 }
 
@@ -95,47 +95,47 @@ void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType Mess
 {
 	if (true)
 		return;
-	AAIController* OwnerController = Cast<AAIController>(GetController());
-	if (ActionComponents[(uint8)NextActionType] &&
-		ActionComponents[(uint8)NextActionType].GetObject() )
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NextActionType End"));
-		ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)NextActionType].GetObject());
-	}
-	if (ActionComponents[(uint8)ActionType] &&
-		ActionComponents[(uint8)ActionType].GetObject())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ActionType End"));
-		ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
-	}
+	//AAIController* OwnerController = Cast<AAIController>(GetController());
+	//if (ActionComponents[(uint8)NextActionType] &&
+	//	ActionComponents[(uint8)NextActionType].GetObject() )
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("NextActionType End"));
+	//	ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)NextActionType].GetObject());
+	//}
+	//if (ActionComponents[(uint8)ActionType] &&
+	//	ActionComponents[(uint8)ActionType].GetObject())
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("ActionType End"));
+	//	ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
+	//}
 
-	UE_LOG(LogTemp, Warning, TEXT("ReceiveActionMessage %d"), (uint8)MessageType);
-	ResetAction();
-	ResetActionMode();
-	OwnerController->StopMovement();
-	if (MessageType != ECreatureActionType::Action_None)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Transport Move"));
-		ActionType = ECreatureActionType::Action_Move;
-		NextActionType = MessageType;
-		TargetActor = TargetObject;
-		ActionFrom = SendActor;
-		if (!MoveToTarget())
-		{
-			ResetAction();
-		}
-	}
-	else
-	{
-		for (int i = 1; i < (uint8)ECreatureActionType::Action_Max; i++)
-		{
-			if (ActionComponents[i] &&
-				ActionComponents[i].GetObject())
-			{
-				ICreatureActionInterface::Execute_ActionEnd(ActionComponents[i].GetObject());
-			}
-		}
-	}
+	//UE_LOG(LogTemp, Warning, TEXT("ReceiveActionMessage %d"), (uint8)MessageType);
+	//ResetAction();
+	//ResetActionMode();
+	//OwnerController->StopMovement();
+	//if (MessageType != ECreatureActionType::Action_None)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Transport Move"));
+	//	ActionType = ECreatureActionType::Action_Move;
+	//	NextActionType = MessageType;
+	//	TargetActor = TargetObject;
+	//	ActionFrom = SendActor;
+	//	if (!MoveToTarget())
+	//	{
+	//		ResetAction();
+	//	}
+	//}
+	//else
+	//{
+	//	for (int i = 1; i < (uint8)ECreatureActionType::Action_Max; i++)
+	//	{
+	//		if (ActionComponents[i] &&
+	//			ActionComponents[i].GetObject())
+	//		{
+	//			ICreatureActionInterface::Execute_ActionEnd(ActionComponents[i].GetObject());
+	//		}
+	//	}
+	//}
 }
 
 void ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
@@ -149,20 +149,20 @@ void ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 
 bool ABaseCreature::GetIsActionStarted(ECreatureActionType Type)
 {
-	if (ActionComponents[(uint8)Type] &&
-		ActionComponents[(uint8)Type].GetObject())
-	{
-		return Cast< UCreatureActionComponent>(ActionComponents[(uint8)Type].GetObject())->GetIsStarted();
-	}
+	//if (ActionComponents[(uint8)Type] &&
+	//	ActionComponents[(uint8)Type].GetObject())
+	//{
+	//	return Cast< UCreatureActionComponent>(ActionComponents[(uint8)Type].GetObject())->GetIsStarted();
+	//}
 	return false;
 }
 
 void ABaseCreature::ResetAction()
 {
-	ActionType = ECreatureActionType::Action_None;
-	NextActionType = ECreatureActionType::Action_None;
-	TargetActor = nullptr;
-	ActionFrom = nullptr;
+	//ActionType = ECreatureActionType::Action_None;
+	//NextActionType = ECreatureActionType::Action_None;
+	//TargetActor = nullptr;
+	//ActionFrom = nullptr;
 }
 
 void ABaseCreature::ResetActionMode()
@@ -181,11 +181,11 @@ void ABaseCreature::SetArchitectureVisibility(bool bValue)
 		ArchitectureMeshComponent->SetVisibility(bValue);
 		if (ArchitectureMeshComponent->IsVisible())
 		{
-			ActionType = ECreatureActionType::Action_Buliding;
+		//	ActionType = ECreatureActionType::Action_Buliding;
 		}
 		else
 		{
-			ActionType = ECreatureActionType::Action_None;
+		//	ActionType = ECreatureActionType::Action_None;
 		}
 	}
 }
