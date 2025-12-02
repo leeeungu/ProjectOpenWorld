@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Pal/Controller/PalAIController.h"
 
 void ABaseCreature::BeginPlay()
 {
@@ -72,12 +73,28 @@ bool ABaseCreature::MoveToTarget()
 	return true;
 }
 
+ABaseCreature::ABaseCreature() : ABaseCharacter{}
+{
+	AIControllerClass = APalAIController::StaticClass();
+	ArchitectureMeshComponent = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("ArchitectureMesh"));
+	if (ArchitectureMeshComponent)
+	{
+		ArchitectureMeshComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("SWeapon_R"));
+		//ArchitectureMeshComponent->SetStaticMesh(BuildToolMesh);
+		ArchitectureMeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
+		ArchitectureMeshComponent->SetVisibility(false);
+	}
+	CommandComponent = CreateDefaultSubobject<UPalAllyCommandComponent>(TEXT("AllyCommand"));
+}
+
 void ABaseCreature::ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, AActor* TargetObject)
 {
 }
 
 void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject)
 {
+	if (true)
+		return;
 	AAIController* OwnerController = Cast<AAIController>(GetController());
 	if (ActionComponents[(uint8)NextActionType] &&
 		ActionComponents[(uint8)NextActionType].GetObject() )
@@ -121,6 +138,14 @@ void ABaseCreature::ReceiveActionMessage_Implementation(ECreatureActionType Mess
 	}
 }
 
+void ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
+{
+	if (CommandComponent)
+	{
+		CommandComponent->PushCommand(Command);
+	}
+}
+
 
 bool ABaseCreature::GetIsActionStarted(ECreatureActionType Type)
 {
@@ -148,6 +173,21 @@ void ABaseCreature::ResetActionMode()
 void ABaseCreature::TransportActionMode()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 50.0f;
+}
+void ABaseCreature::SetArchitectureVisibility(bool bValue)
+{
+	if (ArchitectureMeshComponent)
+	{
+		ArchitectureMeshComponent->SetVisibility(bValue);
+		if (ArchitectureMeshComponent->IsVisible())
+		{
+			ActionType = ECreatureActionType::Action_Buliding;
+		}
+		else
+		{
+			ActionType = ECreatureActionType::Action_None;
+		}
+	}
 }
 
 bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)

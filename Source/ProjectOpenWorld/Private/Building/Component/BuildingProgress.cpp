@@ -82,7 +82,7 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 					Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
 						MeshWorldHeight );
 
-					UE_LOG(LogTemp, Warning, TEXT("MeshHeight : %s"), *buildingMeshComponent->GetStaticMesh()->GetBounds().ToString());
+					//UE_LOG(LogTemp, Warning, TEXT("MeshHeight : %s"), *buildingMeshComponent->GetStaticMesh()->GetBounds().ToString());
 					buildingMeshComponent->SetMaterial(i, Making);
 					buildingMaking.Add(Making);
 				}

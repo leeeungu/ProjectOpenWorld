@@ -6,20 +6,27 @@
 #include "Creature/Interface/CreatureActionInterface.h"
 #include "Creature/Interface/CreatureMessageInterface.h"
 #include "Pal/Component/PalAllyCommandComponent.h"
+#include "Pal/Interface/PalCommandInterface.h"
 #include "BaseCreature.generated.h"
 
 struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
+class UPalAllyCommandComponent;
+class UStaticMeshComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface,  public IAttackInterface
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface,  public IAttackInterface, public IPalCommandInterface
 {
 	GENERATED_BODY()
 protected:
 	TScriptInterface<ICreatureActionInterface> ActionComponents[(uint8)ECreatureActionType::Action_Max]{};
-		
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TObjectPtr<UStaticMeshComponent> ArchitectureMeshComponent{};
 	UPROPERTY(EditDefaultsOnly, Meta = (Bitmask, BitmaskEnum = "ECreatureRollType"))
 	int32 CreatureRoll{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TObjectPtr < UPalAllyCommandComponent> CommandComponent{};
 
 	ECreatureActionType ActionType{};
 	ECreatureActionType NextActionType{};
@@ -40,8 +47,10 @@ protected:
 	void FinishActionMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 	bool MoveToTarget();
 public:
+	ABaseCreature();
 	virtual void ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
 	virtual void ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
+	virtual void ReceiveCommand_Implementation(FPalCommand Command) override;
 
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	bool GetIsActionStarted(ECreatureActionType Type);
@@ -53,7 +62,7 @@ public:
 
 	void ResetActionMode();
 	void TransportActionMode();
-
+	void SetArchitectureVisibility(bool bValue);
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

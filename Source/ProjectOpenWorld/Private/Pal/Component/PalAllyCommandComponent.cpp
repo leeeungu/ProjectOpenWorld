@@ -1,56 +1,45 @@
 #include "Pal/Component/PalAllyCommandComponent.h"
+#include "Pal/CommandExecutor/PalCommandExecutorBase.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_MoveActor.h"
+
+void UPalAllyCommandComponent::BeginPlay()
+{
+	UPalCommandComponent::BeginPlay();
+	CommandExecutors.Init(TArray<TObjectPtr< UPalCommandExecutorBase>>{}, (uint8)EPalCommandKind::Max_PalCommandKind);
+	CommandExecutors[(uint8)EPalCommandKind::Move].Init(nullptr, (uint8)ESubMoveType::Max_MoveType);
+	CommandExecutors[(uint8)EPalCommandKind::Attack].Init(nullptr, (uint8)ESubAttackType::Max_AttackType);
+	CommandExecutors[(uint8)EPalCommandKind::Work].Init(nullptr, (uint8)ESubWorkType::Max_WorkType);
+
+	UPalCommandExecutorBase* Base{};
+	Base = CommandExecutors[(uint8)EPalCommandKind::Move][(uint8)ESubMoveType::Location] = NewObject<UPalCommandExecutor_MoveLocation>(this);
+	Base->Initialize(this);
+	Base = CommandExecutors[(uint8)EPalCommandKind::Move][(uint8)ESubMoveType::Actor] = NewObject<UPalCommandExecutor_MoveActor>(this);
+	Base->Initialize(this);
+
+	Base = CommandExecutors[(uint8)EPalCommandKind::Work][(uint8)ESubWorkType::Architecture] = NewObject<UPalCommandExecutor_Architecture>(this);
+	Base->Initialize(this);
+}
 
 void UPalAllyCommandComponent::OnStartCurrentCommand()
 {
 	if (IsValidCommand() == false)
 		return;
 	FPalCommand* Current = GetCurrentCommand_C();
-	Current->CommandKind;
+	uint8 idx = (uint8)Current->CommandKind;
+	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
+		return;
 
-
-	/*AAIController* OwnerController = Cast<AAIController>(GetController());
-	if (ActionComponents[(uint8)NextActionType] &&
-		ActionComponents[(uint8)NextActionType].GetObject())
+	UPalCommandExecutorBase* Excute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType];
+	CurrentExcute = Excute;
+	if (CurrentExcute)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NextActionType End"));
-		ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)NextActionType].GetObject());
+		CurrentExcute->StartCommand(*Current);
 	}
-	if (ActionComponents[(uint8)ActionType] &&
-		ActionComponents[(uint8)ActionType].GetObject())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ActionType End"));
-		ICreatureActionInterface::Execute_ActionEnd(ActionComponents[(uint8)ActionType].GetObject());
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("ReceiveActionMessage %d"), (uint8)MessageType);
-	ResetAction();
-	ResetActionMode();
-	OwnerController->StopMovement();
-	if (MessageType != ECreatureActionType::Action_None)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Transport Move"));
-		ActionType = ECreatureActionType::Action_Move;
-		NextActionType = MessageType;
-		TargetActor = TargetObject;
-		ActionFrom = SendActor;
-		if (!MoveToTarget())
-		{
-			ResetAction();
-		}
-	}
-	else
-	{
-		for (int i = 1; i < (uint8)ECreatureActionType::Action_Max; i++)
-		{
-			if (ActionComponents[i] &&
-				ActionComponents[i].GetObject())
-			{
-				ICreatureActionInterface::Execute_ActionEnd(ActionComponents[i].GetObject());
-			}
-		}
-	}*/
 }
 
-void UPalAllyCommandComponent::OnEndCurrentCommand()
+void UPalAllyCommandComponent::OnFinishedCurrentCommand()
 {
+	CurrentExcute = nullptr;
 }

@@ -20,6 +20,7 @@ private:
 	TQueue<FPalCommand*> QueueCommand{};
 	FPalCommand DummyCommand{};
 	FPalCommand* CurrentCommand{};
+	FPalCommand* LastCommand{};
 	void (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
 public:	
 	UPalCommandComponent();
@@ -29,23 +30,23 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
-	void PushCommand(const FPalCommand& NewCommand);
 	void PopCommand();
 
+	void PushCommand_Default(const FPalCommand& NewCommand);
 	void PushCommand_DequqOld(const FPalCommand& NewCommand);
 	void SetPushCommandFunc(void (UPalCommandComponent::* Func)(const FPalCommand&));
 	inline FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
 	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
 public:	
-	UFUNCTION(BlueprintPure)
 	FPalCommand GetCurrentCommand() const { return *CurrentCommand;  }
 
 	UFUNCTION(BlueprintCallable)
-	void PushCommand_Attack(AActor* pInstigatorActor, AActor* pTarget);
+	void PushCommand(const FPalCommand& NewCommand);
 
 	UFUNCTION(BlueprintCallable)
 	void FinishCommand();
 	
 	virtual void OnStartCurrentCommand()  {}
-	virtual void OnEndCurrentCommand()  {}
+	// called by FinishCommand
+	virtual void OnFinishedCurrentCommand()  {}
 };
