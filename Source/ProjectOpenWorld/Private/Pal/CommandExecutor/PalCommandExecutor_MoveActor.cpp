@@ -19,7 +19,7 @@ void UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
-		if (OwnerController->MoveToActor(Command.pTarget) == false)
+		if (OwnerController->MoveToActor(Command.pTarget, 60.0f) == false)
 		{
 			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
 			EndCommand();

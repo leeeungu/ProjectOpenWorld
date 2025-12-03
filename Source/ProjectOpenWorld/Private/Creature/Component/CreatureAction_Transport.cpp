@@ -23,7 +23,7 @@ bool UCreatureAction_Transport::ActionStart_Implementation( AActor* SendActor, A
 		BoxActor = nullptr;
 		if (ABaseCreature* pOwner = Cast< ABaseCreature>(GetOwner()))
 		{
-			pOwner->ResetAction();
+			//pOwner->ResetAction();
 		}
 		return true;
 	}
@@ -32,7 +32,7 @@ bool UCreatureAction_Transport::ActionStart_Implementation( AActor* SendActor, A
 
 	if (ABaseCreature* pOwner = Cast< ABaseCreature>(GetOwner()))
 	{
-		pOwner->ResetAction();
+		//pOwner->ResetAction();
 	}
 	bActionStart = false;
 	TransportActor = nullptr;
@@ -44,10 +44,10 @@ bool UCreatureAction_Transport::ActionStart_Implementation( AActor* SendActor, A
 		TransportActor = TargetActor;
 		BoxActor = SendActor;
 		UE_LOG(LogTemp, Warning, TEXT("Transport Start"));
-		ICreatureMessageInterface::Execute_ReceiveActionMessage(GetOwner(), Action, TransportActor.Get(), BoxActor.Get());
+		//ICreatureMessageInterface::Execute_ReceiveActionMessage(GetOwner(), Action, TransportActor.Get(), BoxActor.Get());
 		if (ABaseCreature* pOwner = Cast< ABaseCreature>(GetOwner()))
 		{
-			pOwner->TransportActionMode();
+			//pOwner->TransportActionMode();
 		}
 	}
 	return true;

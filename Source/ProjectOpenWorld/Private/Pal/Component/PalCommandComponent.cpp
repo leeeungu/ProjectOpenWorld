@@ -105,6 +105,7 @@ void UPalCommandComponent::FinishCommand()
 {
 	if (CurrentCommand != &DummyCommand)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UPalCommandComponent :: FinishCommand"));
 		ResetCommand(*CurrentCommand);
 		QueueEmpty.Enqueue(CurrentCommand);
 		OnFinishedCurrentCommand();

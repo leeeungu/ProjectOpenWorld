@@ -1,4 +1,4 @@
-ï»¿#include "Creature/Component/CreatureAction_Building.h"
+#include "Creature/Component/CreatureAction_Building.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -17,7 +17,7 @@ UCreatureAction_Building::UCreatureAction_Building()
 
 bool UCreatureAction_Building::ActionStart_Implementation(AActor* SendActor, AActor* TargetActor)
 {
-	// í˜¸ì¶œì‹œ ë§ˆë‹¤ TargetBuildingê°€ ë³€ê²½ë  ìˆ˜ ìžˆìŒ
+	// È£Ãâ½Ã ¸¶´Ù TargetBuilding°¡ º¯°æµÉ ¼ö ÀÖÀ½
 	if (TargetBuilding != TargetActor)
 	{
 		bActionStart = false;
@@ -74,6 +74,6 @@ void UCreatureAction_Building::EndBuilding()
 		MeshComponent->SetVisibility(false);
 	if (ABaseCreature* pOwner = Cast< ABaseCreature>(GetOwner()))
 	{
-		pOwner->ResetAction();
+	//	pOwner->ResetAction();
 	}
 }

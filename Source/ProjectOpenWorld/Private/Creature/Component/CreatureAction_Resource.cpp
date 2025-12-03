@@ -1,4 +1,4 @@
-﻿	#include "Creature/Component/CreatureAction_Resource.h"
+	#include "Creature/Component/CreatureAction_Resource.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
@@ -56,7 +56,7 @@ void UCreatureAction_Resource::ResetAction()
 {
 	if (ABaseCreature* pOwner = Cast< ABaseCreature>(GetOwner()))
 	{
-		pOwner->ResetAction();
+		//pOwner->ResetAction();
 	}
 	TargetResource = nullptr;
 	bActionStart = false;

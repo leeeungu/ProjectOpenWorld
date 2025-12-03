@@ -35,9 +35,9 @@ protected:
 	void PushCommand_Default(const FPalCommand& NewCommand);
 	void PushCommand_DequqOld(const FPalCommand& NewCommand);
 	void SetPushCommandFunc(void (UPalCommandComponent::* Func)(const FPalCommand&));
-	inline FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
-	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
 public:	
+	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
+	inline const FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
 	FPalCommand GetCurrentCommand() const { return *CurrentCommand;  }
 
 	UFUNCTION(BlueprintPure, Category = "PalCommand")

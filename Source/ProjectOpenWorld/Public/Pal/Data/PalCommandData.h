@@ -11,7 +11,7 @@ enum class EPalCommandKind : uint8
 	Attack,
 	Interact,
 	Work,
-	Max_PalCommandKind,
+	Max_PalCommandKind UMETA(Hidden),
 };
 
 UENUM(BlueprintType)
@@ -20,16 +20,16 @@ enum class ESubMoveType : uint8
 	None_MoveType,
 	Actor,
 	Location,
-	Max_MoveType,
+	Max_MoveType UMETA(Hidden),
 };
 
 UENUM(BlueprintType)
 enum class ESubAttackType : uint8
 {
 	None_AttackType,
-	AttackOnce,
-	AttackLoop,
-	Max_AttackType,
+	Skill01,
+	Skill02,
+	Max_AttackType UMETA(Hidden),
 };
 
 UENUM(BlueprintType)
@@ -38,7 +38,8 @@ enum class ESubWorkType : uint8
 	None_WorkType,
 	Architecture,
 	Mining,
-	Max_WorkType,
+	Transport,
+	Max_WorkType UMETA(Hidden),
 };
 
 USTRUCT(BlueprintType)

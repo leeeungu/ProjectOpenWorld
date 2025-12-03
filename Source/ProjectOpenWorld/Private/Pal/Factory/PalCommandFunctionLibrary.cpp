@@ -33,3 +33,29 @@ FPalCommand UPalCommandFunctionLibrary::CommandArchitecture(AActor* pInstigator,
 	command.pInstigatorActor = pInstigator;
 	return command;
 }
+
+FPalCommand UPalCommandFunctionLibrary::CommandTransport(AActor* pInstigator, AActor* pTargetActor, AActor* pDestination)
+{
+	if (!pTargetActor || !pDestination || !pInstigator)
+		return FPalCommand();
+	FPalCommand command{};
+	command.CommandKind = EPalCommandKind::Work;
+	command.SubCommandType = (uint8)ESubWorkType::Transport;
+	command.pTarget = pTargetActor;
+	command.pInstigatorActor = pDestination;
+	return command;
+}
+
+FPalCommand UPalCommandFunctionLibrary::CommandMining(AActor* pInstigator, AActor* pTargetActor)
+{
+	if (!pTargetActor)
+		return FPalCommand();
+	FPalCommand command{};
+	command.CommandKind = EPalCommandKind::Work;
+	command.SubCommandType = (uint8)ESubWorkType::Mining;
+	command.pTarget = pTargetActor;
+	command.pInstigatorActor = pInstigator;
+	return command;
+}
+
+

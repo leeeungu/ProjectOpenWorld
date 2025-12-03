@@ -19,4 +19,10 @@ class PROJECTOPENWORLD_API UPalCommandFunctionLibrary : public UBlueprintFunctio
 	static FPalCommand CommandMoveToActor(AActor* pInstigator, AActor* pTargetActor );
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
 	static FPalCommand CommandArchitecture(AActor* pInstigator, AActor* pTargetActor);
+	// pDestination final , pTargetActor 옮길 물체
+	UFUNCTION(BlueprintPure, Category = "PalCommand")
+	static FPalCommand CommandTransport(AActor* pInstigator, AActor* pTargetActor, AActor* pDestination);
+
+	UFUNCTION(BlueprintPure, Category = "PalCommand")
+	static FPalCommand CommandMining(AActor* pInstigator, AActor* pTargetActor);
 };

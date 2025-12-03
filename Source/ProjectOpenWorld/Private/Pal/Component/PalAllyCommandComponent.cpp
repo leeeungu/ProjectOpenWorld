@@ -3,6 +3,8 @@
 #include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveActor.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_Transport.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_Mining.h"
 
 void UPalAllyCommandComponent::BeginPlay()
 {
@@ -19,6 +21,10 @@ void UPalAllyCommandComponent::BeginPlay()
 	Base->Initialize(this);
 	Base = CommandExecutors[(uint8)EPalCommandKind::Work][(uint8)ESubWorkType::Architecture] = NewObject<UPalCommandExecutor_Architecture>(this, TEXT("Architecture"));
 	Base->Initialize(this);
+	Base = CommandExecutors[(uint8)EPalCommandKind::Work][(uint8)ESubWorkType::Transport] = NewObject<UPalCommandExecutor_Transport>(this, TEXT("Transport"));
+	Base->Initialize(this);
+	Base = CommandExecutors[(uint8)EPalCommandKind::Work][(uint8)ESubWorkType::Mining] = NewObject<UPalCommandExecutor_Mining>(this, TEXT("Mining"));
+	Base->Initialize(this);
 	Base = nullptr;
 }
 
@@ -26,7 +32,7 @@ void UPalAllyCommandComponent::OnStartCurrentCommand()
 {
 	if (IsValidCommand() == false)
 		return;
-	FPalCommand* Current = GetCurrentCommand_C();
+	const FPalCommand* Current = GetCurrentCommand_C();
 	uint8 idx = (uint8)Current->CommandKind;
 	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
 		return;
@@ -40,5 +46,9 @@ void UPalAllyCommandComponent::OnStartCurrentCommand()
 
 void UPalAllyCommandComponent::OnFinishedCurrentCommand()
 {
+	if (CurrentExcute)
+	{
+		CurrentExcute->Abort();
+	}
 	CurrentExcute = nullptr;
 }

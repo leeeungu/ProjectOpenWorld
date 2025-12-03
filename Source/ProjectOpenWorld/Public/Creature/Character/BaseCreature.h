@@ -3,9 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
 #include "GameBase/Interface/AttackInterface.h"
-#include "Creature/Interface/CreatureActionInterface.h"
-#include "Creature/Interface/CreatureMessageInterface.h"
-#include "Pal/Component/PalAllyCommandComponent.h"
+#include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Interface/PalCommandInterface.h"
 #include "BaseCreature.generated.h"
 
@@ -13,26 +11,20 @@ struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
 class UPalAllyCommandComponent;
 class UStaticMeshComponent;
+class UPalAttackComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public ICreatureMessageInterface,  public IAttackInterface, public IPalCommandInterface
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, public IPalCommandInterface
 {
 	GENERATED_BODY()
 protected:
-	//TScriptInterface<ICreatureActionInterface> ActionComponents[(uint8)ECreatureActionType::Action_Max]{};
-
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> ArchitectureMeshComponent{};
-	//UPROPERTY(EditDefaultsOnly, Meta = (Bitmask, BitmaskEnum = "ECreatureRollType"))
-	//int32 CreatureRoll{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr < UPalAllyCommandComponent> CommandComponent{};
 
-	//ECreatureActionType ActionType{};
-	//ECreatureActionType NextActionType{};
-	//
-	//TSoftObjectPtr<AActor> ActionFrom{};
-	//TSoftObjectPtr<AActor> TargetActor{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Hp{};
@@ -40,29 +32,24 @@ protected:
 	float Attack{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Defend{};
+	bool bActionStarted{};
 protected:
 	virtual void BeginPlay() override;
 	
-	UFUNCTION()
-	void FinishActionMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
-	bool MoveToTarget();
 public:
 	ABaseCreature();
-	virtual void ReceiveMessage_Implementation(EMessageType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
-	virtual void ReceiveActionMessage_Implementation(ECreatureActionType MessageType, AActor* SendActor, AActor* TargetObject = nullptr) override;
 	virtual void ReceiveCommand_Implementation(FPalCommand Command) override;
 
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
-	bool GetIsActionStarted(ECreatureActionType Type);
+	bool GetActionStarted() const { return bActionStarted; }
 
-	//UFUNCTION(BlueprintPure, Category = "CreatureAction")
-	//FORCEINLINE ECreatureActionType GetCreatureActionType() const { return ActionType; }
-	void ResetAction();
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	FORCEINLINE UStaticMeshComponent* GetArchitectureMeshComponent() const { return ArchitectureMeshComponent; }
 
-
-	void ResetActionMode();
-	void TransportActionMode();
-	void SetArchitectureVisibility(bool bValue);
+	float GetDefaultSpeed();
+	void SetActionStarted(bool bValue);
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;
