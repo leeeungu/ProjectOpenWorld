@@ -6,6 +6,7 @@
 
 
 class UAnimSequence;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPalAttack);
 
 USTRUCT(BlueprintType)
 struct FPalAttackData
@@ -32,6 +33,10 @@ protected:
 
 	FPalAttackData AttackData{};
 public:	
+	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
+	FOnPalAttack OnPalAttackEnd{};
+	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
+	FOnPalAttack OnPalAttackStart{};
 	UPalAttackComponent();
 
 protected:

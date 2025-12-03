@@ -1,6 +1,7 @@
 #include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
+#include "Pal/Component/PalAttackComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 
 void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
@@ -12,13 +13,18 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 	if (OwnerPal)
 	{
 		OwnerController = Cast<APalAIController>(OwnerPal->GetController());
+		AttackComponent = OwnerPal->GetAttackComponent();
+	}
+	if (AttackComponent)
+	{
+		AttackComponent->OnPalAttackEnd.AddDynamic(this, &UPalCommandExecutor_Attack::EndAttack);
 	}
 }
 
 
 void UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 {
-	if (Command.CommandKind != EPalCommandKind::Attack || !Command.pTarget || bStartedAttacking)
+	if (!AttackComponent || Command.CommandKind != EPalCommandKind::Attack || !Command.pTarget || bStartedAttacking)
 	{
 		return;
 	}
@@ -36,13 +42,14 @@ void UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 
 void UPalCommandExecutor_Attack::Abort()
 {
-	if (bStartedAttacking == false)
-		return;
 	bStartedAttacking = false;
 	if (OwnerPal)	
 	{
 		OwnerPal->SetActionStarted(false);
-		//OwnerPal->SetAttackData(false);
+		if (AttackComponent)
+		{
+			AttackComponent->EndAttack();
+		}
 	}
 	if (OwnerController)
 	{
@@ -53,13 +60,10 @@ void UPalCommandExecutor_Attack::Abort()
 
 void UPalCommandExecutor_Attack::EndAttack()
 {
+	if (bStartedAttacking == false)
+		return;
 	Abort();
 	EndCommand();
-}
-
-void UPalCommandExecutor_Attack::EndAttackComponent()
-{
-
 }
 
 void UPalCommandExecutor_Attack::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
@@ -67,14 +71,21 @@ void UPalCommandExecutor_Attack::FinishMove(FAIRequestID RequestID, EPathFollowi
 	if (!bStartedAttacking)
 		return;
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Attack || Command->SubCommandType == 0 || !Command->pTarget)
+	if (!OwnerPal || !OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Attack || Command->SubCommandType == 0 || !Command->pTarget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: Can't Attack"));
 	}
-	if (OwnerPal )
+	else
 	{
 		OwnerPal->SetActionStarted(true);
-		//OwnerPal->SetAttackData(true, Command->pTarget, Command->SubCommandType);
+		if (AttackComponent)
+		{
+			FPalAttackData NewAttackData{};
+			NewAttackData.TargetActor = Command->pTarget;
+			NewAttackData.AttackSlot = Command->SubCommandType;
+			AttackComponent->SetAttackData(NewAttackData);
+			AttackComponent->StartAttack();
+		}
 		return;
 	}
 	EndAttack();

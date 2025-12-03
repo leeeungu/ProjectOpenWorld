@@ -8,6 +8,7 @@ class AActor;
 class ABaseCreature;
 class APalAIController;
 struct FAIRequestID;
+class UPalAttackComponent;
 namespace EPathFollowingResult { enum Type : int; }
 
 UCLASS()
@@ -18,6 +19,7 @@ protected:
 	AActor* TargetActor{};
 	APalAIController* OwnerController{};
 	ABaseCreature* OwnerPal{};
+	UPalAttackComponent* AttackComponent{};
 	bool bStartedAttacking{};
 public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;
@@ -27,8 +29,6 @@ public:
 protected:
 	UFUNCTION()
 	void EndAttack();
-	UFUNCTION()
-	void EndAttackComponent();
 
 	UFUNCTION()
 	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);

@@ -48,6 +48,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE UStaticMeshComponent* GetArchitectureMeshComponent() const { return ArchitectureMeshComponent; }
 
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	UPalCommandComponent* GetCommandComponent() const;
 	float GetDefaultSpeed();
 	void SetActionStarted(bool bValue);
 public:

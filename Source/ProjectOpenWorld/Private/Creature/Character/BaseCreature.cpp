@@ -31,41 +31,10 @@ void ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 	}
 }
 
-//void ABaseCreature::ResetActionMode()
-//{
-//	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-//}
-//
-//void ABaseCreature::TransportActionMode()
-//{
-//	GetCharacterMovement()->MaxWalkSpeed = 50.0f;
-//}
-//void ABaseCreature::SetArchitectureVisibility(bool bValue)
-//{
-//	SetActionStarted(bValue);
-//	if (ArchitectureMeshComponent)
-//	{
-//		ArchitectureMeshComponent->SetVisibility(bValue);
-//	}
-//}
-//
-//void ABaseCreature::SetTransfortStart(bool bValue)
-//{
-//	SetActionStarted(bValue);
-//	if (bValue)
-//	{
-//		TransportActionMode();
-//	}
-//	else
-//	{
-//		ResetActionMode();
-//	}
-//}
-//
-//void ABaseCreature::SetMining(bool bValue)
-//{
-//	SetActionStarted(bValue);
-//}
+UPalCommandComponent* ABaseCreature::GetCommandComponent() const
+{ 
+	return CommandComponent;
+}
 
 float ABaseCreature::GetDefaultSpeed()
 {
@@ -76,30 +45,6 @@ void ABaseCreature::SetActionStarted(bool bValue)
 {
 	bActionStarted = bValue;
 }
-//
-//void ABaseCreature::SetAttackData(bool bValue, AActor* TargetActor, uint8 AttackSlot)
-//{
-//	SetActionStarted(bValue);
-//	if (AttackComponent && TargetActor && 0 != AttackSlot)
-//	{
-//		FPalAttackData Data{};
-//		Data.TargetActor = TargetActor;
-//		Data.AttackSlot = AttackSlot;
-//		AttackComponent->SetAttackData(Data);
-//	}
-//}
-//
-//void ABaseCreature::StartAttack(AActor* TargetActor, uint8 AttackSlot)
-//{
-//}
-//
-//void  ABaseCreature::EndAttack()
-//{
-//	if (AttackComponent)
-//	{
-//		AttackComponent->EndAttack();
-//	}
-//}
 
 bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
 {

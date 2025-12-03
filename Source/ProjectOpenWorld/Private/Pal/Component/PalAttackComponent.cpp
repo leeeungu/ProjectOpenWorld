@@ -22,9 +22,16 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 
 void UPalAttackComponent::StartAttack()
 {
+	if (OnPalAttackStart.IsBound())
+	{
+		OnPalAttackStart.Broadcast();
+	}
 }
 void  UPalAttackComponent::EndAttack()
 {
-
+	if (OnPalAttackEnd.IsBound())
+	{
+		OnPalAttackEnd.Broadcast();
+	}
 }
 
