@@ -9,7 +9,7 @@
 
 struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
-class UPalAllyCommandComponent;
+class UPalCommandComponent;
 class UStaticMeshComponent;
 class UPalAttackComponent;
 
@@ -21,7 +21,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> ArchitectureMeshComponent{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr < UPalAllyCommandComponent> CommandComponent{};
+	TObjectPtr < UPalCommandComponent> CommandComponent{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};

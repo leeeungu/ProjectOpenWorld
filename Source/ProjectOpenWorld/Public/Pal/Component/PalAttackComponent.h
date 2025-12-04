@@ -19,19 +19,34 @@ public:
 	uint8 AttackSlot{};
 };
 
+USTRUCT(BlueprintType)
+struct FPalTempAttackAnim
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	UAnimSequence* Start{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	UAnimSequence* Loop{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	UAnimSequence* End{};
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPalAttackComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalAttackData")
-	UAnimSequence* StartAnim{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalAttackData")
-	UAnimSequence* LoopAnim{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalAttackData")
-	UAnimSequence* EndAnim{};
+	FPalTempAttackAnim Current{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
+	FPalTempAttackAnim Default{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
+	FPalTempAttackAnim Skill01{};
+
 
 	FPalAttackData AttackData{};
+	bool bCanAttack{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -42,6 +57,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void TargetIsDead(AActor* Actor, EEndPlayReason::Type EndPlayReason);
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -51,4 +67,5 @@ public:
 	void  StartAttack();
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
 	void  EndAttack();
+	FPalTempAttackAnim GetAnimation() const { return Current; }
 };

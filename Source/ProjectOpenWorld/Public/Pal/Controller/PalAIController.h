@@ -10,6 +10,6 @@ class PROJECTOPENWORLD_API APalAIController : public AAIController
 	GENERATED_BODY()
 public:
 
-	bool MoveToActor(AActor* TargetActor, float fAcceptanceRadius = 400.0f);
-	bool MoveToLocation(FVector TargetLocation, float fAcceptanceRadius = 400.0f);
+	EPathFollowingRequestResult::Type MoveToActor(AActor* TargetActor, float fAcceptanceRadius = 40.0f);
+	EPathFollowingRequestResult::Type MoveToLocation(FVector TargetLocation, float fAcceptanceRadius = 400.0f);
 };

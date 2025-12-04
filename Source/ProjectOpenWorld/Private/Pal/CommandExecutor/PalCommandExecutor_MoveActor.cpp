@@ -2,6 +2,7 @@
 #include "GameFramework/Character.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Pal/Component/PalCommandComponent.h"
 
 void UPalCommandExecutor_MoveActor::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -19,7 +20,7 @@ void UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
-		if (OwnerController->MoveToActor(Command.pTarget, 60.0f) == false)
+		if (OwnerController->MoveToActor(Command.pTarget, 40.0f) == false)
 		{
 			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
 			EndCommand();

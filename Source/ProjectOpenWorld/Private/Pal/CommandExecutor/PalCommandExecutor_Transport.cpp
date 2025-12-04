@@ -2,6 +2,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
+#include "Pal/Component/PalCommandComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 void UPalCommandExecutor_Transport::Initialize(UPalCommandComponent* CommandComp)
@@ -80,9 +81,9 @@ void UPalCommandExecutor_Transport::FinishMove(FAIRequestID RequestID, EPathFoll
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Can't move to Destination"));
 		}
-		else if (eTransportState == TransportState::Go)
+		else if (Result == EPathFollowingResult::Type::Success)
 		{
-			if (Command->pTarget && FVector::Distance(Command->pTarget->GetActorLocation(), OwnerPal->GetActorLocation()) <= 100.0f)
+			if (Command->pTarget && eTransportState == TransportState::Go)
 			{
 				eTransportState = TransportState::Back;
 				if (OwnerController->MoveToLocation(Command->pInstigatorActor->GetActorLocation(), 40.0f) == false)
@@ -95,6 +96,10 @@ void UPalCommandExecutor_Transport::FinishMove(FAIRequestID RequestID, EPathFoll
 					OwnerPal->GetCharacterMovement()->MaxWalkSpeed =50.0f;
 				}
 				return;
+			}
+			else if (eTransportState == TransportState::Back)
+			{
+				// 운송 완료
 			}
 		}
 	}

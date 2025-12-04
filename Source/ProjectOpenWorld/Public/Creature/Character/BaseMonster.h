@@ -1,12 +1,16 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
 #include "GameBase/Interface/AttackInterface.h"
+#include "Pal/Interface/PalCommandInterface.h"
 #include "BaseMonster.generated.h"
 
+class UPalCommandComponent;
+class UPalAttackComponent;
+
 UCLASS()
-class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface
+class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface
 {
 	GENERATED_BODY()
 protected:
@@ -16,10 +20,33 @@ protected:
 	float Attack{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Defend{};
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TObjectPtr < UPalCommandComponent> CommandComponent{};
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TObjectPtr < UPalAttackComponent> AttackComponent{};
+
+	bool bActionStarted{};
 public:
 	ABaseMonster();
 
-public:
+
+	virtual void ReceiveCommand_Implementation(FPalCommand Command) override;
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	UPalCommandComponent* GetCommandComponent() const { return CommandComponent; }
 	 // //virtual bool Attacked_Implementation(IAttackInterface* Other) override;
 	 // virtual float GetAttackValue_Implementation() const override;
+
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	bool GetActionStarted() const { return bActionStarted; }
+	void SetActionStarted(bool bValue);
+public:
+	//AttackInterface
+	virtual float GetAttackValue_Implementation() const override;
+	virtual void  SetAttackValue_Implementation(float NewValue) override;
+	virtual void  RetAttackValue_Implementation() override;
+	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 };

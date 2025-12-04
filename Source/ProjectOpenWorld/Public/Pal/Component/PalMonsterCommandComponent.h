@@ -2,14 +2,16 @@
 
 #include "CoreMinimal.h"
 #include "Pal/Component/PalCommandComponent.h"
-#include "PalAllyCommandComponent.generated.h"
+#include "Pal/CommandExecutor/PalCommandExecutorBase.h"
+#include "PalMonsterCommandComponent.generated.h"
 
 UCLASS()
-class PROJECTOPENWORLD_API UPalAllyCommandComponent : public UPalCommandComponent
+class PROJECTOPENWORLD_API UPalMonsterCommandComponent : public UPalCommandComponent
 {
 	GENERATED_BODY()
+private:
 public:
-	UPalAllyCommandComponent()  = default;
+	UPalMonsterCommandComponent() = default;
 protected:
 	virtual void BeginPlay() override;
 

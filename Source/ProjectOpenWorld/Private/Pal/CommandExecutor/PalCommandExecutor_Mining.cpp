@@ -2,6 +2,7 @@
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Pal/Component/PalCommandComponent.h"
 
 void UPalCommandExecutor_Mining::Initialize(UPalCommandComponent* CommandComp)
 {

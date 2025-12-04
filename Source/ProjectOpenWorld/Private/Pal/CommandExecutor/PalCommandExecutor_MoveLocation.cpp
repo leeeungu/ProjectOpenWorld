@@ -1,6 +1,7 @@
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
 #include "GameFramework/Character.h"
 #include "Pal/Controller/PalAIController.h"
+#include "Pal/Component/PalCommandComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 
 void UPalCommandExecutor_MoveLocation::Initialize(UPalCommandComponent* CommandComp)
@@ -19,7 +20,7 @@ void UPalCommandExecutor_MoveLocation::StartCommand(const FPalCommand& Command)
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
-		if (OwnerController->MoveToLocation(Command.TargetLocation,60.0f) == false)
+		if (OwnerController->MoveToLocation(Command.TargetLocation,40.0f) == false)
 		{
 			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
 			EndCommand();

@@ -1,4 +1,6 @@
 #include "Pal/CommandExecutor/PalCommandExecutorBase.h"
+#include "Pal/Component/PalCommandComponent.h"
+
 
 void UPalCommandExecutorBase::Initialize(UPalCommandComponent* CommandComp)
 {

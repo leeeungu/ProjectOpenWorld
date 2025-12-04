@@ -3,10 +3,9 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Pal/Data/PalCommandData.h"
-#include "Pal/Component/PalCommandComponent.h"
 #include "PalCommandExecutorBase.generated.h"
 
-
+class UPalCommandComponent;
 UCLASS()
 class PROJECTOPENWORLD_API UPalCommandExecutorBase : public UObject
 {

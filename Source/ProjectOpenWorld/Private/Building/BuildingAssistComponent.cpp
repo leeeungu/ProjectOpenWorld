@@ -354,11 +354,6 @@ bool UBuildingAssistComponent::UpdatePreview()
 
 		const float DistSq = FVector::DistSquared(ImpactPoint, AnchorWorldPos);
 		const float dot = FVector::DotProduct((PreviewLocation - AnchorWorldPos).GetSafeNormal(), (GetOwner()->GetActorLocation() - AnchorWorldPos).GetSafeNormal());
-		//DrawDebugLine(GetWorld(), AnchorWorldPos, PreviewLocation, FColor::Magenta, false, 1.0f);
-		//DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), ImpactPoint, FColor::Cyan ,false, 1.0f);
-		//FString Name = StaticEnum<ESnapAnchor >()->GetNameStringByValue(static_cast<int64>(Data.ParentAnchor)).ToLower();
-		//FString FloatAsString = FString::SanitizeFloat(dot);
-		//Temp += Name + " dot  : " + FloatAsString + " /";
 		if (FMath::IsNearlyEqual(DistSq, BestDistSq))
 		{
 			if (dot > Min)

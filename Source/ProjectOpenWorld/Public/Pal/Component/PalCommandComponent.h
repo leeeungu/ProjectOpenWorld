@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalCommandData.h"
+#include "Pal/CommandExecutor/PalCommandExecutorBase.h"
 #include "PalCommandComponent.generated.h"
 
 
@@ -22,6 +23,9 @@ private:
 	FPalCommand* CurrentCommand{};
 	FPalCommand* LastCommand{};
 	void (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
+protected:
+	TArray< TArray<TStrongObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};
+	UPalCommandExecutorBase* CurrentExcute{};
 public:	
 	UPalCommandComponent();
 private:
@@ -30,6 +34,8 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	template <typename T>
+	void CreateNewExcutor(EPalCommandKind CommandType, uint8 SubType, FName Name = NAME_None);
 	void PopCommand();
 
 	void PushCommand_Default(const FPalCommand& NewCommand);
@@ -56,3 +62,13 @@ public:
 	// called by FinishCommand
 	virtual void OnFinishedCurrentCommand()  {}
 };
+template<typename T>
+inline void UPalCommandComponent::CreateNewExcutor(EPalCommandKind CommandType, uint8 SubType, FName Name)
+{
+	if (!CommandExecutors.IsValidIndex((uint8)CommandType) || !CommandExecutors[(uint8)CommandType].IsValidIndex(SubType))
+		return;
+	TStrongObjectPtr<T> Base = TStrongObjectPtr<T>(NewObject<T>(this, Name));
+	CommandExecutors[(uint8)CommandType][SubType] = Base;
+	Base->Initialize(this);
+
+}

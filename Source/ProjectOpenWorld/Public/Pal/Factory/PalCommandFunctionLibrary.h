@@ -25,4 +25,8 @@ class PROJECTOPENWORLD_API UPalCommandFunctionLibrary : public UBlueprintFunctio
 
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
 	static FPalCommand CommandMining(AActor* pInstigator, AActor* pTargetActor);
+
+	UFUNCTION(BlueprintPure, Category = "PalCommand")
+	static FPalCommand CommandAttack(AActor* pInstigator, AActor* pTargetActor, ESubAttackType SlotNum);
+
 };

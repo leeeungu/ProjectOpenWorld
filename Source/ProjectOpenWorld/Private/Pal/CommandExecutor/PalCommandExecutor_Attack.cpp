@@ -3,6 +3,7 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Pal/Component/PalCommandComponent.h"
 
 void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -71,7 +72,7 @@ void UPalCommandExecutor_Attack::FinishMove(FAIRequestID RequestID, EPathFollowi
 	if (!bStartedAttacking)
 		return;
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerPal || !OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Attack || Command->SubCommandType == 0 || !Command->pTarget)
+	if (!OwnerPal || !OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Attack  || !Command->pTarget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: Can't Attack"));
 	}

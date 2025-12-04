@@ -1,12 +1,13 @@
-#include "Pal/Animation/PalAnimInstance.h"
-#include "Creature/Character/BaseCreature.h"
+#include "MonsterAnimInstance.h"
+
+#include "Creature/Character/BaseMonster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
 
-void UPalAnimInstance::NativeInitializeAnimation()
+void UMonsterAnimInstance::NativeInitializeAnimation()
 {
 	UAnimInstance::NativeInitializeAnimation();
-	OwnerPalCreature = Cast<ABaseCreature>(TryGetPawnOwner());
+	OwnerPalCreature = Cast<ABaseMonster>(TryGetPawnOwner());
 	if (!OwnerPalCreature)
 		return;
 	MovementComponent = OwnerPalCreature->GetCharacterMovement();
@@ -14,7 +15,7 @@ void UPalAnimInstance::NativeInitializeAnimation()
 	CommandComponent = OwnerPalCreature->GetCommandComponent();
 }
 
-void UPalAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	UAnimInstance::NativeUpdateAnimation(DeltaSeconds);
 	if (!OwnerPalCreature || !MovementComponent || !CommandComponent || !AttackComponent)

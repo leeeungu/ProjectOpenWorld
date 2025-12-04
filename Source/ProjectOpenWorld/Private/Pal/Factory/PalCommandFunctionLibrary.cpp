@@ -58,4 +58,15 @@ FPalCommand UPalCommandFunctionLibrary::CommandMining(AActor* pInstigator, AActo
 	return command;
 }
 
+FPalCommand UPalCommandFunctionLibrary::CommandAttack(AActor* pInstigator, AActor* pTargetActor, ESubAttackType SlotNum)
+{
+	if (!pTargetActor)
+		return FPalCommand();
+	FPalCommand command{};
+	command.CommandKind = EPalCommandKind::Attack;
+	command.SubCommandType = (uint8)SlotNum;
+	command.pTarget = pTargetActor;
+	command.pInstigatorActor = pInstigator;
+	return command;
 
+}

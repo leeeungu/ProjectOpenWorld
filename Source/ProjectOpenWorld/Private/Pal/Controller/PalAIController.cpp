@@ -1,39 +1,41 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 
-bool APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius )
+EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius )
 {
+	if (!TargetActor)
+		return EPathFollowingRequestResult::Failed;
 	FAIMoveRequest MoveReq(TargetActor);
 	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(false);
+	MoveReq.SetAllowPartialPath(true);
 	MoveReq.SetAcceptanceRadius(fAcceptanceRadius);
 	MoveReq.SetReachTestIncludesAgentRadius(true);
 	MoveReq.SetCanStrafe(true);
 	MoveReq.SetReachTestIncludesGoalRadius(true);
 	FNavPathSharedPtr OutPath{};
-	if (EPathFollowingRequestResult::Failed == MoveTo(MoveReq, &OutPath))
+	FPathFollowingRequestResult result = MoveTo(MoveReq, &OutPath);
+	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("MoveToActor :: None Path"));
-		return false;
 	}
-	return true;
+	return result;
 }
 
-bool APalAIController::MoveToLocation(FVector TargetLocation, float fAcceptanceRadius )
+EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector TargetLocation, float fAcceptanceRadius )
 {
 	FAIMoveRequest MoveReq(TargetLocation);
 	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(false);
+	MoveReq.SetAllowPartialPath(true);
 	MoveReq.SetAcceptanceRadius(fAcceptanceRadius);
 	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true);
+	MoveReq.SetCanStrafe(false);
 	MoveReq.SetReachTestIncludesGoalRadius(true);
+	MoveReq.SetRequireNavigableEndLocation(true);
 	FNavPathSharedPtr OutPath{};
-	MoveTo(MoveReq, &OutPath);
-	if (!OutPath.IsValid())
+	FPathFollowingRequestResult result = MoveTo(MoveReq, &OutPath);
+	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("MoveToLocation :: None Path"));
-		return false;
 	}
-	return true;
+	return result;
 }
