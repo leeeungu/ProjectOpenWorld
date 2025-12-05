@@ -21,6 +21,8 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 	}
 	CommandComponent = CreateDefaultSubobject<UPalAllyCommandComponent>(TEXT("AllyCommand"));
 	AttackComponent  = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
+	Hp = 100.0f;
+	Attack = 10.0f;
 }
 
 void ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)

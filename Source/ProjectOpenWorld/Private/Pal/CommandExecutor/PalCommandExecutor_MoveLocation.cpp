@@ -40,6 +40,12 @@ void UPalCommandExecutor_MoveLocation::Abort()
 
 void UPalCommandExecutor_MoveLocation::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Move || Command->SubCommandType != (uint8)ESubMoveType::Location)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveLocation :: not slef command"));
+		return;
+	}
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);

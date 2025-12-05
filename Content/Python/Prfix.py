@@ -4,9 +4,9 @@ import unreal
 #  수정하고 싶은 폴더 경로 + 제거할 PREFIX 입력
 # ==========================================================
 
-ANIM_DIR = "/Game/Pal/Model/Monster/Anubis/Animation"   # ← 원하는 경로
-REMOVE_PREFIX = "Anubis_Anim_SK_Anubis_"                             # ← 지우고 싶던 prefix
-
+ANIM_DIR = "/Game/Pal/Model/Monster/Kitsunebi_Ice/Animation"   # ← 원하는 경로
+REMOVE_PREFIX = "AS_Kitsunebi" # ← 지우고 싶던 prefix
+PREFIX  = "AS_Kitsunebi_Ice"
 
 # ==========================================================
 #  유틸
@@ -40,8 +40,8 @@ def remove_prefix_from_assets(anim_dir: str, prefix: str):
         if not old_name.startswith(prefix):
             continue
 
-        new_name = old_name[len(prefix):]  # prefix 제거
-        new_path = f"{asset_path.rsplit('/',1)[0]}/{new_name}.{new_name}"
+        new_name = PREFIX + old_name[len(prefix):]  # prefix 제거
+        new_path = f"{asset_path.rsplit('/',1)[0]}/{new_name}"
 
         # 이미 존재하면 충돌이므로 스킵
         if editor_lib.does_asset_exist(new_path):

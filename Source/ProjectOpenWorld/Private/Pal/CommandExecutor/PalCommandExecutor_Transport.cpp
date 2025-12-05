@@ -79,7 +79,8 @@ void UPalCommandExecutor_Transport::FinishMove(FAIRequestID RequestID, EPathFoll
 		const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
 		if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Transport || !Command->pInstigatorActor)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Can't move to Destination"));
+			UE_LOG(LogTemp, Warning, TEXT("Executor__MoveLocation :: not slef command"));
+			return;
 		}
 		else if (Result == EPathFollowingResult::Type::Success)
 		{

@@ -2,6 +2,7 @@ import unreal
 
 # 모든 스크립트에서 공유할 기본 경로
 GLOBAL_ANIM_DIR = "/Game/Pal/Model/Global/Animation"
+GLOBAL_DIR = "/Game/Pal/Model/Global"
 MONSTER_ROOT = "/Game/Pal/Model/Monster"
 
 # 기본 타겟 팔 이름 (필요 시 스크립트에서 변경 가능)
@@ -46,6 +47,35 @@ def duplicate_asset(  child_name   : str,  pal_folder : str,  template_bp: unrea
     unreal.log(f"[성공] BP 복사 성공: {asset.get_path_name()}")
     return asset
 
+def child_asset(  child_name   : str,  pal_folder : str,  template_bp: unreal.Object) -> unreal.Object | None:
+    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+
+    # 1) 부모 클래스: 템플릿 BP의 GeneratedClass
+    parent_class = template_bp.generated_class()
+    if not parent_class:
+        unreal.log_error(
+            f"[오류] 템플릿 BP generated_class 조회 실패: {template_bp.get_path_name()}"
+        )
+        return None
+
+    # 2) BlueprintFactory 생성 후 parent_class 지정
+    factory = unreal.BlueprintFactory()
+    factory.set_editor_property("parent_class", parent_class)
+
+    # 3) 자식 Blueprint 생성
+    child_bp = asset_tools.create_asset(
+        asset_name   = child_name,
+        package_path = pal_folder,
+        asset_class  = unreal.Blueprint,
+        factory      = factory,
+    )
+
+    if not child_bp:
+        unreal.log_error(f"[오류] 자식 BP 생성 실패: {child_name}")
+        return None
+
+    unreal.log(f"[성공] 자식 BP 생성: {child_bp.get_path_name()}")
+    return child_bp
 
 """
 def main():

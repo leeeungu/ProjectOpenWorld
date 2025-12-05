@@ -8,6 +8,7 @@ from PalConfig import (
     PAL_AS_PREFIX,
     PAL_BS_PREFIX,
     find_asset,
+    child_asset
 )
 
 
@@ -20,9 +21,12 @@ from PalConfig import (
 # ============================================================
 
 PAL_NAME = "Anubis"
-TARGET_BP_PATH     = "/Game/Pal/Map/Test/Bp_TestCreature"
-TARGET_ANIMBP_PATH = f"/Game/Pal/Model/Monster/{PAL_NAME}/ABP_Anubis"
+CHILD_BP_POSTFIX = "_Monster"
+#Script/Engine.Blueprint'/Game/Pal/Model/Global/Bp_MonsterBase.Bp_MonsterBase'
+TARGET_BP_PATH     = "/Game/Pal/Model/Global/Bp_MonsterBase"
+TARGET_ANIMBP_PATH = f"/Game/Pal/Model/Monster/{PAL_NAME}/ABP_{PAL_NAME}{CHILD_BP_POSTFIX}"
 CHILD_BP_PREFIX    = "Bp_" 
+
 
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 editor_lib  = unreal.EditorAssetLibrary
@@ -92,25 +96,13 @@ def create_or_update_blueprint():
     #unreal.log(f"[Mesh 로드 성공] {skeletal_mesh.get_path_name()}")
 
     # Pal용 BP 생성 또는 로드
-    child_name        = f"{CHILD_BP_PREFIX}{pal_name}"  # 예: Bp_Anubis
+    child_name        = f"{CHILD_BP_PREFIX}{pal_name}{CHILD_BP_POSTFIX}"  # 예: Bp_Anubis
     child_package     = f"{pal_folder}/{child_name}"    # 패키지 이름
     bp =  find_asset( child_package, unreal.Blueprint)
     if  not bp:
-        bp = PalConfig.duplicate_asset(child_name,pal_folder ,template_bp)
-        """
-        asset_tools.duplicate_asset(
-              asset_name   = child_name,  
-              package_path = pal_folder,
-             original_object = template_bp,
-        )
-        if  not bp:
-            unreal.log_error(f"[오류] BP 복사 실패: {child_package}")
-            return
-        unreal.log(f"[BP 복사 생성] {bp.get_path_name()}")
-        """
-    #else:
-        #unreal.log(f"[BP 로드 성공] {bp.get_path_name()}")
-        
+        bp = duplicate_asset(child_name,pal_folder ,template_bp)        
+    if not bp:
+        return
     configured = configure_bp_mesh_and_anim(bp, skeletal_mesh, anim_bp)
 
     unreal.log(f"[End] : BlueprintUdate 성공 {bp.get_path_name()}")

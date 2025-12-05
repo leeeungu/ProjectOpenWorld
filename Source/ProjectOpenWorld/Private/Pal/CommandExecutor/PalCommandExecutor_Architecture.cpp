@@ -73,6 +73,13 @@ void UPalCommandExecutor_Architecture::EndBuilding()
 
 void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Architecture)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: not slef command"));
+		return;
+	}
+
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
 	{
 		EndBuilding();

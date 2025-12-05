@@ -54,12 +54,13 @@ void UPalCommandExecutor_Mining::EndMining()
 
 void UPalCommandExecutor_Mining::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (!bStartedMining)
+	if (!bStartedMining && !OwnerCommandComp)
 		return;
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
 	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Mining|| !Command->pTarget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Can't move to Destination"));
+		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveActor :: not slef command"));
+		return;
 	}
 	if (OwnerPal && FVector::Distance(Command->pTarget->GetActorLocation(), OwnerPal->GetActorLocation()) <= 120.0f)
 	{

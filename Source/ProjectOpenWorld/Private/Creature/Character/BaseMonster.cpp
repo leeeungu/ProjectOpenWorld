@@ -11,6 +11,8 @@ ABaseMonster::ABaseMonster() :
 	AIControllerClass = APalAIController::StaticClass();
 	CommandComponent = CreateDefaultSubobject<UPalMonsterCommandComponent>(TEXT("PalCommand"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
+	Hp = 100;
+	Attack = 10.0f;
 }
 
 void ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
@@ -38,5 +40,12 @@ void ABaseMonster::RetAttackValue_Implementation()
 
 bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
 {
-	return false;
+	if (!Other.GetObject())
+		return false;
+	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
+	Hp -= Damage;
+	UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
+	if (Hp <= 0.f)
+		Destroy();
+	return true;
 }

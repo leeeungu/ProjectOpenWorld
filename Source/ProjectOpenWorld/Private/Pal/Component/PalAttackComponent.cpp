@@ -10,7 +10,7 @@ void UPalAttackComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UPalAttackComponent::TargetIsDead(AActor* Actor, EEndPlayReason::Type EndPlayReason)
+void UPalAttackComponent::TargetIsDead(AActor* Actor)
 {
 	EndAttack();
 }
@@ -24,7 +24,7 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 {
 	if (!sData.TargetActor)
 		return;
-	sData.TargetActor->OnEndPlay.AddDynamic(this, &UPalAttackComponent::TargetIsDead);
+	sData.TargetActor->OnDestroyed.AddDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bCanAttack = true;
 	AttackData = sData;
 	Current = Default;
@@ -51,7 +51,7 @@ void  UPalAttackComponent::EndAttack()
 	bCanAttack = false;
 	if (AttackData.TargetActor)
 	{
-		AttackData.TargetActor->OnEndPlay.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
+		AttackData.TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
 	}
 	if (OnPalAttackEnd.IsBound())
 	{

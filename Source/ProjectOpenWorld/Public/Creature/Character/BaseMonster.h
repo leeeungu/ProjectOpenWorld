@@ -21,10 +21,10 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Defend{};
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < UPalCommandComponent> CommandComponent{};
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
 	bool bActionStarted{};

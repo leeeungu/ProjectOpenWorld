@@ -57,7 +57,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	void TargetIsDead(AActor* Actor, EEndPlayReason::Type EndPlayReason);
+	UFUNCTION()
+	void TargetIsDead(AActor* Actor);
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

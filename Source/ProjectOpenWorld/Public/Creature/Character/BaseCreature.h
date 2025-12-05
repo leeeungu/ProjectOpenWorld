@@ -31,7 +31,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Attack{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Defend{};
+	float Defend{};	
 	bool bActionStarted{};
 protected:
 	virtual void BeginPlay() override;

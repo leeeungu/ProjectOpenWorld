@@ -74,10 +74,9 @@ void UPalCommandExecutor_Attack::FinishMove(FAIRequestID RequestID, EPathFollowi
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
 	if (!OwnerPal || !OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Attack  || !Command->pTarget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: Can't Attack"));
+		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: not slef command"));
+		return;
 	}
-	else
-	{
 		OwnerPal->SetActionStarted(true);
 		if (AttackComponent)
 		{
@@ -87,8 +86,7 @@ void UPalCommandExecutor_Attack::FinishMove(FAIRequestID RequestID, EPathFollowi
 			AttackComponent->SetAttackData(NewAttackData);
 			AttackComponent->StartAttack();
 		}
-		return;
-	}
-	EndAttack();
+	//	return;
+	//EndAttack();
 }
 
