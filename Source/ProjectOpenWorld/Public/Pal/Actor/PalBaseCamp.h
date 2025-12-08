@@ -8,6 +8,7 @@ class UPalStorageComponent;
 class UPalCommanderComponent;
 class USceneComponent;
 class UStaticMeshComponent;
+class USphereComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API APalBaseCamp : public AActor
@@ -22,7 +23,8 @@ protected:
 	TObjectPtr<USceneComponent> Root{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> CampMesh{};
-	
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr < USphereComponent> CampBounds{};
 public:	
 	APalBaseCamp();
 
@@ -32,6 +34,12 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
+	bool SpawnPal(TSubclassOf<AActor> TargetPal, int Index);
+	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
+	void StorePal(TSubclassOf<AActor> NewPal, int Index);
+	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
+	void RemovePal(TSubclassOf<AActor> targetPal, int Index);
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UPalStorageComponent* GetPalStoreComponent() const {return PalStore;}
 	UFUNCTION(BlueprintPure)

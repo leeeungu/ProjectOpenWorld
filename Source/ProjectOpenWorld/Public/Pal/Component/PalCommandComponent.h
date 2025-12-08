@@ -56,12 +56,16 @@ public:
 	void PushCommand(const FPalCommand& NewCommand);
 
 	UFUNCTION(BlueprintCallable, Category = "PalCommand")
-	void FinishCommand();
+	void FinishCommand(); // == stop
+
+	UFUNCTION(BlueprintCallable, Category = "PalCommand")
+	void ResetCommandQue();
 	
 	virtual void OnStartCurrentCommand()  {}
-	// called by FinishCommand
 	virtual void OnFinishedCurrentCommand()  {}
 };
+
+
 template<typename T>
 inline void UPalCommandComponent::CreateNewExcutor(EPalCommandKind CommandType, uint8 SubType, FName Name)
 {

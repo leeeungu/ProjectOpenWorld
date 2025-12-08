@@ -39,6 +39,8 @@ class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance
 		uint8 SubCommandType{};
 		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
 		bool bActionStarted{};
+		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		bool bAttacking{};
 
 	public:
 		virtual void NativeInitializeAnimation() override;

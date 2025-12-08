@@ -25,6 +25,7 @@ void UPalCommandComponent::ResetCurrentCommand()
 {
 	ResetCommand(DummyCommand);
 	CurrentCommand = &DummyCommand;
+	CurrentExcute = nullptr;
 }
 
 void UPalCommandComponent::BeginPlay()
@@ -43,8 +44,20 @@ void UPalCommandComponent::PopCommand()
 		ResetCommand(*CurrentCommand);
 		ResetCurrentCommand();
 		LastCommand = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("%s : Command None"), *GetOwner()->GetName());
+		//UE_LOG(LogTemp, Log, TEXT("%s : Command None"), *GetOwner()->GetName());
 		return;
+	}
+	if (IsValidCommand() == false)
+		return;
+	const FPalCommand* Current = GetCurrentCommand_C();
+	uint8 idx = (uint8)Current->CommandKind;
+	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
+		return;
+
+	CurrentExcute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get();
+	if (CurrentExcute)
+	{
+		CurrentExcute->StartCommand(*Current);
 	}
 	OnStartCurrentCommand();
 }
@@ -105,11 +118,30 @@ void UPalCommandComponent::FinishCommand()
 {
 	if (CurrentCommand != &DummyCommand)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UPalCommandComponent :: FinishCommand"));
+		//UE_LOG(LogTemp, Warning, TEXT("UPalCommandComponent :: FinishCommand"));
 		ResetCommand(*CurrentCommand);
 		QueueEmpty.Enqueue(CurrentCommand);
+		if (CurrentExcute)
+		{
+			CurrentExcute->Abort();
+		}
 		OnFinishedCurrentCommand();
 		ResetCurrentCommand();
 	}
 	PopCommand();
+}
+
+void UPalCommandComponent::ResetCommandQue()
+{
+	FinishCommand();
+	QueueCommand.Empty();
+	QueueEmpty.Empty();
+	for (int i = 0; i < CommandSize::MaxSize; i++)
+	{
+		ResetCommand(CommandPool[i]);
+		QueueEmpty.Enqueue(&CommandPool[i]);
+	}
+	LastCommand = nullptr;
+	ResetCommand(DummyCommand);
+	ResetCurrentCommand();
 }

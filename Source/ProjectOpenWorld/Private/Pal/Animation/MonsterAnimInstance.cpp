@@ -31,6 +31,7 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	SubCommandType = CommandComponent->GetCurrentCommand_C()->SubCommandType;
 	bActionStarted = OwnerPalCreature->GetActionStarted();
 	AttckAnimations = AttackComponent->GetAnimation();
+	bAttacking = AttackComponent->GetAttacking();
 	if (CurrentCommandKind == EPalCommandKind::Work && SubCommandType == (uint8)ESubWorkType::Transport && bActionStarted)
 	{
 		Speed = FMath::Clamp(Speed, 0.0f, 0.46f);

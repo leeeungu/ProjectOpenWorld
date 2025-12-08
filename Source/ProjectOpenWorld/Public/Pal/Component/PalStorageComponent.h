@@ -6,12 +6,24 @@
 
 
 USTRUCT(BlueprintType)
+struct FPalStoreInventoryData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalStoreData")
+	TSubclassOf<AActor> SpawnClass{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalStoreData")
+	bool bSpawned{};
+};
+
+
+USTRUCT(BlueprintType)
 struct FPalStorageData
 {
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalStoreData")
-	bool bSpawned{};
+	TSubclassOf<AActor> SpawnClass{};
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -19,11 +31,14 @@ class PROJECTOPENWORLD_API UPalStorageComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TMap<TObjectPtr<AActor>, FPalStorageData> PalStorage{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalStore")
+	TArray<FPalStoreInventoryData> PalStorage{};
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalStore")
+	TSet < TObjectPtr<AActor>> SpawnedPal{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PalStore")
 	int InventorySize = 20;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PalStore")
 	int SpawnSize = 5;
 public:	
 	UPalStorageComponent();
@@ -34,13 +49,15 @@ protected:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintPure)
-	bool CanStorePal() const { return true; }
+	UFUNCTION(BlueprintPure, Category = "PalStore")
+	bool CanStorePal(int Index) const;
 
-	UFUNCTION(BlueprintCallable)
-	void StorePal(AActor* NewPal);
+	UFUNCTION(BlueprintCallable, Category = "PalStore")
+	void StorePal(FPalStoreInventoryData NewPal, int Index);
+	UFUNCTION(BlueprintCallable, Category = "PalStore")
+	void RemovePal(FPalStoreInventoryData  TargetPal, int Index);
 
-	UFUNCTION(BlueprintCallable)
-	void SpawnPal(AActor* TargetPal) {}
+	UFUNCTION(BlueprintCallable, Category = "PalStore")
+	AActor* SpawnPal(int Index);
 		
 };

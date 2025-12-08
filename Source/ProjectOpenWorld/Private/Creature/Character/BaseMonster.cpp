@@ -2,13 +2,15 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
-#include "Pal/Controller/PalAIController.h"
+#include "Pal/Controller/PalMonsterController.h"
 #include "Pal/Component/PalMonsterCommandComponent.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
+
 
 ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
 {
-	AIControllerClass = APalAIController::StaticClass();
+	AIControllerClass = APalMonsterController::StaticClass();
 	CommandComponent = CreateDefaultSubobject<UPalMonsterCommandComponent>(TEXT("PalCommand"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
 	Hp = 100;
@@ -40,10 +42,19 @@ void ABaseMonster::RetAttackValue_Implementation()
 
 bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
 {
-	if (!Other.GetObject())
+	if (!Other || !Other.GetObject())
 		return false;
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
 	Hp -= Damage;
+	if (CommandComponent->IsValidCommand())
+	{
+		CommandComponent->ResetCommandQue();
+	}
+	if (AttackComponent && Cast< AActor>(Other.GetObject()) && !CommandComponent->IsValidCommand())
+	{
+		UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
+		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, Cast< AActor>(Other.GetObject()), ESubAttackType::Default));
+	}
 	UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
 	if (Hp <= 0.f)
 		Destroy();

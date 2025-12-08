@@ -13,6 +13,7 @@ UCLASS()
 class PROJECTOPENWORLD_API UPalCommandFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+public:
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
 	static FPalCommand CommandMoveToLocation(AActor* pInstigator, FVector TargetLocation);
 	UFUNCTION(BlueprintPure, Category = "PalCommand")

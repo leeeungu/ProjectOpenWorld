@@ -4,8 +4,11 @@
 #include "Components/ActorComponent.h"
 #include "PalAttackComponent.generated.h"
 
-
 class UAnimSequence;
+class APalAIController;
+struct FAIRequestID;
+namespace EPathFollowingResult { enum Type : int; }
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPalAttack);
 
 USTRUCT(BlueprintType)
@@ -43,10 +46,17 @@ protected:
 	FPalTempAttackAnim Default{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
 	FPalTempAttackAnim Skill01{};
+	
+	UPROPERTY()
+	TObjectPtr<APalAIController> Controller{};
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	float AttackDistance{};
 
 	FPalAttackData AttackData{};
 	bool bCanAttack{};
+	bool bMoveStarted{};
+	bool bAttacking{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -59,6 +69,9 @@ protected:
 
 	UFUNCTION()
 	void TargetIsDead(AActor* Actor);
+
+	UFUNCTION()
+	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -69,4 +82,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
 	void  EndAttack();
 	FPalTempAttackAnim GetAnimation() const { return Current; }
+
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool GetAttacking() const { return bAttacking ; }
+
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	float GetAttackDistance() const { return AttackDistance; }
 };

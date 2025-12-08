@@ -29,7 +29,4 @@ public:
 protected:
 	UFUNCTION()
 	void EndAttack();
-
-	UFUNCTION()
-	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 };

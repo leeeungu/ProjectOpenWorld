@@ -40,6 +40,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
 	bool bActionStarted{};
 
+	UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+	bool bAttacking{};
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;

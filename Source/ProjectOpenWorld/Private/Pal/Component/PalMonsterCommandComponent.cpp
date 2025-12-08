@@ -16,28 +16,3 @@ void UPalMonsterCommandComponent::BeginPlay()
 	CreateNewExcutor<UPalCommandExecutor_Attack>(EPalCommandKind::Attack, 0, TEXT("Attack"));
 	CommandExecutors[(uint8)EPalCommandKind::Attack][1] = CommandExecutors[(uint8)EPalCommandKind::Attack][2] = CommandExecutors[(uint8)EPalCommandKind::Attack][0];
 }
-
-void UPalMonsterCommandComponent::OnStartCurrentCommand()
-{
-	if (IsValidCommand() == false)
-		return;
-	const FPalCommand* Current = GetCurrentCommand_C();
-	uint8 idx = (uint8)Current->CommandKind;
-	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
-		return;
-
-	CurrentExcute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get();
-	if (CurrentExcute)
-	{
-		CurrentExcute->StartCommand(*Current);
-	}
-}
-
-void UPalMonsterCommandComponent::OnFinishedCurrentCommand()
-{
-	if (CurrentExcute)
-	{
-		CurrentExcute->Abort();
-	}
-	CurrentExcute = nullptr;
-}

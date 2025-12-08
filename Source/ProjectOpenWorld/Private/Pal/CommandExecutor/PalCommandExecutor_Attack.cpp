@@ -34,8 +34,16 @@ void UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 		return;
 	}
 	bStartedAttacking = true;
-	OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_Attack::FinishMove);
-	if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == false)
+	OwnerPal->SetActionStarted(true);
+	if (AttackComponent)
+	{
+		FPalAttackData NewAttackData{};
+		NewAttackData.TargetActor = Command.pTarget;
+		NewAttackData.AttackSlot = Command.SubCommandType;
+		AttackComponent->SetAttackData(NewAttackData);
+		AttackComponent->StartAttack();
+	}
+	else
 	{
 		EndAttack();
 	}
@@ -55,7 +63,6 @@ void UPalCommandExecutor_Attack::Abort()
 	if (OwnerController)
 	{
 		OwnerController->StopMovement();
-		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Attack::FinishMove);
 	}
 }
 
@@ -65,28 +72,5 @@ void UPalCommandExecutor_Attack::EndAttack()
 		return;
 	Abort();
 	EndCommand();
-}
-
-void UPalCommandExecutor_Attack::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-{
-	if (!bStartedAttacking)
-		return;
-	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerPal || !OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Attack  || !Command->pTarget)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: not slef command"));
-		return;
-	}
-		OwnerPal->SetActionStarted(true);
-		if (AttackComponent)
-		{
-			FPalAttackData NewAttackData{};
-			NewAttackData.TargetActor = Command->pTarget;
-			NewAttackData.AttackSlot = Command->SubCommandType;
-			AttackComponent->SetAttackData(NewAttackData);
-			AttackComponent->StartAttack();
-		}
-	//	return;
-	//EndAttack();
 }
 

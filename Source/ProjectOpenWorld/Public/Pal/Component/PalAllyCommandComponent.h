@@ -14,7 +14,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void OnStartCurrentCommand() override;
-	virtual void OnFinishedCurrentCommand() override;
+	virtual void OnStartCurrentCommand() override {}
+	virtual void OnFinishedCurrentCommand() override {}
 };
 

@@ -2,21 +2,52 @@
 
 UPalStorageComponent::UPalStorageComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UPalStorageComponent::BeginPlay()
 {
-	Super::BeginPlay();
+	UActorComponent::BeginPlay();
+	PalStorage.Init(FPalStoreInventoryData{}, InventorySize);
 }
 
 void UPalStorageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UActorComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UPalStorageComponent::StorePal(AActor* NewPal)
+bool UPalStorageComponent::CanStorePal(int Index) const
 {
-	PalStorage.Add(NewPal, FPalStorageData{});
+	return PalStorage.IsValidIndex(Index);
 }
 
+void UPalStorageComponent::StorePal(FPalStoreInventoryData NewPal, int Index)
+{
+	if (!CanStorePal(Index))
+		return;
+
+	if (!PalStorage[Index].SpawnClass)
+	{
+		PalStorage[Index] = NewPal;
+	}
+}
+
+void UPalStorageComponent::RemovePal(FPalStoreInventoryData TargetPal, int index)
+{
+	PalStorage[index] = FPalStoreInventoryData{};
+}
+
+AActor* UPalStorageComponent::SpawnPal(int Index)
+{
+	AActor* pSpawnedPal = nullptr;
+	if (SpawnedPal.Num() + 1 > SpawnSize)
+		return pSpawnedPal;
+	FPalStoreInventoryData* Data = &PalStorage[Index];
+	if (!Data || !Data->SpawnClass)
+		return pSpawnedPal;
+	FVector location = GetOwner()->GetActorLocation() + FVector(-200, 0, 200);
+	pSpawnedPal = GetWorld()->SpawnActor(Data->SpawnClass, &location, nullptr, FActorSpawnParameters{});
+	SpawnedPal.Add(pSpawnedPal);
+	Data->bSpawned = true;
+	return pSpawnedPal;
+}
