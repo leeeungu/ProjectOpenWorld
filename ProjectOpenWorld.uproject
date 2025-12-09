@@ -43,6 +43,10 @@
 		{
 			"Name": "ChaosClothAssetEditor",
 			"Enabled": true
+		},
+		{
+			"Name": "VaRest",
+			"Enabled": false
 		}
 	]
 }

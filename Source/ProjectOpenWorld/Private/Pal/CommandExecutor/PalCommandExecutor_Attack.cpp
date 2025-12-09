@@ -39,7 +39,7 @@ void UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 	{
 		FPalAttackData NewAttackData{};
 		NewAttackData.TargetActor = Command.pTarget;
-		NewAttackData.AttackSlot = Command.SubCommandType;
+		NewAttackData.AttackSlot =(ESubAttackType)Command.SubCommandType;
 		AttackComponent->SetAttackData(NewAttackData);
 		AttackComponent->StartAttack();
 	}

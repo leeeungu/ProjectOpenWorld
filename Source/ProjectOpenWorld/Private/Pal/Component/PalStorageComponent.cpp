@@ -47,7 +47,11 @@ AActor* UPalStorageComponent::SpawnPal(int Index)
 		return pSpawnedPal;
 	FVector location = GetOwner()->GetActorLocation() + FVector(-200, 0, 200);
 	pSpawnedPal = GetWorld()->SpawnActor(Data->SpawnClass, &location, nullptr, FActorSpawnParameters{});
-	SpawnedPal.Add(pSpawnedPal);
+	SpawnedPal.Add(pSpawnedPal, Index);
 	Data->bSpawned = true;
 	return pSpawnedPal;
+}
+
+void UPalStorageComponent::DeSpawnPal(AActor* TargetPal)
+{
 }

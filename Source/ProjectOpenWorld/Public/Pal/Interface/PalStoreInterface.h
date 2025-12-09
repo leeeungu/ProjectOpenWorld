@@ -6,7 +6,7 @@
 
 struct FPalStoredData
 {
-    FName       PalName{};      // 어떤 종/템플릿인지 (예: Pal_BluePlatypus)
+    //FName       PalName{};      // 어떤 종/템플릿인지 (예: Pal_BluePlatypus)
     int32       Level{};
     float       Exp{};
     float       HpRate{};         // CurrentHP / MaxHP 비율

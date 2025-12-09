@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Pal/Interface/PalStoreInterface.h"
 #include "PalStorageComponent.generated.h"
 
 
@@ -14,6 +15,8 @@ public:
 	TSubclassOf<AActor> SpawnClass{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalStoreData")
 	bool bSpawned{};
+	FPalStoredData Data{};
+
 };
 
 
@@ -35,7 +38,7 @@ protected:
 	TArray<FPalStoreInventoryData> PalStorage{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalStore")
-	TSet < TObjectPtr<AActor>> SpawnedPal{};
+	TMap< TObjectPtr<AActor>, int> SpawnedPal{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PalStore")
 	int InventorySize = 20;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PalStore")
@@ -59,5 +62,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PalStore")
 	AActor* SpawnPal(int Index);
-		
+	UFUNCTION(BlueprintCallable, Category = "PalStore")
+	void DeSpawnPal(AActor* TargetPal);
+
 };

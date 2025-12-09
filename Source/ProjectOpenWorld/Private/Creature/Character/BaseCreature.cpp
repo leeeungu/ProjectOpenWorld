@@ -7,6 +7,7 @@
 void ABaseCreature::BeginPlay()
 {
 	ABaseCharacter::BeginPlay();
+	GetCharacterMovement()->SetUpdateNavAgentWithOwnersCollisions(true);
 }
 
 ABaseCreature::ABaseCreature() : ABaseCharacter{}

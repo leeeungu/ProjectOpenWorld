@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Pal/Data/PalCommandData.h"
 #include "PalAttackComponent.generated.h"
 
 class UAnimSequence;
@@ -19,7 +20,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	AActor* TargetActor{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	uint8 AttackSlot{};
+	ESubAttackType AttackSlot{};
 };
 
 USTRUCT(BlueprintType)
