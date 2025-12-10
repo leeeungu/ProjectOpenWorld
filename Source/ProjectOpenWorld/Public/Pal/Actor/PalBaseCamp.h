@@ -31,6 +31,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void CommandActorSpawned(AActor* NewActor);
 public:	
 	virtual void Tick(float DeltaTime) override;
 

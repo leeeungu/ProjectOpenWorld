@@ -2,6 +2,7 @@
 #include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Pal/Interface/CommanderManageable.h"
 #include "Components/SphereComponent.h"
 
 APalBaseCamp::APalBaseCamp()
@@ -23,6 +24,22 @@ APalBaseCamp::APalBaseCamp()
 void APalBaseCamp::BeginPlay()
 {
 	Super::BeginPlay();
+	FOnActorSpawned::FDelegate del{};
+	del.BindUObject(this, &APalBaseCamp::CommandActorSpawned);
+	if (GetWorld())
+		GetWorld()->AddOnActorSpawnedHandler(del);
+}
+
+void APalBaseCamp::CommandActorSpawned(AActor* NewActor)
+{
+	if (!NewActor || !PalCommander)
+		return;
+	//UE_LOG(LogTemp, Log, TEXT("Spawned :  %s"), *NewActor->GetName());
+	if (NewActor->Implements< UCommanderManageable>())
+	{
+		PalCommander->RegisterWork(NewActor);
+	}
+
 }
 
 void APalBaseCamp::Tick(float DeltaTime)

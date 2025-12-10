@@ -30,21 +30,18 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	if (bCanAttack && AttackData.TargetActor)
 	{
 		bAttacking = FVector::Distance(AttackData.TargetActor->GetActorLocation(), GetOwner()->GetActorLocation()) < AttackDistance;
+		float dot = FVector::DotProduct(
+			(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
+			GetOwner()->GetActorForwardVector().GetSafeNormal2D());
+		bAttacking = bAttacking && (dot > 0);
+
 		if (bMoveStarted == false && Controller && bAttacking == false)
 		{
 			bMoveStarted = true;
 			bAttacking = false;
 			Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
 		}
-		float dot = FVector::DotProduct(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation(), GetOwner()->GetActorForwardVector());
-		if (dot < 0)
-		{
-			bAttacking = false;
-		}
-		else if (dot > 0 && bMoveStarted == false)
-		{
-			dot = true;
-		}
+		
 	}
 }
 

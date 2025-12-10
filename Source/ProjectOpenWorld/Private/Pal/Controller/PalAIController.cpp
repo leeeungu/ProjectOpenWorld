@@ -1,6 +1,12 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 
+APalAIController::APalAIController() : AAIController{}
+{
+	//GetPathFollowingComponent()->block
+
+}
+
 EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius )
 {
 	if (!TargetActor)
@@ -8,6 +14,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 	FAIMoveRequest MoveReq(TargetActor);
 	MoveReq.SetUsePathfinding(true);
 	MoveReq.SetAllowPartialPath(true);
+	MoveReq.SetRequireNavigableEndLocation(true);
 	MoveReq.SetAcceptanceRadius(fAcceptanceRadius);
 	MoveReq.SetReachTestIncludesAgentRadius(true);
 	MoveReq.SetCanStrafe(true);

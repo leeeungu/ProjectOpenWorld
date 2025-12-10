@@ -4,6 +4,7 @@
 #include "Building/Component/BuildingActionWidgetComponent.h"
 #include "NavModifierComponent.h"
 #include "NavAreas/NavArea_Default.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 ABaseBuilding::ABaseBuilding()
 {
@@ -25,7 +26,9 @@ ABaseBuilding::ABaseBuilding()
 
 	
 	NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
+	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
+	Command = UPalCommandFunctionLibrary::CommandArchitecture(nullptr, this);
 }
 
 void ABaseBuilding::BeginPlay()
@@ -41,4 +44,27 @@ void ABaseBuilding::Tick(float DeltaTime)
 void ABaseBuilding::OnConstruction(const FTransform& Transform)
 {
 	AActor::OnConstruction(Transform);
+}
+
+EPalCommandKind ABaseBuilding::GetCommandKind_Implementation()
+{
+	return Command.CommandKind;
+}
+
+uint8 ABaseBuilding::GetSubCommandType_Implementation()
+{
+	return Command.SubCommandType;
+}
+
+FPalCommand ABaseBuilding::GetCommand_Implementation()
+{
+	return Command;
+}
+
+void ABaseBuilding::UpdateModifier()
+{
+	if (!NavModifier)
+		return;
+	NavModifier->CalculateBounds();
+	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }

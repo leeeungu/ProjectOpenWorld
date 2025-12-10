@@ -1,4 +1,6 @@
 #include "Building/Component/BuildingProgress.h"
+#include "NavigationSystem.h"
+#include "Building/BaseBuilding.h"
 
 UBuildingProgress::UBuildingProgress()
 {
@@ -89,6 +91,12 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 			}
 		}
 		buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
+		ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner());
+		if (OwnerActor)
+		{
+			OwnerActor->UpdateModifier();
+		}
 	}
 }
 
@@ -136,15 +144,17 @@ void UBuildingProgress::EndBuilding()
 	curentPercent = 1.0f;
 	if (onBuildingEnd.IsBound())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
-		for (UObject* Obj : onBuildingEnd.GetAllObjects())
-		{
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Obj->GetFName().ToString());
-		}
+		//UE_LOG(LogTemp, Warning, TEXT("BuildingProgress :: BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
+		//for (UObject* Obj : onBuildingEnd.GetAllObjects())
+		//{
+		//	//UE_LOG(LogTemp, Warning, TEXT("%s"), *Obj->GetFName().ToString());
+		//}
 		onBuildingEnd.Broadcast();
 	}
 	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 	buildingMeshComponent->SetCanEverAffectNavigation(true);
+	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 }
 
 bool UBuildingProgress::IsBuildingEnd() const

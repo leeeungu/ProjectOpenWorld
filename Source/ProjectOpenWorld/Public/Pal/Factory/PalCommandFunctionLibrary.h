@@ -29,5 +29,4 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
 	static FPalCommand CommandAttack(AActor* pInstigator, AActor* pTargetActor, ESubAttackType SlotNum);
-
 };

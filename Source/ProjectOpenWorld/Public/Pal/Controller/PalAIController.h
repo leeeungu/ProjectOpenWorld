@@ -9,6 +9,7 @@ class PROJECTOPENWORLD_API APalAIController : public AAIController
 {
 	GENERATED_BODY()
 public:
+	APalAIController();
 
 	EPathFollowingRequestResult::Type MoveToActor(AActor* TargetActor, float fAcceptanceRadius = 40.0f);
 	EPathFollowingRequestResult::Type MoveToLocation(FVector TargetLocation, float fAcceptanceRadius = 400.0f);

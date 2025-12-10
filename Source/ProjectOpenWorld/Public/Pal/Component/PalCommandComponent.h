@@ -6,6 +6,7 @@
 #include "Pal/CommandExecutor/PalCommandExecutorBase.h"
 #include "PalCommandComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCommandEvent,AActor*, PalActor,  FPalCommand, Command);
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalCommandComponent : public UActorComponent
@@ -24,8 +25,14 @@ private:
 	FPalCommand* LastCommand{};
 	void (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
 protected:
+	// garbage 문제로 stringobj를 사용
 	TArray< TArray<TStrongObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};
 	UPalCommandExecutorBase* CurrentExcute{};
+public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PalCommand")
+	FOnCommandEvent OnCommandFinished{};
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PalCommand")
+	FOnCommandEvent OnCommandStarted{};
 public:	
 	UPalCommandComponent();
 private:

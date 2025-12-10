@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Pal/Interface/CommanderManageable.h"
 #include "BaseBuilding.generated.h"
 
 class UStaticMesh;
@@ -13,7 +14,7 @@ class UNavModifierComponent;
 class UBuildingActionWidgetComponent;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
-class PROJECTOPENWORLD_API ABaseBuilding : public AActor
+class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManageable
 {
 	GENERATED_BODY()
 protected:
@@ -35,7 +36,15 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
+private:
+	FPalCommand Command{};
 
+public:
+	virtual EPalCommandKind GetCommandKind_Implementation() override;
+	virtual uint8 GetSubCommandType_Implementation() override;
+	virtual FPalCommand GetCommand_Implementation() override;
+
+	void UpdateModifier();
 protected:
 	virtual void BeginPlay() override;
 
