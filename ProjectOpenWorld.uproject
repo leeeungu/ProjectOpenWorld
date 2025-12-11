@@ -46,7 +46,7 @@
 		},
 		{
 			"Name": "VaRest",
-			"Enabled": false
+			"Enabled": true
 		}
 	]
 }
