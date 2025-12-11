@@ -1,4 +1,4 @@
-ï»¿#include "SubSystem/GPT/GPTInstanceSubsystem.h"
+#include "SubSystem/GPT/GPTInstanceSubsystem.h"
 #include "VaRestSubsystem.h"
 #include "VaRestRequestJSON.h"
 #include "VaRestTypes.h"
@@ -27,7 +27,7 @@ UVaRestRequestJSON* UGPTInstanceSubsystem::GetRequest(EVaRestRequestVerb verb, E
 
 		Request->SetHeader("Authorization", APIKey);
 		Request->SetHeader("Content-Type", "application/json");
-		// ì„œë²„ì—ì„œ ê´€ë¦¬ê°€ í•„ìš”í•˜ì§€ë§Œ ìƒëµ
+		// ¼­¹ö¿¡¼­ °ü¸®°¡ ÇÊ¿äÇÏÁö¸¸ »ı·«
 		Request->SetHeader("OpenAI-Organization", "org-BZKAwjvbzNgg3Uszu2Pb91Hz");
 	}
 	return Request;
@@ -52,52 +52,23 @@ bool UGPTInstanceSubsystem::CheckSendable()
 
 TArray<uint8> UGPTInstanceSubsystem::GetPNGData(UVaRestRequestJSON* Request)
 {
-	FString FullResponse = Request->GetResponseContentAsString();
-	int32 ResultKeyIndex = FullResponse.Find(TEXT("\"result\""), ESearchCase::IgnoreCase, ESearchDir::FromStart);
-	if (ResultKeyIndex == INDEX_NONE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ExtractResultBase64: 'result' not found."));
+	if (!Request)
 		return TArray<uint8>();
-	}
-
-	// 2) ':' ì´í›„ ë¬¸ìì—´ ìœ„ì¹˜ ì°¾ê¸°
-	int32 ColonIndex = FullResponse.Find(TEXT(":"), ESearchCase::IgnoreCase, ESearchDir::FromStart, ResultKeyIndex);
-	if (ColonIndex == INDEX_NONE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ExtractResultBase64: ':' after 'result' not found."));
-		return TArray<uint8>();
-	}
-
-	// 3) ì²« ë²ˆì§¸ ë”°ì˜´í‘œ(") ìœ„ì¹˜ ì°¾ê¸°
-	int32 FirstQuoteIndex = FullResponse.Find(TEXT("\""), ESearchCase::IgnoreCase, ESearchDir::FromStart, ColonIndex);
-	if (FirstQuoteIndex == INDEX_NONE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ExtractResultBase64: opening quote not found."));
-		return TArray<uint8>();
-	}
-
-	// 4) ë‘ ë²ˆì§¸ ë”°ì˜´í‘œ(") ìœ„ì¹˜ ì°¾ê¸°
-	int32 SecondQuoteIndex = FullResponse.Find(TEXT("\""), ESearchCase::IgnoreCase, ESearchDir::FromStart, FirstQuoteIndex + 1);
-	if (SecondQuoteIndex == INDEX_NONE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ExtractResultBase64: closing quote not found."));
-		return TArray<uint8>();
-	}
-
-	// 5) base64 substring ì¶”ì¶œ
-	FString Base64PNG = FullResponse.Mid(FirstQuoteIndex + 1, SecondQuoteIndex - (FirstQuoteIndex + 1));
-	Base64PNG = Base64PNG.TrimStartAndEnd();
-	if (Base64PNG.IsEmpty())
+	UVaRestJsonValue* Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
+	TArray<FString> Fields = { TEXT("output"), TEXT("result") };
+	Value = GetJsonValue(Value, Fields.GetData(), Fields.Num());
+	if (!Value || Value->GetType() != EVaJson::String)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ProcessOpenAIImageResponse: Base64PNG is empty."));
 		return TArray<uint8>();
 	}
+	FString Base64PNG = Value->AsString();
+	Base64PNG = Base64PNG.TrimStartAndEnd();
 
-	// 2) Base64 â†’ Byte Array(PNG)
 	TArray<uint8> PngBytes;
-	if (!FBase64::Decode(Base64PNG, PngBytes))
+	if (!FBase64::Decode(Base64PNG, PngBytes) || Base64PNG.IsEmpty())
 	{
-		UE_LOG(LogTemp, Error, TEXT("ProcessOpenAIImageResponse: Base64 decode failed."));
+		UE_LOG(LogTemp, Error, TEXT("ProcessOpenAIImageResponse: Base64 decode failed or Base64PNG is empty"));
 		return TArray<uint8>();
 	}
 	return PngBytes;
@@ -106,20 +77,13 @@ TArray<uint8> UGPTInstanceSubsystem::GetPNGData(UVaRestRequestJSON* Request)
 int UGPTInstanceSubsystem::GetTotalTogens(UVaRestRequestJSON* Request) const
 {
 	UVaRestJsonValue* Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	if (Value && Value->GetType() == EVaJson::Object)
+	TArray<FString> Fields = { TEXT("usage"), TEXT("total_tokens") };
+	Value = GetJsonValue(Value, Fields.GetData(), Fields.Num());
+	if (Value)
 	{
-		UVaRestJsonObject* Response = Value->AsObject();
-		if (Response)
-		{
-			UVaRestJsonValue* val = Response->GetField("usage");
-			if (val && val->GetType() == EVaJson::Object)
-			{
-				UVaRestJsonObject* togenObj = val->AsObject();
-				UE_LOG(LogTemp, Warning, TEXT("total_tokens : %d"), togenObj->GetIntegerField(TEXT("total_tokens")));
-			}
-		}
+		return Value->AsNumber();
 	}
-	return 0;
+	return -1;
 }
 
 TArray<UVaRestJsonValue*> UGPTInstanceSubsystem::GetResponseArrayField(UVaRestRequestJSON* Request, const FString& FieldName)
@@ -134,6 +98,71 @@ TArray<UVaRestJsonValue*> UGPTInstanceSubsystem::GetResponseArrayField(UVaRestRe
 		}
 	}
 	return TArray<UVaRestJsonValue*>();
+}
+
+UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue_Recul(UVaRestJsonValue* JsonValue, const FString& FieldName, const EVaJson& Type) const
+{
+	UVaRestJsonValue* Result = nullptr;
+	if (JsonValue)
+	{
+		if (JsonValue->GetType() == EVaJson::Array)
+		{
+			TArray< UVaRestJsonValue*> Array = JsonValue->AsArray();
+			for (UVaRestJsonValue*& key : Array)
+			{
+				Result = GetJsonValue_Recul(key, FieldName, Type);
+				if (Result && Result->GetType() == Type)
+				{
+					break;
+				}
+			}
+		}
+		else if (JsonValue->GetType() == EVaJson::Object)
+		{
+			UVaRestJsonObject* JsonValueObj = JsonValue->AsObject();
+			Result = JsonValueObj->GetField(FieldName);
+			if (!Result || Result->GetType() != Type)
+			{
+				for (const FString& key : JsonValueObj->GetFieldNames())
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Key : %s"), *key);
+					Result = GetJsonValue_Recul(JsonValueObj->GetField(key), FieldName, Type);
+					if (Result && Result->GetType() == Type)
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+	return Result;
+}
+
+UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestJsonValue* JsonValue, const FString* ArrayFields, int Count) const
+{
+	if (!JsonValue)
+		return nullptr;
+	if (Count == 0)
+	{
+		return JsonValue;
+	}
+
+	if (JsonValue->GetType() == EVaJson::Object)
+	{
+		UVaRestJsonObject* JsonValueObj = JsonValue->AsObject();
+		return GetJsonValue(JsonValueObj->GetField(ArrayFields[0]), ArrayFields + 1, Count - 1);
+	}
+	else if (JsonValue->GetType() == EVaJson::Array)
+	{
+		TArray<UVaRestJsonValue*> JsonValueObj = JsonValue->AsArray();
+		UVaRestJsonValue* Result = nullptr;
+		for (int i = 0; i < JsonValueObj.Num() && Result == nullptr; i++)
+		{
+			Result = GetJsonValue(JsonValueObj[i] , ArrayFields, Count);
+		}
+		return Result;
+	}
+	return nullptr;
 }
 
 FString UGPTInstanceSubsystem::GetResponseStringField(UVaRestRequestJSON* Request, const FString& FieldName)
@@ -188,7 +217,8 @@ void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, 
 			RequestObject->SetArrayField(TEXT("input"), array);
 
 
-			RequestObject->SetIntegerField(TEXT("max_output_tokens"), 100);
+			// 100 µÇ¸é ²÷±è
+			//RequestObject->SetIntegerField(TEXT("max_output_tokens"), 100);
 			//"": 64
 		}
 
@@ -243,57 +273,71 @@ FString UGPTInstanceSubsystem::GetStringFromRequestJSON(UVaRestRequestJSON* Requ
 {
 	if (!Request)
 		return {};
-	FString result = Request->GetResponseContentAsString();
-	result.Split("\"text\":", nullptr, &result);
-	result.Split("\n", &result, nullptr);
-	result = result.Mid(2, result.Len() - 4);
-	//UE_LOG(LogTemp, Warning, TEXT("GPT Response: %d"), result.Len());
-
-	TArray<UVaRestJsonValue*> array = GetResponseArrayField(Request, TEXT("output"));
-	GetTotalTogens(Request);
-	if (array.IsValidIndex(0))
+	UVaRestJsonValue * Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
+	TArray<FString> Fields =  { TEXT("output"), TEXT("content"), TEXT("text") };
+	Value = GetJsonValue(Value, Fields.GetData(), Fields.Num());
+	if (Value)
 	{
-		UVaRestJsonObject* content = array[0]->AsObject();
-		if (content)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Fields: %d"), content->GetFieldNames().Num());
-			return content->GetStringField("text");
-		}
+		return Value->AsString();
 	}
 	return "";
 }
 
+UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const
+{
+	if (!Request || FieldPath.IsEmpty())
+		return nullptr;
+	UVaRestJsonValue* Root = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
+	UVaRestJsonValue* Value = GetJsonValue(Root, FieldPath.GetData(), FieldPath.Num());
+	if (Root == Value)
+		Value = nullptr;
+	if (Value)
+	{
+		Type = Value->GetType();
+	}
+	return Value;
+}
+
+void UGPTInstanceSubsystem::GetGPTResponse(FString modelID, UObject* Target)
+{
+	if (!Target || !Target->Implements<UGPTResponseInterface>())
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s No Interface :UGPTResponseInterface"), *Target->StaticClass()->GetName());
+		return;
+	}
+	if (!CheckSendable())
+		return;
+
+	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::GET, EVaRestRequestContentType::json, Target);
+	if (Request)
+	{
+		Request->ProcessURL(TEXT("https://api.openai.com/v1/responses/" + modelID));
+	}
+}
 bool UGPTInstanceSubsystem::SaveImageData(UVaRestRequestJSON* Request, FString Path)
 {
 	TArray<uint8> PngBytes = GetPNGData(Request);
-	UVaRestJsonValue* Value = VaRestSubsystem->ConstructJsonValueString(Request->GetResponseContentAsString());
-	// 3) PNG íŒŒì¼ë¡œ ì €ì¥ (ì„ íƒ)
+	// PNG ÆÄÀÏ·Î ÀúÀå
 	if (!PngBytes.IsEmpty())
 	{
 		FString SavePath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("OpenAI_Image.png"));
-		FFileHelper::SaveArrayToFile(PngBytes, *SavePath);
-		UE_LOG(LogTemp, Log, TEXT("Saved PNG at: %s"), *SavePath);
 		UE_LOG(LogTemp, Log, TEXT("Texture updated from OpenAI PNG Base64."));
-		return true;
+		return 	FFileHelper::SaveArrayToFile(PngBytes, *SavePath);
 	}
 	return false;
-
 }
 
 bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture2D*& NewTexture)
 {
 	TArray<uint8> PngData = GetPNGData(Request);
 	if (PngData.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CreateTexture2DFromPngBytes: PngData is empty."));
 		return false;
-	}
 
-	// 1) ImageWrapper ëª¨ë“ˆ ë¡œë“œ
+	// 1) ImageWrapper ¸ğµâ ·Îµå
 	IImageWrapperModule& ImageWrapperModule =
 		FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
 
-	// 2) PNG ë˜í¼ ìƒì„±
+	// 2) PNG ·¡ÆÛ »ı¼º
 	TSharedPtr<IImageWrapper> ImageWrapper =
 		ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
 
@@ -303,14 +347,14 @@ bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture
 		return false;
 	}
 
-	// 3) ì••ì¶•ëœ PNG ë°ì´í„° ì„¤ì •
+	// 3) ¾ĞÃàµÈ PNG µ¥ÀÌÅÍ ¼³Á¤
 	if (!ImageWrapper->SetCompressed(PngData.GetData(), PngData.Num()))
 	{
 		UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: SetCompressed failed."));
 		return false;
 	}
 
-	// 4) ì´ë¯¸ì§€ í¬ê¸°
+	// 4) ÀÌ¹ÌÁö Å©±â
 	const int32 Width = ImageWrapper->GetWidth();
 	const int32 Height = ImageWrapper->GetHeight();
 
@@ -320,7 +364,7 @@ bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture
 		return false;
 	}
 
-	// 5) PNG â†’ BGRA 8bit raw ë°ì´í„°
+	// 5) PNG ¡æ BGRA 8bit raw µ¥ÀÌÅÍ
 	TArray<uint8> RawData;
 	if (!ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData))
 	{
@@ -328,7 +372,7 @@ bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture
 		return false;
 	}
 
-	// 6) Transient Texture ìƒì„±
+	// 6) Transient Texture »ı¼º
 	NewTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
 	if (!NewTexture)
 	{
@@ -341,7 +385,7 @@ bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture
 	NewTexture->SRGB = true;
 #endif
 
-	// 7) Mip0ì— RawData ë³µì‚¬
+	// 7) Mip0¿¡ RawData º¹»ç
 	FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
 	void* TextureData = Mip.BulkData.Lock(LOCK_READ_WRITE);
 
@@ -356,7 +400,7 @@ bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture
 	FMemory::Memcpy(TextureData, RawData.GetData(), FMath::Min(RawData.Num(), ExpectedDataSize));
 	Mip.BulkData.Unlock();
 
-	// 8) GPU ì—…ë°ì´íŠ¸
+	// 8) GPU ¾÷µ¥ÀÌÆ®
 	NewTexture->UpdateResource();
 
 	return true;
@@ -365,7 +409,7 @@ bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture
 bool FGPTStringRequest::CheckSendable() const
 {
 	//|| RequestData.Frompt.Contains("Http") >= 0 || RequestData.Frompt.Contains("http") >= 0)
-	// ìµœê·¼ aiì—ì„œ urlì„ í•´ì„í•˜ê²Œ í•˜ëŠ” ë°©ë²•ìœ¼ë¡œ ì¸ì ì…˜ ê³µê²©ì„ í•œ ì‚¬ë¡€ê°€ ìˆì–´ì„œ ì¶”ê°€
+	// ÃÖ±Ù ai¿¡¼­ urlÀ» ÇØ¼®ÇÏ°Ô ÇÏ´Â ¹æ¹ıÀ¸·Î ÀÎÁ§¼Ç °ø°İÀ» ÇÑ »ç·Ê°¡ ÀÖ¾î¼­ Ãß°¡
 	if (Frompt.IsEmpty() || Text.IsEmpty() ||
 		Text.Contains("Http", ESearchCase::IgnoreCase) || Frompt.Contains("Http", ESearchCase::IgnoreCase))
 	{
@@ -378,7 +422,7 @@ bool FGPTStringRequest::CheckSendable() const
 bool FGPTImageRequest::CheckSendable() const
 {
 	//|| RequestData.Frompt.Contains("Http") >= 0 || RequestData.Frompt.Contains("http") >= 0)
-	// ìµœê·¼ aiì—ì„œ urlì„ í•´ì„í•˜ê²Œ í•˜ëŠ” ë°©ë²•ìœ¼ë¡œ ì¸ì ì…˜ ê³µê²©ì„ í•œ ì‚¬ë¡€ê°€ ìˆì–´ì„œ ì¶”ê°€
+	// ÃÖ±Ù ai¿¡¼­ urlÀ» ÇØ¼®ÇÏ°Ô ÇÏ´Â ¹æ¹ıÀ¸·Î ÀÎÁ§¼Ç °ø°İÀ» ÇÑ »ç·Ê°¡ ÀÖ¾î¼­ Ãß°¡
 	if (Text.IsEmpty() ||
 		Text.Contains("Http", ESearchCase::IgnoreCase))// || Frompt.Contains("Http", ESearchCase::IgnoreCase))
 	{

@@ -1,4 +1,4 @@
-Ôªø#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -8,6 +8,7 @@ class UVaRestSubsystem;
 class UVaRestRequestJSON;
 enum class EVaRestRequestVerb : uint8;
 enum class EVaRestRequestContentType : uint8;
+enum class EVaJson : uint8;
 class UTexture2D;
 class UVaRestJsonValue;
 
@@ -48,7 +49,7 @@ class PROJECTOPENWORLD_API UGPTInstanceSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 protected:
 	UVaRestSubsystem* VaRestSubsystem{};
-	// ÏÑúÎ≤ÑÏóêÏÑú Í¥ÄÎ¶¨Í∞Ä ÌïÑÏöîÌïòÏßÄÎßå ÏÉùÎûµ
+	// º≠πˆø°º≠ ∞¸∏Æ∞° « ø‰«œ¡ˆ∏∏ ª˝∑´
 	FString APIKey = TEXT("YOUR_API_KEY_HERE");
 
 private:
@@ -57,6 +58,9 @@ private:
 	TArray<uint8> GetPNGData(UVaRestRequestJSON* Request);
 	int GetTotalTogens(UVaRestRequestJSON* Request) const ;
 	TArray<UVaRestJsonValue*> GetResponseArrayField(UVaRestRequestJSON* Request, const FString& FieldName);
+
+	UVaRestJsonValue* GetJsonValue_Recul(UVaRestJsonValue* JsonValue, const FString& FieldName, const EVaJson& Type) const;
+	UVaRestJsonValue* GetJsonValue(UVaRestJsonValue* JsonValue, const FString* ArrayFields, int Count) const;
 	FString GetResponseStringField(UVaRestRequestJSON* Request, const FString& FieldName);
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -67,6 +71,11 @@ public:
 	void SendGPTImageRequest(FGPTImageRequest RequestData,UObject* Target);
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
 	FString GetStringFromRequestJSON(UVaRestRequestJSON* Request);
+	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
+	UVaRestJsonValue* GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const;
+
+	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
+	void GetGPTResponse(FString modelID, UObject* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
 	bool SaveImageData(UVaRestRequestJSON* Request, FString Path);
