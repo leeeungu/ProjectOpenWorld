@@ -17,7 +17,7 @@ struct FGPTRequest
 {
 	GENERATED_BODY()
 	FGPTRequest() = default;
-	~FGPTRequest() = default;
+	virtual~FGPTRequest() = default;
 	virtual bool CheckSendable() const { return false; }
 };
 
@@ -52,16 +52,21 @@ protected:
 	// 서버에서 관리가 필요하지만 생략
 	FString APIKey = TEXT("YOUR_API_KEY_HERE");
 
+	enum class EResponseType
+	{
+		NONE,
+		RESPONSEID,
+		IMAGE,
+		TEXT,
+		TOTALTOKEN,
+	};
 private:
 	UVaRestRequestJSON* GetRequest(EVaRestRequestVerb verb, EVaRestRequestContentType contentType, UObject* ResponseTarget);
+	UVaRestJsonValue* GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const;
 	bool CheckSendable() ;
-	TArray<uint8> GetPNGData(UVaRestRequestJSON* Request);
-	int GetTotalTogens(UVaRestRequestJSON* Request) const ;
-	TArray<UVaRestJsonValue*> GetResponseArrayField(UVaRestRequestJSON* Request, const FString& FieldName);
-
-	UVaRestJsonValue* GetJsonValue_Recul(UVaRestJsonValue* JsonValue, const FString& FieldName, const EVaJson& Type) const;
 	UVaRestJsonValue* GetJsonValue(UVaRestJsonValue* JsonValue, const FString* ArrayFields, int Count) const;
-	FString GetResponseStringField(UVaRestRequestJSON* Request, const FString& FieldName);
+	TArray<FString> GetResponsePath(EResponseType type) const;
+
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
@@ -69,16 +74,18 @@ public:
 	void SendGPTStringRequest(FGPTStringRequest RequestData, UObject* Target);
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
 	void SendGPTImageRequest(FGPTImageRequest RequestData,UObject* Target);
+
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	FString GetStringFromRequestJSON(UVaRestRequestJSON* Request);
+	void SendGetGPTResponse(FString modelID, UObject* Target);
+
+
 	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
-	UVaRestJsonValue* GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const;
+	FString  GetResponseString(UVaRestRequestJSON* Request) const;
+	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
+	FString  GetRequestID(UVaRestRequestJSON* Request) const;
+	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
+	UTexture2D* GetResponseTexture(UVaRestRequestJSON* Request) const;
+	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
+	int32 GetResponseTotalTogens(UVaRestRequestJSON* Request) const;
 
-	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	void GetGPTResponse(FString modelID, UObject* Target);
-
-	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	bool SaveImageData(UVaRestRequestJSON* Request, FString Path);
-	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	bool ApplyImageData(UVaRestRequestJSON* Request, UTexture2D*& Texture);
 };

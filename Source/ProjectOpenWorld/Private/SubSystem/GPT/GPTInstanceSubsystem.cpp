@@ -50,94 +50,6 @@ bool UGPTInstanceSubsystem::CheckSendable()
 	return true;
 }
 
-TArray<uint8> UGPTInstanceSubsystem::GetPNGData(UVaRestRequestJSON* Request)
-{
-	if (!Request)
-		return TArray<uint8>();
-	UVaRestJsonValue* Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	TArray<FString> Fields = { TEXT("output"), TEXT("result") };
-	Value = GetJsonValue(Value, Fields.GetData(), Fields.Num());
-	if (!Value || Value->GetType() != EVaJson::String)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ProcessOpenAIImageResponse: Base64PNG is empty."));
-		return TArray<uint8>();
-	}
-	FString Base64PNG = Value->AsString();
-	Base64PNG = Base64PNG.TrimStartAndEnd();
-
-	TArray<uint8> PngBytes;
-	if (!FBase64::Decode(Base64PNG, PngBytes) || Base64PNG.IsEmpty())
-	{
-		UE_LOG(LogTemp, Error, TEXT("ProcessOpenAIImageResponse: Base64 decode failed or Base64PNG is empty"));
-		return TArray<uint8>();
-	}
-	return PngBytes;
-}
-
-int UGPTInstanceSubsystem::GetTotalTogens(UVaRestRequestJSON* Request) const
-{
-	UVaRestJsonValue* Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	TArray<FString> Fields = { TEXT("usage"), TEXT("total_tokens") };
-	Value = GetJsonValue(Value, Fields.GetData(), Fields.Num());
-	if (Value)
-	{
-		return Value->AsNumber();
-	}
-	return -1;
-}
-
-TArray<UVaRestJsonValue*> UGPTInstanceSubsystem::GetResponseArrayField(UVaRestRequestJSON* Request, const FString& FieldName)
-{
-	UVaRestJsonValue* Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	if (Value && Value->GetType() == EVaJson::Object)
-	{
-		UVaRestJsonObject* Response = Value->AsObject();
-		if (Response)
-		{
-			return Response->GetArrayField(FieldName);
-		}
-	}
-	return TArray<UVaRestJsonValue*>();
-}
-
-UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue_Recul(UVaRestJsonValue* JsonValue, const FString& FieldName, const EVaJson& Type) const
-{
-	UVaRestJsonValue* Result = nullptr;
-	if (JsonValue)
-	{
-		if (JsonValue->GetType() == EVaJson::Array)
-		{
-			TArray< UVaRestJsonValue*> Array = JsonValue->AsArray();
-			for (UVaRestJsonValue*& key : Array)
-			{
-				Result = GetJsonValue_Recul(key, FieldName, Type);
-				if (Result && Result->GetType() == Type)
-				{
-					break;
-				}
-			}
-		}
-		else if (JsonValue->GetType() == EVaJson::Object)
-		{
-			UVaRestJsonObject* JsonValueObj = JsonValue->AsObject();
-			Result = JsonValueObj->GetField(FieldName);
-			if (!Result || Result->GetType() != Type)
-			{
-				for (const FString& key : JsonValueObj->GetFieldNames())
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Key : %s"), *key);
-					Result = GetJsonValue_Recul(JsonValueObj->GetField(key), FieldName, Type);
-					if (Result && Result->GetType() == Type)
-					{
-						break;
-					}
-				}
-			}
-		}
-	}
-	return Result;
-}
-
 UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestJsonValue* JsonValue, const FString* ArrayFields, int Count) const
 {
 	if (!JsonValue)
@@ -146,37 +58,52 @@ UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestJsonValue* JsonValu
 	{
 		return JsonValue;
 	}
-
+	UVaRestJsonValue* Result = nullptr;
 	if (JsonValue->GetType() == EVaJson::Object)
 	{
 		UVaRestJsonObject* JsonValueObj = JsonValue->AsObject();
-		return GetJsonValue(JsonValueObj->GetField(ArrayFields[0]), ArrayFields + 1, Count - 1);
+		Result = GetJsonValue(JsonValueObj->GetField(ArrayFields[0]), ArrayFields + 1, Count - 1);
 	}
 	else if (JsonValue->GetType() == EVaJson::Array)
 	{
 		TArray<UVaRestJsonValue*> JsonValueObj = JsonValue->AsArray();
-		UVaRestJsonValue* Result = nullptr;
 		for (int i = 0; i < JsonValueObj.Num() && Result == nullptr; i++)
 		{
 			Result = GetJsonValue(JsonValueObj[i] , ArrayFields, Count);
 		}
-		return Result;
 	}
-	return nullptr;
+	return Result;
 }
 
-FString UGPTInstanceSubsystem::GetResponseStringField(UVaRestRequestJSON* Request, const FString& FieldName)
+TArray<FString> UGPTInstanceSubsystem::GetResponsePath(EResponseType type) const
 {
-	UVaRestJsonValue* Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	if (Value && Value->GetType() == EVaJson::Object)
+	switch (type)
 	{
-		UVaRestJsonObject* Response = Value->AsObject();
-		if (Response)
-		{
-			return Response->GetStringField(FieldName);
-		}
+	case UGPTInstanceSubsystem::EResponseType::RESPONSEID:
+		return { TEXT("id") };
+	case UGPTInstanceSubsystem::EResponseType::IMAGE:
+		return  { TEXT("output"), TEXT("result") };
+	case UGPTInstanceSubsystem::EResponseType::TEXT:
+		return { TEXT("output"), TEXT("content"), TEXT("text") };
+	case UGPTInstanceSubsystem::EResponseType::TOTALTOKEN:
+		return { TEXT("usage"), TEXT("total_tokens") };
 	}
-	return "";
+	return TArray<FString>();
+}
+
+UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const
+{
+	if (!Request || FieldPath.IsEmpty())
+		return nullptr;
+	UVaRestJsonValue* Root = VaRestSubsystem->DecodeJsonValue(Request->GetResponseObject()->EncodeJson());
+	UVaRestJsonValue* Value = GetJsonValue(Root, FieldPath.GetData(), FieldPath.Num());
+	if (Root == Value)
+		Value = nullptr;
+	if (Value)
+	{
+		Type = Value->GetType();
+	}
+	return Value;
 }
 
 void UGPTInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -190,7 +117,7 @@ void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, 
 {
 	if (!Target || !Target->Implements<UGPTResponseInterface>())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s No Interface :UGPTResponseInterface"), *Target->StaticClass()->GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s No Interface : UGPTResponseInterface"), *Target->StaticClass()->GetName());
 		return;
 	}	if (!CheckSendable())
 		return;
@@ -215,11 +142,8 @@ void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, 
 			RequestValueObj->SetStringField(TEXT("content"), RequestData.Text);
 			array.Add(VaRestSubsystem->ConstructJsonValueObject(RequestValueObj));
 			RequestObject->SetArrayField(TEXT("input"), array);
-
-
 			// 100 되면 끊김
 			//RequestObject->SetIntegerField(TEXT("max_output_tokens"), 100);
-			//"": 64
 		}
 
 		Request->SetRequestObject(RequestObject);
@@ -269,36 +193,7 @@ void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, UO
 	}
 }
 
-FString UGPTInstanceSubsystem::GetStringFromRequestJSON(UVaRestRequestJSON* Request)
-{
-	if (!Request)
-		return {};
-	UVaRestJsonValue * Value = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	TArray<FString> Fields =  { TEXT("output"), TEXT("content"), TEXT("text") };
-	Value = GetJsonValue(Value, Fields.GetData(), Fields.Num());
-	if (Value)
-	{
-		return Value->AsString();
-	}
-	return "";
-}
-
-UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const
-{
-	if (!Request || FieldPath.IsEmpty())
-		return nullptr;
-	UVaRestJsonValue* Root = VaRestSubsystem->DecodeJsonValue(Request->GetResponseContentAsString());
-	UVaRestJsonValue* Value = GetJsonValue(Root, FieldPath.GetData(), FieldPath.Num());
-	if (Root == Value)
-		Value = nullptr;
-	if (Value)
-	{
-		Type = Value->GetType();
-	}
-	return Value;
-}
-
-void UGPTInstanceSubsystem::GetGPTResponse(FString modelID, UObject* Target)
+void UGPTInstanceSubsystem::SendGetGPTResponse(FString modelID, UObject* Target)
 {
 	if (!Target || !Target->Implements<UGPTResponseInterface>())
 	{
@@ -314,97 +209,107 @@ void UGPTInstanceSubsystem::GetGPTResponse(FString modelID, UObject* Target)
 		Request->ProcessURL(TEXT("https://api.openai.com/v1/responses/" + modelID));
 	}
 }
-bool UGPTInstanceSubsystem::SaveImageData(UVaRestRequestJSON* Request, FString Path)
+
+FString UGPTInstanceSubsystem::GetResponseString(UVaRestRequestJSON* Request) const
 {
-	TArray<uint8> PngBytes = GetPNGData(Request);
-	// PNG 파일로 저장
-	if (!PngBytes.IsEmpty())
+	TArray<FString> Fields = GetResponsePath(EResponseType::TEXT);// { TEXT("output"), TEXT("content"), TEXT("text") };
+	EVaJson type{};
+	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
+	if (Value && type==EVaJson::String)
 	{
-		FString SavePath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("OpenAI_Image.png"));
-		UE_LOG(LogTemp, Log, TEXT("Texture updated from OpenAI PNG Base64."));
-		return 	FFileHelper::SaveArrayToFile(PngBytes, *SavePath);
+		return Value->AsString();
 	}
-	return false;
+	return FString();
 }
 
-bool UGPTInstanceSubsystem::ApplyImageData(UVaRestRequestJSON* Request, UTexture2D*& NewTexture)
+FString UGPTInstanceSubsystem::GetRequestID(UVaRestRequestJSON* Request) const
 {
-	TArray<uint8> PngData = GetPNGData(Request);
-	if (PngData.Num() == 0)
-		return false;
-
-	// 1) ImageWrapper 모듈 로드
-	IImageWrapperModule& ImageWrapperModule =
-		FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-
-	// 2) PNG 래퍼 생성
-	TSharedPtr<IImageWrapper> ImageWrapper =
-		ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
-
-	if (!ImageWrapper.IsValid())
+	TArray<FString> Fields = GetResponsePath(EResponseType::RESPONSEID);
+	EVaJson type{};
+	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
+	if (Value && type == EVaJson::String)
 	{
-		UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: Failed to create PNG ImageWrapper."));
-		return false;
+		return Value->AsString();
 	}
-
-	// 3) 압축된 PNG 데이터 설정
-	if (!ImageWrapper->SetCompressed(PngData.GetData(), PngData.Num()))
-	{
-		UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: SetCompressed failed."));
-		return false;
-	}
-
-	// 4) 이미지 크기
-	const int32 Width = ImageWrapper->GetWidth();
-	const int32 Height = ImageWrapper->GetHeight();
-
-	if (Width <= 0 || Height <= 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: Invalid image size (%d x %d)."), Width, Height);
-		return false;
-	}
-
-	// 5) PNG → BGRA 8bit raw 데이터
-	TArray<uint8> RawData;
-	if (!ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData))
-	{
-		UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: GetRaw failed."));
-		return false;
-	}
-
-	// 6) Transient Texture 생성
-	NewTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
-	if (!NewTexture)
-	{
-		UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: CreateTransient failed."));
-		return false;
-	}
-
-#if WITH_EDITORONLY_DATA
-	NewTexture->CompressionSettings = TC_Default;
-	NewTexture->SRGB = true;
-#endif
-
-	// 7) Mip0에 RawData 복사
-	FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
-	void* TextureData = Mip.BulkData.Lock(LOCK_READ_WRITE);
-
-	const int32 ExpectedDataSize = Width * Height * 4; // BGRA
-	if (RawData.Num() != ExpectedDataSize)
-	{
-		UE_LOG(LogTemp, Warning,
-			TEXT("CreateTexture2DFromPngBytes: RawData.Num=%d, Expected=%d"),
-			RawData.Num(), ExpectedDataSize);
-	}
-
-	FMemory::Memcpy(TextureData, RawData.GetData(), FMath::Min(RawData.Num(), ExpectedDataSize));
-	Mip.BulkData.Unlock();
-
-	// 8) GPU 업데이트
-	NewTexture->UpdateResource();
-
-	return true;
+	return FString();
 }
+
+UTexture2D* UGPTInstanceSubsystem::GetResponseTexture(UVaRestRequestJSON* Request) const
+{
+	EVaJson type{};
+	TArray<FString> Fields = GetResponsePath(EResponseType::IMAGE);
+	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
+	if (Value && type == EVaJson::String)
+	{
+		FString Base64PNG = Value->AsString();
+		Base64PNG = Base64PNG.TrimStartAndEnd();
+
+		TArray<uint8> PngBytes;
+		if (!FBase64::Decode(Base64PNG, PngBytes) || Base64PNG.IsEmpty())
+		{
+			UE_LOG(LogTemp, Error, TEXT("GetResponseTexture: Base64 decode failed or Base64PNG is empty"));
+			return nullptr;
+		}
+		IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+		TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+	
+		if (!ImageWrapper.IsValid() || !ImageWrapper->SetCompressed(PngBytes.GetData(), PngBytes.Num()))
+		{
+			UE_LOG(LogTemp, Error, TEXT("GetResponseTexture: Failed to create Texture2D"));
+			return nullptr;
+		}
+
+		const int32 Width = ImageWrapper->GetWidth();
+		const int32 Height = ImageWrapper->GetHeight();
+	
+		TArray<uint8> RawData;
+		if (!ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData) || Width <= 0 || Height <= 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("GetResponseTexture: Failed to create Texture2D"));
+			return nullptr;
+		}
+	
+		UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+		if (!NewTexture)
+		{
+			UE_LOG(LogTemp, Error, TEXT("CreateTexture2DFromPngBytes: CreateTransient failed."));
+			return nullptr;
+		}
+	
+	#if WITH_EDITORONLY_DATA
+		NewTexture->CompressionSettings = TC_Default;
+		NewTexture->SRGB = true;
+	#endif
+	
+		FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
+		void* TextureData = Mip.BulkData.Lock(LOCK_READ_WRITE);
+	
+		const int32 ExpectedDataSize = Width * Height * 4; // BGRA
+		if (RawData.Num() != ExpectedDataSize)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CreateTexture2DFromPngBytes: RawData.Num=%d, Expected=%d"), RawData.Num(), ExpectedDataSize);
+		}
+	
+		FMemory::Memcpy(TextureData, RawData.GetData(), FMath::Min(RawData.Num(), ExpectedDataSize));
+		Mip.BulkData.Unlock();
+		NewTexture->UpdateResource();
+		return NewTexture;
+	}
+	return nullptr;
+}
+
+int32 UGPTInstanceSubsystem::GetResponseTotalTogens(UVaRestRequestJSON* Request) const
+{
+	TArray<FString> Fields = GetResponsePath(EResponseType::TOTALTOKEN);
+	EVaJson type{};
+	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
+	if (Value && type == EVaJson::Number)
+	{
+		return Value->AsInt32();
+	}
+	return -1;
+}
+
 
 bool FGPTStringRequest::CheckSendable() const
 {
