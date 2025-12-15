@@ -3,7 +3,7 @@
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
 #include "NavModifierComponent.h"
-#include "NavAreas/NavArea_Default.h"
+#include "NavAreas/NavArea_Obstacle.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 ABaseBuilding::ABaseBuilding()
@@ -27,7 +27,7 @@ ABaseBuilding::ABaseBuilding()
 	
 	NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
 	NavModifier->CalculateBounds();
-	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
+	NavModifier->SetAreaClass(UNavArea_Obstacle::StaticClass());
 	Command = UPalCommandFunctionLibrary::CommandArchitecture(nullptr, this);
 }
 
@@ -66,5 +66,5 @@ void ABaseBuilding::UpdateModifier()
 	if (!NavModifier)
 		return;
 	NavModifier->CalculateBounds();
-	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
+	NavModifier->SetAreaClass(UNavArea_Obstacle::StaticClass());
 }

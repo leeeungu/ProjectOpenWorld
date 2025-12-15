@@ -6,7 +6,7 @@
 
 class UStaticMesh;
 class UBuildingModeWidget;
-
+class UTexture2D;
 UCLASS()
 class PROJECTOPENWORLD_API UBuildingModeImage : public UButton
 {
@@ -14,11 +14,12 @@ class PROJECTOPENWORLD_API UBuildingModeImage : public UButton
 public:
 	UBuildingModeImage();
 protected:
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BuildingMode")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "BuildingMode")
 	uint8 SlotIndex{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BuildingMode")
 	TObjectPtr<UStaticMesh> BuildingMesh{};
-
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BuildingMode")
+	TObjectPtr<UTexture2D> BuildingTexture{};
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "BuildingMode")
 	TObjectPtr < UBuildingModeWidget> ParentWidget{};
@@ -27,5 +28,11 @@ protected:
 	void OnStartBuilding();
 
 	UFUNCTION()
-	void OnSelectBuilding();
+	void OnHoverBuilding();
+
+	void ChangeButtonImage();
+public:
+	void SetParent(UBuildingModeWidget* Parent);
+	void SetSlotIndex(uint8 Index);
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 };

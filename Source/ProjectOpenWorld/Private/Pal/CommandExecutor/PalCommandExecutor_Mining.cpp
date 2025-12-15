@@ -24,8 +24,8 @@ void UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 	if (OwnerController)
 	{
 		bStartedMining = true;
-		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
-		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == false)
+		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
+		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			EndMining();
 		}

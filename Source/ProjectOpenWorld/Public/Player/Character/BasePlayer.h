@@ -13,6 +13,7 @@ struct FInputActionValue;
 class UInteractionComponent;
 class UBuildingAssistComponent;
 class UPlayerAnimationComponent;
+class UBuildingModeWidget;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -83,6 +84,9 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MouseWheelAction{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BuildModeAction{};
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInteractionComponent> InteractionComponent{};
 
@@ -92,6 +96,9 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ClimbMontage{};
 	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
+
+	UPROPERTY()
+	TObjectPtr< UBuildingModeWidget> BuildingWidget{};
 public:
 	ABasePlayer();
 
@@ -132,6 +139,8 @@ protected:
 	void OnActionMouseR(const FInputActionValue& Value);
 	UFUNCTION()
 	void OnActionMouseL(const FInputActionValue& Value);
+	UFUNCTION()
+	void OnToggleBuildingMode(const FInputActionValue& Value);
 
 	void OnJump();
 protected:

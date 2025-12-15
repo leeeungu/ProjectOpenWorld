@@ -35,7 +35,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 	MoveReq.SetAllowPartialPath(true);
 	MoveReq.SetAcceptanceRadius(fAcceptanceRadius);
 	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(false);
+	MoveReq.SetCanStrafe(true);
 	MoveReq.SetReachTestIncludesGoalRadius(true);
 	MoveReq.SetRequireNavigableEndLocation(true);
 	FNavPathSharedPtr OutPath{};

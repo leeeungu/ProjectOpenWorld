@@ -26,12 +26,13 @@ void UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	
 	UE_LOG(LogTemp, Warning, TEXT("Start Architecture :: %s"), *OwnerCommandComp->GetOwner()->GetFName().ToString());
 	bActionStart = true;
-	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddDynamic(this, &UPalCommandExecutor_Architecture::EndBuilding);
+	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::EndBuilding);
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
-		if (OwnerController->MoveToActor(Command.pTarget, 200.f) == false)
+		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
+		if (OwnerController->MoveToActor(Command.pTarget, 200.f) == EPathFollowingRequestResult::Type::Failed)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Can Find"));
 			EndBuilding();
 		}
 	}
@@ -74,27 +75,32 @@ void UPalCommandExecutor_Architecture::EndBuilding()
 void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Architecture)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: not slef command"));
-		return;
-	}
-
-	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
+	FString Res{};
+	if(Result != EPathFollowingResult ::Type::Success)
 	{
 		EndBuilding();
 		return;
 	}
-	if (bActionStart)
+	if (OwnerCommandComp->IsValidCommand() && Command->CommandKind == EPalCommandKind::Work && Command->SubCommandType == (uint8)ESubWorkType::Architecture)
 	{
-		TargetBuilding->GetBuildingProgress()->StartBuilding();
-		if (OwnerPal)
+		if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
 		{
-			OwnerPal->SetActionStarted(true);
-			if (UStaticMeshComponent* ArchitectureMeshComponent = OwnerPal->GetArchitectureMeshComponent())
+			EndBuilding();
+			return;
+		}
+		if (bActionStart)
+		{
+			TargetBuilding->GetBuildingProgress()->StartBuilding();
+			if (OwnerPal)
 			{
-				ArchitectureMeshComponent->SetVisibility(true);
+				OwnerPal->SetActionStarted(true);
+				if (UStaticMeshComponent* ArchitectureMeshComponent = OwnerPal->GetArchitectureMeshComponent())
+				{
+					ArchitectureMeshComponent->SetVisibility(true);
+				}
 			}
 		}
 	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: not slef command"));
 }

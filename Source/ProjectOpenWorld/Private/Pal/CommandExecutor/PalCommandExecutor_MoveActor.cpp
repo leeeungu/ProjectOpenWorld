@@ -19,8 +19,8 @@ void UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
 {
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
-		if (OwnerController->MoveToActor(Command.pTarget, 40.0f) == false)
+		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
+		if (OwnerController->MoveToActor(Command.pTarget, 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
 			EndCommand();

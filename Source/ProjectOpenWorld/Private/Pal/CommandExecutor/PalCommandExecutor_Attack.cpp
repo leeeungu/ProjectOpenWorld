@@ -18,7 +18,7 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 	}
 	if (AttackComponent)
 	{
-		AttackComponent->OnPalAttackEnd.AddDynamic(this, &UPalCommandExecutor_Attack::EndAttack);
+		AttackComponent->OnPalAttackEnd.AddUniqueDynamic(this, &UPalCommandExecutor_Attack::EndAttack);
 	}
 }
 

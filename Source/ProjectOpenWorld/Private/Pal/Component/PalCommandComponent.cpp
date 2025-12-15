@@ -53,6 +53,8 @@ void UPalCommandComponent::PopCommand()
 	uint8 idx = (uint8)Current->CommandKind;
 	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
 		return;
+	if (CurrentExcute == CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get())
+		return;
 
 	CurrentExcute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get();
 	if (CurrentExcute)
@@ -76,6 +78,7 @@ void UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
 	if (QueueEmpty.Dequeue(pEmpthy) == false)
 	{
 		UE_LOG(LogTemp, Log, TEXT("%s : Command Full"), *GetOwner()->GetName());
+		PopCommand();
 		return;
 	}
 	*pEmpthy = NewCommand;
@@ -91,6 +94,7 @@ void UPalCommandComponent::PushCommand_DequqOld(const FPalCommand& NewCommand)
 	{
 		if (QueueCommand.Dequeue(pEmpthy) == false)
 			return;
+		PopCommand();
 	}
 	pEmpthy->CommandKind = NewCommand.CommandKind;
 	pEmpthy->pInstigatorActor = NewCommand.pInstigatorActor;
@@ -121,6 +125,10 @@ void UPalCommandComponent::FinishCommand()
 		if (CurrentExcute)
 		{
 			CurrentExcute->Abort();
+		}
+		if (LastCommand == CurrentCommand)
+		{
+			LastCommand = nullptr;
 		}
 		FPalCommand command = *CurrentCommand;
 		ResetCurrentCommand();

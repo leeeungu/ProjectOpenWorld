@@ -167,8 +167,10 @@ void UBuildingAssistComponent::SpawnBuilding()
 	Param.Instigator = ownerPawn.Get();
 	Param.Owner = ownerPawn.Get();
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	const FTransform SpawnTransform = buildingPreviewActor->GetComponentTransform();
+	FTransform SpawnTransform{};
+	SpawnTransform .SetLocation(buildingPreviewActor->GetComponentLocation());
+	SpawnTransform .SetRotation(buildingPreviewActor->GetComponentRotation().Quaternion());
+	SpawnTransform .SetScale3D(buildingPreviewActor->GetComponentScale());
 
 	ABaseBuilding* Building = GetWorld()->SpawnActor<ABaseBuilding>(BuildingClass, SpawnTransform, Param);
 	if (Building)

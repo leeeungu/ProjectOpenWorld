@@ -41,9 +41,9 @@ void UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 	}
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.AddDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
+		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
 		eTransportState = TransportState::Go;
-		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == false)
+		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			EndTransport();
 			return;

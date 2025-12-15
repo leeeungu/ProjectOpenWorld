@@ -13,6 +13,8 @@
 #include "Player/Component/PlayerAnimationComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Player/Animation/PlayerAnimInstance.h"
+#include "Blueprint/UserWidget.h"
+#include "Building/Widget/BuildingModeWidget.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -57,6 +59,14 @@ ABasePlayer::ABasePlayer()
 	PlayerAnimationComponent = CreateDefaultSubobject<UPlayerAnimationComponent>(TEXT("PlayerAnimationComponent"));
 	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
 	PlayerMoveFunc = &ABasePlayer::MoveTravel;
+
+	//Script/UMGEditor.WidgetBlueprint'/Game/Building/Widget/WBP_BuildModeWidget.WBP_BuildModeWidget'
+
+	static ConstructorHelpers::FClassFinder<UBuildingModeWidget> WidgetClass(TEXT("/Game/Building/Widget/WBP_BuildModeWidget.WBP_BuildModeWidget_C"));
+	if (WidgetClass.Succeeded())
+	{
+		BuildingWidget = CreateWidget< UBuildingModeWidget>(GetWorld(), WidgetClass.Class);
+	}
 }
 
 //MOVE_Walking	UMETA(DisplayName = "Walking"), 1
@@ -155,6 +165,7 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		EnhancedInputComponent->BindAction(MouseRAction, ETriggerEvent::Started, this, &ABasePlayer::OnActionMouseR);
 		EnhancedInputComponent->BindAction(MouseLAction, ETriggerEvent::Started, this, &ABasePlayer::OnActionMouseL);
 		EnhancedInputComponent->BindAction(MouseWheelAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnActionMouseWheel);
+		EnhancedInputComponent->BindAction(BuildModeAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnToggleBuildingMode);
 	}
 	else
 	{
@@ -342,6 +353,14 @@ void ABasePlayer::OnActionMouseL(const FInputActionValue& Value)
 	{
 		BuildAssistComponent->SpawnBuilding();
 		BuildAssistComponent->EndBuilding();
+	}
+}
+
+void ABasePlayer::OnToggleBuildingMode(const FInputActionValue& Value)
+{
+	if (BuildingWidget)
+	{
+		BuildingWidget->ToggleWidget();
 	}
 }
 

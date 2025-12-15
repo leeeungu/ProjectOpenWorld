@@ -6,6 +6,8 @@
 
 class UBuildingAssistComponent;
 class UImage;
+class UMaterialInstanceDynamic;
+class UBuildingModeCanvasPanel;
 
 UCLASS()
 class PROJECTOPENWORLD_API UBuildingModeWidget : public UUserWidget
@@ -14,17 +16,29 @@ class PROJECTOPENWORLD_API UBuildingModeWidget : public UUserWidget
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "BuildingAssist")
 	TObjectPtr<UBuildingAssistComponent> BuildingAssistComp{};
-	UStaticMesh* CurrentHoverMesh = nullptr;
+	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta = (Bindwidget))
-	UImage* SelectImage = nullptr;
+	TObjectPtr<UImage> SelectImage{};
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta = (Bindwidget))
+	TObjectPtr<UBuildingModeCanvasPanel> ButtonPanel{};
+
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> DynamicMaterial{};
 protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	void StartViewWidget();
+	void EndViewWidget();
 public:
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void ToggleWidget();
+
 	UFUNCTION()
-	void StartBuildingMode();
+	void StartBuildingMode(UStaticMesh* Mesh);
 	UFUNCTION()
-	void HoverBuildingMode(int SlotIndex, UStaticMesh* Mesh);
+	void HoverBuildingMode(int SlotIndex);
 };
