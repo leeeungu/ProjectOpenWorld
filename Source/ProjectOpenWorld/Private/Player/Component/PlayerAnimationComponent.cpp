@@ -1,4 +1,4 @@
-ï»¿#include "Player/Component/PlayerAnimationComponent.h"
+#include "Player/Component/PlayerAnimationComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -52,7 +52,7 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 	if (bClimbing)
 	{
 		{
-			// ë°”ë‹¥ ì²´í¬
+			// ¹Ù´Ú Ã¼Å©
 			FVector Start = OwnerCharacter->GetActorLocation();
 			FVector End = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * -98.0f;
 			FHitResult rHit{};
@@ -70,18 +70,22 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 		}
 		{
 			bEmpthyUp = false;
-			FVector Start = OwnerCharacter->GetMesh()->GetSocketLocation(ClimbData.Head) + OwnerCharacter->GetActorUpVector() * 100.0f
+			FVector Start = OwnerCharacter->GetMesh()->GetSocketLocation(ClimbData.Head) + OwnerCharacter->GetActorUpVector() * 20.0f
 				+ OwnerCharacter->GetActorForwardVector() * -60.0f;
 			FVector End = Start + OwnerCharacter->GetActorForwardVector() * 120.0f;
 			FHitResult rHit{};
 			if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), Start, End,
 				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, rHit, true))
 			{
-				FVector CapStart = rHit.TraceEnd;// +OwnerCharacter->GetActorForwardVector() * 40.0f;
+				FVector CapStart = 
+					OwnerCharacter->GetMesh()->GetSocketLocation(ClimbData.Head) //+ OwnerCharacter->GetActorUpVector() * 50.0f
+					+ OwnerCharacter->GetActorForwardVector() * 60.0f;
+					//rHit.TraceEnd;// +OwnerCharacter->GetActorForwardVector() * 40.0f;
 				FVector CapEnd = CapStart + FVector::UpVector * OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 				FHitResult CapHit{};
 				bEmpthyUp = !UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CapStart, CapEnd, OwnerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius() * 0.8f,
 					UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), true, IgnoreArray, EDrawDebugTrace::ForOneFrame, CapHit, true);
+					//0,FLinearColor::Red,FLinearColor::Blue, 2.0f);
 			}
 
 		}
@@ -129,14 +133,14 @@ void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 bool UPlayerAnimationComponent::StartClimb()
 {
-	if (!OwnerCharacter || !ClimbLineCheck() ) // ì‹œì‘ ì‹œ climb end ì¤‘ì— ë‹¤ì‹œ climb ë˜ëŠ” ë¬¸ì œê°€ ìˆìŒ
+	if (!OwnerCharacter || !ClimbLineCheck() ) // ½ÃÀÛ ½Ã climb end Áß¿¡ ´Ù½Ã climb µÇ´Â ¹®Á¦°¡ ÀÖÀ½
 	{
 		return false;
 	}
 	bClimbing = true;
 	SetComponentTickEnabled(true);
-	// ë²½ì— ë¶™ì–´ì„œ climb í•˜ë©´ ë²½ ì•ˆì— ë“¤ì–´ê°€ ë²„ë ¤ì„œ ë–¨ì–´ ëœ¨ë¦´ë ¤ê³  ìˆ˜ì •í–ˆëŠ”ë°
-	// ë²½ê³¼ ë¹„ìŠ¤ë“¬í•˜ë©´ ì—¬ì „íˆ ë²½ì— ë­íˆëŠ” ë²„ê·¸ê°€ ìˆìŒ (rayë¥¼ ì´ì•¼í• ë ¤ë‚˜, ê³„ì‚°í•˜ê³  tickì—ì„œ ë³´ì •ì„ ì¹ ê¹Œ )
+	// º®¿¡ ºÙ¾î¼­ climb ÇÏ¸é º® ¾È¿¡ µé¾î°¡ ¹ö·Á¼­ ¶³¾î ¶ß¸±·Á°í ¼öÁ¤Çß´Âµ¥
+	// º®°ú ºñ½ºµëÇÏ¸é ¿©ÀüÈ÷ º®¿¡ ¹·È÷´Â ¹ö±×°¡ ÀÖÀ½ (ray¸¦ ½÷¾ßÇÒ·Á³ª, °è»êÇÏ°í tick¿¡¼­ º¸Á¤À» Ä¥±î )
 	if (ClimbData.arrHitResult[SClimbRayData::ERoot].Distance < OwnerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius() * 2.8)
 	{
 	OwnerCharacter->AddActorWorldOffset(ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactNormal * 

@@ -135,7 +135,7 @@ struct FSnapRule : public  FTableRowBase
         }
         return FVector(X, Y, Z);
     }
-
+    
    static FORCEINLINE float AnchorYaw(ESnapYaw  YawType)
    {
        return (uint8)(YawType) * 30.f;

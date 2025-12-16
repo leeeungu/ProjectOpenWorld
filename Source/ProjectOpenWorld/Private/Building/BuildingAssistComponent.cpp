@@ -12,7 +12,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/KismetMathLibrary.h"
 
 #include "LandscapeProxy.h"
 #include "Blueprint/UserWidget.h"
@@ -102,6 +101,8 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		// PreviewComponent 가 OnUpdateTransform 에서 겹침 판정을 끝냈다고 가정
 		canBuilding = buildingPreviewActor->IsBuildable();
 	}
+	else
+		canBuilding = false;
 }
 
 void UBuildingAssistComponent::SetBuildingStaticMesh(UStaticMesh* NewStaticMesh)
@@ -334,7 +335,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 	int BestIndex{};
 	float BestDistSq = TNumericLimits<float>::Max();
 	FTransform BestParentAnchorWorld;
-	float Min = TNumericLimits<float>::Min();
+	float Min = TNumericLimits<float>::Max();
 	//FString Temp{};
 	for (const FSnapAnchorData& Data : MainRule->ArrayAnchors)
 	{

@@ -4,6 +4,7 @@
 #include "Building/Component/BuildingActionWidgetComponent.h"
 #include "NavModifierComponent.h"
 #include "NavAreas/NavArea_Obstacle.h"
+#include "NavAreas/NavArea_Default.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 ABaseBuilding::ABaseBuilding()
@@ -21,13 +22,15 @@ ABaseBuilding::ABaseBuilding()
 	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
 	if (BuildActionWidget)
 	{
+
 		BuildActionWidget->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+		BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 
 	
 	NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
 	NavModifier->CalculateBounds();
-	NavModifier->SetAreaClass(UNavArea_Obstacle::StaticClass());
+	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 	Command = UPalCommandFunctionLibrary::CommandArchitecture(nullptr, this);
 }
 
@@ -66,5 +69,5 @@ void ABaseBuilding::UpdateModifier()
 	if (!NavModifier)
 		return;
 	NavModifier->CalculateBounds();
-	NavModifier->SetAreaClass(UNavArea_Obstacle::StaticClass());
+	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }

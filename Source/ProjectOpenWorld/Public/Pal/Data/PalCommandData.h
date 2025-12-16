@@ -47,10 +47,15 @@ struct FPalCommand
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	UPROPERTY(VisibleAnywhere)
 	EPalCommandKind CommandKind{};
+	UPROPERTY(VisibleAnywhere)
 	AActor* pInstigatorActor{};
+	UPROPERTY(VisibleAnywhere)
 	AActor* pTarget{};
+	UPROPERTY(VisibleAnywhere)
 	FVector TargetLocation{};
+	UPROPERTY(VisibleAnywhere)
 	uint8 SubCommandType{};
 
 	FPalCommand& operator=(const FPalCommand& rhs)

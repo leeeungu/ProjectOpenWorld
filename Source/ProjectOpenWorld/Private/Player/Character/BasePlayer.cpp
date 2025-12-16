@@ -9,7 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Interaction/Component/InteractionComponent.h"
-#include "Building/BuildingAssistComponent.h"
+#include "Building/Component/BuildingAssistComponentV2.h"
 #include "Player/Component/PlayerAnimationComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Player/Animation/PlayerAnimInstance.h"
@@ -54,7 +54,7 @@ ABasePlayer::ABasePlayer()
 
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 
-	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponent>(TEXT("BuildingAssist"));
+	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponentV2>(TEXT("BuildingAssist"));
 
 	PlayerAnimationComponent = CreateDefaultSubobject<UPlayerAnimationComponent>(TEXT("PlayerAnimationComponent"));
 	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
@@ -194,6 +194,11 @@ void ABasePlayer::OnMoveCompleted(const FInputActionValue& Value)
 void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	if (true)
+	{
+		StartTravel();
+		return;
+	}
 	if (!PlayerAnimationComponent->ClimbLineCheck())
 	{
 		StartTravel();

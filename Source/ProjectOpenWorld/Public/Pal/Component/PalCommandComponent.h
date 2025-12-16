@@ -15,8 +15,9 @@ class PROJECTOPENWORLD_API UPalCommandComponent : public UActorComponent
 private:
 	enum CommandSize
 	{
-		MaxSize = 10
+		MaxSize = 3
 	};
+	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "True"))
 	TArray<FPalCommand> CommandPool{};
 	TQueue<FPalCommand*> QueueEmpty{};
 	TQueue<FPalCommand*> QueueCommand{};

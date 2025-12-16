@@ -110,6 +110,6 @@ protected:
 
 	// 카메라 기준 Trace + 스냅 위치 계산 + Preview 이동
 	// true: 어떤 ParentMesh에 대해서든 스냅/자유배치 위치까지 처리 완료
-	bool UpdatePreview();
+	virtual bool UpdatePreview();
 
 };

@@ -131,13 +131,13 @@ void UPalCommandComponent::FinishCommand()
 			LastCommand = nullptr;
 		}
 		FPalCommand command = *CurrentCommand;
+		QueueEmpty.Enqueue(CurrentCommand);
 		ResetCurrentCommand();
 		OnFinishedCurrentCommand();
 		if (OnCommandFinished.IsBound())
 		{
 			OnCommandFinished.Broadcast(GetOwner(), command);
 		}
-		QueueEmpty.Enqueue(CurrentCommand);
 	}
 	PopCommand();
 }
