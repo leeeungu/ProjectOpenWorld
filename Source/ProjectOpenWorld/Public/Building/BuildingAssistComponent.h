@@ -73,7 +73,7 @@ protected:
 
 	// Snap 거리 임계값(ImpactPoint와 ParentAnchorWorld 사이 거리)
 	UPROPERTY(EditAnywhere, Category = "Building|Snap")
-	float SnapDistance = 100.f;
+	float SnapDistance = 110.f;
 
 	float YawRotation = 0.f;
 public:
