@@ -18,7 +18,13 @@ void UBuildingProgress::BeginPlay()
 	Super::BeginPlay();
 	StopBuilding();
 	buildingMeshComponent = GetOwner()->GetComponentByClass<UStaticMeshComponent>();
-	if (buildingMesh)
+	if (!buildingMeshComponent)
+		return;
+
+	if (buildingMesh != buildingMeshComponent->GetStaticMesh() || !buildingMesh)
+	{
+		buildingMesh = buildingMeshComponent->GetStaticMesh();
+	}
 		SetbuildingMesh(buildingMesh.Get());
 	buildSpeed = 0.0f;
 	curentPercent = 0.0f;
@@ -35,8 +41,14 @@ void UBuildingProgress::PostEditChangeProperty(FPropertyChangedEvent& PropertyCh
 	{
 		buildingMeshComponent = GetOwner()->GetComponentByClass<UStaticMeshComponent>();
 	}
-	if (buildingMesh)
-		SetbuildingMesh(buildingMesh.Get());
+	if (buildingMeshComponent)
+	{
+		if (buildingMesh != buildingMeshComponent->GetStaticMesh() || !buildingMesh)
+		{
+			buildingMesh = buildingMeshComponent->GetStaticMesh();
+		}
+		//SetbuildingMesh(buildingMeshComponent->GetStaticMesh());
+	}
 
 	SetBuildingPercent(0.3);
 }

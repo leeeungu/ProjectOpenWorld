@@ -50,8 +50,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 		PreviewWorld.SetLocation(TraceEnd);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
-
-		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 		return true;
 	}
 
@@ -59,8 +58,14 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 
 	ABaseBuilding* Building = Cast< ABaseBuilding>(HitResult.GetActor());
 	if (!Building)
-		return false;
-
+	{
+		FVector Bottom =  buildingPreviewActor->GetSocketLocation(TEXT("Bottom")) - buildingPreviewActor->GetComponentLocation();
+		PreviewWorld.SetLocation(HitResult.ImpactPoint - Bottom);// +FVector{ 0,0,400 });
+		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetScale3D(CurrentScale);
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
+		return true;
+	}
 	UStaticMeshComponent* ParentMeshComp = Building->GetBuildingMeshComponent();
 	
 	
@@ -72,8 +77,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 		PreviewWorld.SetLocation(ImpactPoint);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
-
-		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 		return true;
 	}
 
@@ -84,8 +88,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 		PreviewWorld.SetLocation(ImpactPoint);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
-
-		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 		return true;
 	}
 
@@ -101,13 +104,12 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 	}
 
 	// 이 Parent에 대한 스냅 룰이 없으면 ImpactPoint에 자유 배치
-	if (!MainRule) // !Snaped
+	if (!MainRule || !MainRule->ParentMesh) // !Snaped
 	{
 		PreviewWorld.SetLocation(ImpactPoint);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
-
-		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 		return true;
 	}
 
@@ -123,6 +125,9 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 	float Min = TNumericLimits<float>::Max();
 	//FString Temp{};
 	const FVector Extention = { 400,400,400 };
+	FVector BestLocation{};
+	FRotator BestRotator{};
+	//FVector BestScale{};
 
 	for (const FSnapAnchorData& Data : MainRule->ArrayAnchors)
 	{
@@ -130,17 +135,18 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 		FTransform ParentAnchorWorld = MainRule->ParentAnchorLocal * ParentWorld;
 		FVector AnchorWorldPos = ParentAnchorWorld.GetLocation();
 		FVector PreviewLocation = ImpactPoint;
+		FRotator PreviewRotator = ParentAnchorWorld.GetRotation().Rotator();
 
 		if (Data.ParentAnchor != ESnapAnchor::NONE)
 		{
-			FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, Extention) ; // FVector(1, -1, 1)
+			FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, Extention); //MainRule->ParentMesh->GetBoundingBox().GetSize()); // Extention
+			//) ; // FVector(1, -1, 1)
 			FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, Extention)  +Data.ChildOffset;
 
 			ParentAnchorWorld = HitResult.GetActor()->GetTransform();
 			AnchorWorldPos = ParentAnchorWorld.TransformPosition(ParentOffset);
-			
-			const FVector RotatedChildAnchor = (ParentAnchorWorld.GetRotation().Rotator() +
-				FRotator(0, FSnapRule::AnchorYaw(Data.ChildYaw), 0)).Quaternion() * ChildOffset;
+			PreviewRotator += FRotator(0, FSnapRule::AnchorYaw(Data.ChildYaw), 0);
+			const FVector RotatedChildAnchor = PreviewRotator.Quaternion() * ChildOffset;
 			PreviewLocation = AnchorWorldPos - RotatedChildAnchor;
 		
 		}
@@ -156,6 +162,8 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 				BestParentAnchorWorld = ParentAnchorWorld;
 				BestIndex = Index;
 				Min = dot;
+				BestLocation = PreviewLocation;
+				BestRotator = PreviewRotator;
 			}
 		}
 		else if (DistSq < BestDistSq)
@@ -165,6 +173,8 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 			BestParentAnchorWorld = ParentAnchorWorld;
 			BestIndex = Index;
 			Min = dot;
+			BestLocation = PreviewLocation;
+			BestRotator = PreviewRotator;
 		}
 
 		Index++;
@@ -172,38 +182,26 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 	//UE_LOG(LogTemp, Warning, TEXT("%s"),  *Temp);
 
 	// Anchor가 너무 멀면 스냅하지 않고 ImpactPoint로 자유 배치
-	if (!BestRule || BestDistSq > SnapDistSq)
+	if (!BestRule)// || BestDistSq > SnapDistSq)
 	{
 		PreviewWorld.SetLocation(ImpactPoint);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
 
-		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
+		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 		return true;
 	}
 	if (BestRule->ArrayAnchors.IsValidIndex(BestIndex))
 	{
 		CurrentScale = BestParentAnchorWorld.GetScale3D();
-		const FSnapAnchorData& Data = BestRule->ArrayAnchors[BestIndex];
-		FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, Extention);;
-		FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, Extention) + Data.ChildOffset;
-
-		// 회전 포함 Parent Anchor World 좌표
-		const FVector ParentAnchorWorld = BestParentAnchorWorld.TransformPosition(ParentOffset * CurrentScale);
-
-		// 회전 보정: ChildAnchorLocal을 Parent 기준으로 회전
-		const FVector RotatedChildAnchor = (BestParentAnchorWorld.GetRotation().Rotator() +
-			FRotator(0, FSnapRule::AnchorYaw(Data.ChildYaw), 0)).Quaternion() * (ChildOffset * CurrentScale);
-
-		// 최종 위치 = ParentAnchorWorld - (회전된 ChildAnchorLocal)
-		//const FVector ChildWorldPos = ParentAnchorWorld - RotatedChildAnchor;
-
-		PreviewWorld.SetLocation(ParentAnchorWorld - RotatedChildAnchor);
-
-		CurrentRot = BestParentAnchorWorld.GetRotation().Rotator();
-		CurrentRot.Yaw += FSnapRule::AnchorYaw(Data.ChildYaw);
-		PreviewWorld.SetRotation(CurrentRot.Quaternion());
+		PreviewWorld.SetLocation(BestLocation);
+		PreviewWorld.SetRotation(BestRotator.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
+		if (FVector::DistSquared(PrePoint, HitResult.ImpactPoint) >= SnapDistance * SnapDistance)
+		{
+			buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
+			PrePoint = HitResult.ImpactPoint;
+		}
 	}
 	else
 	{
@@ -225,7 +223,6 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 		PreviewWorld.SetRotation(ChildWorldRot);
 		PreviewWorld.SetScale3D(CurrentScale);
 	}
-
 	buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
 	return true;
 }

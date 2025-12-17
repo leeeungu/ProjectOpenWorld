@@ -10,4 +10,5 @@ class PROJECTOPENWORLD_API UBuildingAssistComponentV2 : public UBuildingAssistCo
 	GENERATED_BODY()
 protected:
 	virtual bool UpdatePreview() override;
+	FVector PrePoint{};
 };

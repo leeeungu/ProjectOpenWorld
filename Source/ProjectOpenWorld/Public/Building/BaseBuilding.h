@@ -47,7 +47,6 @@ public:
 	void UpdateModifier();
 protected:
 	virtual void BeginPlay() override;
-
 public:
 	UFUNCTION(BlueprintPure, Category = "Building")
 	FORCEINLINE UStaticMeshComponent* GetBuildingMeshComponent() const { return buildingMeshComponent; }
