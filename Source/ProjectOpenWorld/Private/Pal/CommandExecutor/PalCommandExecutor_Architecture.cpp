@@ -25,14 +25,14 @@ void UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd() || !OwnerPal)
 		return;
 	
-	UE_LOG(LogTemp, Warning, TEXT("Start Architecture :: %s"), *OwnerCommandComp->GetOwner()->GetFName().ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Start Architecture :: %s"), *OwnerPal->GetFName().ToString());
 	bActionStart = true;
 	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::EndBuilding);
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		if (OwnerController->MoveToLocation(Target, 200.f) == EPathFollowingRequestResult::Type::Failed)
+		if (OwnerController->MoveToLocation(Target, 600.f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Can Find"));
 			EndBuilding();
@@ -96,6 +96,7 @@ void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathF
 		break;
 	case EPathFollowingResult::Invalid:
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Invalid"));
+		return;
 		break;
 	default:
 		break;
@@ -112,7 +113,7 @@ void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathF
 		return;
 	}
 
-	if (Result == EPathFollowingResult::Type::Success && OwnerCommandComp->IsValidCommand() &&
+	if ( OwnerCommandComp->IsValidCommand() &&
 		Command->CommandKind == EPalCommandKind::Work && Command->SubCommandType == (uint8)ESubWorkType::Architecture)
 	{
 		TargetBuilding->GetBuildingProgress()->StartBuilding();

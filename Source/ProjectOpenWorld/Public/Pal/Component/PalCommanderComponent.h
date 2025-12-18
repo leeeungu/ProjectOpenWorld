@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalCommandData.h"
 #include <list>
+#include <set>
 #include "PalCommanderComponent.generated.h"
 
 class ABaseCreature;
@@ -18,7 +19,9 @@ protected:
 	TSet< TObjectPtr<ABaseCreature>> pals{};
 
 	std::list<TObjectPtr<AActor>> WorkList;
-	std::list< TObjectPtr<ABaseCreature>> NotWorkPals{};
+	std::set< TObjectPtr<ABaseCreature>> NotWorkPals{};
+
+	float Time{};
 public:	
 	UPalCommanderComponent();
 
@@ -29,6 +32,8 @@ protected:
 	void FinishCommand(AActor* PalActor, FPalCommand Command);
 
 	bool StartWork(ABaseCreature* pal, const FPalCommand& Command);
+
+	void CommanderWork();
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

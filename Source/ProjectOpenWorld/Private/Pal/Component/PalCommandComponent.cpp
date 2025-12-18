@@ -24,6 +24,8 @@ void UPalCommandComponent::ResetCommand(FPalCommand& pData)
 void UPalCommandComponent::ResetCurrentCommand()
 {
 	ResetCommand(DummyCommand);
+	if (CurrentCommand)
+		ResetCommand(*CurrentCommand);
 	CurrentCommand = &DummyCommand;
 	CurrentExcute = nullptr;
 }

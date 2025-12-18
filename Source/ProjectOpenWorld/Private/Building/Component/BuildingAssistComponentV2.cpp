@@ -128,6 +128,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 	FVector BestLocation{};
 	FRotator BestRotator{};
 	//FVector BestScale{};
+	FVector PrentAnchor{};
 
 	for (const FSnapAnchorData& Data : MainRule->ArrayAnchors)
 	{
@@ -164,6 +165,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 				Min = dot;
 				BestLocation = PreviewLocation;
 				BestRotator = PreviewRotator;
+				PrentAnchor = AnchorWorldPos;
 			}
 		}
 		else if (DistSq < BestDistSq)
@@ -175,6 +177,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 			Min = dot;
 			BestLocation = PreviewLocation;
 			BestRotator = PreviewRotator;
+			PrentAnchor = AnchorWorldPos;
 		}
 
 		Index++;
@@ -200,7 +203,7 @@ bool UBuildingAssistComponentV2::UpdatePreview()
 		if (FVector::DistSquared(PrePoint, HitResult.ImpactPoint) >= SnapDistance * SnapDistance)
 		{
 			buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::ResetPhysics);
-			PrePoint = HitResult.ImpactPoint;
+			PrePoint = PrentAnchor;
 		}
 	}
 	else

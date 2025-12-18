@@ -3,6 +3,8 @@
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Interface/CommanderManageable.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
 
 APalBaseCamp::APalBaseCamp()
@@ -28,18 +30,32 @@ void APalBaseCamp::BeginPlay()
 	del.BindUObject(this, &APalBaseCamp::CommandActorSpawned);
 	if (GetWorld())
 		GetWorld()->AddOnActorSpawnedHandler(del);
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> arQuery{};
+	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
+	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(GetOwner());
+	TArray<FHitResult> arHitted{};
+	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
+		GetWorld(),
+		GetActorLocation(), GetActorLocation(), CampBounds->GetScaledSphereRadius(), arQuery,
+		false, IgnoreActors, EDrawDebugTrace::Type::None, arHitted, true);
+
+	for(FHitResult& hit : arHitted)
+	{
+		CommandActorSpawned(hit.GetActor());
+	}
 }
 
 void APalBaseCamp::CommandActorSpawned(AActor* NewActor)
 {
 	if (!NewActor || !PalCommander)
 		return;
-	//UE_LOG(LogTemp, Log, TEXT("Spawned :  %s"), *NewActor->GetName());
-	if (NewActor->Implements< UCommanderManageable>())
-	{
-		PalCommander->RegisterWork(NewActor);
-	}
-
+	PalCommander->RegisterWork(NewActor);
 }
 
 void APalBaseCamp::Tick(float DeltaTime)

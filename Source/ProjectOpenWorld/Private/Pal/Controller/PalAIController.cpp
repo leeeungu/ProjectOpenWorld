@@ -1,5 +1,8 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Blueprint/AIAsyncTaskBlueprintProxy.h"
+#include "NavigationSystem.h"
 
 APalAIController::APalAIController() : AAIController{}
 {
@@ -30,6 +33,19 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 
 EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector TargetLocation, float fAcceptanceRadius )
 {
+	//UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	//if (NavSystem == nullptr)
+	//	return EPathFollowingRequestResult::Type::Failed;
+	//UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), TargetLocation);
+	//FPathFindingQuery query{};
+	//UNavigationSystemV1::FindPathSync(query, EPathFindingMode::Type::Hierarchical);
+	//
+	//	// AI 한테 찍은 좌표로 이동시키라고 명령
+	//auto a = UAIBlueprintHelperLibrary::CreateMoveToProxyObject(GetWorld(), GetPawn(), TargetLocation, nullptr, fAcceptanceRadius, true);
+	//a->
+	//(this, TargetLocation);
+	//	return EPathFollowingRequestResult::Type::RequestSuccessful;
+
 	FAIMoveRequest MoveReq(TargetLocation);
 	MoveReq.SetUsePathfinding(true);
 	MoveReq.SetAllowPartialPath(true);
