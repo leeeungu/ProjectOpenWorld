@@ -36,6 +36,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void BeginDestroy() override;
 private:
 	FPalCommand Command{};
 

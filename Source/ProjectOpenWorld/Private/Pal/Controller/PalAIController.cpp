@@ -33,19 +33,20 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 
 EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector TargetLocation, float fAcceptanceRadius )
 {
-	//UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 	//if (NavSystem == nullptr)
 	//	return EPathFollowingRequestResult::Type::Failed;
-	//UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), TargetLocation);
-	//FPathFindingQuery query{};
-	//UNavigationSystemV1::FindPathSync(query, EPathFindingMode::Type::Hierarchical);
-	//
-	//	// AI 한테 찍은 좌표로 이동시키라고 명령
-	//auto a = UAIBlueprintHelperLibrary::CreateMoveToProxyObject(GetWorld(), GetPawn(), TargetLocation, nullptr, fAcceptanceRadius, true);
-	//a->
-	//(this, TargetLocation);
+	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, TargetLocation);
+	////UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), TargetLocation);
+	////FPathFindingQuery query{};
+	////UNavigationSystemV1::FindPathSync(query, EPathFindingMode::Type::Hierarchical);
+	////
+	////	// AI 한테 찍은 좌표로 이동시키라고 명령
+	////auto a = UAIBlueprintHelperLibrary::CreateMoveToProxyObject(GetWorld(), GetPawn(), TargetLocation, nullptr, fAcceptanceRadius, true);
+	////a->
+	////(this, TargetLocation);
+	//UE_LOG(LogTemp, Warning, TEXT("APalAIController::MoveToLocation Start PathFind"));
 	//	return EPathFollowingRequestResult::Type::RequestSuccessful;
-
 	FAIMoveRequest MoveReq(TargetLocation);
 	MoveReq.SetUsePathfinding(true);
 	MoveReq.SetAllowPartialPath(true);
@@ -58,7 +59,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 	FPathFollowingRequestResult result = MoveTo(MoveReq, &OutPath);
 	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("MoveToLocation :: None Path"));
+		UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path"));
 	}
-	return result;
+	return result.Code;
 }

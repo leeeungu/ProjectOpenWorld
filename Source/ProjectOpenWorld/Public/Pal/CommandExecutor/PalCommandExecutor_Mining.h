@@ -21,7 +21,7 @@ protected:
 	bool bStartedMining{};
 public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;
-	virtual void StartCommand(const FPalCommand& Command) override;
+	virtual bool StartCommand(const FPalCommand& Command) override;
 	virtual void Abort() override;
 
 protected:

@@ -17,12 +17,13 @@ ABaseMonster::ABaseMonster() :
 	Attack = 10.0f;
 }
 
-void ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
+bool ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
 {
 	if (CommandComponent)
 	{
-		CommandComponent->PushCommand(Command);
+		return CommandComponent->PushCommand(Command);
 	}
+	return false;
 }
 
 float ABaseMonster::GetAttackValue_Implementation() const

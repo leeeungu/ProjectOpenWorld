@@ -81,8 +81,19 @@ void ABuildingActor::OnInteraction_Implementation()
 
 void ABuildingActor::OnInteractionEnd_Implementation(APlayerController* pPlayer)
 {
-	
 	GetBuildingProgress()->StopBuilding();
 	BuildingEnd();
 	Player = nullptr;
+}
+
+void ABuildingActor::OnInteractionCanceled_Implementation()
+{
+	if (buildingProgressComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));
+		buildingProgressComponent->onBuildingEnd.Broadcast();
+	}
+	BuildingEnd();
+	Player = nullptr;
+	Destroy();
 }

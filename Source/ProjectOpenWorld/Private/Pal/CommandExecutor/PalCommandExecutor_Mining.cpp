@@ -16,10 +16,10 @@ void UPalCommandExecutor_Mining::Initialize(UPalCommandComponent* CommandComp)
 	}
 }
 
-void UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
+bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 {
 	if (!OwnerPal || !OwnerController || !Command.pTarget)
-		return;
+		return false;
 
 	if (OwnerController)
 	{
@@ -27,9 +27,12 @@ void UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
 		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Mining::Can Find Path %s "), *Command.pTarget->GetName());
 			EndMining();
+			return false;
 		}
 	}
+	return true;
 }
 
 void UPalCommandExecutor_Mining::Abort()

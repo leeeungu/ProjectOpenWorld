@@ -50,6 +50,7 @@ UBuildingAssistComponent::UBuildingAssistComponent()
 	// Trace¿ë ObjectTypes
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 	EndBuilding();
 }
 

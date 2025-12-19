@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
@@ -29,6 +29,9 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	void OnInteractionEnd(APlayerController* pPlayer);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
+	void OnInteractionCanceled();
 };
 //public: // IInteractionInterface
 //	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override {}

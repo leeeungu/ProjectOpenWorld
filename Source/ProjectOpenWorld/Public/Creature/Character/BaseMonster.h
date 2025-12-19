@@ -32,7 +32,7 @@ public:
 	ABaseMonster();
 
 
-	virtual void ReceiveCommand_Implementation(FPalCommand Command) override;
+	virtual bool ReceiveCommand_Implementation(FPalCommand Command) override;
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")

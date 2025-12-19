@@ -39,9 +39,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalStore")
 	TMap< TObjectPtr<AActor>, int> SpawnedPal{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PalStore")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalStore")
 	int InventorySize = 30;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PalStore")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalStore")
 	int SpawnSize = 30;
 public:	
 	UPalStorageComponent();

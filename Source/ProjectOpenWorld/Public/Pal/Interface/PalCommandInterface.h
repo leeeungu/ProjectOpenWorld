@@ -18,5 +18,5 @@ class PROJECTOPENWORLD_API IPalCommandInterface
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void ReceiveCommand(FPalCommand Command);
+	bool ReceiveCommand(FPalCommand Command);
 };

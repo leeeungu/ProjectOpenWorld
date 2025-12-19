@@ -26,12 +26,14 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 	Attack = 10.0f;
 }
 
-void ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
+bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 {
 	if (CommandComponent)
 	{
-		CommandComponent->PushCommand(Command);
+		UE_LOG(LogTemp, Warning, TEXT("ABaseCreature::ReceiveCommand_Implementation"));
+		return CommandComponent->PushCommand(Command);
 	}
+	return false;
 }
 
 UPalCommandComponent* ABaseCreature::GetCommandComponent() const

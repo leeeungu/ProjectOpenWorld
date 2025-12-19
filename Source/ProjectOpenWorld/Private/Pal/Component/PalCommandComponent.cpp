@@ -36,10 +36,10 @@ void UPalCommandComponent::BeginPlay()
 }
 
 
-void UPalCommandComponent::PopCommand()
+bool UPalCommandComponent::PopCommand()
 {
 	if (CurrentCommand != &DummyCommand)
-		return;
+		return false;
 
 	if (QueueCommand.Dequeue(CurrentCommand) == false)
 	{
@@ -47,26 +47,30 @@ void UPalCommandComponent::PopCommand()
 		ResetCurrentCommand();
 		LastCommand = nullptr;
 		//UE_LOG(LogTemp, Log, TEXT("%s : Command None"), *GetOwner()->GetName());
-		return;
+		return false;
 	}
 	if (IsValidCommand() == false)
-		return;
+		return false;
 	const FPalCommand* Current = GetCurrentCommand_C();
 	uint8 idx = (uint8)Current->CommandKind;
 	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
-		return;
+		return false;
 	if (CurrentExcute == CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get())
-		return;
+		return false;
 
 	CurrentExcute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get();
 	if (CurrentExcute)
 	{
-		CurrentExcute->StartCommand(*Current);
+		if (CurrentExcute->StartCommand(*Current))
+		{
+			OnStartCurrentCommand();
+			return true;
+		}
 	}
-	OnStartCurrentCommand();
+	return false;
 }
 
-void UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
+bool UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
 {
 	FPalCommand* pEmpthy{};
 	if (LastCommand)
@@ -74,50 +78,51 @@ void UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
 		if (NewCommand == *LastCommand)
 		{
 			UE_LOG(LogTemp, Log, TEXT("%s : Duple Command"), *GetOwner()->GetName());
-			return;
+			return false;
 		}
 	}
 	if (QueueEmpty.Dequeue(pEmpthy) == false)
 	{
 		UE_LOG(LogTemp, Log, TEXT("%s : Command Full"), *GetOwner()->GetName());
 		PopCommand();
-		return;
+		return false;
 	}
 	*pEmpthy = NewCommand;
 	LastCommand = pEmpthy;
 	QueueCommand.Enqueue(pEmpthy);
-	PopCommand();
+	return PopCommand();
 }
 
-void UPalCommandComponent::PushCommand_DequqOld(const FPalCommand& NewCommand)
+bool UPalCommandComponent::PushCommand_DequqOld(const FPalCommand& NewCommand) // ¹Ì»ç¿ë
 {
 	FPalCommand* pEmpthy{};
 	if (QueueEmpty.Dequeue(pEmpthy) == false)
 	{
 		if (QueueCommand.Dequeue(pEmpthy) == false)
-			return;
-		PopCommand();
+			return false;
+	
+		return 	PopCommand();
 	}
 	pEmpthy->CommandKind = NewCommand.CommandKind;
 	pEmpthy->pInstigatorActor = NewCommand.pInstigatorActor;
 	pEmpthy->pTarget = NewCommand.pTarget;
 	QueueCommand.Enqueue(pEmpthy);
-	PopCommand();
+	return PopCommand();
 }
 
-void UPalCommandComponent::SetPushCommandFunc(void(UPalCommandComponent::* Func)(const FPalCommand&))
+void UPalCommandComponent::SetPushCommandFunc(bool(UPalCommandComponent::* Func)(const FPalCommand&))
 {
 	PushCommandFunc = Func;
 }
 
-void UPalCommandComponent::PushCommand(const FPalCommand& NewCommand)
+bool UPalCommandComponent::PushCommand(const FPalCommand& NewCommand)
 {
 	if (!PushCommandFunc)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s : PushCommandFunc is null"), *GetName());
-		return;
+		return false;
 	}
-	(this->*PushCommandFunc)(NewCommand);
+	return (this->*PushCommandFunc)(NewCommand);
 }
 
 void UPalCommandComponent::FinishCommand()

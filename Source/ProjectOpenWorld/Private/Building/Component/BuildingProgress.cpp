@@ -1,5 +1,4 @@
 #include "Building/Component/BuildingProgress.h"
-#include "NavigationSystem.h"
 #include "Building/BaseBuilding.h"
 
 UBuildingProgress::UBuildingProgress()
@@ -78,7 +77,6 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 		buildingMeshComponent->SetMobility(EComponentMobility::Movable);
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
 		buildingMeshComponent->SetMobility(EComponentMobility::Static);
-		buildingMeshComponent->SetCanEverAffectNavigation(true);
 		if (buildingMakingMat)
 		{
 			int nSize = buildingMeshComponent->GetMaterials().Num();
@@ -101,13 +99,6 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 					buildingMaking.Add(Making);
 				}
 			}
-		}
-		buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-
-		ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner());
-		if (OwnerActor)
-		{
-			OwnerActor->UpdateModifier();
 		}
 	}
 }
@@ -163,10 +154,11 @@ void UBuildingProgress::EndBuilding()
 		//}
 		onBuildingEnd.Broadcast();
 	}
-	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	buildingMeshComponent->SetCanEverAffectNavigation(true);
-	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
+
+	if(ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
+	{
+		OwnerActor->UpdateModifier();
+	}
 }
 
 bool UBuildingProgress::IsBuildingEnd() const

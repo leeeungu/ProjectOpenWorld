@@ -6,6 +6,7 @@
 #include "NavAreas/NavArea_Obstacle.h"
 #include "NavAreas/NavArea_Default.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
+#include "NavigationSystem.h"
 
 ABaseBuilding::ABaseBuilding()
 {
@@ -14,10 +15,8 @@ ABaseBuilding::ABaseBuilding()
 	buildingMeshComponent = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("BuildingMesh"));
 	SetRootComponent(buildingMeshComponent);
 	buildingMeshComponent->SetMobility(EComponentMobility::Static);
-	buildingMeshComponent->SetCanEverAffectNavigation(false);
-	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
-	buildingMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
-	buildingMeshComponent->SetCanEverAffectNavigation(true);
+	//buildingMeshComponent->SetCanEverAffectNavigation(false);
+	buildingMeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	
 	buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
 	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
@@ -50,6 +49,12 @@ void ABaseBuilding::OnConstruction(const FTransform& Transform)
 	AActor::OnConstruction(Transform);
 }
 
+void ABaseBuilding::BeginDestroy()
+{
+	
+	Super::BeginDestroy();
+}
+
 EPalCommandKind ABaseBuilding::GetCommandKind_Implementation()
 {
 	return Command.CommandKind;
@@ -69,6 +74,15 @@ void ABaseBuilding::UpdateModifier()
 {
 	if (!NavModifier)
 		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("ABaseBuilding::UpdateModifier"));
+	buildingMeshComponent->SetCollisionProfileName(TEXT("P_Building"));
+	buildingMeshComponent->SetMobility(EComponentMobility::Static);
+	buildingMeshComponent->SetCanEverAffectNavigation(true);
+	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	if (Nav)
+		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
+
 }

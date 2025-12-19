@@ -1,4 +1,4 @@
-﻿#include "Building/Subsystem/BuildingWidgetSubsystem.h"
+#include "Building/Subsystem/BuildingWidgetSubsystem.h"
 #include "Building/Widget/BuildingStateWidget.h"
 #include "Building/Component/BuildingProgress.h"
 

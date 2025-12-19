@@ -16,7 +16,7 @@ public:
 	UPalCommandExecutorBase() = default;
 
 	virtual void Initialize(UPalCommandComponent* CommandComp);
-	virtual void StartCommand(const FPalCommand& Command) {}
+	virtual bool StartCommand(const FPalCommand& Command) { return false; }
 	virtual void TickCommand(float DeltaTime) {}
 	// 강제 command 종료
 	virtual void Abort() {} 

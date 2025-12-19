@@ -17,27 +17,27 @@ void UPalCommandExecutor_Transport::Initialize(UPalCommandComponent* CommandComp
 	}
 }
 
-void UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
+bool UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 {
 	if (!OwnerCommandComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: No PalCommandComponent"));
-		return;
+		return false;
 	}
 	if (!OwnerPal || !OwnerController)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Owner is not Pal %s"), *OwnerCommandComp->GetOwner()->GetFName().ToString());
-		return;
+		return false;
 	}
 	if (eTransportState != TransportState::None)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Already Move"));
-		return;
+		return false;
 	}
 	if (!Command.pTarget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Can't move"));
-		return;
+		return false;
 	}
 	if (OwnerController)
 	{
@@ -45,10 +45,13 @@ void UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 		eTransportState = TransportState::Go;
 		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Transport::Can Find Path %s "), *Command.pTarget->GetName());
 			EndTransport();
-			return;
+			return false;
 		}
+		return true;;
 	}
+	return false;
 }
 
 void UPalCommandExecutor_Transport::Abort()

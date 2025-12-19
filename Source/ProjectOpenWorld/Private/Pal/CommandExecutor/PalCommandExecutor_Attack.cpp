@@ -23,15 +23,15 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 }
 
 
-void UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
+bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 {
 	if (!AttackComponent || Command.CommandKind != EPalCommandKind::Attack || !Command.pTarget || bStartedAttacking)
 	{
-		return;
+		return false;
 	}
 	if (!OwnerController)
 	{
-		return;
+		return false;
 	}
 	bStartedAttacking = true;
 	OwnerPal->SetActionStarted(true);
@@ -39,14 +39,13 @@ void UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 	{
 		FPalAttackData NewAttackData{};
 		NewAttackData.TargetActor = Command.pTarget;
-		NewAttackData.AttackSlot =(ESubAttackType)Command.SubCommandType;
+		NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
 		AttackComponent->SetAttackData(NewAttackData);
 		AttackComponent->StartAttack();
+		return true;
 	}
-	else
-	{
-		EndAttack();
-	}
+	EndAttack();
+	return false;
 }
 
 void UPalCommandExecutor_Attack::Abort()

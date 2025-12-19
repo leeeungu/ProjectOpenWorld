@@ -15,17 +15,21 @@ void UPalCommandExecutor_MoveActor::Initialize(UPalCommandComponent* CommandComp
 	}
 }
 
-void UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
+bool UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
 {
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
 		if (OwnerController->MoveToActor(Command.pTarget, 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("MoveActor::Can Find Path"));
 			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
 			EndCommand();
+			return false;
 		}
+		return true;
 	}
+	return false;
 }
 
 void UPalCommandExecutor_MoveActor::Abort()

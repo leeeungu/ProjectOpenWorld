@@ -24,7 +24,7 @@ private:
 	FPalCommand DummyCommand{};
 	FPalCommand* CurrentCommand{};
 	FPalCommand* LastCommand{};
-	void (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
+	bool (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
 protected:
 	// garbage 문제로 stringobj를 사용
 	TArray< TArray<TStrongObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};
@@ -44,11 +44,11 @@ protected:
 
 	template <typename T>
 	void CreateNewExcutor(EPalCommandKind CommandType, uint8 SubType, FName Name = NAME_None);
-	void PopCommand();
+	bool PopCommand();
 
-	void PushCommand_Default(const FPalCommand& NewCommand);
-	void PushCommand_DequqOld(const FPalCommand& NewCommand);
-	void SetPushCommandFunc(void (UPalCommandComponent::* Func)(const FPalCommand&));
+	bool PushCommand_Default(const FPalCommand& NewCommand);
+	bool PushCommand_DequqOld(const FPalCommand& NewCommand);
+	void SetPushCommandFunc(bool (UPalCommandComponent::* Func)(const FPalCommand&));
 public:	
 	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
 	inline const FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
@@ -61,7 +61,7 @@ public:
 	FORCEINLINE uint8 GetCurrentSubCommandType() const { return CurrentCommand->SubCommandType; }
 
 	UFUNCTION(BlueprintCallable, Category = "PalCommand")
-	void PushCommand(const FPalCommand& NewCommand);
+	bool PushCommand(const FPalCommand& NewCommand);
 
 	UFUNCTION(BlueprintCallable, Category = "PalCommand")
 	void FinishCommand(); // == stop

@@ -35,7 +35,7 @@ void APalBaseCamp::BeginPlay()
 	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(GetOwner());

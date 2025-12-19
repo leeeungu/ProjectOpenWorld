@@ -1,4 +1,4 @@
-Ôªø// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,7 +18,7 @@ class PROJECTOPENWORLD_API UBuildingProgress : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	// Ìï¥Îãπ Í∏∞Îä•ÏùÑ Î¨∂Ïñ¥ÏÑú Ï≤òÎ¶¨Î©¥ Ï¢ãÏùÑÎìØ?
+	// «ÿ¥Á ±‚¥…¿ª π≠æÓº≠ √≥∏Æ∏È ¡¡¿ªµÌ?
 	TSoftObjectPtr<UStaticMeshComponent> buildingMeshComponent{};
 	TSoftObjectPtr < UMaterial> buildingMakingMat{};
 	TArray<TSoftObjectPtr <UMaterialInstanceDynamic>> buildingMaking{};
@@ -56,6 +56,7 @@ public:
 	void EndBuilding();
 
 	bool IsAlreadyStart() const { return !FMath::IsNearlyZero(curentPercent); }
+	UFUNCTION(BlueprintPure, Category = "Building")
 	bool IsBuildingEnd() const;
 
 	const float* GetBuildPercent() const { return &curentPercent; }

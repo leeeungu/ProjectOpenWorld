@@ -118,7 +118,8 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
-
+	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+	
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(GetOwner());
 
