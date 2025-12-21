@@ -49,7 +49,8 @@ bool UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 			EndTransport();
 			return false;
 		}
-		return true;;
+		IsCommandStarted = true;
+		return true;
 	}
 	return false;
 }

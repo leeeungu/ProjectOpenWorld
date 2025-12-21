@@ -29,6 +29,7 @@ bool UPalCommandExecutor_MoveLocation::StartCommand(const FPalCommand& Command)
 		}
 		return true;
 	}
+	IsCommandStarted = true;
 	return false;
 }
 

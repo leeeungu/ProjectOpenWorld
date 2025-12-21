@@ -10,6 +10,8 @@ class APalAIController;
 struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
 
+
+DECLARE_LOG_CATEGORY_EXTERN(ArchitectureCommand, Log, All);
 UCLASS()
 class PROJECTOPENWORLD_API UPalCommandExecutor_Architecture : public UPalCommandExecutorBase
 {

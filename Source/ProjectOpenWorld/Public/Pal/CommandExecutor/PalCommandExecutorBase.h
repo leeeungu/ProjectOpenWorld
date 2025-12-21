@@ -12,6 +12,8 @@ class PROJECTOPENWORLD_API UPalCommandExecutorBase : public UObject
 	GENERATED_BODY()
 protected:
 	UPalCommandComponent* OwnerCommandComp{};
+	bool IsCommandStarted{ false };
+
 public:
 	UPalCommandExecutorBase() = default;
 

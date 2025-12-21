@@ -7,6 +7,9 @@
 #include "Pal/Component/PalCommandComponent.h"
 #include "Engine/StaticMeshSocket.h"
 
+DEFINE_LOG_CATEGORY(ArchitectureCommand);
+
+
 void UPalCommandExecutor_Architecture::Initialize(UPalCommandComponent* CommandComp)
 {
 	UPalCommandExecutorBase::Initialize(CommandComp);
@@ -25,21 +28,41 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd() || !OwnerPal)
 		return false;
 	
-	UE_LOG(LogTemp, Warning, TEXT("Start Architecture :: %s"), *OwnerPal->GetFName().ToString());
+	UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
 	bActionStart = true;
+	IsCommandStarted = true;
 	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::EndBuilding);
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		if (OwnerController->MoveToLocation(Target, 600.f) == EPathFollowingRequestResult::Type::Failed)
+		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 600.f);
+		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Architecture::Can Find Path %s ") , *TargetBuilding->GetFullName());
+			UE_LOG(ArchitectureCommand, Error, TEXT("StartCommand::Can Find Path %s ") , *TargetBuilding->GetFullName());
+			IsCommandStarted = false;
 			EndBuilding();
 			return false;
 		}
+		if (PathResult == EPathFollowingRequestResult::AlreadyAtGoal)
+		{
+			if (OwnerCommandComp->IsValidCommand() &&
+				Command.CommandKind == EPalCommandKind::Work && Command.SubCommandType == (uint8)ESubWorkType::Architecture)
+			{
+				TargetBuilding->GetBuildingProgress()->StartBuilding();
+				if (OwnerPal) // aniation
+				{
+					OwnerPal->SetActionStarted(true);
+					if (UStaticMeshComponent* ArchitectureMeshComponent = OwnerPal->GetArchitectureMeshComponent())
+					{
+						ArchitectureMeshComponent->SetVisibility(true);
+					}
+				}
+			}
+		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 void UPalCommandExecutor_Architecture::Abort()
@@ -70,7 +93,7 @@ void UPalCommandExecutor_Architecture::Abort()
 
 void UPalCommandExecutor_Architecture::EndBuilding()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: EndBuilding"));
+	UE_LOG(ArchitectureCommand, Warning, TEXT("Executor_Architecture :: EndBuilding"));
 	Abort();
 	EndCommand();
 }

@@ -17,6 +17,7 @@ class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IIntera
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
 	TSoftObjectPtr<APlayerController> Player{};
 	
 	UFUNCTION()

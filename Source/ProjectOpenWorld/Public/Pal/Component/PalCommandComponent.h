@@ -25,6 +25,7 @@ private:
 	FPalCommand* CurrentCommand{};
 	FPalCommand* LastCommand{};
 	bool (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
+	bool bCommandStarted{};
 protected:
 	// garbage 문제로 stringobj를 사용
 	TArray< TArray<TStrongObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};

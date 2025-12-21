@@ -77,4 +77,19 @@ public:
 			return true;
 		return false;
 	}
+
+	void Reset()
+	{
+		CommandKind = EPalCommandKind::None_PalCommandKind;
+		pInstigatorActor = nullptr;
+		pTarget = nullptr;
+		TargetLocation = FVector::ZeroVector;
+		SubCommandType = 0;
+	}
+	static bool IsValidCommand(const FPalCommand& Command)
+	{
+		if (Command.CommandKind == EPalCommandKind::None_PalCommandKind || Command.SubCommandType == 0)
+			return false;
+		return true;
+	}
 };

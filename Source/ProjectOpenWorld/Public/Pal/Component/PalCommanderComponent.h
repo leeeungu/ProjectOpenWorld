@@ -16,12 +16,12 @@ class PROJECTOPENWORLD_API UPalCommanderComponent : public UActorComponent
 	GENERATED_BODY()
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TSet< TObjectPtr<ABaseCreature>> pals{};
+	TSet<TObjectPtr<ABaseCreature>> pals{};
 
 	std::list<TObjectPtr<AActor>> WorkList;
-	std::set< TObjectPtr<ABaseCreature>> NotWorkPals{};
 
 	float Time{};
+	int NotWork{};
 public:	
 	UPalCommanderComponent();
 

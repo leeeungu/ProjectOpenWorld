@@ -51,7 +51,6 @@ void ABaseBuilding::OnConstruction(const FTransform& Transform)
 
 void ABaseBuilding::BeginDestroy()
 {
-	
 	Super::BeginDestroy();
 }
 
@@ -68,6 +67,13 @@ uint8 ABaseBuilding::GetSubCommandType_Implementation()
 FPalCommand ABaseBuilding::GetCommand_Implementation()
 {
 	return Command;
+}
+
+bool ABaseBuilding::IsCommandFinished_Implementation()
+{
+	if (!buildingProgressComponent)
+		return true;
+	return buildingProgressComponent->IsBuildingEnd();
 }
 
 void ABaseBuilding::UpdateModifier()

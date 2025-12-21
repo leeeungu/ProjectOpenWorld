@@ -1,4 +1,19 @@
-﻿#include "Building/Widget/BuildingStateWidget.h"
+#include "Building/Widget/BuildingStateWidget.h"
+#include "Building/Component/BuildingProgress.h"	
+
+void UBuildingStateWidget::InitializeWidget(UBuildingProgress* ProgressComponent)
+{
+	if (buildProgress)
+		buildProgress->onBuildingEnd.RemoveDynamic(this, &UBuildingStateWidget::OnBuildingEnd);
+	buildProgress = ProgressComponent;
+	if (buildProgress)
+	{
+		SetBuildPercent(buildProgress->GetBuildPercent());
+		SetBuildTime(buildProgress->GetBuildTime());
+		SetBuildSpeed(buildProgress->GetBuildSpeed());
+		buildProgress->onBuildingEnd.AddUniqueDynamic(this, &UBuildingStateWidget::OnBuildingEnd);
+	}
+}
 
 void UBuildingStateWidget::SetBuildPercent(const float* BuildPercent)
 {
@@ -47,3 +62,4 @@ FText UBuildingStateWidget::GetBuildTime() const
 	}
 	return FText::FromString(TimeString);
 }
+

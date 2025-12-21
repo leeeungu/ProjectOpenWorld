@@ -8,6 +8,10 @@ UCLASS()
 class PROJECTOPENWORLD_API APalAIController : public AAIController
 {
 	GENERATED_BODY()
+
+protected:
+	bool FindLandscapeBelow(FVector StartLocation , FVector EndLocation, FVector& Result);
+
 public:
 	APalAIController();
 

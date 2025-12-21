@@ -32,6 +32,7 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 			return false;
 		}
 	}
+	IsCommandStarted = true;
 	return true;
 }
 

@@ -11,6 +11,7 @@ void UPalCommandExecutorBase::EndCommand()
 {
 	if (OwnerCommandComp)
 	{
+		IsCommandStarted = false;
 		OwnerCommandComp->FinishCommand();
 	}
 }

@@ -42,6 +42,7 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 		NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
 		AttackComponent->SetAttackData(NewAttackData);
 		AttackComponent->StartAttack();
+		IsCommandStarted = true;
 		return true;
 	}
 	EndAttack();

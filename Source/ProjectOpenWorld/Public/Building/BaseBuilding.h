@@ -44,6 +44,7 @@ public:
 	virtual EPalCommandKind GetCommandKind_Implementation() override;
 	virtual uint8 GetSubCommandType_Implementation() override;
 	virtual FPalCommand GetCommand_Implementation() override;
+	virtual bool IsCommandFinished_Implementation() override;
 
 	void UpdateModifier();
 protected:

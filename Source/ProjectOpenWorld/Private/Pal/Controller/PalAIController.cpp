@@ -3,6 +3,8 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
 #include "NavigationSystem.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Landscape.h"
 
 APalAIController::APalAIController() : AAIController{}
 {
@@ -10,6 +12,38 @@ APalAIController::APalAIController() : AAIController{}
 
 }
 
+bool APalAIController::FindLandscapeBelow(FVector StartLocation, FVector EndLocation, FVector& Result)
+{
+	// Define the collision channel for the raycast
+	const ECollisionChannel TraceChannel = ECC_Visibility;
+
+	// Perform the line trace
+	TArray<FHitResult> OutHits{};
+	bool bHit = GetWorld()->LineTraceMultiByChannel(
+		OutHits,
+		StartLocation ,
+		EndLocation,
+		TraceChannel
+	);
+
+
+	// Check if the hit actor is a Landscape
+	Result = StartLocation;
+	//if (bHit)
+	{
+		for (FHitResult& OutHit : OutHits)
+		{
+			if (OutHit.GetActor())
+			{
+				Result = OutHit.ImpactPoint;
+				UE_LOG(LogTemp, Warning, TEXT("FindLandscapeBelow :: Found at Location: %s"), *Result.ToString());
+				DrawDebugLine(GetWorld(), StartLocation, Result, FColor::Green, false, 2.0f, 0, 2.0f);
+				return true;
+			}
+		}
+	}
+	return false;
+}
 EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius )
 {
 	if (!TargetActor)
@@ -59,7 +93,24 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 	FPathFollowingRequestResult result = MoveTo(MoveReq, &OutPath);
 	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path"));
+		FVector NewLocation{};
+		if (FindLandscapeBelow(TargetLocation + FVector(0, 0, 600), TargetLocation + FVector(0, 0, -600), NewLocation))
+		{
+			MoveReq.SetGoalLocation(NewLocation);
+			result = MoveTo(MoveReq, &OutPath);
+			if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
+			{
+					GetPawn()->SetActorLocation(NewLocation);
+				UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path Even After Landscape Adjust"));
+				return EPathFollowingRequestResult::AlreadyAtGoal;
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path"));
+		}
 	}
+
+
 	return result.Code;
 }

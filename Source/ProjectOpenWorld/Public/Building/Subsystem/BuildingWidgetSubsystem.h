@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
@@ -16,10 +16,10 @@ class PROJECTOPENWORLD_API UBuildingWidgetSubsystem : public ULocalPlayerSubsyst
 protected:
 
 	UPROPERTY()
-	UBuildingStateWidget* buildingStateWidget{};
+	TObjectPtr<UBuildingStateWidget> buildingStateWidget{};
 	UPROPERTY()
 	TSubclassOf<UBuildingStateWidget> buildingStateWidgetClass{};
-
+	UPROPERTY()
 	TSoftObjectPtr<UBuildingProgress> buildProgress{};
 public:
 	UBuildingWidgetSubsystem();

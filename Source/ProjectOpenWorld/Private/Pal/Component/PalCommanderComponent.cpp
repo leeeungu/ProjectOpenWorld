@@ -16,10 +16,9 @@ void UPalCommanderComponent::BeginPlay()
 void UPalCommanderComponent::FinishCommand(AActor* PalActor, FPalCommand Command)
 {
 	ABaseCreature* pal = Cast< ABaseCreature>(PalActor);
-	if (!pal || !pals.Contains(pal) || NotWorkPals.find(pal) != NotWorkPals.end())
+	if (!pal || !pals.Contains(pal) || pal->GetCommandComponent()->IsValidCommand())
 		return;
-	NotWorkPals.insert(pal);
-	//CommanderWork();
+	//pals.Find(pal);// ->Reset();
 }
 
 bool UPalCommanderComponent::StartWork(ABaseCreature* pal, const FPalCommand& Command)
@@ -34,14 +33,19 @@ bool UPalCommanderComponent::StartWork(ABaseCreature* pal, const FPalCommand& Co
 
 void UPalCommanderComponent::CommanderWork()
 {
-	if (WorkList.size() > 0 && NotWorkPals.size() > 0)
+	if (WorkList.size() > 0)
 	{
 		AActor* Work = WorkList.front();
 		WorkList.pop_front();
 		if (Work)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UPalCommanderComponent::CommanderWork %s"), *Work->GetFName().ToString());
-			if (CommadReady(ICommanderManageable::Execute_GetCommand(Work)))
+			if (ICommanderManageable::Execute_IsCommandFinished(Work))
+			{
+				return;
+			}
+
+			//UE_LOG(LogTemp, Warning, TEXT("UPalCommanderComponent::CommanderWork %s"), *Work->GetFName().ToString());
+			if (CommadReady(ICommanderManageable::Execute_GetCommand(Work)) )
 			{
 			}
 			else
@@ -57,10 +61,22 @@ void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	if (Time >= 5.0f )
 	{
 		Time -= 5.0f;
-		UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::TickComponent %d, %d"), WorkList.size(), NotWorkPals.size());
-		while (WorkList.size() > 0 && NotWorkPals.size() > 0)
+		int PalSize = pals.Num();
+		NotWork = 0;
+		for (int i = 0; i < PalSize; i++)
+		{
+			if (StartWork(pals.Array()[i], {}))
+			{
+				NotWork++;
+			}
+		}
+
+		int Size = WorkList.size();
+		UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::TickComponent %d %d"), WorkList.size(), NotWork);
+		while (Size > 0)
 		{
 			CommanderWork();
+			Size--;
 		}
 	}
 }
@@ -70,8 +86,7 @@ void UPalCommanderComponent::StorePal(AActor* NewPal)
 	ABaseCreature* Creature = Cast< ABaseCreature>(NewPal);
 	if (!Creature)
 		return;
-	pals.Add(Creature);
-	NotWorkPals.insert(Creature);
+	pals.Add(Creature, {});
 	UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::StorePal"));
 	Creature->GetCommandComponent()->OnCommandFinished.AddUniqueDynamic(this, &UPalCommanderComponent::FinishCommand);
 	CommanderWork();
@@ -105,9 +120,9 @@ bool  UPalCommanderComponent::CommadAll(const FPalCommand& Command)
 		return true;
 	}
 	bool Result{};
-	int Size = NotWorkPals.size();
-	std::set< TObjectPtr<ABaseCreature>>::iterator palIter = NotWorkPals.begin();
-	for (int i = 0; i < Size && palIter != NotWorkPals.end(); i++)
+	//int Size = NotWorkPals.Num();
+	//TArray<TObjectPtr<ABaseCreature>> Array = NotWorkPals.Array();
+	/*for (int i = 0; i < Size && !Result; i++)
 	{
 		TObjectPtr<ABaseCreature> pal = *palIter;
 		if (StartWork(pal, Command))
@@ -117,8 +132,9 @@ bool  UPalCommanderComponent::CommadAll(const FPalCommand& Command)
 			IPalCommandInterface::Execute_ReceiveCommand(pal, Command);
 			Result = true;
 		}
+		else
 		palIter++;
-	}
+	}*/
 	return Result;
 }
 
@@ -132,31 +148,18 @@ bool UPalCommanderComponent::CommadReady(const FPalCommand& Command)
 	}
 	bool Result{};
 
-	int Size = NotWorkPals.size();
-	std::set< TObjectPtr<ABaseCreature>>::iterator palIter = NotWorkPals.begin();
-	for (int i = 0; i < Size && palIter != NotWorkPals.end(); i ++ )
+	int Size = pals.Num();
+	TArray<TObjectPtr<ABaseCreature>> array = pals.Array();
+	for (int i = 0; i < Size && !Result; i ++ )
 	{
-		TObjectPtr<ABaseCreature> pal = *palIter;
+		TObjectPtr<ABaseCreature> pal = array[i];
 		if (StartWork(pal, Command))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("UPalCommanderComponent :: StartWork %s %s"), *pal->GetName(), *AActor::GetDebugName(Command.pTarget));
-			palIter = NotWorkPals.erase(palIter);
-			IPalCommandInterface::Execute_ReceiveCommand(pal, Command);
-			Result = true;
+			Result = IPalCommandInterface::Execute_ReceiveCommand(pal, Command);
+			//	pals[pal].Reset();
 			break;
 		}
-		palIter++;
 	}
-	/*if (!NotWorkPals.empty())
-	{
-		TObjectPtr<ABaseCreature> pal = NotWorkPals.front();
-		if (StartWork(pal, Command))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("StartWork %s %s"), *pal->GetName(), *Command.pTarget->GetName());
-			IPalCommandInterface::Execute_ReceiveCommand(pal, Command);
-			Result = true;
-			NotWorkPals.pop_front();
-		}
-	}*/
 	return Result;
 }

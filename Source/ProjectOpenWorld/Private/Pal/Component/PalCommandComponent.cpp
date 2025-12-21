@@ -16,9 +16,7 @@ UPalCommandComponent::UPalCommandComponent()
 
 void UPalCommandComponent::ResetCommand(FPalCommand& pData)
 {
-	pData.CommandKind = EPalCommandKind::None_PalCommandKind;
-	pData.pTarget = nullptr;
-	pData.pInstigatorActor = nullptr;
+	pData.Reset();
 }
 
 void UPalCommandComponent::ResetCurrentCommand()
@@ -34,7 +32,6 @@ void UPalCommandComponent::BeginPlay()
 {
 	UActorComponent::BeginPlay();
 }
-
 
 bool UPalCommandComponent::PopCommand()
 {

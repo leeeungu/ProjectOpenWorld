@@ -1,8 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "BuildingStateWidget.generated.h"
+
+class UBuildingProgress;
+
 
 UCLASS()
 class PROJECTOPENWORLD_API UBuildingStateWidget : public UUserWidget
@@ -11,7 +14,12 @@ class PROJECTOPENWORLD_API UBuildingStateWidget : public UUserWidget
 	const float* buildPercent = nullptr;
 	const float* buildTime = nullptr;
 	const float* buildSpeed = nullptr;
+
+protected:
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UBuildingProgress> buildProgress{};
 public:
+	void InitializeWidget(UBuildingProgress* Widget);
 	void SetBuildPercent(const float* BuildPercent);
 	void SetBuildTime(const float* BuildTime);
 	void SetBuildSpeed(const float* BuildSpeed);

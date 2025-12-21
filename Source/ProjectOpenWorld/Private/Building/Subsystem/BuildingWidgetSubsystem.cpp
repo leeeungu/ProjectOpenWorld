@@ -1,7 +1,5 @@
 #include "Building/Subsystem/BuildingWidgetSubsystem.h"
 #include "Building/Widget/BuildingStateWidget.h"
-#include "Building/Component/BuildingProgress.h"
-
 
 DEFINE_LOG_CATEGORY(LogBuildingSubsystem);
 
@@ -41,17 +39,9 @@ void UBuildingWidgetSubsystem::PlayerControllerChanged(APlayerController* NewPla
 
 void UBuildingWidgetSubsystem::SetBuildingWidgetProperty(UBuildingProgress* ProgressComponent)
 {
-	if (buildingStateWidget && ProgressComponent)
+	if (buildingStateWidget)
 	{
-		buildingStateWidget->SetBuildPercent(ProgressComponent->GetBuildPercent());
-		buildingStateWidget->SetBuildTime(ProgressComponent->GetBuildTime());
-		buildingStateWidget->SetBuildSpeed(ProgressComponent->GetBuildSpeed());
-		if (buildProgress)
-		{
-			buildProgress->onBuildingEnd.RemoveDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
-		}
-		buildProgress = ProgressComponent;
-		ProgressComponent->onBuildingEnd.AddUniqueDynamic(buildingStateWidget, &UBuildingStateWidget::OnBuildingEnd);
+		buildingStateWidget->InitializeWidget(ProgressComponent);
 	}
 }
 

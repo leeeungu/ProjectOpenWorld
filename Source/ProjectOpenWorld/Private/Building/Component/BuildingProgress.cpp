@@ -121,7 +121,6 @@ void UBuildingProgress::ResumeBuilding()
 
 void UBuildingProgress::StartBuilding()
 {
-	
 	if (curentPercent >= 1.0f)
 	{
 		buildSpeed = 0;

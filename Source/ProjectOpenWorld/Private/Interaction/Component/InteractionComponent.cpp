@@ -98,11 +98,11 @@ void UInteractionComponent::OnActorCancel()
 {
 	if (InteractionTarget && InteractionTarget.GetObject())
 	{
+		IInteractionInterface::Execute_OnInteractionCanceled(InteractionTarget.GetObject());
 		if (bIsInteraction)
 			IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), PlayerController.Get());
 		else
 			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), PlayerController.Get());
-		IInteractionInterface::Execute_OnInteractionCanceled(InteractionTarget.GetObject());
 		//Cast<AActor>(InteractionTarget.GetObject())->Destroy();
 		bIsInteraction = false;
 		InteractionTarget = nullptr;

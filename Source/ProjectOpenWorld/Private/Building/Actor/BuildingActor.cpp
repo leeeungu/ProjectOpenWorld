@@ -28,6 +28,7 @@ void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 {
 	if (!pPlayer || !pPlayer->GetLocalPlayer())
 		return;
+	Player = pPlayer;
 	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
 	{
 		BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
@@ -88,12 +89,21 @@ void ABuildingActor::OnInteractionEnd_Implementation(APlayerController* pPlayer)
 
 void ABuildingActor::OnInteractionCanceled_Implementation()
 {
+	if (Player)
+	{
+		if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = Player->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
+		{
+			BuildingWidgetSubsystem->SetBuildingWidgetProperty(nullptr);
+			BuildingWidgetSubsystem->RemoveBuildTimeWidget();
+		}
+	}
+	//GetBuildingProgress()->StopBuilding();
+	BuildingEnd();
+	Player = nullptr;
 	if (buildingProgressComponent)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));
 		buildingProgressComponent->onBuildingEnd.Broadcast();
 	}
-	BuildingEnd();
-	Player = nullptr;
 	Destroy();
 }

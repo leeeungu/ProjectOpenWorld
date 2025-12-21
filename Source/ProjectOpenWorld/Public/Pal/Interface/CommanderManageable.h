@@ -21,4 +21,6 @@ public:
 	uint8 GetSubCommandType();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommanderManageable")
 	FPalCommand GetCommand();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommanderManageable")
+	bool IsCommandFinished();
 };
