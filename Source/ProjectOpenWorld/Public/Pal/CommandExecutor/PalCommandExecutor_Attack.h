@@ -16,9 +16,13 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_Attack : public UPalCommandExecut
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY()
 	AActor* TargetActor{};
+	UPROPERTY()
 	APalAIController* OwnerController{};
+	UPROPERTY()
 	ABaseCreature* OwnerPal{};
+	UPROPERTY()
 	UPalAttackComponent* AttackComponent{};
 	bool bStartedAttacking{};
 public:

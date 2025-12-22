@@ -29,6 +29,7 @@ protected:
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
 	bool bActionStarted{};
+	bool bDead{};
 public:
 	ABaseMonster();
 
@@ -50,6 +51,7 @@ public:
 	virtual void  SetAttackValue_Implementation(float NewValue) override;
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+	virtual bool IsDead_Implementation() const;
 
 
 	virtual EPalCommandKind GetCommandKind_Implementation() override;

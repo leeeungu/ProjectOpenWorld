@@ -37,7 +37,7 @@ bool APalAIController::FindLandscapeBelow(FVector StartLocation, FVector EndLoca
 			{
 				Result = OutHit.ImpactPoint;
 				UE_LOG(LogTemp, Warning, TEXT("FindLandscapeBelow :: Found at Location: %s"), *Result.ToString());
-				DrawDebugLine(GetWorld(), StartLocation, Result, FColor::Green, false, 2.0f, 0, 2.0f);
+				DrawDebugLine(GetWorld(), StartLocation, Result, FColor::Green, false, 5.0f, 0, 2.0f);
 				return true;
 			}
 		}
@@ -94,7 +94,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
 		FVector NewLocation{};
-		if (FindLandscapeBelow(TargetLocation + FVector(0, 0, 600), TargetLocation + FVector(0, 0, -600), NewLocation))
+		if (FindLandscapeBelow(TargetLocation , TargetLocation + FVector(0, 0, -600), NewLocation))
 		{
 			MoveReq.SetGoalLocation(NewLocation);
 			result = MoveTo(MoveReq, &OutPath);

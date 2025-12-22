@@ -5,6 +5,8 @@
 #include "Pal/Controller/PalMonsterController.h"
 #include "Pal/Component/PalMonsterCommandComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 
 
 ABaseMonster::ABaseMonster() :
@@ -45,21 +47,42 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 {
 	if (!Other || !Other.GetObject())
 		return false;
+	AActor* pOther = Cast < AActor>(Other.GetObject());
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
 	Hp -= Damage;
 	if (CommandComponent->IsValidCommand())
 	{
 		CommandComponent->ResetCommandQue();
 	}
-	if (AttackComponent && Cast< AActor>(Other.GetObject()) && !CommandComponent->IsValidCommand())
+	if (AttackComponent && pOther && !CommandComponent->IsValidCommand())
 	{
-		UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
-		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, Cast< AActor>(Other.GetObject()), ESubAttackType::Default));
+		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
+		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
-	UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
+	//UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
 	if (Hp <= 0.f)
-		Destroy();
+	{
+		Hp = 0.0f;
+		if (GetMesh())
+		{
+			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+			GetMesh()->SetSimulatePhysics(true);
+			if (pOther)
+			{
+				GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
+			}
+		}
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		FTimerHandle handle{};
+		bDead = true;
+		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f,false, 4.0f);
+	}
 	return true;
+}
+
+bool ABaseMonster::IsDead_Implementation() const
+{
+	return Hp <= 0.f;
 }
 
 EPalCommandKind ABaseMonster::GetCommandKind_Implementation()

@@ -34,7 +34,7 @@ bool UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Already Move"));
 		return false;
 	}
-	if (!Command.pTarget)
+	if (!Command.pTarget.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: Can't move"));
 		return false;
@@ -81,14 +81,14 @@ void UPalCommandExecutor_Transport::FinishMove(FAIRequestID RequestID, EPathFoll
 	if ( OwnerCommandComp != nullptr && OwnerController != nullptr)// || Result != EPathFollowingResult::Type::Success)
 	{
 		const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-		if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Transport || !Command->pInstigatorActor)
+		if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Transport || !Command->pInstigatorActor.IsValid())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Executor__MoveLocation :: not slef command"));
 			return;
 		}
 		else if (Result == EPathFollowingResult::Type::Success)
 		{
-			if (Command->pTarget && eTransportState == TransportState::Go)
+			if (Command->pTarget.Get() && eTransportState == TransportState::Go)
 			{
 				eTransportState = TransportState::Back;
 				if (OwnerController->MoveToLocation(Command->pInstigatorActor->GetActorLocation(), 40.0f) == false)

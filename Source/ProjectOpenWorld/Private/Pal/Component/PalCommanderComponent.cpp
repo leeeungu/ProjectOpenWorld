@@ -156,7 +156,10 @@ bool UPalCommanderComponent::CommadReady(const FPalCommand& Command)
 		TObjectPtr<ABaseCreature> pal = array[i];
 		if (StartWork(pal, Command))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UPalCommanderComponent :: StartWork %s %s"), *pal->GetName(), *AActor::GetDebugName(Command.pTarget));
+			if (Command.pTarget.IsValid())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UPalCommanderComponent :: StartWork %s %s"), *pal->GetName(), *AActor::GetDebugName(Command.pTarget.Get()));
+			}
 			Result = IPalCommandInterface::Execute_ReceiveCommand(pal, Command);
 			//	pals[pal].Reset();
 			break;

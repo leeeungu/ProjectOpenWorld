@@ -25,7 +25,7 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 
 bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 {
-	if (!AttackComponent || Command.CommandKind != EPalCommandKind::Attack || !Command.pTarget || bStartedAttacking)
+	if (!AttackComponent || Command.CommandKind != EPalCommandKind::Attack || !Command.pTarget.IsValid() || bStartedAttacking)
 	{
 		return false;
 	}
@@ -38,7 +38,7 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 	if (AttackComponent)
 	{
 		FPalAttackData NewAttackData{};
-		NewAttackData.TargetActor = Command.pTarget;
+		NewAttackData.TargetActor = Command.pTarget.Get();
 		NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
 		AttackComponent->SetAttackData(NewAttackData);
 		AttackComponent->StartAttack();

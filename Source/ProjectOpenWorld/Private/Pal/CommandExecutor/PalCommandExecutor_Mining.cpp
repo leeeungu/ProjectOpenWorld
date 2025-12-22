@@ -18,7 +18,7 @@ void UPalCommandExecutor_Mining::Initialize(UPalCommandComponent* CommandComp)
 
 bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 {
-	if (!OwnerPal || !OwnerController || !Command.pTarget)
+	if (!OwnerPal || !OwnerController || !Command.pTarget.IsValid())
 		return false;
 
 	if (OwnerController)
@@ -61,7 +61,7 @@ void UPalCommandExecutor_Mining::FinishMove(FAIRequestID RequestID, EPathFollowi
 	if (!bStartedMining && !OwnerCommandComp)
 		return;
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Mining|| !Command->pTarget)
+	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Mining|| !Command->pTarget.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveActor :: not slef command"));
 		return;

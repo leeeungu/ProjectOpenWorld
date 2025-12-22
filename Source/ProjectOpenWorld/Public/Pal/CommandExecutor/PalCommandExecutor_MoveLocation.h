@@ -14,7 +14,9 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_MoveLocation : public UPalCommand
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY()
 	ACharacter* OwnerPal{};
+	UPROPERTY()
 	APalAIController* OwnerController{};
 public:
 

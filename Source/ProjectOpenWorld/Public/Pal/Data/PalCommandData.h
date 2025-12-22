@@ -51,11 +51,11 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	EPalCommandKind CommandKind{};
 	UPROPERTY(VisibleAnywhere)
-	AActor* pInstigatorActor{};
+	TWeakObjectPtr<AActor> pInstigatorActor{};
 	UPROPERTY(VisibleAnywhere)
-	AActor* pTarget{};
+	TWeakObjectPtr<AActor> pTarget{};
 	UPROPERTY(VisibleAnywhere)
-	FVector TargetLocation{};
+	FVector TargetLocation = FVector::ZeroVector;
 	UPROPERTY(VisibleAnywhere)
 	uint8 SubCommandType{};
 

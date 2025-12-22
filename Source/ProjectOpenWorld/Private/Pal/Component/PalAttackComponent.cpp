@@ -1,6 +1,7 @@
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "GameBase/Interface/AttackInterface.h"
 
 UPalAttackComponent::UPalAttackComponent()
 {
@@ -39,7 +40,13 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		{
 			bMoveStarted = true;
 			bAttacking = false;
-			Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
+
+			if (AttackData.TargetActor->Implements<UAttackInterface>() && IAttackInterface::Execute_IsDead(AttackData.TargetActor))
+			{
+				EndAttack();
+			}
+			else
+				Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
 		}
 		
 	}
@@ -47,7 +54,7 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 {
-	if (!sData.TargetActor)
+	if (!sData.TargetActor || sData.TargetActor->IsPendingKillPending())
 		return;
 	sData.TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bCanAttack = true;
@@ -94,4 +101,5 @@ void UPalAttackComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResul
 		return;
 	bMoveStarted = false;
 	bAttacking = true;
+
 }

@@ -15,8 +15,11 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_Mining : public UPalCommandExecut
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY()
 	AActor* TargetResource{};
+	UPROPERTY()
 	APalAIController* OwnerController{};
+	UPROPERTY()
 	ABaseCreature* OwnerPal{};
 	bool bStartedMining{};
 public:

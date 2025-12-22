@@ -14,7 +14,10 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_MoveActor : public UPalCommandExe
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY()
 	ACharacter* OwnerPal{};
+
+	UPROPERTY()
 	APalAIController* OwnerController{};
 public:
 

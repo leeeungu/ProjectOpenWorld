@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
@@ -22,4 +22,6 @@ public:
 	void  RetAttackValue();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	bool DamagedCharacter(const TScriptInterface< IAttackInterface>& Other);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	bool IsDead() const;
 };

@@ -1,16 +1,17 @@
-ï»¿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Pal/Interface/CommanderManageable.h"
 #include "ResourceActor.generated.h"
 
 class UItemPrimaryDataAsset;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExtractEnd);
 
 UCLASS()
-class PROJECTOPENWORLD_API AResourceActor : public AActor
+class PROJECTOPENWORLD_API AResourceActor : public AActor, public ICommanderManageable
 {
 	GENERATED_BODY()
 protected:
@@ -20,7 +21,7 @@ protected:
 	TArray<TObjectPtr<UItemPrimaryDataAsset>> ItemData{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
 	int ExtractCount = 5;
-	// countë¥¼ ì¤˜ì„œ ëž¨ë¤ìœ¼ë¡œ ê¹ì„ ì§€  vs ë‚´êµ¬ë„ë¥¼ ì£¼ê³  ëž¨ë¤ìœ¼ë¡œ ì¤„ì§€ 
+	// count¸¦ Áà¼­ ·¥´ýÀ¸·Î ±ïÀ» Áö  vs ³»±¸µµ¸¦ ÁÖ°í ·¥´ýÀ¸·Î ÁÙÁö 
 public:
 	FOnExtractEnd onExtractEnd{};
 public:	
@@ -37,5 +38,11 @@ public:
 	bool CanExtract() { return  ExtractCount > 0; }
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override {} ;
+
+
+	virtual EPalCommandKind GetCommandKind_Implementation() override;
+	virtual uint8 GetSubCommandType_Implementation() override;
+	virtual FPalCommand GetCommand_Implementation() override;
+	virtual bool IsCommandFinished_Implementation() override;
 
 };

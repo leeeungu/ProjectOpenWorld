@@ -21,7 +21,9 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_Transport : public UPalCommandExe
 		Back
 	};
 protected:
+	UPROPERTY()
 	APalAIController* OwnerController{};
+	UPROPERTY()
 	ABaseCreature* OwnerPal{};
 	TransportState eTransportState = TransportState::None;
 

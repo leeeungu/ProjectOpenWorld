@@ -1,6 +1,7 @@
-﻿#include "Resource/Actor/ResourceActor.h"
+#include "Resource/Actor/ResourceActor.h"
 #include "Item/Actor/ItemActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 AResourceActor::AResourceActor()
 {
@@ -38,6 +39,26 @@ void AResourceActor::SpawnRandomItem()
 	{
 		Destroy();
 	}
+}
+
+EPalCommandKind AResourceActor::GetCommandKind_Implementation()
+{
+	return EPalCommandKind::Work;
+}
+
+uint8 AResourceActor::GetSubCommandType_Implementation()
+{
+	return static_cast<uint8>(ESubWorkType::Mining);
+}
+
+FPalCommand AResourceActor::GetCommand_Implementation()
+{
+	return UPalCommandFunctionLibrary::CommandMining(this, this);
+}
+
+bool AResourceActor::IsCommandFinished_Implementation()
+{
+	return ExtractCount <=0;
 }
 
 

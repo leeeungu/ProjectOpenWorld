@@ -18,8 +18,11 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_Architecture : public UPalCommand
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY()
 	ABaseBuilding* TargetBuilding{};
+	UPROPERTY()
 	APalAIController* OwnerController{};
+	UPROPERTY()
 	ABaseCreature* OwnerPal{};
 	bool bActionStart = false;
 public:
