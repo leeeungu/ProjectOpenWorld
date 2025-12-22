@@ -35,7 +35,7 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 600.f);
+		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 300.f);
 		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
 			UE_LOG(ArchitectureCommand, Error, TEXT("StartCommand::Can Find Path %s ") , *TargetBuilding->GetFullName());

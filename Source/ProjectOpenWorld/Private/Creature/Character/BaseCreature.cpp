@@ -2,7 +2,12 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalAllyCommandComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Pal/Controller/PalAIController.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GenericTeamAgentInterface.h"
+#include "Interaction/Component/PalInteractionComponent.h"
 
 void ABaseCreature::BeginPlay()
 {
@@ -22,7 +27,9 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 	}
 	CommandComponent = CreateDefaultSubobject<UPalAllyCommandComponent>(TEXT("AllyCommand"));
 	AttackComponent  = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
-	Hp = 100.0f;
+	InteractionComponent = CreateDefaultSubobject<UPalInteractionComponent>(TEXT("InteractionComponent"));
+
+	Hp = 300.0f;
 	Attack = 10.0f;
 }
 
@@ -51,11 +58,62 @@ void ABaseCreature::SetActionStarted(bool bValue)
 	bActionStarted = bValue;
 }
 
-bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
+void ABaseCreature::PossessedBy(AController* NewController)
 {
-	return false;
+	ABaseCharacter::PossessedBy(NewController);
+	if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
+	{
+		newTeam->SetGenericTeamId(FGenericTeamId(0));
+	}
 }
 
+bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
+{
+	if (!Other || !Other.GetObject())
+		return false;
+	APawn* pOther = Cast < APawn>(Other.GetObject());
+	if (!pOther || FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) != ETeamAttitude::Friendly)
+	{
+		return false;
+	}
+	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
+	if (Hp < Damage)
+		Damage = Hp;
+	Hp -= Damage;
+	if (CommandComponent->IsValidCommand())
+	{
+		CommandComponent->ResetCommandQue();
+	}
+	if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	{
+		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
+		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+	}
+
+	if (Hp <= 0.f)
+	{
+		Hp = 0.0f;
+		if (GetMesh())
+		{
+			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+			GetMesh()->SetSimulatePhysics(true);
+			if (pOther)
+			{
+				GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
+			}
+		}
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		FTimerHandle handle{};
+		bDead = true;
+		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);
+	}
+	return true;
+}
+
+bool ABaseCreature::IsDead_Implementation() const
+{
+	return bDead;
+}
 
 float ABaseCreature::GetAttackValue_Implementation() const
 {

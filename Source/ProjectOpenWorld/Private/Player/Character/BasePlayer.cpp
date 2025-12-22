@@ -8,7 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Interaction/Component/InteractionComponent.h"
+#include "Interaction/Component/PlayerInteractionComponent.h"
 #include "Building/Component/BuildingAssistComponentV2.h"
 #include "Player/Component/PlayerAnimationComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -52,7 +52,7 @@ ABasePlayer::ABasePlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
+	InteractionComponent = CreateDefaultSubobject<UPlayerInteractionComponent>(TEXT("InteractionComponent"));
 
 	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponentV2>(TEXT("BuildingAssist"));
 

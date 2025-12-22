@@ -1,2 +1,1 @@
-﻿#include "Interaction/InteractionInterface.h"
-
+#include "Interaction/InteractionInterface.h"

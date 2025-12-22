@@ -41,9 +41,9 @@ protected:
 public: // IInteractionInterface
 	void Init(TObjectPtr<UItemPrimaryDataAsset> Data, int Count);
 
-	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
-	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteractionStart_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteraction_Implementation(APlayerController* pPlayer) override {}
-	virtual void OnInteractionEnd_Implementation(APlayerController* pPlayer) override {}
+	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
+	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;
+	virtual void OnInteraction_Implementation(ACharacter* pOther) override {}
+	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override {}
 };

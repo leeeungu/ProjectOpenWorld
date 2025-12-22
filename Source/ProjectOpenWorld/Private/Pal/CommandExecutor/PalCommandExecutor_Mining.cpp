@@ -3,17 +3,19 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "Interaction/Component/InteractionComponent.h"	
 
 void UPalCommandExecutor_Mining::Initialize(UPalCommandComponent* CommandComp)
 {
 	UPalCommandExecutorBase::Initialize(CommandComp);
 	if (OwnerCommandComp == nullptr)
 		return;
-	OwnerPal = Cast<ABaseCreature>(OwnerCommandComp->GetOwner());
-	if (OwnerPal)
-	{
-		OwnerController = Cast<APalAIController>(OwnerPal->GetController());
-	}
+	ABaseCreature* OwnerCreature = Cast<ABaseCreature>(OwnerCommandComp->GetOwner());
+	if (!OwnerCreature)
+		return;
+	OwnerPal = OwnerCreature;
+	OwnerController = Cast<APalAIController>(OwnerPal->GetController());
+	InteractionComp = OwnerCreature->GetInteractionComponent();
 }
 
 bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
@@ -25,7 +27,7 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 	{
 		bStartedMining = true;
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
-		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
+		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 100.f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Mining::Can Find Path %s "), *Command.pTarget->GetName());
 			EndMining();
@@ -66,9 +68,11 @@ void UPalCommandExecutor_Mining::FinishMove(FAIRequestID RequestID, EPathFollowi
 		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveActor :: not slef command"));
 		return;
 	}
-	if (OwnerPal && FVector::Distance(Command->pTarget->GetActorLocation(), OwnerPal->GetActorLocation()) <= 120.0f)
+	if (OwnerPal && FVector::Distance(Command->pTarget->GetActorLocation(), OwnerPal->GetActorLocation()) <= 300.0f)
 	{
 		OwnerPal->SetActionStarted(true);
+		InteractionComp->SetInteractionTarget(Command->pTarget.Get());
+		InteractionComp->OnInteractionStart();
 		return;
 	}
 	EndMining();

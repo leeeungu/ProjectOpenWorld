@@ -8,6 +8,7 @@ class AActor;
 class ABaseCreature;
 class APalAIController;
 struct FAIRequestID;
+class UInteractionComponent;
 namespace EPathFollowingResult { enum Type : int; }
 
 UCLASS()
@@ -22,6 +23,8 @@ protected:
 	UPROPERTY()
 	ABaseCreature* OwnerPal{};
 	bool bStartedMining{};
+	UPROPERTY()
+	TObjectPtr<UInteractionComponent> InteractionComp{};
 public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;
 	virtual bool StartCommand(const FPalCommand& Command) override;

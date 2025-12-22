@@ -20,7 +20,7 @@ bool UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
 	if (OwnerController && Command.pTarget.IsValid())
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);
-		if (OwnerController->MoveToActor(Command.pTarget.Get(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
+		if (OwnerController->MoveToActor(Command.pTarget.Get(), 300.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("MoveActor::Can Find Path"));
 			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveActor::FinishMove);

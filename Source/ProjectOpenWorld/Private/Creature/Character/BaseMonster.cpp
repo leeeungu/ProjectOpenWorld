@@ -7,7 +7,7 @@
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
-
+#include "GenericTeamAgentInterface.h"
 
 ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
@@ -38,6 +38,15 @@ void ABaseMonster::SetAttackValue_Implementation(float NewValue)
 	Attack = NewValue;
 }
 
+void ABaseMonster::PossessedBy(AController* NewController)
+{
+	ABaseCharacter::PossessedBy(NewController);
+	if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
+	{
+		newTeam->SetGenericTeamId(FGenericTeamId(1));
+	}
+}
+
 void ABaseMonster::RetAttackValue_Implementation()
 {
 	Attack = 1.0f;
@@ -47,14 +56,20 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 {
 	if (!Other || !Other.GetObject())
 		return false;
-	AActor* pOther = Cast < AActor>(Other.GetObject());
+	APawn* pOther = Cast < APawn>(Other.GetObject());
+	if (!pOther || FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) != ETeamAttitude::Friendly)
+	{
+		return false;
+	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
+	if (Hp < Damage)
+		Damage = Hp;
 	Hp -= Damage;
 	if (CommandComponent->IsValidCommand())
 	{
 		CommandComponent->ResetCommandQue();
 	}
-	if (AttackComponent && pOther && !CommandComponent->IsValidCommand())
+	if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
@@ -104,3 +119,4 @@ bool ABaseMonster::IsCommandFinished_Implementation()
 {
 	return IsPendingKillPending();
 }
+

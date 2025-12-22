@@ -9,6 +9,7 @@
 
 class UPalCommandComponent;
 class UPalAttackComponent;
+class IGenericTeamAgentInterface;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface, public ICommanderManageable
@@ -30,6 +31,7 @@ protected:
 
 	bool bActionStarted{};
 	bool bDead{};
+
 public:
 	ABaseMonster();
 
@@ -45,6 +47,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	bool GetActionStarted() const { return bActionStarted; }
 	void SetActionStarted(bool bValue);
+	virtual void PossessedBy(AController* NewController) override;
+
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

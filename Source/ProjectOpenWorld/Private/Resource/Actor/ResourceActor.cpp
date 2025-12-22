@@ -13,7 +13,6 @@ AResourceActor::AResourceActor()
 void AResourceActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AResourceActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -37,6 +36,14 @@ void AResourceActor::SpawnRandomItem()
 	ExtractCount--;
 	if (ExtractCount <= 0)
 	{
+		for(TWeakObjectPtr<UObject> Objects : InteractionList)
+		{
+			if (ACharacter* Character = Cast<ACharacter>(Objects.Get()))
+			{
+				OnInteractionEnd_Implementation(Character);
+			}
+		}
+		
 		Destroy();
 	}
 }
@@ -58,7 +65,42 @@ FPalCommand AResourceActor::GetCommand_Implementation()
 
 bool AResourceActor::IsCommandFinished_Implementation()
 {
-	return ExtractCount <=0;
+	return ExtractCount <= 0;
+}
+
+void AResourceActor::UpdateResource(ACharacter* pOther)
+{
+	if (InteractionList.Find(pOther))
+	{
+		SpawnRandomItem();
+		//UE_LOG(LogTemp, Log, TEXT("AResourceActor :: UpdateResource by %s"), *pOther->GetName());
+	}
+}
+
+void AResourceActor::OnBeginDetected_Implementation(ACharacter* pOther)
+{
+}
+
+void AResourceActor::OnEndDetected_Implementation(ACharacter* pOther)
+{
+}
+
+void AResourceActor::OnInteractionStart_Implementation(ACharacter* pOther)
+{
+	InteractionList.Add(pOther);
+}
+
+void AResourceActor::OnInteraction_Implementation(ACharacter* pOther)
+{
+}
+
+void AResourceActor::OnInteractionEnd_Implementation(ACharacter* pOther)
+{
+	InteractionList.Remove(pOther);
+}
+
+void AResourceActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
+{
 }
 
 

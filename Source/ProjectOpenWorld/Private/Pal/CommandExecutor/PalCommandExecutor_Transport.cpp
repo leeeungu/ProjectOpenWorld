@@ -43,7 +43,7 @@ bool UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
 		eTransportState = TransportState::Go;
-		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
+		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 300.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Transport::Can Find Path %s "), *Command.pTarget->GetName());
 			EndTransport();

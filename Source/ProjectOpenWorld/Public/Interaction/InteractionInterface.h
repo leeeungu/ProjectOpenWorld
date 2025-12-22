@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "GameFramework/Character.h"
 #include "InteractionInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -16,26 +17,26 @@ class PROJECTOPENWORLD_API IInteractionInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnBeginDetected(APlayerController* pPlayer);
+	void OnBeginDetected(ACharacter* pOther);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnEndDetected(APlayerController* pPlayer);
+	void OnEndDetected(ACharacter* pOther);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnInteractionStart(APlayerController* pPlayer);
+	void OnInteractionStart(ACharacter* pOther);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnInteraction(APlayerController* pPlayer);
+	void OnInteraction(ACharacter* pOther);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnInteractionEnd(APlayerController* pPlayer);
+	void OnInteractionEnd(ACharacter* pOther);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnInteractionCanceled(APlayerController* pPlayer);
+	void OnInteractionCanceled(ACharacter* pOther);
 };
 //public: // IInteractionInterface
-//	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override {}
-//	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override {}
-//	virtual void OnInteractionStart_Implementation(APlayerController* pPlayer) override {}
-//	virtual void OnInteraction_Implementation() override {}
-//	virtual void OnInteractionEnd_Implementation(APlayerController* pPlayer) override {}
+//	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override {}
+//	virtual void OnEndDetected_Implementation(ACharacter* pOther) override {}
+//	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override {}
+//	virtual void OnInteraction_Implementation(ACharacter* pOther) override {}
+//	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override {}

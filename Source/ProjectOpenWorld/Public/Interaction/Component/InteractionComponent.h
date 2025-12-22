@@ -4,40 +4,37 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interaction/InteractionInterface.h"
 #include "InteractionComponent.generated.h"
 
 class ACharacter;
 class APlayerController;
-class IInteractionInterface;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	TSoftObjectPtr<APlayerController> PlayerController{};
-	TSoftObjectPtr<ACharacter> PlayerCharacter{};
+	UPROPERTY()
+	TSoftObjectPtr<ACharacter> OwnerCharacter{};
 	UPROPERTY(VisibleAnywhere)
 	TScriptInterface<IInteractionInterface> InteractionTarget{};
-	TSoftObjectPtr<APlayerCameraManager> CameraManager{};
 	
 	bool bIsInteraction{};
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	float DetectionDistance = 500.0f;
+	virtual void BeginPlay() override;
 
 public:	
 	UInteractionComponent();
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetInteractionTarget(TScriptInterface<IInteractionInterface> NewTarget);
 	void OnInteractionStart();
 	void OnInteractionTriggered();
 	void OnInteractionCompleted();
 	void OnActorCancel();
 
-	UFUNCTION(BlueprintPure)
-	AActor* GetTargetActor();
-protected:
-	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintPure, Category = "Interaction")
+	AActor* GetTargetActor() const;
 };

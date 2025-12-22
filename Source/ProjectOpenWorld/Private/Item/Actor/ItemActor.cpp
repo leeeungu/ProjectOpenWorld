@@ -1,9 +1,10 @@
-﻿#include "Item/Actor/ItemActor.h"
+#include "Item/Actor/ItemActor.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/Character.h"
 
 AItemActor::AItemActor()
 {
@@ -44,7 +45,7 @@ void AItemActor::Init(TObjectPtr<UItemPrimaryDataAsset> IteData, int Count)
 	this->itemCount = Count;
 }
 
-void AItemActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
+void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
 	//ItemData.LoadSynchronous();
 	if (ToolTipWidget && ItemData)
@@ -57,7 +58,7 @@ void AItemActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 	}
 }
 
-void AItemActor::OnEndDetected_Implementation(APlayerController* pPlayer)
+void AItemActor::OnEndDetected_Implementation(ACharacter* pOther)
 {
 	if (ToolTipWidget)
 	{
@@ -65,11 +66,11 @@ void AItemActor::OnEndDetected_Implementation(APlayerController* pPlayer)
 	}
 }
 
-void AItemActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
+void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 {
-	if (!pPlayer)
+	if (!pOther)
 		return;
-	UInventoryComponent* Inventory = pPlayer->GetComponentByClass<UInventoryComponent>();
+	UInventoryComponent* Inventory = pOther->GetController()->GetComponentByClass<UInventoryComponent>();
 	if (!Inventory)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AItemActor::OnInteractionStart - NoInventory"));

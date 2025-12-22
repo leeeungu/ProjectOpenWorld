@@ -12,6 +12,8 @@ namespace EPathFollowingResult { enum Type : int; }
 class UPalCommandComponent;
 class UStaticMeshComponent;
 class UPalAttackComponent;
+class IGenericTeamAgentInterface;
+class UInteractionComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, public IPalCommandInterface
@@ -26,6 +28,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
+	TObjectPtr<UInteractionComponent> InteractionComponent{};
+
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Hp{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
@@ -33,6 +39,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Defend{};	
 	bool bActionStarted{};
+	bool bDead{};
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -52,12 +60,17 @@ public:
 	UPalCommandComponent* GetCommandComponent() const;
 	float GetDefaultSpeed();
 	void SetActionStarted(bool bValue);
+
+	virtual void PossessedBy(AController* NewController) override;
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+	virtual bool IsDead_Implementation() const override;
 
+
+	FORCEINLINE UInteractionComponent* GetInteractionComponent() const { return InteractionComponent; }
 
 };

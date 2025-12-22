@@ -11,8 +11,11 @@ void ABuildingActor::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
+void ABuildingActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
+	if (!pOther)
+		return;
+	APlayerController* pPlayer = Cast< APlayerController>(pOther->GetController());
 	if (!pPlayer || !pPlayer->GetLocalPlayer())
 		return;
 	Player = pPlayer;
@@ -26,8 +29,11 @@ void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
 	}
 }
 
-void ABuildingActor::OnEndDetected_Implementation(APlayerController* pPlayer)
+void ABuildingActor::OnEndDetected_Implementation(ACharacter* pOther)
 {
+	if (!pOther)
+		return;
+	APlayerController* pPlayer = Cast< APlayerController>(pOther->GetController());
 	if (!pPlayer || !pPlayer->GetLocalPlayer())
 		return;
 	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>())
@@ -36,13 +42,13 @@ void ABuildingActor::OnEndDetected_Implementation(APlayerController* pPlayer)
 	}
 }
 
-void ABuildingActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
+void ABuildingActor::OnInteractionStart_Implementation(ACharacter* pOther)
 {
-	if (!pPlayer)
+	if (!pOther)
 		return;
 	if (!GetBuildingProgress()->IsBuildingEnd())
 	{
-		GetBuildingProgress()->StartBuilding(pPlayer->GetPawn());
+		GetBuildingProgress()->StartBuilding(pOther);
 	}
 	else if (UBaseBuildingAction* Action = Cast<UBaseBuildingAction>(BuildActionWidget->GetWidget()))
 	{
@@ -52,7 +58,7 @@ void ABuildingActor::OnInteractionStart_Implementation(APlayerController* pPlaye
 
 }
 
-void ABuildingActor::OnInteraction_Implementation(APlayerController* pPlayer)
+void ABuildingActor::OnInteraction_Implementation(ACharacter* pOther)
 {
 	if (!GetBuildingProgress()->IsBuildingEnd())
 	{
@@ -60,13 +66,20 @@ void ABuildingActor::OnInteraction_Implementation(APlayerController* pPlayer)
 	}
 }
 
-void ABuildingActor::OnInteractionEnd_Implementation(APlayerController* pPlayer)
+void ABuildingActor::OnInteractionEnd_Implementation(ACharacter* pOther)
 {
-	GetBuildingProgress()->StopBuilding(pPlayer->GetPawn());
+	if (!pOther)
+		return;
+	GetBuildingProgress()->StopBuilding(pOther);
 }
 
-void ABuildingActor::OnInteractionCanceled_Implementation(APlayerController* pPlayer)
+void ABuildingActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 {
+	if (!pOther)
+		return;
+	APlayerController* pPlayer = Cast< APlayerController>(pOther->GetController());
+	if (!pPlayer)
+		return;
 	if (!Player)
 		return;
 	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí

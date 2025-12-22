@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Pal/Interface/CommanderManageable.h"
+#include "Interaction/InteractionInterface.h"
 #include "ResourceActor.generated.h"
 
 class UItemPrimaryDataAsset;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExtractEnd);
 
 UCLASS()
-class PROJECTOPENWORLD_API AResourceActor : public AActor, public ICommanderManageable
+class PROJECTOPENWORLD_API AResourceActor : public AActor, public ICommanderManageable , public IInteractionInterface
 {
 	GENERATED_BODY()
 protected:
@@ -22,6 +23,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
 	int ExtractCount = 5;
 	// count를 줘서 램덤으로 깍을 지  vs 내구도를 주고 램덤으로 줄지 
+
+	UPROPERTY()
+	TSet< TWeakObjectPtr<UObject>> InteractionList{};
 public:
 	FOnExtractEnd onExtractEnd{};
 public:	
@@ -44,5 +48,15 @@ public:
 	virtual uint8 GetSubCommandType_Implementation() override;
 	virtual FPalCommand GetCommand_Implementation() override;
 	virtual bool IsCommandFinished_Implementation() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	void UpdateResource(ACharacter* pOther);
+
+	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
+	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;
+	virtual void OnInteraction_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionCanceled_Implementation(ACharacter* pOther) override;
 
 };

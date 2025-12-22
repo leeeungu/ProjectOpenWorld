@@ -8,7 +8,6 @@
 #include "BuildingActor.generated.h"
 
 class UBuildingStateWidget;
-class APlayerController;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IInteractionInterface
@@ -18,15 +17,15 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	TSoftObjectPtr<APlayerController> Player{};
+	TSoftObjectPtr<ACharacter> Player{};
 	
 public: // IInteractionInterface
-	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
-	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteractionStart_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteraction_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteractionEnd_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteractionCanceled_Implementation(APlayerController* pPlayer) override;
+	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
+	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;
+	virtual void OnInteraction_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionCanceled_Implementation(ACharacter* pOther) override;
 };
 
 // 여기에 각 building 마다 특수 widget과 기능들이 들어 있음
