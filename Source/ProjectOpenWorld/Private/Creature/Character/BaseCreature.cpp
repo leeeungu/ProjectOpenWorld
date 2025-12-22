@@ -56,6 +56,7 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 	return false;
 }
 
+
 float ABaseCreature::GetAttackValue_Implementation() const
 {
 	return Attack;

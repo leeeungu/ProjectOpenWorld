@@ -26,6 +26,7 @@ enum class ESubMoveType : uint8
 UENUM(BlueprintType)
 enum class ESubAttackType : uint8
 {
+	None_AttackType,
 	Default,
 	Skill01,
 	Skill02,

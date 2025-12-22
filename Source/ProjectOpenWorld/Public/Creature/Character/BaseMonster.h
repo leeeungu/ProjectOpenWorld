@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
 #include "GameBase/Interface/AttackInterface.h"
+#include "Pal/Interface/CommanderManageable.h"
 #include "Pal/Interface/PalCommandInterface.h"
 #include "BaseMonster.generated.h"
 
@@ -10,7 +11,7 @@ class UPalCommandComponent;
 class UPalAttackComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface
+class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface, public ICommanderManageable
 {
 	GENERATED_BODY()
 protected:
@@ -49,4 +50,10 @@ public:
 	virtual void  SetAttackValue_Implementation(float NewValue) override;
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+
+
+	virtual EPalCommandKind GetCommandKind_Implementation() override;
+	virtual uint8 GetSubCommandType_Implementation() override;
+	virtual FPalCommand GetCommand_Implementation() override;
+	virtual bool IsCommandFinished_Implementation() override;
 };

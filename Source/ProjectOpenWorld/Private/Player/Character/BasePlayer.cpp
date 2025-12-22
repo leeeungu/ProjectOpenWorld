@@ -130,6 +130,26 @@ bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result)
 	return false;
 }
 
+float ABasePlayer::GetArchitectSpeed_Implementation() const
+{
+	return 1.0f;
+}
+
+void ABasePlayer::StartArchitect_Implementation(ABaseBuilding* Building)
+{
+	GetPlayerAnimationComponent()->StartArchitecture();
+}
+
+void ABasePlayer::StopArchitect_Implementation(ABaseBuilding* Building)
+{
+	GetPlayerAnimationComponent()->ResetAnimationState();
+}
+
+void ABasePlayer::EndArchitect_Implementation(ABaseBuilding* Building)
+{
+	GetPlayerAnimationComponent()->ResetAnimationState();
+}
+
 void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
@@ -303,7 +323,7 @@ void ABasePlayer::OnInteraction(const FInputActionValue& Value)
 {
 	if (InteractionComponent)
 	{
-		//InteractionComponent->OnInteractionTriggered();
+		InteractionComponent->OnInteractionTriggered();
 	}
 }
 

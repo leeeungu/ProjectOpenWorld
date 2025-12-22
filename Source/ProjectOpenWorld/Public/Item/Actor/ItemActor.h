@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -44,6 +44,6 @@ public: // IInteractionInterface
 	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnInteractionStart_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteraction_Implementation() override {}
+	virtual void OnInteraction_Implementation(APlayerController* pPlayer) override {}
 	virtual void OnInteractionEnd_Implementation(APlayerController* pPlayer) override {}
 };

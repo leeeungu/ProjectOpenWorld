@@ -51,6 +51,8 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 
 void UPalCommandExecutor_Attack::Abort()
 {
+	if (bStartedAttacking == false)
+		return;
 	bStartedAttacking = false;
 	if (OwnerPal)	
 	{
@@ -68,8 +70,6 @@ void UPalCommandExecutor_Attack::Abort()
 
 void UPalCommandExecutor_Attack::EndAttack()
 {
-	if (bStartedAttacking == false)
-		return;
 	Abort();
 	EndCommand();
 }

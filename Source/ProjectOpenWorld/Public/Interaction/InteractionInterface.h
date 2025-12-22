@@ -25,13 +25,13 @@ public:
 	void OnInteractionStart(APlayerController* pPlayer);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnInteraction();
+	void OnInteraction(APlayerController* pPlayer);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	void OnInteractionEnd(APlayerController* pPlayer);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void OnInteractionCanceled();
+	void OnInteractionCanceled(APlayerController* pPlayer);
 };
 //public: // IInteractionInterface
 //	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override {}

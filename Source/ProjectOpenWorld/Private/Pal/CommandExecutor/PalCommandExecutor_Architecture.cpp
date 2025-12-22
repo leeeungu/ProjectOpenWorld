@@ -31,7 +31,6 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
 	bActionStart = true;
 	IsCommandStarted = true;
-	TargetBuilding->GetBuildingProgress()->onBuildingEnd.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::EndBuilding);
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
@@ -49,15 +48,7 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 			if (OwnerCommandComp->IsValidCommand() &&
 				Command.CommandKind == EPalCommandKind::Work && Command.SubCommandType == (uint8)ESubWorkType::Architecture)
 			{
-				TargetBuilding->GetBuildingProgress()->StartBuilding();
-				if (OwnerPal) // aniation
-				{
-					OwnerPal->SetActionStarted(true);
-					if (UStaticMeshComponent* ArchitectureMeshComponent = OwnerPal->GetArchitectureMeshComponent())
-					{
-						ArchitectureMeshComponent->SetVisibility(true);
-					}
-				}
+				TargetBuilding->GetBuildingProgress()->StartBuilding(this);
 			}
 		}
 		return true;
@@ -72,17 +63,8 @@ void UPalCommandExecutor_Architecture::Abort()
 	bActionStart = false;
 	if (TargetBuilding)
 	{
-		TargetBuilding->GetBuildingProgress()->StopBuilding();
-		TargetBuilding->GetBuildingProgress()->onBuildingEnd.RemoveDynamic(this, &UPalCommandExecutor_Architecture::EndBuilding);
+		TargetBuilding->GetBuildingProgress()->StopBuilding(OwnerPal);
 		TargetBuilding = nullptr;
-	}
-	if (OwnerPal)
-	{
-		OwnerPal->SetActionStarted(false);
-		if (UStaticMeshComponent* ArchitectureMeshComponent = OwnerPal->GetArchitectureMeshComponent())
-		{
-			ArchitectureMeshComponent->SetVisibility(false);
-		}
 	}
 	if (OwnerController)
 	{
@@ -91,13 +73,40 @@ void UPalCommandExecutor_Architecture::Abort()
 	}
 }
 
+float UPalCommandExecutor_Architecture::GetArchitectSpeed_Implementation() const
+{
+	return 1.f;
+}
+
+void UPalCommandExecutor_Architecture::StartArchitect_Implementation(ABaseBuilding* Building)
+{
+	OwnerPal->SetActionStarted(true);
+	if (OwnerPal->GetArchitectureMeshComponent())
+		OwnerPal->GetArchitectureMeshComponent()->SetVisibility(true);
+}
+
+void UPalCommandExecutor_Architecture::StopArchitect_Implementation(ABaseBuilding* Building)
+{
+	OwnerPal->SetActionStarted(false);
+	if (OwnerPal->GetArchitectureMeshComponent())
+		OwnerPal->GetArchitectureMeshComponent()->SetVisibility(false);
+	EndBuilding();
+}
+
+void UPalCommandExecutor_Architecture::EndArchitect_Implementation(ABaseBuilding* Building)
+{
+	OwnerPal->SetActionStarted(false);
+	if (OwnerPal->GetArchitectureMeshComponent())
+		OwnerPal->GetArchitectureMeshComponent()->SetVisibility(false);
+	EndBuilding();
+}
+
 void UPalCommandExecutor_Architecture::EndBuilding()
 {
 	UE_LOG(ArchitectureCommand, Warning, TEXT("Executor_Architecture :: EndBuilding"));
 	Abort();
 	EndCommand();
 }
-
 
 void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
@@ -141,15 +150,7 @@ void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathF
 	if ( OwnerCommandComp->IsValidCommand() &&
 		Command->CommandKind == EPalCommandKind::Work && Command->SubCommandType == (uint8)ESubWorkType::Architecture)
 	{
-		TargetBuilding->GetBuildingProgress()->StartBuilding();
-		if (OwnerPal) // aniation
-		{
-			OwnerPal->SetActionStarted(true);
-			if (UStaticMeshComponent* ArchitectureMeshComponent = OwnerPal->GetArchitectureMeshComponent())
-			{
-				ArchitectureMeshComponent->SetVisibility(true);
-			}
-		}
+		TargetBuilding->GetBuildingProgress()->StartBuilding(this);
 		return;
 	}
 	EndBuilding();

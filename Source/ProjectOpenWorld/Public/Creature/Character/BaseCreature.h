@@ -58,4 +58,6 @@ public:
 	virtual void  SetAttackValue_Implementation(float NewValue) override;
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+
+
 };

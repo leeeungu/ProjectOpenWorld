@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
 #include "Logging/LogMacros.h"
+#include "Building/Interface/ArchitectureInterface.h"
 #include "BasePlayer.generated.h"
 
 class USpringArmComponent;
@@ -36,7 +37,7 @@ enum class EStatusType : uint8
 };
 
 UCLASS()
-class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter
+class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface
 {
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -111,6 +112,8 @@ public:
 	void StartTravel();
 
 	void UpdateWeight(float InventoryWeight);
+
+
 protected:
 
 	/** Called for movement input */
@@ -142,13 +145,17 @@ protected:
 	UFUNCTION()
 	void OnToggleBuildingMode(const FInputActionValue& Value);
 
+	UFUNCTION()
 	void OnJump();
+
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// To add mapping context
 	virtual void BeginPlay();
+
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -168,5 +175,12 @@ public:
 	void SetStatus(EStatusType StatusType, float Value);
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
 	bool GetStatus(EStatusType StatusType, float& Result);
+
+
+
+	virtual float GetArchitectSpeed_Implementation() const override;
+	virtual void StartArchitect_Implementation(ABaseBuilding* Building) override;
+	virtual void StopArchitect_Implementation(ABaseBuilding* Building) override;
+	virtual void EndArchitect_Implementation(ABaseBuilding* Building) override;
 };
 

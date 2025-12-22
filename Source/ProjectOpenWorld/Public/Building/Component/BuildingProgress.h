@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Building/Interface/ArchitectureInterface.h"
 #include "BuildingProgress.generated.h"
 
 class UStaticMeshComponent;
 class UStaticMesh;
 class UMaterial;
 class UMaterialInstanceDynamic;
+class IArchitectureInterface;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
 
@@ -30,10 +32,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	float buildSpeed = 1.0f;
 	bool isBuilding = false;
+	UPROPERTY()
+	TSet< TWeakObjectPtr<UObject>> InstigatorList{};
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Building")
-	FOnBuildingEnd onBuildingEnd;
+	FOnBuildingEnd onBuildingEnd{};
 public:
 	UBuildingProgress();
 
@@ -42,18 +46,20 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
+
+	UFUNCTION()
+	void EndBuilding();
 public:
 	UFUNCTION(BlueprintCallable, Category = "Building")
 	void SetbuildingMesh(UStaticMesh* NewMesh);
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
-	void StartBuilding();
+	void StartBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator);
 	UFUNCTION(BlueprintCallable, Category = "Building")
-	void StopBuilding();
+	void StopBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator);
+
 	UFUNCTION(BlueprintCallable, Category = "Building")
-	void ResumeBuilding();
-	UFUNCTION(BlueprintCallable, Category = "Building")
-	void EndBuilding();
+	void StopAll();
 
 	bool IsAlreadyStart() const { return !FMath::IsNearlyZero(curentPercent); }
 	UFUNCTION(BlueprintPure, Category = "Building")

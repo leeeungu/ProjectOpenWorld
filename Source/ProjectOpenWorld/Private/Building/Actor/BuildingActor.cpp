@@ -9,19 +9,6 @@
 void ABuildingActor::BeginPlay()
 {
 	Super::BeginPlay();
-	GetBuildingProgress()->onBuildingEnd.AddDynamic(this, &ABuildingActor::BuildingEnd);
-}
-
-void ABuildingActor::BuildingEnd()
-{
-	if (Player )
-	{
-		ABasePlayer* PlayerCharacter = Cast<ABasePlayer>(Player->GetPawn());
-		if (PlayerCharacter)
-		{
-			PlayerCharacter->GetPlayerAnimationComponent()->ResetAnimationState();
-		}
-	}
 }
 
 void ABuildingActor::OnBeginDetected_Implementation(APlayerController* pPlayer)
@@ -47,63 +34,51 @@ void ABuildingActor::OnEndDetected_Implementation(APlayerController* pPlayer)
 	{
 		BuildingWidgetSubsystem->RemoveBuildTimeWidget();
 	}
-	//GetBuildingProgress()->StopBuilding();
 }
 
 void ABuildingActor::OnInteractionStart_Implementation(APlayerController* pPlayer)
 {
-	GetBuildingProgress()->StartBuilding();
-	Player = pPlayer;
-	if (!Player)
+	if (!pPlayer)
 		return;
-
 	if (!GetBuildingProgress()->IsBuildingEnd())
 	{
-		ABasePlayer* PlayerCharacter = Cast<ABasePlayer>(Player->GetPawn());
-		if (PlayerCharacter)
-		{
-			PlayerCharacter->GetPlayerAnimationComponent()->StartArchitecture();
-		}
+		GetBuildingProgress()->StartBuilding(pPlayer->GetPawn());
 	}
 	else if (UBaseBuildingAction* Action = Cast<UBaseBuildingAction>(BuildActionWidget->GetWidget()))
 	{
+		
 		Action->BuildingAction();
 	}
 
 }
 
-void ABuildingActor::OnInteraction_Implementation()
+void ABuildingActor::OnInteraction_Implementation(APlayerController* pPlayer)
 {
 	if (!GetBuildingProgress()->IsBuildingEnd())
 	{
-		GetBuildingProgress()->ResumeBuilding();
+	//	GetBuildingProgress()->StopBuilding(pPlayer->GetPawn());
 	}
 }
 
 void ABuildingActor::OnInteractionEnd_Implementation(APlayerController* pPlayer)
 {
-	GetBuildingProgress()->StopBuilding();
-	BuildingEnd();
-	Player = nullptr;
+	GetBuildingProgress()->StopBuilding(pPlayer->GetPawn());
 }
 
-void ABuildingActor::OnInteractionCanceled_Implementation()
+void ABuildingActor::OnInteractionCanceled_Implementation(APlayerController* pPlayer)
 {
-	if (Player)
+	if (!Player)
+		return;
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
 	{
-		if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = Player->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
-		{
-			BuildingWidgetSubsystem->SetBuildingWidgetProperty(nullptr);
-			BuildingWidgetSubsystem->RemoveBuildTimeWidget();
-		}
+		BuildingWidgetSubsystem->SetBuildingWidgetProperty(nullptr);
+		BuildingWidgetSubsystem->RemoveBuildTimeWidget();
 	}
-	//GetBuildingProgress()->StopBuilding();
-	BuildingEnd();
-	Player = nullptr;
-	if (buildingProgressComponent)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));
-		buildingProgressComponent->onBuildingEnd.Broadcast();
-	}
+	buildingProgressComponent->StopAll();
+	//if (buildingProgressComponent)
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));
+	//	//buildingProgressComponent->onBuildingEnd.Broadcast();
+	//}
 	Destroy();
 }

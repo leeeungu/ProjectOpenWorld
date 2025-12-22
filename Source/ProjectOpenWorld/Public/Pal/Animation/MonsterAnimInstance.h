@@ -27,19 +27,19 @@ class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance
 		UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
 		FPalTempAttackAnim AttckAnimations{};
 
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool IsFalling{};
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		float Speed{};
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		float PreSpeed{};
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		EPalCommandKind CurrentCommandKind{};
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		uint8 SubCommandType{};
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool bActionStarted{};
-		UPROPERTY(BlueprintReadWrite, Category = "PalAnim")
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool bAttacking{};
 
 	public:

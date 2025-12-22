@@ -49,7 +49,7 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 {
 	if (!sData.TargetActor)
 		return;
-	sData.TargetActor->OnDestroyed.AddDynamic(this, &UPalAttackComponent::TargetIsDead);
+	sData.TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bCanAttack = true;
 	AttackData = sData;
 	bAttacking = false;
