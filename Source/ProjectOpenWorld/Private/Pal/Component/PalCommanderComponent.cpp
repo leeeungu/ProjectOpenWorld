@@ -103,6 +103,7 @@ void UPalCommanderComponent::RemovePal(AActor* targetPal)
 
 void UPalCommanderComponent::RegisterWork(AActor* WorkActor)
 {
+
 	if (!WorkActor || !WorkActor->Implements< UCommanderManageable>())
 		return;
 	//if (ICommanderManageable::Execute_GetCommandKind(WorkActor) == EPalCommandKind::Work)

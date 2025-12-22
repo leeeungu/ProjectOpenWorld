@@ -20,15 +20,13 @@ protected:
 	UPROPERTY()
 	TSoftObjectPtr<APlayerController> Player{};
 	
-	UFUNCTION()
-	void BuildingEnd();
 public: // IInteractionInterface
 	virtual void OnBeginDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnEndDetected_Implementation(APlayerController* pPlayer) override;
 	virtual void OnInteractionStart_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteraction_Implementation() override;
+	virtual void OnInteraction_Implementation(APlayerController* pPlayer) override;
 	virtual void OnInteractionEnd_Implementation(APlayerController* pPlayer) override;
-	virtual void OnInteractionCanceled_Implementation() override;
+	virtual void OnInteractionCanceled_Implementation(APlayerController* pPlayer) override;
 };
 
 // 여기에 각 building 마다 특수 widget과 기능들이 들어 있음

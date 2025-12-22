@@ -15,7 +15,7 @@ UBuildingProgress::UBuildingProgress()
 void UBuildingProgress::BeginPlay()
 {
 	Super::BeginPlay();
-	StopBuilding();
+	//StopBuilding();
 	buildingMeshComponent = GetOwner()->GetComponentByClass<UStaticMeshComponent>();
 	if (!buildingMeshComponent)
 		return;
@@ -103,32 +103,67 @@ void UBuildingProgress::SetbuildingMesh(UStaticMesh* NewMesh)
 	}
 }
 
-void UBuildingProgress::StopBuilding()
-{
-	buildSpeed -= 1.0f;
-	if (buildSpeed <= 0.f)
-	{
-		buildSpeed = 0.0f;
-		SetComponentTickEnabled(false);
-		isBuilding = false;
-	}
-}
-
-void UBuildingProgress::ResumeBuilding()
-{
-	StartBuilding();
-}
-
-void UBuildingProgress::StartBuilding()
+void UBuildingProgress::StopBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator)
 {
 	if (curentPercent >= 1.0f)
 	{
 		buildSpeed = 0;
 		return;
 	}
-	buildSpeed += 1.0f;
-	isBuilding = true;
-	SetComponentTickEnabled(true);
+	if (OtherInstigator && OtherInstigator.GetObject())
+	{
+		if (InstigatorList.Find(OtherInstigator.GetObject()))
+		{
+			float Speed = IArchitectureInterface::Execute_GetArchitectSpeed(OtherInstigator.GetObject());
+			buildSpeed -= Speed;
+			SetComponentTickEnabled(false);
+			isBuilding = false;
+			IArchitectureInterface::Execute_StopArchitect(OtherInstigator.GetObject(), Cast<ABaseBuilding >(GetOwner()));
+			InstigatorList.Remove(OtherInstigator.GetObject());
+		}
+	}
+}
+void UBuildingProgress::StopAll()
+{
+	for (TWeakObjectPtr<UObject>& Other : InstigatorList)
+	{
+		if (Other.IsValid())
+		{
+			IArchitectureInterface::Execute_StopArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
+		}
+	}
+	InstigatorList.Empty(0);
+	buildSpeed = 0;
+	SetComponentTickEnabled(false);
+	isBuilding = false;
+}
+
+void UBuildingProgress::StartBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator)
+{
+	if (curentPercent >= 1.0f)
+	{
+		buildSpeed = 0;
+		return;
+	}
+	if (OtherInstigator && OtherInstigator.GetObject())
+	{
+		if (InstigatorList.Find(OtherInstigator.GetObject()))
+		{
+			UE_LOG(LogTemp, Log, TEXT("UBuildingProgress::StartBuilding Already has"));
+			return;
+		}
+		InstigatorList.Add(OtherInstigator.GetObject());
+		float Speed = IArchitectureInterface::Execute_GetArchitectSpeed(OtherInstigator.GetObject());// OtherInstigator->GetArchitectSpeed();
+		buildSpeed += Speed;
+		if (!isBuilding)
+		{
+			isBuilding = true;
+			SetComponentTickEnabled(true);
+		}
+		IArchitectureInterface::Execute_StartArchitect(OtherInstigator.GetObject(), Cast<ABaseBuilding >(GetOwner()));
+	}
+	else
+		UE_LOG(LogTemp, Error, TEXT("UBuildingProgress::StartBuilding NonInterface"));
 }
 
 void UBuildingProgress::EndBuilding()
@@ -143,7 +178,16 @@ void UBuildingProgress::EndBuilding()
 	if (buildingMeshComponent && buildingMesh)
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
 	SetComponentTickEnabled(false);
-	curentPercent = 1.0f;
+	curentPercent = 1.0f; 
+
+	for (TWeakObjectPtr<UObject>& Other : InstigatorList)
+	{
+		if (Other.IsValid())
+		{
+			IArchitectureInterface::Execute_EndArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
+		}
+	}
+	InstigatorList.Empty(0);
 	if (onBuildingEnd.IsBound())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("BuildingProgress :: BreadCast %d"), onBuildingEnd.GetAllObjects().Num());

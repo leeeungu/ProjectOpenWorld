@@ -1,4 +1,4 @@
-﻿#include "Building/Widget/BaseBuildingAction.h"
+#include "Building/Widget/BaseBuildingAction.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
@@ -22,7 +22,7 @@ void UBaseBuildingAction::NativeDestruct()
 void UBaseBuildingAction::OpenBuildingActionWidget()
 {
 	APlayerController* pc = GetOwningPlayer();
-	if (!pc)
+	if (!pc || IsInViewport())
 		return;
 	AddToViewport();
 	pc->SetShowMouseCursor(true);
@@ -33,7 +33,7 @@ void UBaseBuildingAction::OpenBuildingActionWidget()
 void UBaseBuildingAction::CloseBuildingActionWidget()
 {
 	APlayerController* pc = GetOwningPlayer();
-	if (!pc)
+	if (!pc || !IsInViewport())
 		return;
 	RemoveFromParent();
 	pc->SetShowMouseCursor(false);

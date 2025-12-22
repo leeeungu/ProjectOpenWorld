@@ -6,6 +6,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "Creature/Character/BaseMonster.h"
 
 APalBaseCamp::APalBaseCamp()
 {
@@ -55,6 +56,10 @@ void APalBaseCamp::CommandActorSpawned(AActor* NewActor)
 {
 	if (!NewActor || !PalCommander)
 		return;
+	//if (NewActor->StaticClass() == ABaseMonster::StaticClass())
+	//{
+	//	UE_LOG()
+	//}
 	PalCommander->RegisterWork(NewActor);
 }
 

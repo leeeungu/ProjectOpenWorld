@@ -81,7 +81,7 @@ void UInteractionComponent::OnInteractionTriggered()
 {
 	if (InteractionTarget && bIsInteraction)
 	{
-		IInteractionInterface::Execute_OnInteraction(InteractionTarget.GetObject());
+		IInteractionInterface::Execute_OnInteraction(InteractionTarget.GetObject(), PlayerController.Get());
 	}
 }
 
@@ -98,7 +98,7 @@ void UInteractionComponent::OnActorCancel()
 {
 	if (InteractionTarget && InteractionTarget.GetObject())
 	{
-		IInteractionInterface::Execute_OnInteractionCanceled(InteractionTarget.GetObject());
+		IInteractionInterface::Execute_OnInteractionCanceled(InteractionTarget.GetObject(), PlayerController.Get());
 		if (bIsInteraction)
 			IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), PlayerController.Get());
 		else

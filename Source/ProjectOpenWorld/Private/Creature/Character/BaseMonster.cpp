@@ -61,3 +61,23 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		Destroy();
 	return true;
 }
+
+EPalCommandKind ABaseMonster::GetCommandKind_Implementation()
+{
+	return EPalCommandKind::Attack;
+}
+
+uint8 ABaseMonster::GetSubCommandType_Implementation()
+{
+	return static_cast<uint8>(ESubAttackType::Default);
+}
+
+FPalCommand ABaseMonster::GetCommand_Implementation()
+{
+	return UPalCommandFunctionLibrary::CommandAttack(this, this, ESubAttackType::Default);
+}
+
+bool ABaseMonster::IsCommandFinished_Implementation()
+{
+	return IsPendingKillPending();
+}
