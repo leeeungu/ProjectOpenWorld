@@ -60,7 +60,10 @@ void APalBaseCamp::CommandActorSpawned(AActor* NewActor)
 	//{
 	//	UE_LOG()
 	//}
-	PalCommander->RegisterWork(NewActor);
+	if (FVector::DistSquared(NewActor->GetActorLocation(), GetActorLocation()) <= CampBounds->GetScaledSphereRadius() * CampBounds->GetScaledSphereRadius())
+	{
+		PalCommander->RegisterWork(NewActor);
+	}
 }
 
 void APalBaseCamp::Tick(float DeltaTime)

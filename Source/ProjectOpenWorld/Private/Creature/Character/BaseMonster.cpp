@@ -57,7 +57,7 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	if (!Other || !Other.GetObject())
 		return false;
 	APawn* pOther = Cast < APawn>(Other.GetObject());
-	if (!pOther || FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) != ETeamAttitude::Friendly)
+	if (!pOther || FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) == ETeamAttitude::Friendly)
 	{
 		return false;
 	}
@@ -65,7 +65,7 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	if (Hp < Damage)
 		Damage = Hp;
 	Hp -= Damage;
-	if (CommandComponent->IsValidCommand())
+	if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		CommandComponent->ResetCommandQue();
 	}
@@ -87,6 +87,7 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 				GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
 			}
 		}
+		GetMesh()->bPauseAnims = true;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FTimerHandle handle{};
 		bDead = true;

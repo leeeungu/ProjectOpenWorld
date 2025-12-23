@@ -18,7 +18,7 @@ struct FPalAttackData
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	AActor* TargetActor{};
+	TObjectPtr<AActor> TargetActor{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	ESubAttackType AttackSlot{};
 };
@@ -29,11 +29,11 @@ struct FPalTempAttackAnim
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	UAnimSequence* Start{};
+	TObjectPtr<UAnimSequence> Start{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	UAnimSequence* Loop{};
+	TObjectPtr<UAnimSequence> Loop{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	UAnimSequence* End{};
+	TObjectPtr<UAnimSequence> End{};
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

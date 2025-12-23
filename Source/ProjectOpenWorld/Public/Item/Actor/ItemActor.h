@@ -6,7 +6,7 @@
 #include "ItemActor.generated.h"
 
 class UItemPrimaryDataAsset;
-class UStaticMeshComponent;
+class USkeletalMeshComponent;
 class UWidgetComponent;
 
 UCLASS()
@@ -16,7 +16,7 @@ class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterf
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	
-	TObjectPtr<UStaticMeshComponent> ItemMesh{};
+	TObjectPtr<USkeletalMeshComponent> ItemSkeletalMesh{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UWidgetComponent> ItemWidget{};
 	
@@ -46,4 +46,6 @@ public: // IInteractionInterface
 	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;
 	virtual void OnInteraction_Implementation(ACharacter* pOther) override {}
 	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override {}
+
+	FORCEINLINE USkeletalMeshComponent* GetRootMesh() const { return ItemSkeletalMesh; }
 };

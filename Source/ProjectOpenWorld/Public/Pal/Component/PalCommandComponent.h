@@ -22,6 +22,8 @@ private:
 	TQueue<FPalCommand*> QueueEmpty{};
 	TQueue<FPalCommand*> QueueCommand{};
 	FPalCommand DummyCommand{};
+	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "True"))
+	FPalCommand CurrentCommandData{};
 	FPalCommand* CurrentCommand{};
 	FPalCommand* LastCommand{};
 	bool (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);

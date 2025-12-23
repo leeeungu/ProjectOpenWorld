@@ -52,7 +52,6 @@ void ABuildingActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	}
 	else if (UBaseBuildingAction* Action = Cast<UBaseBuildingAction>(BuildActionWidget->GetWidget()))
 	{
-		
 		Action->BuildingAction();
 	}
 
@@ -79,8 +78,6 @@ void ABuildingActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 		return;
 	APlayerController* pPlayer = Cast< APlayerController>(pOther->GetController());
 	if (!pPlayer)
-		return;
-	if (!Player)
 		return;
 	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem가 Map에서 찾으니 괜찮은 듯
 	{

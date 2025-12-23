@@ -2,7 +2,7 @@
 #include "Inventory/Component/InventoryComponent.h"
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
-#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
 
@@ -15,13 +15,25 @@ AItemActor::AItemActor()
 	{
 		ToolTipWidgetClass = InteractionWidget.Class;
 	}
-	ItemMesh = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("Mesh"));
-	SetRootComponent(ItemMesh);
+	ItemSkeletalMesh = CreateDefaultSubobject< USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	SetRootComponent(ItemSkeletalMesh);
+	ItemSkeletalMesh->SetSimulatePhysics(true);
+	ItemSkeletalMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECC_Vehicle , ECollisionResponse::ECR_Ignore);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECC_Destructible , ECollisionResponse::ECR_Ignore);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+	ItemSkeletalMesh->SetLinearDamping(5.f);
+	ItemSkeletalMesh->SetAngularDamping(5.f);
+
+
 	///Script/Engine.StaticMesh'/Game/Fab/Megascans/3D/Bulk_Bag_ukxkbesqa/Low/ukxkbesqa_tier_3.ukxkbesqa_tier_3'
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Game/Fab/Megascans/3D/Bulk_Bag_ukxkbesqa/Low/ukxkbesqa_tier_3.ukxkbesqa_tier_3"));
+	//Script/Engine.SkeletalMesh'/Game/Pal/Model/Weapon/PalSphere/Mesh/SK_PalSphere.SK_PalSphere'
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshObj(TEXT("/Game/Pal/Model/Weapon/PalSphere/Mesh/SK_PalSphere.SK_PalSphere"));
 	if(MeshObj.Succeeded())
 	{
-		ItemMesh->SetStaticMesh(MeshObj.Object);
+		ItemSkeletalMesh->SetSkeletalMesh(MeshObj.Object);
 	}
 	ItemWidget = CreateDefaultSubobject< UWidgetComponent>(TEXT("Widget"));
 	ItemWidget->SetupAttachment(GetRootComponent());
@@ -35,6 +47,8 @@ void AItemActor::BeginPlay()
 	
 	Super::BeginPlay();
 
+	//ItemSkeletalMesh->SetLinearDamping(5.f);
+	ItemSkeletalMesh->SetAngularDamping(5.f);
 	if (ItemWidget && ToolTipWidget)
 		ItemWidget->SetWidget(ToolTipWidget.Get());
 }

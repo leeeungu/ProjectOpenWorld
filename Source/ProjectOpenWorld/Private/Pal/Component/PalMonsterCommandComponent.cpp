@@ -1,7 +1,7 @@
 #include "Pal/Component/PalMonsterCommandComponent.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveActor.h"
-#include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
 
 void UPalMonsterCommandComponent::BeginPlay()
 {
@@ -13,6 +13,6 @@ void UPalMonsterCommandComponent::BeginPlay()
 
 	CreateNewExcutor<UPalCommandExecutor_MoveLocation>(EPalCommandKind::Move, (uint8)ESubMoveType::Location, TEXT("MoveLocation"));
 	CreateNewExcutor<UPalCommandExecutor_MoveActor>(EPalCommandKind::Move, (uint8)ESubMoveType::Actor, TEXT("MoveActor"));
-	CreateNewExcutor<UPalCommandExecutor_Attack>(EPalCommandKind::Attack, 0, TEXT("Attack"));
+	CreateNewExcutor<UPalCommandExecutor_MonsterAttack>(EPalCommandKind::Attack, 0, TEXT("Attack"));
 	CommandExecutors[(uint8)EPalCommandKind::Attack][1] = CommandExecutors[(uint8)EPalCommandKind::Attack][2] = CommandExecutors[(uint8)EPalCommandKind::Attack][0];
 }

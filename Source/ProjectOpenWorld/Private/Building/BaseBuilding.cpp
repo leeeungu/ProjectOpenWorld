@@ -81,7 +81,7 @@ void ABaseBuilding::UpdateModifier()
 	if (!NavModifier)
 		return;
 
-	UE_LOG(LogTemp, Warning, TEXT("ABaseBuilding::UpdateModifier"));
+///	UE_LOG(LogTemp, Warning, TEXT("ABaseBuilding::UpdateModifier"));
 	buildingMeshComponent->SetCollisionProfileName(TEXT("P_Building"));
 	buildingMeshComponent->SetMobility(EComponentMobility::Static);
 	buildingMeshComponent->SetCanEverAffectNavigation(true);
@@ -90,5 +90,15 @@ void ABaseBuilding::UpdateModifier()
 		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
+}
 
+void ABaseBuilding::NoCollision()
+{
+	BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
+	buildingMeshComponent->SetCanEverAffectNavigation(false);
+	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	if (Nav)
+		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
+	NavModifier->CalculateBounds();
+	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }

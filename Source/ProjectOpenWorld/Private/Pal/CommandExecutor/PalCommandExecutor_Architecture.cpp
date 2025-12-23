@@ -28,19 +28,22 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd() || !OwnerPal)
 		return false;
 	
-	UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
+	//UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
 	bActionStart = true;
 	IsCommandStarted = true;
 	if (OwnerController)
 	{
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
+
+		//TargetBuilding->GetBuildingProgress()->ActiveBuildingNav();
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 300.f);
+		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 410.f);
 		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
-			UE_LOG(ArchitectureCommand, Error, TEXT("StartCommand::Can Find Path %s ") , *TargetBuilding->GetFullName());
+			//UE_LOG(ArchitectureCommand, Error, TEXT("StartCommand::Can Find Path %s ") , *TargetBuilding->GetFullName());
 			IsCommandStarted = false;
 			EndBuilding();
+			//TargetBuilding->GetBuildingProgress()->DeActiveBuildingNav();
 			return false;
 		}
 		if (PathResult == EPathFollowingRequestResult::AlreadyAtGoal)
@@ -48,7 +51,7 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 			if (OwnerCommandComp->IsValidCommand() &&
 				Command.CommandKind == EPalCommandKind::Work && Command.SubCommandType == (uint8)ESubWorkType::Architecture)
 			{
-				TargetBuilding->GetBuildingProgress()->StartBuilding(this);
+				TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
 			}
 		}
 		return true;
@@ -73,37 +76,9 @@ void UPalCommandExecutor_Architecture::Abort()
 	}
 }
 
-float UPalCommandExecutor_Architecture::GetArchitectSpeed_Implementation() const
-{
-	return 1.f;
-}
-
-void UPalCommandExecutor_Architecture::StartArchitect_Implementation(ABaseBuilding* Building)
-{
-	OwnerPal->SetActionStarted(true);
-	if (OwnerPal->GetArchitectureMeshComponent())
-		OwnerPal->GetArchitectureMeshComponent()->SetVisibility(true);
-}
-
-void UPalCommandExecutor_Architecture::StopArchitect_Implementation(ABaseBuilding* Building)
-{
-	OwnerPal->SetActionStarted(false);
-	if (OwnerPal->GetArchitectureMeshComponent())
-		OwnerPal->GetArchitectureMeshComponent()->SetVisibility(false);
-	EndBuilding();
-}
-
-void UPalCommandExecutor_Architecture::EndArchitect_Implementation(ABaseBuilding* Building)
-{
-	OwnerPal->SetActionStarted(false);
-	if (OwnerPal->GetArchitectureMeshComponent())
-		OwnerPal->GetArchitectureMeshComponent()->SetVisibility(false);
-	EndBuilding();
-}
 
 void UPalCommandExecutor_Architecture::EndBuilding()
 {
-	UE_LOG(ArchitectureCommand, Warning, TEXT("Executor_Architecture :: EndBuilding"));
 	Abort();
 	EndCommand();
 }
@@ -111,7 +86,11 @@ void UPalCommandExecutor_Architecture::EndBuilding()
 void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	switch (Result)
+	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Architecture || !Command->pTarget.IsValid())
+	{
+		return;
+	}
+	/*switch (Result)
 	{
 	case EPathFollowingResult::Success:
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Success"));
@@ -134,7 +113,7 @@ void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathF
 		break;
 	default:
 		break;
-	}
+	}*/
 	if (!bActionStart)
 	{
 		Abort();
@@ -150,7 +129,7 @@ void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathF
 	if ( OwnerCommandComp->IsValidCommand() &&
 		Command->CommandKind == EPalCommandKind::Work && Command->SubCommandType == (uint8)ESubWorkType::Architecture)
 	{
-		TargetBuilding->GetBuildingProgress()->StartBuilding(this);
+		TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
 		return;
 	}
 	EndBuilding();

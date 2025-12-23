@@ -22,6 +22,7 @@ protected:
 
 	float Time{};
 	int NotWork{};
+	int StartIndex{};
 public:	
 	UPalCommanderComponent();
 

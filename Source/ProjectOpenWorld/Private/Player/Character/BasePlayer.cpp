@@ -150,6 +150,26 @@ void ABasePlayer::EndArchitect_Implementation(ABaseBuilding* Building)
 	GetPlayerAnimationComponent()->ResetAnimationState();
 }
 
+float ABasePlayer::GetResourceSpeed_Implementation() const
+{
+	return 1.0f;
+}
+
+void ABasePlayer::StartResource_Implementation(AResourceActor* ResourceActor)
+{
+	GetPlayerAnimationComponent()->StartMining();
+}
+
+void ABasePlayer::StopResource_Implementation(AResourceActor* ResourceActor)
+{
+	GetPlayerAnimationComponent()->ResetAnimationState();
+}
+
+void ABasePlayer::EndResource_Implementation(AResourceActor* ResourceActor)
+{
+	GetPlayerAnimationComponent()->ResetAnimationState();
+}
+
 void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))

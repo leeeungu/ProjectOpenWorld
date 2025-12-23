@@ -5,6 +5,8 @@
 #include "GameBase/Interface/AttackInterface.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Interface/PalCommandInterface.h"
+#include "Resource/Interface/ResourceInterface.h"
+#include "Building/Interface/ArchitectureInterface.h"
 #include "BaseCreature.generated.h"
 
 struct FAIRequestID;
@@ -16,7 +18,7 @@ class IGenericTeamAgentInterface;
 class UInteractionComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, public IPalCommandInterface
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, public IPalCommandInterface, public IResourceInterface, public IArchitectureInterface
 {
 	GENERATED_BODY()
 protected:
@@ -73,4 +75,14 @@ public:
 
 	FORCEINLINE UInteractionComponent* GetInteractionComponent() const { return InteractionComponent; }
 
+
+	virtual float GetArchitectSpeed_Implementation() const override;
+	virtual void StartArchitect_Implementation(ABaseBuilding* Building) override;
+	virtual void StopArchitect_Implementation(ABaseBuilding* Building) override;
+	virtual void EndArchitect_Implementation(ABaseBuilding* Building) override;
+
+	virtual float GetResourceSpeed_Implementation() const override;
+	virtual void StartResource_Implementation(AResourceActor* ResourceActor) override;
+	virtual void StopResource_Implementation(AResourceActor* ResourceActor) override;
+	virtual void EndResource_Implementation(AResourceActor* ResourceActor) override;
 };

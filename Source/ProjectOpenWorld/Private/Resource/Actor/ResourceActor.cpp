@@ -2,12 +2,20 @@
 #include "Item/Actor/ItemActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
+#include "Resource/Interface/ResourceInterface.h"
 
 AResourceActor::AResourceActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	ResourceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(ResourceMesh);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Game/Pal/Model/Prop/MapMesh/Mesh/SK_Rock_A.SK_Rock_A"));
+	if (MeshObj.Succeeded())
+	{
+		ResourceMesh->SetStaticMesh(MeshObj.Object);
+	}
+	//Script/Engine.StaticMesh'/Game/Pal/Model/Prop/MapMesh/Mesh/SK_Rock_A.SK_Rock_A'
+
 }
 
 void AResourceActor::BeginPlay()
@@ -29,8 +37,9 @@ void AResourceActor::SpawnRandomItem()
 	FActorSpawnParameters Param{};
 	Param.Owner = this;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	FVector Location = GetActorLocation();
+	FVector Location = GetActorLocation() + FVector (0,0,ResourceMesh->GetStaticMesh()->GetBoundingBox().GetSize().Z);
 	AItemActor* Item = Cast< AItemActor>(GetWorld()->SpawnActor(AItemActor::StaticClass(), &Location, 0, Param));
+	Item->GetRootMesh()->AddForce(FVector(0,0,1000));
 	int idx = rand() % ItemData.Num();
 	Item->Init(ItemData[idx], ItemData.Num() + 2);
 	ExtractCount--;
@@ -38,12 +47,15 @@ void AResourceActor::SpawnRandomItem()
 	{
 		for(TWeakObjectPtr<UObject> Objects : InteractionList)
 		{
-			if (ACharacter* Character = Cast<ACharacter>(Objects.Get()))
+			if (Objects.IsValid())
 			{
-				OnInteractionEnd_Implementation(Character);
+				if (ACharacter* Character = Cast<ACharacter>(Objects.Get()))
+				{
+					IResourceInterface::Execute_EndResource(Character, this);
+				}
 			}
 		}
-		
+		InteractionList.Empty();
 		Destroy();
 	}
 }
@@ -87,7 +99,11 @@ void AResourceActor::OnEndDetected_Implementation(ACharacter* pOther)
 
 void AResourceActor::OnInteractionStart_Implementation(ACharacter* pOther)
 {
+	if (!pOther->Implements<UResourceInterface>())
+		return;
+	UE_LOG(LogTemp, Log, TEXT("AResourceActor:interactionStart"));
 	InteractionList.Add(pOther);
+	IResourceInterface::Execute_StartResource(pOther, this);
 }
 
 void AResourceActor::OnInteraction_Implementation(ACharacter* pOther)
@@ -96,11 +112,18 @@ void AResourceActor::OnInteraction_Implementation(ACharacter* pOther)
 
 void AResourceActor::OnInteractionEnd_Implementation(ACharacter* pOther)
 {
+	if (!pOther->Implements<UResourceInterface>())
+		return;
 	InteractionList.Remove(pOther);
+	IResourceInterface::Execute_StopResource(pOther, this);
 }
 
 void AResourceActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 {
+	if (!pOther->Implements<UResourceInterface>())
+		return;
+	InteractionList.Remove(pOther);
+	IResourceInterface::Execute_StopResource(pOther, this);
 }
 
 

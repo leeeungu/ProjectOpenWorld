@@ -65,6 +65,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Building")
 	bool IsBuildingEnd() const;
 
+	void ActiveBuildingNav();
+	void DeActiveBuildingNav();
 	const float* GetBuildPercent() const { return &curentPercent; }
 	const float* GetBuildTime() const { return &buildingTime; }
 	const float* GetBuildSpeed() const { return &buildSpeed; }

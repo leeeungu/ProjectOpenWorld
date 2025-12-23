@@ -23,6 +23,7 @@ public:
 	// 강제 command 종료
 	virtual void Abort() {} 
 
+	void ResetStarted() { IsCommandStarted = false; }
 protected:
 	void EndCommand();
 };

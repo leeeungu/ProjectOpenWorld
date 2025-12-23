@@ -1,6 +1,6 @@
 #include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
 #include "Creature/Character/BaseCreature.h"
-#include "Pal/Controller/PalAIController.h"
+#include "GameFramework/Controller.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
@@ -13,7 +13,6 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 	OwnerPal = Cast<ABaseCreature>(OwnerCommandComp->GetOwner());
 	if (OwnerPal)
 	{
-		OwnerController = Cast<APalAIController>(OwnerPal->GetController());
 		AttackComponent = OwnerPal->GetAttackComponent();
 	}
 	if (AttackComponent)
@@ -26,10 +25,6 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 {
 	if (!AttackComponent || Command.CommandKind != EPalCommandKind::Attack || !Command.pTarget.IsValid() || bStartedAttacking)
-	{
-		return false;
-	}
-	if (!OwnerController)
 	{
 		return false;
 	}
@@ -62,9 +57,9 @@ void UPalCommandExecutor_Attack::Abort()
 			AttackComponent->EndAttack();
 		}
 	}
-	if (OwnerController)
+	if (OwnerPal->GetController())
 	{
-		OwnerController->StopMovement();
+		OwnerPal->GetController()->StopMovement();
 	}
 }
 

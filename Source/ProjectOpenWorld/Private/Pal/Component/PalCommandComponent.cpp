@@ -25,6 +25,7 @@ void UPalCommandComponent::ResetCurrentCommand()
 	if (CurrentCommand)
 		ResetCommand(*CurrentCommand);
 	CurrentCommand = &DummyCommand;
+	CurrentCommandData = *CurrentCommand;
 	CurrentExcute = nullptr;
 }
 
@@ -48,6 +49,7 @@ bool UPalCommandComponent::PopCommand()
 	}
 	if (IsValidCommand() == false)
 		return false;
+
 	const FPalCommand* Current = GetCurrentCommand_C();
 	uint8 idx = (uint8)Current->CommandKind;
 	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
@@ -60,6 +62,7 @@ bool UPalCommandComponent::PopCommand()
 	{
 		if (CurrentExcute->StartCommand(*Current))
 		{
+			CurrentCommandData = *CurrentCommand;
 			OnStartCurrentCommand();
 			return true;
 		}
@@ -129,6 +132,7 @@ void UPalCommandComponent::FinishCommand()
 		if (CurrentExcute)
 		{
 			CurrentExcute->Abort();
+			CurrentExcute->ResetStarted();
 		}
 		if (LastCommand == CurrentCommand)
 		{
@@ -158,5 +162,10 @@ void UPalCommandComponent::ResetCommandQue()
 	}
 	LastCommand = nullptr;
 	ResetCommand(DummyCommand);
+	if (CurrentExcute)
+	{
+		CurrentExcute->Abort();
+		CurrentExcute->ResetStarted();
+	}
 	ResetCurrentCommand();
 }

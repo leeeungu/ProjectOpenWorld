@@ -4,6 +4,7 @@
 #include "GameBase/BaseCharacter.h"
 #include "Logging/LogMacros.h"
 #include "Building/Interface/ArchitectureInterface.h"
+#include "Resource/Interface/ResourceInterface.h"
 #include "BasePlayer.generated.h"
 
 class USpringArmComponent;
@@ -37,7 +38,7 @@ enum class EStatusType : uint8
 };
 
 UCLASS()
-class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface
+class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface
 {
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -182,5 +183,10 @@ public:
 	virtual void StartArchitect_Implementation(ABaseBuilding* Building) override;
 	virtual void StopArchitect_Implementation(ABaseBuilding* Building) override;
 	virtual void EndArchitect_Implementation(ABaseBuilding* Building) override;
+
+	virtual float GetResourceSpeed_Implementation() const override;
+	virtual void StartResource_Implementation(AResourceActor* ResourceActor) override;
+	virtual void StopResource_Implementation(AResourceActor* ResourceActor) override;
+	virtual void EndResource_Implementation(AResourceActor* ResourceActor) override;
 };
 

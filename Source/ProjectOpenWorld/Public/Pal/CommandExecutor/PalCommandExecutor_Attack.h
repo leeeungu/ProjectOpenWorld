@@ -19,8 +19,6 @@ protected:
 	UPROPERTY()
 	AActor* TargetActor{};
 	UPROPERTY()
-	APalAIController* OwnerController{};
-	UPROPERTY()
 	ABaseCreature* OwnerPal{};
 	UPROPERTY()
 	UPalAttackComponent* AttackComponent{};

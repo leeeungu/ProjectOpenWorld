@@ -27,11 +27,19 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 	{
 		bStartedMining = true;
 		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
-		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 100.f) == EPathFollowingRequestResult::Type::Failed)
+		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 100.f);
+		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Mining::Can Find Path %s "), *Command.pTarget->GetName());
 			EndMining();
 			return false;
+		}
+		else if (PathResult == EPathFollowingRequestResult::Type::AlreadyAtGoal)
+		{
+			IsCommandStarted = true;
+			OwnerPal->SetActionStarted(true);
+			InteractionComp->SetInteractionTarget(Command.pTarget.Get());
+			InteractionComp->OnInteractionStart();
 		}
 	}
 	IsCommandStarted = true;

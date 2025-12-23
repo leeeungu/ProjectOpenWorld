@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -12,6 +12,7 @@ enum class EAnimationState : uint8
 	Travel,
 	Climb,
 	Architecture,
+	Mining,
 };
 
 
@@ -126,6 +127,7 @@ public:
 
 
 	void StartArchitecture();
+	void StartMining();
 	void ResetAnimationState();
 
 	UFUNCTION(BlueprintPure, Category = "Animation")

@@ -47,6 +47,7 @@ public:
 	virtual bool IsCommandFinished_Implementation() override;
 
 	void UpdateModifier();
+	void NoCollision();
 protected:
 	virtual void BeginPlay() override;
 public:

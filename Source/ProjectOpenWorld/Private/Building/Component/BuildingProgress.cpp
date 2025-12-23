@@ -122,6 +122,10 @@ void UBuildingProgress::StopBuilding(TScriptInterface<IArchitectureInterface> Ot
 			InstigatorList.Remove(OtherInstigator.GetObject());
 		}
 	}
+	if (InstigatorList.IsEmpty())
+	{
+		DeActiveBuildingNav();
+	}
 }
 void UBuildingProgress::StopAll()
 {
@@ -132,6 +136,7 @@ void UBuildingProgress::StopAll()
 			IArchitectureInterface::Execute_StopArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
 		}
 	}
+	DeActiveBuildingNav();
 	InstigatorList.Empty(0);
 	buildSpeed = 0;
 	SetComponentTickEnabled(false);
@@ -149,7 +154,7 @@ void UBuildingProgress::StartBuilding(TScriptInterface<IArchitectureInterface> O
 	{
 		if (InstigatorList.Find(OtherInstigator.GetObject()))
 		{
-			UE_LOG(LogTemp, Log, TEXT("UBuildingProgress::StartBuilding Already has"));
+			//UE_LOG(LogTemp, Log, TEXT("UBuildingProgress::StartBuilding Already has"));
 			return;
 		}
 		InstigatorList.Add(OtherInstigator.GetObject());
@@ -157,6 +162,7 @@ void UBuildingProgress::StartBuilding(TScriptInterface<IArchitectureInterface> O
 		buildSpeed += Speed;
 		if (!isBuilding)
 		{
+			
 			isBuilding = true;
 			SetComponentTickEnabled(true);
 		}
@@ -177,6 +183,8 @@ void UBuildingProgress::EndBuilding()
 	}
 	if (buildingMeshComponent && buildingMesh)
 		buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
+	ActiveBuildingNav();
+
 	SetComponentTickEnabled(false);
 	curentPercent = 1.0f; 
 
@@ -188,6 +196,7 @@ void UBuildingProgress::EndBuilding()
 		}
 	}
 	InstigatorList.Empty(0);
+
 	if (onBuildingEnd.IsBound())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("BuildingProgress :: BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
@@ -198,15 +207,33 @@ void UBuildingProgress::EndBuilding()
 		onBuildingEnd.Broadcast();
 	}
 
-	if(ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
+	/*if(ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
 	{
 		OwnerActor->UpdateModifier();
-	}
+	}*/
 }
 
 bool UBuildingProgress::IsBuildingEnd() const
 {
 	return curentPercent >= 1.0f || FMath::IsNearlyEqual(curentPercent,1.0f);
+}
+
+void UBuildingProgress::ActiveBuildingNav()
+{
+	if (ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
+	{
+		OwnerActor->UpdateModifier();
+	}
+}
+
+void UBuildingProgress::DeActiveBuildingNav()
+{
+	if (!InstigatorList.IsEmpty())
+		return;
+	if (ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
+	{
+		OwnerActor->NoCollision();
+	}
 }
 
 void UBuildingProgress::SetBuildingPercent(float Value)

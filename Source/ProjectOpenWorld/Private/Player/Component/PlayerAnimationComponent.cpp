@@ -107,6 +107,11 @@ void UPlayerAnimationComponent::StartArchitecture()
 	AnimationState = EAnimationState::Architecture;
 }
 
+void UPlayerAnimationComponent::StartMining()
+{
+	AnimationState = EAnimationState::Mining;
+}
+
 void UPlayerAnimationComponent::ResetAnimationState()
 {
 	AnimationState = EAnimationState::Travel;

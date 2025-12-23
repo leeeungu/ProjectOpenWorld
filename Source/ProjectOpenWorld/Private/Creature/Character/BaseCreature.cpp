@@ -37,7 +37,7 @@ bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 {
 	if (CommandComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ABaseCreature::ReceiveCommand_Implementation"));
+		//UE_LOG(LogTemp, Warning, TEXT("ABaseCreature::ReceiveCommand_Implementation"));
 		return CommandComponent->PushCommand(Command);
 	}
 	return false;
@@ -72,7 +72,7 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 	if (!Other || !Other.GetObject())
 		return false;
 	APawn* pOther = Cast < APawn>(Other.GetObject());
-	if (!pOther || FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) != ETeamAttitude::Friendly)
+	if (!pOther || FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) == ETeamAttitude::Friendly)
 	{
 		return false;
 	}
@@ -80,7 +80,7 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 	if (Hp < Damage)
 		Damage = Hp;
 	Hp -= Damage;
-	if (CommandComponent->IsValidCommand())
+	if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		CommandComponent->ResetCommandQue();
 	}
@@ -113,6 +113,58 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 bool ABaseCreature::IsDead_Implementation() const
 {
 	return bDead;
+}
+
+
+float ABaseCreature::GetArchitectSpeed_Implementation() const
+{
+	return 1.f;
+}
+
+void ABaseCreature::StartArchitect_Implementation(ABaseBuilding* Building)
+{
+	SetActionStarted(true);
+	if (GetArchitectureMeshComponent())
+		GetArchitectureMeshComponent()->SetVisibility(true);
+}
+
+void ABaseCreature::StopArchitect_Implementation(ABaseBuilding* Building)
+{
+	SetActionStarted(false);
+	if (GetArchitectureMeshComponent())
+		GetArchitectureMeshComponent()->SetVisibility(false);
+	GetCommandComponent()->FinishCommand();
+}
+
+void ABaseCreature::EndArchitect_Implementation(ABaseBuilding* Building)
+{
+	SetActionStarted(false);
+	if (GetArchitectureMeshComponent())
+		GetArchitectureMeshComponent()->SetVisibility(false);
+	GetCommandComponent()->FinishCommand();
+}
+
+
+float ABaseCreature::GetResourceSpeed_Implementation() const
+{
+	return 1.0f;
+}
+
+void ABaseCreature::StartResource_Implementation(AResourceActor* ResourceActor)
+{
+	SetActionStarted(true);
+}
+
+void ABaseCreature::StopResource_Implementation(AResourceActor* ResourceActor)
+{
+	SetActionStarted(false);
+	GetCommandComponent()->FinishCommand();
+}
+
+void ABaseCreature::EndResource_Implementation(AResourceActor* ResourceActor)
+{
+	SetActionStarted(false);
+	GetCommandComponent()->FinishCommand();
 }
 
 float ABaseCreature::GetAttackValue_Implementation() const
