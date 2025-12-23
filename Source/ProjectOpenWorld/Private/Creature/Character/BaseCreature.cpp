@@ -37,7 +37,6 @@ bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 {
 	if (CommandComponent)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("ABaseCreature::ReceiveCommand_Implementation"));
 		return CommandComponent->PushCommand(Command);
 	}
 	return false;
@@ -80,10 +79,10 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 	if (Hp < Damage)
 		Damage = Hp;
 	Hp -= Damage;
-	if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
-	{
-		CommandComponent->ResetCommandQue();
-	}
+	//if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	//{
+	//	CommandComponent->ResetCommandQue();
+	//}
 	if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);

@@ -7,8 +7,6 @@
 class ABaseBuilding;
 class ABaseCreature;
 class APalAIController;
-struct FAIRequestID;
-namespace EPathFollowingResult { enum Type : int; }
 
 
 DECLARE_LOG_CATEGORY_EXTERN(ArchitectureCommand, Log, All);
@@ -28,12 +26,13 @@ public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;
 	virtual bool StartCommand(const FPalCommand& Command) override;
 	virtual void Abort() override;
-
+	virtual void WorkCommand() override;
+	virtual bool CheckCommandValid() override;
 
 protected:
 	UFUNCTION()
 	void EndBuilding();
 
-	UFUNCTION()
-	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	/*UFUNCTION()
+	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);*/
 };

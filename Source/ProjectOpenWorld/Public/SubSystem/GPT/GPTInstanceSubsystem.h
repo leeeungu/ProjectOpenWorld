@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystem/GPT/GPTResponseInterface.h"
 #include "GPTInstanceSubsystem.generated.h"
 
 class UVaRestSubsystem;
@@ -71,12 +72,12 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	void SendGPTStringRequest(FGPTStringRequest RequestData, UObject* Target);
+	void SendGPTStringRequest(FGPTStringRequest RequestData, TScriptInterface< IGPTResponseInterface> Target);
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	void SendGPTImageRequest(FGPTImageRequest RequestData,UObject* Target);
+	void SendGPTImageRequest(FGPTImageRequest RequestData, TScriptInterface< IGPTResponseInterface> Target);
 
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	void SendGetGPTResponse(FString modelID, UObject* Target);
+	void SendGetGPTResponse(FString modelID, TScriptInterface< IGPTResponseInterface> Target);
 
 
 	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")

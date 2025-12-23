@@ -19,6 +19,8 @@ public:
 
 	virtual void Initialize(UPalCommandComponent* CommandComp);
 	virtual bool StartCommand(const FPalCommand& Command) { return false; }
+	virtual void WorkCommand() {}
+	virtual bool CheckCommandValid() { return false; }
 	virtual void TickCommand(float DeltaTime) {}
 	// 강제 command 종료
 	virtual void Abort() {} 

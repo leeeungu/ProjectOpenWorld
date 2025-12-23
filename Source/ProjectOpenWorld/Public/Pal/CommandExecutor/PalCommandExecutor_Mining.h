@@ -29,11 +29,13 @@ public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;
 	virtual bool StartCommand(const FPalCommand& Command) override;
 	virtual void Abort() override;
+	virtual void WorkCommand() override;
+	virtual bool CheckCommandValid() override;
 
 protected:
 	UFUNCTION()
 	void EndMining();
 
-	UFUNCTION()
-	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	//UFUNCTION()
+	//void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 };

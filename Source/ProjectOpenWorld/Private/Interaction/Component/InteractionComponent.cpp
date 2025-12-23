@@ -20,10 +20,24 @@ void UInteractionComponent::BeginPlay()
 	OwnerCharacter = Cast< ACharacter>(GetOwner());
 }
 
+void UInteractionComponent::RsetInteractionTarget(AActor* DestroyedActor)
+{
+	if (InteractionTarget == DestroyedActor)
+	{
+		InteractionTarget = nullptr;
+		bIsInteraction = false;
+	}
+}
+
 void UInteractionComponent::SetInteractionTarget(TScriptInterface<IInteractionInterface> NewTarget)
 {
 	if (!NewTarget || !NewTarget.GetObject())
 		return;
+	AActor* Target = Cast< AActor>(NewTarget.GetObject());
+	if (Target)
+	{
+		Target->OnDestroyed.AddDynamic(this, &UInteractionComponent::RsetInteractionTarget);
+	}
 	InteractionTarget = NewTarget;
 }
 

@@ -33,7 +33,7 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	IsCommandStarted = true;
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
 
 		//TargetBuilding->GetBuildingProgress()->ActiveBuildingNav();
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
@@ -72,65 +72,89 @@ void UPalCommandExecutor_Architecture::Abort()
 	if (OwnerController)
 	{
 		OwnerController->StopMovement();
-		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
 	}
 }
 
+void UPalCommandExecutor_Architecture::WorkCommand()
+{
+		TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
+}
+
+bool UPalCommandExecutor_Architecture::CheckCommandValid()
+{
+	if (!OwnerCommandComp)
+		return false;
+
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work ||
+		Command->SubCommandType != (uint8)ESubWorkType::Architecture || !Command->pTarget.IsValid())
+	{
+		return false;
+	}
+	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
+	{
+		return false;
+	}
+	return true;
+}
 
 void UPalCommandExecutor_Architecture::EndBuilding()
 {
 	Abort();
 	EndCommand();
 }
-
-void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-{
-	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Architecture || !Command->pTarget.IsValid())
-	{
-		return;
-	}
-	/*switch (Result)
-	{
-	case EPathFollowingResult::Success:
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Success"));
-		break;
-	case EPathFollowingResult::Blocked:
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Blocked"));
-		break;
-	case EPathFollowingResult::OffPath:
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove OffPath"));
-		break;
-	case EPathFollowingResult::Aborted:
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Aborted"));
-		break;
-	case EPathFollowingResult::Skipped_DEPRECATED:
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Skipped"));
-		break;
-	case EPathFollowingResult::Invalid:
-		UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Invalid"));
-		return;
-		break;
-	default:
-		break;
-	}*/
-	if (!bActionStart)
-	{
-		Abort();
-		return;
-	}
-
-	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
-	{
-		EndBuilding();
-		return;
-	}
-
-	if ( OwnerCommandComp->IsValidCommand() &&
-		Command->CommandKind == EPalCommandKind::Work && Command->SubCommandType == (uint8)ESubWorkType::Architecture)
-	{
-		TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
-		return;
-	}
-	EndBuilding();
-}
+//
+//void UPalCommandExecutor_Architecture::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+//{
+//	WorkCommand();
+//	//const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+//	//if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work ||
+//	//	Command->SubCommandType != (uint8)ESubWorkType::Architecture || !Command->pTarget.IsValid())
+//	//{
+//	//	return;
+//	//}
+//	///*switch (Result)
+//	//{
+//	//case EPathFollowingResult::Success:
+//	//	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Success"));
+//	//	break;
+//	//case EPathFollowingResult::Blocked:
+//	//	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Blocked"));
+//	//	break;
+//	//case EPathFollowingResult::OffPath:
+//	//	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove OffPath"));
+//	//	break;
+//	//case EPathFollowingResult::Aborted:
+//	//	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Aborted"));
+//	//	break;
+//	//case EPathFollowingResult::Skipped_DEPRECATED:
+//	//	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Skipped"));
+//	//	break;
+//	//case EPathFollowingResult::Invalid:
+//	//	UE_LOG(LogTemp, Warning, TEXT("Executor_Architecture :: FinishMove Invalid"));
+//	//	return;
+//	//	break;
+//	//default:
+//	//	break;
+//	//}*/
+//	//if (!bActionStart)
+//	//{
+//	//	Abort();
+//	//	return;
+//	//}
+//
+//	//if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
+//	//{
+//	//	EndBuilding();
+//	//	return;
+//	//}
+//
+//	//if ( OwnerCommandComp->IsValidCommand() &&
+//	//	Command->CommandKind == EPalCommandKind::Work && Command->SubCommandType == (uint8)ESubWorkType::Architecture)
+//	//{
+//	//	TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
+//	//	return;
+//	//}
+//	//EndBuilding();
+//}

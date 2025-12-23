@@ -63,6 +63,15 @@ void UPalCommandExecutor_Attack::Abort()
 	}
 }
 
+void UPalCommandExecutor_Attack::WorkCommand()
+{
+}
+
+bool UPalCommandExecutor_Attack::CheckCommandValid()
+{
+	return true;
+}
+
 void UPalCommandExecutor_Attack::EndAttack()
 {
 	Abort();

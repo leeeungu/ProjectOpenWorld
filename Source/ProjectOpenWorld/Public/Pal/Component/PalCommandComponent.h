@@ -8,6 +8,9 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCommandEvent,AActor*, PalActor,  FPalCommand, Command);
 
+struct FAIRequestID;
+namespace EPathFollowingResult { enum Type : int; }
+
 UCLASS()
 class PROJECTOPENWORLD_API UPalCommandComponent : public UActorComponent
 {
@@ -31,7 +34,8 @@ private:
 protected:
 	// garbage 문제로 stringobj를 사용
 	TArray< TArray<TStrongObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};
-	UPalCommandExecutorBase* CurrentExcute{};
+	UPROPERTY()
+	TObjectPtr<UPalCommandExecutorBase> CurrentExcute{};
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PalCommand")
 	FOnCommandEvent OnCommandFinished{};
@@ -52,7 +56,12 @@ protected:
 	bool PushCommand_Default(const FPalCommand& NewCommand);
 	bool PushCommand_DequqOld(const FPalCommand& NewCommand);
 	void SetPushCommandFunc(bool (UPalCommandComponent::* Func)(const FPalCommand&));
+
+	UFUNCTION()
+	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 public:	
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
 	inline const FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
 	FPalCommand GetCurrentCommand() const { return *CurrentCommand;  }

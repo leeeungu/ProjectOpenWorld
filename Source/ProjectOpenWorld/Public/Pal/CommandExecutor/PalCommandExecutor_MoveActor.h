@@ -24,7 +24,6 @@ public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;
 	virtual bool StartCommand(const FPalCommand& Command) override;
 	virtual void Abort() override;
-protected:
-	UFUNCTION()
-	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	virtual void WorkCommand() override;
+	virtual bool CheckCommandValid() override;
 };

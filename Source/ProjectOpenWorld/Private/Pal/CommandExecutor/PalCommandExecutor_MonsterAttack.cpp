@@ -69,3 +69,12 @@ void UPalCommandExecutor_MonsterAttack::EndAttack()
 	EndCommand();
 }
 
+
+void UPalCommandExecutor_MonsterAttack::WorkCommand()
+{
+}
+
+bool UPalCommandExecutor_MonsterAttack::CheckCommandValid()
+{
+	return true;
+}

@@ -56,10 +56,6 @@ void APalBaseCamp::CommandActorSpawned(AActor* NewActor)
 {
 	if (!NewActor || !PalCommander)
 		return;
-	//if (NewActor->StaticClass() == ABaseMonster::StaticClass())
-	//{
-	//	UE_LOG()
-	//}
 	if (FVector::DistSquared(NewActor->GetActorLocation(), GetActorLocation()) <= CampBounds->GetScaledSphereRadius() * CampBounds->GetScaledSphereRadius())
 	{
 		PalCommander->RegisterWork(NewActor);
@@ -71,28 +67,34 @@ void APalBaseCamp::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-bool APalBaseCamp::SpawnPal(TSubclassOf<AActor> TargetPal, int Index)
+bool APalBaseCamp::SpawnPal(int Index, AActor*& Spawned)
 {
-	AActor* Spawned = PalStore->SpawnPal(Index);
+	Spawned = PalStore->SpawnPal(Index);
 	if (Spawned)
 	{
+		Spawned->OnDestroyed.AddUniqueDynamic(this, &APalBaseCamp::PalDead);
 		PalCommander->StorePal(Spawned);
 		return true;
 	}
 	return false;
 }
 
-void APalBaseCamp::StorePal(TSubclassOf<AActor> NewPal, int Index)
+void APalBaseCamp::StorePalClass(TSubclassOf<AActor> NewPal, int Index)
 {
 	FPalStoreInventoryData data{};
 	data.SpawnClass = NewPal;
 	PalStore->StorePal(data, Index);
 }
 
-void APalBaseCamp::RemovePal(TSubclassOf<AActor> targetPal, int Index)
+void APalBaseCamp::RemovePalClass(TSubclassOf<AActor> targetPal, int Index)
 {
 	FPalStoreInventoryData data{};
 	data.SpawnClass = targetPal;
 	PalStore->RemovePal(data, Index);
-	//PalCommander->RemovePal(targetPal);
+}
+
+void APalBaseCamp::PalDead(AActor* DeadPal)
+{
+	PalCommander->RemovePal(DeadPal);
+	PalStore->DeSpawnPal(DeadPal);
 }

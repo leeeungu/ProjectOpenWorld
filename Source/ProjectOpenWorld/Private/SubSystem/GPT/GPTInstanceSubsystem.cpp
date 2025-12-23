@@ -7,7 +7,6 @@
 #include "Engine/Texture2D.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
-#include "Subsystem/GPT/GPTResponseInterface.h"
 
 UVaRestRequestJSON* UGPTInstanceSubsystem::GetRequest(EVaRestRequestVerb verb, EVaRestRequestContentType contentType, UObject* ResponseTarget)
 {
@@ -113,18 +112,26 @@ void UGPTInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	APIKey = TEXT("Bearer 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");
 }
 
-void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, UObject* Target)
+void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, TScriptInterface< IGPTResponseInterface> Target)
 {
-	if (!Target || !Target->Implements<UGPTResponseInterface>())
+	if (!Target || !Target.GetObject())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s No Interface : UGPTResponseInterface"), *Target->StaticClass()->GetName());
+		if (Target.GetObject())
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s No Interface :SendGPTStringRequest"), *Target.GetObject()->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No Object :SendGPTStringRequest"));
+		}
 		return;
-	}	if (!CheckSendable())
+	}
+	if (!CheckSendable())
 		return;
 	if (!RequestData.CheckSendable())
 		return;
 
-	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target);
+	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target.GetObject());
 	if (Request)
 	{
 		UVaRestJsonObject* RequestObject = VaRestSubsystem->ConstructVaRestJsonObject();
@@ -151,11 +158,18 @@ void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, 
 	}
 }
 
-void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, UObject* Target)
+void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, TScriptInterface< IGPTResponseInterface> Target)
 {
-	if (!Target || !Target->Implements<UGPTResponseInterface>())
+	if (!Target || !Target.GetObject())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s No Interface :UGPTResponseInterface"), *Target->StaticClass()->GetName());
+		if (Target.GetObject())
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s No Interface :SendGPTImageRequest"), *Target.GetObject()->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No Object :SendGPTImageRequest"));
+		}
 		return;
 	}
 	if (!CheckSendable())
@@ -163,7 +177,7 @@ void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, UO
 	if (!RequestData.CheckSendable())
 		return;
 
-	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target);
+	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target.GetObject());
 	if (Request)
 	{
 		UVaRestJsonObject* RequestRootObject = VaRestSubsystem->ConstructVaRestJsonObject();
@@ -193,17 +207,24 @@ void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, UO
 	}
 }
 
-void UGPTInstanceSubsystem::SendGetGPTResponse(FString modelID, UObject* Target)
+void UGPTInstanceSubsystem::SendGetGPTResponse(FString modelID, TScriptInterface< IGPTResponseInterface> Target)
 {
-	if (!Target || !Target->Implements<UGPTResponseInterface>())
+	if (!Target.GetObject() || !Target.GetObject()->Implements<UGPTResponseInterface>())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s No Interface :UGPTResponseInterface"), *Target->StaticClass()->GetName());
+		if (Target.GetObject())
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s No Interface :SendGetGPTResponse"), *Target.GetObject()->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No Object :SendGetGPTResponse"));
+		}
 		return;
 	}
 	if (!CheckSendable())
 		return;
 
-	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::GET, EVaRestRequestContentType::json, Target);
+	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::GET, EVaRestRequestContentType::json, Target.GetObject());
 	if (Request)
 	{
 		Request->ProcessURL(TEXT("https://api.openai.com/v1/responses/" + modelID));

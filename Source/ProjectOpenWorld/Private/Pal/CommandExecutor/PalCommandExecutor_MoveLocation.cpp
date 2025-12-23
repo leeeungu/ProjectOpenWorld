@@ -19,11 +19,11 @@ bool UPalCommandExecutor_MoveLocation::StartCommand(const FPalCommand& Command)
 {
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
 		if (OwnerController->MoveToLocation(Command.TargetLocation, 50.0f) != EPathFollowingRequestResult::Type::RequestSuccessful)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("MoveLocation::Can Find Path"));
-			OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
+			//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
 			EndCommand();
 			return false;
 		}
@@ -37,23 +37,38 @@ void UPalCommandExecutor_MoveLocation::Abort()
 {
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
 		OwnerController->StopMovement();
 	}
 }
 
-
-void UPalCommandExecutor_MoveLocation::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UPalCommandExecutor_MoveLocation::WorkCommand()
 {
+	EndCommand();
+}
+bool UPalCommandExecutor_MoveLocation::CheckCommandValid()
+{
+	if (!OwnerCommandComp)
+		return false;
 	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
 	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Move || Command->SubCommandType != (uint8)ESubMoveType::Location)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveLocation :: not slef command"));
-		return;
+		return false;
 	}
-	if (OwnerController)
-	{
-		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
-		EndCommand();
-	}
+	return true;
 }
+//void UPalCommandExecutor_MoveLocation::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+//{
+//	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+//	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Move || Command->SubCommandType != (uint8)ESubMoveType::Location)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveLocation :: not slef command"));
+//		return;
+//	}
+//	if (OwnerController)
+//	{
+//		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
+//		EndCommand();
+//	}
+//}

@@ -37,13 +37,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
-	bool SpawnPal(TSubclassOf<AActor> TargetPal, int Index);
+	bool SpawnPal(int Index, AActor*& Spawned);
 	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
-	void StorePal(TSubclassOf<AActor> NewPal, int Index);
+	void StorePalClass(TSubclassOf<AActor> NewPal, int Index);
 	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
-	void RemovePal(TSubclassOf<AActor> targetPal, int Index);
+	void RemovePalClass(TSubclassOf<AActor> targetPal, int Index);
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UPalStorageComponent* GetPalStoreComponent() const {return PalStore;}
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UPalCommanderComponent* GetPalCommanderComponent() const {return PalCommander;}
+
+	UFUNCTION()
+	void PalDead(AActor* DeadPal);
 };

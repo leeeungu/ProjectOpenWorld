@@ -1,17 +1,14 @@
 #include "Pal/Component/PalCommandComponent.h"
+#include "Pal/Controller/PalAIController.h"
+#include "Navigation/PathFollowingComponent.h"
+#include "GameFramework/Character.h"
 
 UPalCommandComponent::UPalCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetPushCommandFunc(&UPalCommandComponent::PushCommand_Default);
-	CommandPool.Init(FPalCommand{}, CommandSize::MaxSize);
-	QueueEmpty.Empty();
-	for (int i = 0; i < CommandSize::MaxSize; i++)
-	{
-		QueueEmpty.Enqueue(&CommandPool[i]);
-	}
-	QueueCommand.Empty();
 	ResetCurrentCommand();
+	SetComponentTickEnabled(false);
 }
 
 void UPalCommandComponent::ResetCommand(FPalCommand& pData)
@@ -32,6 +29,22 @@ void UPalCommandComponent::ResetCurrentCommand()
 void UPalCommandComponent::BeginPlay()
 {
 	UActorComponent::BeginPlay();
+	QueueEmpty.Empty();
+	QueueCommand.Empty();
+	CommandPool.Init(FPalCommand{}, CommandSize::MaxSize);
+	for (int i = 0; i < CommandSize::MaxSize; i++)
+	{
+		QueueEmpty.Enqueue(&CommandPool[i]);
+	}
+	ACharacter* OwnerPal = Cast<ACharacter>(GetOwner());
+	if (OwnerPal)
+	{
+		APalAIController* OwnerController = Cast<APalAIController>(OwnerPal->GetController());
+		if (OwnerController)
+		{
+			OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandComponent::FinishMove);
+		}
+	}
 }
 
 bool UPalCommandComponent::PopCommand()
@@ -41,6 +54,7 @@ bool UPalCommandComponent::PopCommand()
 
 	if (QueueCommand.Dequeue(CurrentCommand) == false)
 	{
+		SetComponentTickEnabled(false);
 		ResetCommand(*CurrentCommand);
 		ResetCurrentCommand();
 		LastCommand = nullptr;
@@ -66,6 +80,11 @@ bool UPalCommandComponent::PopCommand()
 			OnStartCurrentCommand();
 			return true;
 		}
+		else
+		{
+			FinishCommand();
+			return true;
+		}
 	}
 	return false;
 }
@@ -77,19 +96,20 @@ bool UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
 	{
 		if (NewCommand == *LastCommand)
 		{
-			UE_LOG(LogTemp, Log, TEXT("%s : Duple Command"), *GetOwner()->GetName());
-			return false;
+			//UE_LOG(LogTemp, Log, TEXT("%s : Duple Command"), *GetOwner()->GetName());
+			return true;
 		}
 	}
 	if (QueueEmpty.Dequeue(pEmpthy) == false)
 	{
-		UE_LOG(LogTemp, Log, TEXT("%s : Command Full"), *GetOwner()->GetName());
+		//UE_LOG(LogTemp, Log, TEXT("%s : Command Full"), *GetOwner()->GetName());
 		PopCommand();
 		return false;
 	}
 	*pEmpthy = NewCommand;
 	LastCommand = pEmpthy;
 	QueueCommand.Enqueue(pEmpthy);
+	SetComponentTickEnabled(true);
 	return PopCommand();
 }
 
@@ -107,12 +127,22 @@ bool UPalCommandComponent::PushCommand_DequqOld(const FPalCommand& NewCommand) /
 	pEmpthy->pInstigatorActor = NewCommand.pInstigatorActor;
 	pEmpthy->pTarget = NewCommand.pTarget;
 	QueueCommand.Enqueue(pEmpthy);
+	SetComponentTickEnabled(true);
 	return PopCommand();
 }
 
 void UPalCommandComponent::SetPushCommandFunc(bool(UPalCommandComponent::* Func)(const FPalCommand&))
 {
 	PushCommandFunc = Func;
+}
+
+void UPalCommandComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!QueueCommand.IsEmpty() && CurrentCommand == &DummyCommand)
+	{
+		PopCommand();
+	}
 }
 
 bool UPalCommandComponent::PushCommand(const FPalCommand& NewCommand)
@@ -130,10 +160,9 @@ void UPalCommandComponent::FinishCommand()
 	if (CurrentCommand != &DummyCommand)
 	{
 		if (CurrentExcute)
-		{
 			CurrentExcute->Abort();
+		if (CurrentExcute)
 			CurrentExcute->ResetStarted();
-		}
 		if (LastCommand == CurrentCommand)
 		{
 			LastCommand = nullptr;
@@ -168,4 +197,21 @@ void UPalCommandComponent::ResetCommandQue()
 		CurrentExcute->ResetStarted();
 	}
 	ResetCurrentCommand();
+}
+
+void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+	if (!CurrentExcute)
+	{
+		FinishCommand();
+		return;
+	}
+	if (CurrentExcute->CheckCommandValid())
+	{
+		CurrentExcute->WorkCommand();
+	}
+	else
+	{
+		FinishCommand();
+	}
 }

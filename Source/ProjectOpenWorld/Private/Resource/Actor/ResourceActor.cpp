@@ -82,7 +82,7 @@ bool AResourceActor::IsCommandFinished_Implementation()
 
 void AResourceActor::UpdateResource(ACharacter* pOther)
 {
-	if (InteractionList.Find(pOther))
+	if (pOther  && InteractionList.Find(pOther))
 	{
 		SpawnRandomItem();
 		//UE_LOG(LogTemp, Log, TEXT("AResourceActor :: UpdateResource by %s"), *pOther->GetName());
@@ -99,7 +99,7 @@ void AResourceActor::OnEndDetected_Implementation(ACharacter* pOther)
 
 void AResourceActor::OnInteractionStart_Implementation(ACharacter* pOther)
 {
-	if (!pOther->Implements<UResourceInterface>())
+	if (!pOther || !pOther->Implements<UResourceInterface>())
 		return;
 	UE_LOG(LogTemp, Log, TEXT("AResourceActor:interactionStart"));
 	InteractionList.Add(pOther);
@@ -112,7 +112,7 @@ void AResourceActor::OnInteraction_Implementation(ACharacter* pOther)
 
 void AResourceActor::OnInteractionEnd_Implementation(ACharacter* pOther)
 {
-	if (!pOther->Implements<UResourceInterface>())
+	if (!pOther || !pOther->Implements<UResourceInterface>())
 		return;
 	InteractionList.Remove(pOther);
 	IResourceInterface::Execute_StopResource(pOther, this);
@@ -120,7 +120,7 @@ void AResourceActor::OnInteractionEnd_Implementation(ACharacter* pOther)
 
 void AResourceActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 {
-	if (!pOther->Implements<UResourceInterface>())
+	if (!pOther || !pOther->Implements<UResourceInterface>())
 		return;
 	InteractionList.Remove(pOther);
 	IResourceInterface::Execute_StopResource(pOther, this);

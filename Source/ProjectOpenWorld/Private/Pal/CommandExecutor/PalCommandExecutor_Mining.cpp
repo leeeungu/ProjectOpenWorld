@@ -26,11 +26,12 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 	if (OwnerController)
 	{
 		bStartedMining = true;
-		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
 		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 100.f);
 		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Mining::Can Find Path %s "), *Command.pTarget->GetName());
+			if (Command.pTarget.IsValid())
+				UE_LOG(LogTemp, Warning, TEXT("Mining::Can Find Path %s "), *Command.pTarget->GetName());
 			EndMining();
 			return false;
 		}
@@ -56,8 +57,32 @@ void UPalCommandExecutor_Mining::Abort()
 	if (OwnerController)
 	{
 		OwnerController->StopMovement();
-		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
 	}
+}
+
+void UPalCommandExecutor_Mining::WorkCommand()
+{
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	OwnerPal->SetActionStarted(true);
+	InteractionComp->SetInteractionTarget(Command->pTarget.Get());
+	InteractionComp->OnInteractionStart();
+}
+
+bool UPalCommandExecutor_Mining::CheckCommandValid()
+{
+	if (!OwnerCommandComp || !OwnerPal || !bStartedMining)
+		return false;
+
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work ||
+		Command->SubCommandType != (uint8)ESubWorkType::Mining || !Command->pTarget.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cant Mining"));
+		return false;
+	}
+
+	return true;
 }
 
 void UPalCommandExecutor_Mining::EndMining()
@@ -66,22 +91,22 @@ void UPalCommandExecutor_Mining::EndMining()
 	EndCommand();
 }
 
-void UPalCommandExecutor_Mining::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-{
-	if (!bStartedMining && !OwnerCommandComp)
-		return;
-	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Mining|| !Command->pTarget.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveActor :: not slef command"));
-		return;
-	}
-	if (OwnerPal && FVector::Distance(Command->pTarget->GetActorLocation(), OwnerPal->GetActorLocation()) <= 300.0f)
-	{
-		OwnerPal->SetActionStarted(true);
-		InteractionComp->SetInteractionTarget(Command->pTarget.Get());
-		InteractionComp->OnInteractionStart();
-		return;
-	}
-	EndMining();
-}
+//void UPalCommandExecutor_Mining::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+//{
+//	if (!bStartedMining && !OwnerCommandComp)
+//		return;
+//	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+//	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Mining|| !Command->pTarget.IsValid())
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveActor :: not slef command"));
+//		return;
+//	}
+//	if (OwnerPal && FVector::Distance(Command->pTarget->GetActorLocation(), OwnerPal->GetActorLocation()) <= 300.0f)
+//	{
+//		OwnerPal->SetActionStarted(true);
+//		InteractionComp->SetInteractionTarget(Command->pTarget.Get());
+//		InteractionComp->OnInteractionStart();
+//		return;
+//	}
+//	EndMining();
+//}

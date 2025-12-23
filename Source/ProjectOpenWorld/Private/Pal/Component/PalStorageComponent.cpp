@@ -54,4 +54,13 @@ AActor* UPalStorageComponent::SpawnPal(int Index)
 
 void UPalStorageComponent::DeSpawnPal(AActor* TargetPal)
 {
+	if (!TargetPal || !SpawnedPal.Contains(TargetPal))
+		return;
+	int Index = SpawnedPal[TargetPal];
+	FPalStoreInventoryData* Data = &PalStorage[Index];
+	if (Data)
+	{
+		Data->bSpawned = false;
+	}
+	SpawnedPal.Remove(TargetPal);
 }

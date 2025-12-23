@@ -41,7 +41,7 @@ bool UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 	}
 	if (OwnerController)
 	{
-		OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
+		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
 		eTransportState = TransportState::Go;
 		if (OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 40.0f) == EPathFollowingRequestResult::Type::Failed)
 		{
@@ -66,7 +66,7 @@ void UPalCommandExecutor_Transport::Abort()
 	if (OwnerController)
 	{
 		OwnerController->StopMovement();
-		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
+	//	OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Transport::FinishMove);
 	}
 }
 
@@ -76,51 +76,101 @@ void UPalCommandExecutor_Transport::EndTransport()
 	EndCommand();
 }
 
-void UPalCommandExecutor_Transport::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UPalCommandExecutor_Transport::WorkCommand()
 {
-	if ( OwnerCommandComp != nullptr && OwnerController != nullptr)// || Result != EPathFollowingResult::Type::Success)
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (Command->pTarget.Get() && eTransportState == TransportState::Go)
 	{
-		const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-		if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Transport || 
-			!Command->pInstigatorActor.IsValid() || !Command->pTarget.IsValid())
+		eTransportState = TransportState::Back;
+		if (OwnerController->MoveToLocation(Command->pInstigatorActor->GetActorLocation(), 40.0f))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Executor__MoveLocation :: not slef command"));
-			return;
-		}
-		else if (Result == EPathFollowingResult::Type::Success)
-		{
-			if (Command->pTarget.Get() && eTransportState == TransportState::Go)
-			{
-				eTransportState = TransportState::Back;
-				if (OwnerController->MoveToLocation(Command->pInstigatorActor->GetActorLocation(), 40.0f) == false)
-				{
-					EndTransport();
-				}
-				else if (OwnerPal)
-				{
-					OwnerPal->SetActionStarted(true);
-					OwnerPal->GetCharacterMovement()->MaxWalkSpeed = 75.0f;
+			OwnerPal->SetActionStarted(true);
+			OwnerPal->GetCharacterMovement()->MaxWalkSpeed = 75.0f;
 
-					UPrimitiveComponent* Mesh = Cast<UPrimitiveComponent>(Command->pTarget->GetRootComponent());
-					if (Mesh)
-					{
-						Mesh->SetSimulatePhysics(false);
-					}
-					Command->pTarget->AttachToComponent(OwnerPal->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("Socket_Transport"));
-				}
-				return;
-			}
-			else if (eTransportState == TransportState::Back)
+			UPrimitiveComponent* Mesh = Cast<UPrimitiveComponent>(Command->pTarget->GetRootComponent());
+			if (Mesh)
 			{
-				Command->pTarget->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-				UPrimitiveComponent* Mesh = Cast<UPrimitiveComponent>(Command->pTarget->GetRootComponent());
-				if (Mesh)
-				{
-					Mesh->SetSimulatePhysics(true);
-				}
-				// 款价 肯丰
+				Mesh->SetSimulatePhysics(false);
 			}
+			Command->pTarget->AttachToComponent(OwnerPal->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("Socket_Transport"));
+		}
+		else
+		{
+			EndTransport();
 		}
 	}
-	EndTransport();
+	else if (eTransportState == TransportState::Back)
+	{
+		Command->pTarget->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		UPrimitiveComponent* Mesh = Cast<UPrimitiveComponent>(Command->pTarget->GetRootComponent());
+		if (Mesh)
+		{
+			Mesh->SetSimulatePhysics(true);
+		}
+		EndTransport();
+		// 款价 肯丰
+	}
 }
+
+ bool UPalCommandExecutor_Transport::CheckCommandValid()
+ {
+	 if (!OwnerCommandComp || !OwnerPal || eTransportState == TransportState::None)
+		 return false;
+	 const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	 if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Transport ||
+		 !Command->pInstigatorActor.IsValid() || !Command->pTarget.IsValid())
+	 {
+		 UE_LOG(LogTemp, Warning, TEXT("Executor_Transport :: not slef command"));
+		 return false;
+	 }
+	 return true;
+ }
+//
+//void UPalCommandExecutor_Transport::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+//{
+//	if ( OwnerCommandComp != nullptr && OwnerController != nullptr)// || Result != EPathFollowingResult::Type::Success)
+//	{
+//		const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+//		if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work || Command->SubCommandType != (uint8)ESubWorkType::Transport || 
+//			!Command->pInstigatorActor.IsValid() || !Command->pTarget.IsValid())
+//		{
+//			UE_LOG(LogTemp, Warning, TEXT("Executor__MoveLocation :: not slef command"));
+//			return;
+//		}
+//		else if (Result == EPathFollowingResult::Type::Success)
+//		{
+//			if (Command->pTarget.Get() && eTransportState == TransportState::Go)
+//			{
+//				eTransportState = TransportState::Back;
+//				if (OwnerController->MoveToLocation(Command->pInstigatorActor->GetActorLocation(), 40.0f) == false)
+//				{
+//					EndTransport();
+//				}
+//				else if (OwnerPal)
+//				{
+//					OwnerPal->SetActionStarted(true);
+//					OwnerPal->GetCharacterMovement()->MaxWalkSpeed = 75.0f;
+//
+//					UPrimitiveComponent* Mesh = Cast<UPrimitiveComponent>(Command->pTarget->GetRootComponent());
+//					if (Mesh)
+//					{
+//						Mesh->SetSimulatePhysics(false);
+//					}
+//					Command->pTarget->AttachToComponent(OwnerPal->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("Socket_Transport"));
+//				}
+//				return;
+//			}
+//			else if (eTransportState == TransportState::Back)
+//			{
+//				Command->pTarget->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+//				UPrimitiveComponent* Mesh = Cast<UPrimitiveComponent>(Command->pTarget->GetRootComponent());
+//				if (Mesh)
+//				{
+//					Mesh->SetSimulatePhysics(true);
+//				}
+//				// 款价 肯丰
+//			}
+//		}
+//	}
+//	EndTransport();
+//}

@@ -3,38 +3,29 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalCommandData.h"
-#include <list>
+#include "Creature/Character/BaseCreature.h"
 #include <set>
 #include "PalCommanderComponent.generated.h"
-
-class ABaseCreature;
-class ICommanderManageable;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPalCommanderComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TSet<TObjectPtr<ABaseCreature>> pals{};
+	std::set<TObjectPtr<ABaseCreature>> pals{};
+	TQueue< TObjectPtr<AActor>> WorkQueue{};
 
-	std::list<TObjectPtr<AActor>> WorkList;
+	UPROPERTY()
+	TObjectPtr<AActor> TargetWorkActor{};
 
-	float Time{};
-	int NotWork{};
-	int StartIndex{};
+	std::set<TObjectPtr<ABaseCreature>>::iterator ArrayIter{};
+	int QueSize{};
 public:	
 	UPalCommanderComponent();
 
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void FinishCommand(AActor* PalActor, FPalCommand Command);
-
-	bool StartWork(ABaseCreature* pal, const FPalCommand& Command);
-
-	void CommanderWork();
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -44,9 +35,9 @@ public:
 	void RegisterWork(AActor* WorkActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Commander")
-	bool CommadAll(const FPalCommand& Command);
+	bool WorkAllPal(const FPalCommand& Command);
 
 	UFUNCTION(BlueprintCallable, Category = "Commander")
-	bool CommadReady(const FPalCommand& Command);
+	bool WorkOnePal(const FPalCommand& Command);
 
 };
