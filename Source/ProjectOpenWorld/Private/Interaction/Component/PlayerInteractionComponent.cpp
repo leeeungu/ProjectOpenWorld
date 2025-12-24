@@ -41,7 +41,7 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * DetectionDistance + CameraManager->GetCameraLocation(),
 			//200.0f,
-			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::ForOneFrame, HitResult, true);
+			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true);
 		if (HitResult.GetActor())
 		{
 			if (IInteractionInterface* Interaction = Cast<IInteractionInterface>(HitResult.GetActor()))

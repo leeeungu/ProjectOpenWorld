@@ -15,7 +15,7 @@ AResourceActor::AResourceActor()
 		ResourceMesh->SetStaticMesh(MeshObj.Object);
 	}
 	//Script/Engine.StaticMesh'/Game/Pal/Model/Prop/MapMesh/Mesh/SK_Rock_A.SK_Rock_A'
-
+	
 }
 
 void AResourceActor::BeginPlay()
@@ -38,14 +38,22 @@ void AResourceActor::SpawnRandomItem()
 	Param.Owner = this;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	FVector Location = GetActorLocation() + FVector (0,0,ResourceMesh->GetStaticMesh()->GetBoundingBox().GetSize().Z);
-	AItemActor* Item = Cast< AItemActor>(GetWorld()->SpawnActor(AItemActor::StaticClass(), &Location, 0, Param));
-	Item->GetRootMesh()->AddForce(FVector(0,0,1000));
+	if (!SpawnClass)
+		SpawnClass = AItemActor::StaticClass();
+	AItemActor* Item = Cast< AItemActor>(GetWorld()->SpawnActor(SpawnClass, &Location, 0, Param));
+	if (!Item)
+		return;
+	FVector Force = FVector(0, 0, 1);
+	Force.X = FMath::RandRange(-0.5f,0.5f);
+	Force.Y = FMath::RandRange(-0.5f,0.5f);
+	Item->GetRootMesh()->AddImpulse(Force * 1000);
 	int idx = rand() % ItemData.Num();
 	Item->Init(ItemData[idx], ItemData.Num() + 2);
 	ExtractCount--;
 	if (ExtractCount <= 0)
 	{
-		for(TWeakObjectPtr<UObject> Objects : InteractionList)
+		TArray< TWeakObjectPtr<UObject>> TempArray = InteractionList.Array();
+		for(TWeakObjectPtr<UObject>& Objects : TempArray)
 		{
 			if (Objects.IsValid())
 			{

@@ -5,6 +5,7 @@
 #include "Logging/LogMacros.h"
 #include "Building/Interface/ArchitectureInterface.h"
 #include "Resource/Interface/ResourceInterface.h"
+#include "GameBase/Interface/AttackInterface.h"
 #include "BasePlayer.generated.h"
 
 class USpringArmComponent;
@@ -38,7 +39,7 @@ enum class EStatusType : uint8
 };
 
 UCLASS()
-class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface
+class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface, public IAttackInterface
 {
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -177,6 +178,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
 	bool GetStatus(EStatusType StatusType, float& Result);
 
+	virtual float GetAttackValue_Implementation() const override;
+	virtual void  SetAttackValue_Implementation(float NewValue) override;
+	virtual void  RetAttackValue_Implementation() override;
+	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+	virtual bool IsDead_Implementation() const override;
 
 
 	virtual float GetArchitectSpeed_Implementation() const override;

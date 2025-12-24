@@ -24,10 +24,10 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void RsetInteractionTarget(AActor* DestroyedActor);
 	
 public:	
+	UFUNCTION()
+	void ResetInteractionTarget(AActor* DestroyedActor);
 	UInteractionComponent();
 
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

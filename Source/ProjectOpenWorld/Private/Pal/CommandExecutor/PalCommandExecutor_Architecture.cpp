@@ -26,11 +26,12 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 {
 	TargetBuilding = Cast< ABaseBuilding>(Command.pTarget);
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd() || !OwnerPal)
+	{
+		EndBuilding();
 		return false;
+	}
 	
 	//UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
-	bActionStart = true;
-	IsCommandStarted = true;
 	if (OwnerController)
 	{
 		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
@@ -54,8 +55,11 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 				TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
 			}
 		}
+		bActionStart = true;
+		IsCommandStarted = true;
 		return true;
 	}
+	EndBuilding();
 	return false;
 }
 

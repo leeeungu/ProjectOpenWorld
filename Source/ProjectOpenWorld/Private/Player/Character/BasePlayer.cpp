@@ -130,6 +130,29 @@ bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result)
 	return false;
 }
 
+float ABasePlayer::GetAttackValue_Implementation() const
+{
+	return 0.0f;
+}
+
+void ABasePlayer::SetAttackValue_Implementation(float NewValue)
+{
+}
+
+void ABasePlayer::RetAttackValue_Implementation()
+{
+}
+
+bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
+{
+	return false;
+}
+
+bool ABasePlayer::IsDead_Implementation() const
+{
+	return false;
+}
+
 float ABasePlayer::GetArchitectSpeed_Implementation() const
 {
 	return 1.0f;

@@ -160,7 +160,7 @@ void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, 
 
 void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, TScriptInterface< IGPTResponseInterface> Target)
 {
-	if (!Target || !Target.GetObject())
+	if (!Target.GetObject())
 	{
 		if (Target.GetObject())
 		{

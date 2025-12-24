@@ -94,6 +94,35 @@ void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 		Destroy();
 }
 
+void AItemActor::OnTransportRegister_Implementation(AActor* Other)
+{
+	if (Transport && Transport.Get() )
+		return;
+	ACharacter* pTarget = Cast<ACharacter>(Other);
+	if (!pTarget)
+		return;
+
+	TransportState = ETransportState::Transport;
+	Transport = Other;
+	ItemSkeletalMesh->SetSimulatePhysics(false);
+	AttachToComponent(pTarget->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_Transport"));
+}
+
+void AItemActor::OnTransportUnRegister_Implementation(AActor* Other)
+{
+	if (!Transport || !Transport.Get())
+		return;
+	TransportState = ETransportState::NotTransport;
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	ItemSkeletalMesh->SetSimulatePhysics(true);
+	Transport = nullptr;
+}
+
+ETransportState AItemActor::GetTransportState_Implementation()
+{
+	return TransportState;
+}
+
 
 
 
