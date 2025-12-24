@@ -78,7 +78,7 @@ bool UPalCommandComponent::PopCommand()
 		{
 			CurrentCommandData = *CurrentCommand;
 			OnStartCurrentCommand();
-			return true;
+			return true;	
 		}
 		else
 		{
@@ -201,14 +201,19 @@ void UPalCommandComponent::ResetCommandQue()
 
 void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (!CurrentExcute)
+	if (!CurrentExcute)// || Result == EPathFollowingResult::Type::Invalid || Result == EPathFollowingResult::Type::OffPath)
 	{
-		FinishCommand();
 		return;
 	}
 	if (CurrentExcute->CheckCommandValid())
 	{
-		CurrentExcute->WorkCommand();
+		//if (Result == EPathFollowingResult::Type::Success)
+			CurrentExcute->WorkCommand();
+		//else if (Result == EPathFollowingResult::Type::Aborted)// || Result == EPathFollowingResult::Type::Blocked)
+		//{
+		//	CurrentExcute->Abort();
+		//	CurrentExcute->StartCommand(*CurrentCommand);
+		//}
 	}
 	else
 	{

@@ -58,6 +58,7 @@ protected:
 	bool bCanAttack{};
 	bool bMoveStarted{};
 	bool bAttacking{};
+	bool bCanRotate{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -89,4 +90,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	float GetAttackDistance() const { return AttackDistance; }
+
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool GetCanRotate() const { return bCanRotate; }
+	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
+	void SetCanRotate(bool Value) { bCanRotate = Value; }
 };

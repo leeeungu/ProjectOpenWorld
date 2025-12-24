@@ -1,5 +1,6 @@
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
+#include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameBase/Interface/AttackInterface.h"
 
@@ -14,8 +15,10 @@ UPalAttackComponent::UPalAttackComponent()
 void UPalAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	if (ACharacter* Pawn = Cast<ACharacter>(GetOwner()))
+	{
 		Controller = Cast< APalAIController>(Pawn->GetController());
+	}
 	if (!Controller)
 	{
 		GetOwner()->Destroy();
@@ -36,7 +39,7 @@ void UPalAttackComponent::TargetIsDead(AActor* Actor)
 void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (bCanAttack && AttackData.TargetActor && AttackData.TargetActor.Get())
+	if (bCanAttack && AttackData.TargetActor && AttackData.TargetActor.Get() && bCanRotate)
 	{
 		bAttacking = FVector::DistSquared(AttackData.TargetActor->GetActorLocation(), GetOwner()->GetActorLocation()) <= AttackDistance * AttackDistance;
 		float dot = FVector::DotProduct(
@@ -58,16 +61,20 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			else
 			{
 				EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
-				if (Angle > AttackRange || Angle < 0 )
+				if (Angle > AttackRange || Angle < 0)
 				{
-					float Direction = FVector::DotProduct(
-						(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
-						GetOwner()->GetActorRightVector().GetSafeNormal2D());
-					Direction = Direction > 0 ? 1.0 : -1.0f;
+					if (AttackData.TargetActor && AttackData.TargetActor.Get())
+					{
+						float Direction = FVector::DotProduct(
+							(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
+							GetOwner()->GetActorRightVector().GetSafeNormal2D());
+						Direction = Direction > 0 ? 1.0 : -1.0f;
 
-					FRotator Roate = { 0,DeltaTime * 600.0f * Direction ,0 };
-					//Roate.Yaw = FMath::Clamp(Roate.Yaw, -AttackRange * 2, AttackRange * 2);
-					GetOwner()->AddActorWorldRotation(Roate);
+						FRotator Roate = { 0,DeltaTime * 600.0f * Direction ,0 };
+						//Roate.Yaw = FMath::Clamp(Roate.Yaw, -AttackRange * 2, AttackRange * 2);
+						GetOwner()->AddActorWorldRotation(Roate);
+						UE_LOG(LogTemp, Log, TEXT("True"));
+					}
 				}
 				else
 				{
@@ -75,10 +82,15 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 					{
 						bMoveStarted = false;
 						bAttacking = true;
+						bCanRotate = true;
 					}
 					else if (PathResult == EPathFollowingRequestResult::Failed)
 					{
 						EndAttack();
+					}
+					else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
+					{
+						bCanRotate = true;
 					}
 				}
 			}
@@ -97,7 +109,10 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 	if (!sData.TargetActor || sData.TargetActor->IsPendingKillPending())
 		return;
 	if (!sData.TargetActor->Implements<UAttackInterface>())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetActor has not interface"), *sData.TargetActor.Get()->GetName());
 		return;
+	}
 	sData.TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bCanAttack = true;
 	AttackData = sData;
@@ -118,7 +133,7 @@ void UPalAttackComponent::StartAttack()
 	EPathFollowingRequestResult::Type Result = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
 	if (Result == EPathFollowingRequestResult::Type::Failed)
 		return;
-
+	bCanRotate = true;
 	SetComponentTickEnabled(true);
 	if (OnPalAttackStart.IsBound())
 	{
@@ -131,6 +146,7 @@ void  UPalAttackComponent::EndAttack()
 	//UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: EndAttack"));
 	SetComponentTickEnabled(false);
 	bCanAttack = false;
+	bCanRotate = false;
 	if (AttackData.TargetActor)
 	{
 		AttackData.TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
@@ -150,4 +166,5 @@ void UPalAttackComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResul
 	}
 	bMoveStarted = false;
 	bAttacking = true;
+	bCanRotate = true;
 }

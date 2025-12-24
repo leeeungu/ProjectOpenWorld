@@ -8,6 +8,7 @@
 class ABaseCreature;
 class APalAIController;
 struct FAIRequestID;
+class UInteractionComponent;
 namespace EPathFollowingResult { enum Type : int; }
 
 UCLASS()
@@ -22,11 +23,10 @@ class PROJECTOPENWORLD_API UPalCommandExecutor_Transport : public UPalCommandExe
 	};
 protected:
 	UPROPERTY()
-	APalAIController* OwnerController{};
+	TObjectPtr < APalAIController> OwnerController{};
 	UPROPERTY()
-	ABaseCreature* OwnerPal{};
+	TObjectPtr < ABaseCreature> OwnerPal{};
 	TransportState eTransportState = TransportState::None;
-
 
 public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;

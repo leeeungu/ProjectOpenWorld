@@ -20,28 +20,36 @@ void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (TargetWorkActor && TargetWorkActor.Get())
 	{
-		if (WorkOnePal(ICommanderManageable::Execute_GetCommand(TargetWorkActor.Get())))
+		if (ICommanderManageable::Execute_IsCommandFinished(TargetWorkActor.Get()))
 		{
-			int NotWork = 0;
-			for (const TObjectPtr<ABaseCreature>& Temp : pals)
-			{
-				if (Temp && !Temp->GetCommandComponent()->IsValidCommand())
-				{
-					NotWork++;
-				}
-			}
-			UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::TickComponent %d %d"), QueSize, NotWork);
 			WorkQueue.Dequeue(TargetWorkActor);
 			TargetWorkActor = nullptr;
-			QueSize--;
 		}
 		else
 		{
-			if (ArrayIter != pals.end())
+			if (WorkOnePal(ICommanderManageable::Execute_GetCommand(TargetWorkActor.Get())))
 			{
+				int NotWork = 0;
+				for (const TObjectPtr<ABaseCreature>& Temp : pals)
+				{
+					if (Temp && !Temp->GetCommandComponent()->IsValidCommand())
+					{
+						NotWork++;
+					}
+				}
+				UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::TickComponent %d %d"), QueSize, NotWork);
 				WorkQueue.Dequeue(TargetWorkActor);
-				WorkQueue.Enqueue(TargetWorkActor);
 				TargetWorkActor = nullptr;
+				QueSize--;
+			}
+			else
+			{
+				if (ArrayIter != pals.end())
+				{
+					WorkQueue.Dequeue(TargetWorkActor);
+					WorkQueue.Enqueue(TargetWorkActor);
+					TargetWorkActor = nullptr;
+				}
 			}
 		}
 	}

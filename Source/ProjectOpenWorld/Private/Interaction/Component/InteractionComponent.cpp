@@ -20,7 +20,7 @@ void UInteractionComponent::BeginPlay()
 	OwnerCharacter = Cast< ACharacter>(GetOwner());
 }
 
-void UInteractionComponent::RsetInteractionTarget(AActor* DestroyedActor)
+void UInteractionComponent::ResetInteractionTarget(AActor* DestroyedActor)
 {
 	if (InteractionTarget == DestroyedActor)
 	{
@@ -31,19 +31,26 @@ void UInteractionComponent::RsetInteractionTarget(AActor* DestroyedActor)
 
 void UInteractionComponent::SetInteractionTarget(TScriptInterface<IInteractionInterface> NewTarget)
 {
-	if (!NewTarget || !NewTarget.GetObject())
-		return;
-	AActor* Target = Cast< AActor>(NewTarget.GetObject());
-	if (Target)
+	if (NewTarget && NewTarget.GetObject())
 	{
-		Target->OnDestroyed.AddDynamic(this, &UInteractionComponent::RsetInteractionTarget);
+		AActor* Target = Cast< AActor>(NewTarget.GetObject());
+		if (Target)
+		{
+			Target->OnDestroyed.AddDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+		}
+		InteractionTarget = NewTarget;
 	}
-	InteractionTarget = NewTarget;
+	else
+	{
+		InteractionTarget = nullptr;
+		bIsInteraction = false;
+	}
+	
 }
 
 void UInteractionComponent::OnInteractionStart()
 {
-	if (InteractionTarget)
+	if (InteractionTarget && InteractionTarget.GetObject() && InteractionTarget)
 	{
 		bIsInteraction = true;
 		IInteractionInterface::Execute_OnInteractionStart(InteractionTarget.GetObject(), OwnerCharacter.Get());
@@ -52,7 +59,7 @@ void UInteractionComponent::OnInteractionStart()
 
 void UInteractionComponent::OnInteractionTriggered()
 {
-	if (InteractionTarget && bIsInteraction)
+	if(InteractionTarget && InteractionTarget.GetObject() && bIsInteraction)
 	{
 		IInteractionInterface::Execute_OnInteraction(InteractionTarget.GetObject(), OwnerCharacter.Get());
 	}
@@ -60,10 +67,15 @@ void UInteractionComponent::OnInteractionTriggered()
 
 void UInteractionComponent::OnInteractionCompleted()
 {
-	if (InteractionTarget)
+	if (InteractionTarget && InteractionTarget.GetObject())
 	{
 		bIsInteraction = false;
 		IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), OwnerCharacter.Get());
+	}
+	else
+	{
+		bIsInteraction = false;
+		InteractionTarget = nullptr;
 	}
 }
 

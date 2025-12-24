@@ -9,6 +9,8 @@
 #include "ResourceActor.generated.h"
 
 class UItemPrimaryDataAsset;
+class AItemActor;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExtractEnd);
 
 UCLASS()
@@ -26,6 +28,9 @@ protected:
 
 	UPROPERTY()
 	TSet< TWeakObjectPtr<UObject>> InteractionList{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
+	TSubclassOf< AItemActor> SpawnClass{};
 public:
 	FOnExtractEnd onExtractEnd{};
 public:	
