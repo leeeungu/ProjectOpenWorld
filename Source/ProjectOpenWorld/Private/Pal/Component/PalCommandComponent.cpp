@@ -139,7 +139,7 @@ void UPalCommandComponent::SetPushCommandFunc(bool(UPalCommandComponent::* Func)
 void UPalCommandComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!QueueCommand.IsEmpty() && CurrentCommand == &DummyCommand)
+	if (!QueueCommand.IsEmpty() && !IsValidCommand())
 	{
 		PopCommand();
 	}

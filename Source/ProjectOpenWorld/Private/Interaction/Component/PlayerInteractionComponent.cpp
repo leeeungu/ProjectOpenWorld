@@ -37,11 +37,12 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
 		buildPointIgnore.Add(OwnerCharacter.Get());
-		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
+		UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * DetectionDistance + CameraManager->GetCameraLocation(),
 			//200.0f,
-			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true))
+			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::ForOneFrame, HitResult, true);
+		if (HitResult.GetActor())
 		{
 			if (IInteractionInterface* Interaction = Cast<IInteractionInterface>(HitResult.GetActor()))
 			{
@@ -59,7 +60,7 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 				InteractionTarget = nullptr;
 			}
 		}
-		else if (InteractionTarget)
+		else if (!HitResult.GetActor() && InteractionTarget)
 		{
 			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
 			InteractionTarget = nullptr;

@@ -78,7 +78,7 @@ void UPalCommandExecutor_Architecture::Abort()
 
 void UPalCommandExecutor_Architecture::WorkCommand()
 {
-		TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
+	TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
 }
 
 bool UPalCommandExecutor_Architecture::CheckCommandValid()
