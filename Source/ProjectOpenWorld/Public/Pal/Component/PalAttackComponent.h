@@ -54,11 +54,16 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	float AttackDistance{};
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	float AttackAngle{};
+
+	double AttackRange{};
+	float HalfAttackAngle{};
 	FPalAttackData AttackData{};
-	bool bCanAttack{};
-	bool bMoveStarted{};
+	bool bSetTargetData{};
 	bool bAttacking{};
-	bool bCanRotate{};
+
+	bool bMoveStarted{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -74,6 +79,8 @@ protected:
 
 	UFUNCTION()
 	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+
+	float GetTargetRotationYaw() const;
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -91,8 +98,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	float GetAttackDistance() const { return AttackDistance; }
 
-	UFUNCTION(BlueprintPure, Category = "PalAttackData")
-	bool GetCanRotate() const { return bCanRotate; }
-	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
-	void SetCanRotate(bool Value) { bCanRotate = Value; }
+	//UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	//bool GetCanRotate() const { return bCanRotate; }
+	//UFUNCTION(BlueprintCallable, Category = "PalAttackData")
+	//void SetCanRotate(bool Value) { bCanRotate = Value; }
 };

@@ -35,6 +35,6 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (CurrentCommandKind == EPalCommandKind::Work && SubCommandType == (uint8)ESubWorkType::Transport && bActionStarted)
 	{
 		Speed = FMath::Clamp(Speed, 0.0f, 0.46f);
-	}
+	}	
 	PreSpeed = Speed;
 }

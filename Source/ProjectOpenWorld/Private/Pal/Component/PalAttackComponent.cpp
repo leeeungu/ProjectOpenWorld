@@ -18,6 +18,7 @@ void UPalAttackComponent::BeginPlay()
 	if (ACharacter* Pawn = Cast<ACharacter>(GetOwner()))
 	{
 		Controller = Cast< APalAIController>(Pawn->GetController());
+	//	Pawn->GetMesh()->GetAnimInstance()->getanim;
 	}
 	if (!Controller)
 	{
@@ -39,68 +40,91 @@ void UPalAttackComponent::TargetIsDead(AActor* Actor)
 void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (bCanAttack && AttackData.TargetActor && AttackData.TargetActor.Get() && bCanRotate)
+	if (bMoveStarted == false && bSetTargetData)
 	{
-		bAttacking = FVector::DistSquared(AttackData.TargetActor->GetActorLocation(), GetOwner()->GetActorLocation()) <= AttackDistance * AttackDistance;
-		float dot = FVector::DotProduct(
-			(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
-			GetOwner()->GetActorForwardVector().GetSafeNormal2D());
-		float Angle = FMath::RadiansToDegrees(FMath::Acos(dot));
-		float AttackRange = 5.0f;
-		bAttacking = bAttacking && (Angle <= AttackRange) && Angle >= 0;
-		
-		if (bMoveStarted == false && bAttacking == false)
+		AttackRange = AttackDistance * AttackDistance;
+		HalfAttackAngle = abs(AttackAngle * 0.5f);
+		double DisSquer = FVector::DistSquared(AttackData.TargetActor->GetActorLocation(), GetOwner()->GetActorLocation());
+
+		if (DisSquer > AttackRange)
 		{
 			bMoveStarted = true;
 			bAttacking = false;
-
-			if (IAttackInterface::Execute_IsDead(AttackData.TargetActor))
+			EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
+			if (PathResult == EPathFollowingRequestResult::Failed)
 			{
 				EndAttack();
-			}
-			else
-			{
-				EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
-				if (Angle > AttackRange || Angle < 0)
-				{
-					if (AttackData.TargetActor && AttackData.TargetActor.Get())
-					{
-						float Direction = FVector::DotProduct(
-							(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
-							GetOwner()->GetActorRightVector().GetSafeNormal2D());
-						Direction = Direction > 0 ? 1.0 : -1.0f;
-
-						FRotator Roate = { 0,DeltaTime * 600.0f * Direction ,0 };
-						//Roate.Yaw = FMath::Clamp(Roate.Yaw, -AttackRange * 2, AttackRange * 2);
-						GetOwner()->AddActorWorldRotation(Roate);
-						UE_LOG(LogTemp, Log, TEXT("True"));
-					}
-				}
-				else
-				{
-					if (PathResult == EPathFollowingRequestResult::AlreadyAtGoal)
-					{
-						bMoveStarted = false;
-						bAttacking = true;
-						bCanRotate = true;
-					}
-					else if (PathResult == EPathFollowingRequestResult::Failed)
-					{
-						EndAttack();
-					}
-					else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
-					{
-						bCanRotate = true;
-					}
-				}
+				return;
 			}
 		}
+
+		float Angle = GetTargetRotationYaw();
+
+		if (-HalfAttackAngle > Angle || Angle > HalfAttackAngle)
+		{
+			float Yaw = DeltaTime * 15.0f;
+			bAttacking = false;
+			if (Angle < 0)
+				Yaw = -Yaw;
+			FRotator Roate = { 0,Yaw ,0 };
+			GetOwner()->AddActorWorldRotation(Roate);
+			UE_LOG(LogTemp, Log, TEXT("True"));
+			return;
+		}
+		bAttacking = true;
 	}
-	else if (!AttackData.TargetActor || !AttackData.TargetActor.Get())
-	{
-		//EndAttack();
-		//UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: NoTargetActor"), * GetOwner()->GetName());
-	}
+	//	//<= AttackDistance * AttackDistance;
+	//	bAttacking = FVector::DistSquared(AttackData.TargetActor->GetActorLocation(), GetOwner()->GetActorLocation()) <= AttackDistance * AttackDistance;
+	//	//float AttackRange = 5.0f;
+	//	bAttacking = bAttacking && (Angle <= AttackRange) && Angle >= 0;
+	//	FMath::
+	//	if (bMoveStarted == false && bAttacking == false)
+	//	{
+	//		bMoveStarted = true;
+	//		bAttacking = false;
+
+	//		if (IAttackInterface::Execute_IsDead(AttackData.TargetActor))
+	//		{
+	//			EndAttack();
+	//		}
+	//		else
+	//		{
+	//			EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
+	//			if (Angle > AttackRange || Angle < 0)
+	//			{
+	//				if (AttackData.TargetActor && AttackData.TargetActor.Get())
+	//				{
+	//					FRotator Roate = { 0,DeltaTime * 2.0f * AttackRange ,0 };
+	//					//Roate.Yaw = FMath::Clamp(Roate.Yaw, -AttackRange * 2, AttackRange * 2);
+	//					GetOwner()->AddActorWorldRotation(Roate);
+	//					UE_LOG(LogTemp, Log, TEXT("True"));
+	//				}
+	//			}
+	//			else
+	//			{
+	//				if (PathResult == EPathFollowingRequestResult::AlreadyAtGoal)
+	//				{
+	//					bMoveStarted = false;
+	//					bAttacking = true;
+	//					bCanRotate = true;
+	//				}
+	//				else if (PathResult == EPathFollowingRequestResult::Failed)
+	//				{
+	//					EndAttack();
+	//				}
+	//				else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
+	//				{
+	//					bCanRotate = true;
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+	//else if (!AttackData.TargetActor || !AttackData.TargetActor.Get())
+	//{
+	//	//EndAttack();
+	//	//UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: NoTargetActor"), * GetOwner()->GetName());
+	//}
 	//else
 }
 
@@ -114,9 +138,8 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 		return;
 	}
 	sData.TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
-	bCanAttack = true;
+	bSetTargetData = true;
 	AttackData = sData;
-	bAttacking = false;
 	Current = Default;
 	if(AttackData.AttackSlot == ESubAttackType::Skill01)
 		Current = Skill01;
@@ -124,16 +147,12 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 
 void UPalAttackComponent::StartAttack()
 {
-	if (!bCanAttack)
+	if (!bSetTargetData)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData before use StartAttack "), *GetOwner()->GetName());
 		EndAttack();
 		return;
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: StartAttack"));
-	EPathFollowingRequestResult::Type Result = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
-	if (Result == EPathFollowingRequestResult::Type::Failed)
-		return;
-	bCanRotate = true;
 	SetComponentTickEnabled(true);
 	if (OnPalAttackStart.IsBound())
 	{
@@ -145,8 +164,9 @@ void  UPalAttackComponent::EndAttack()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: EndAttack"));
 	SetComponentTickEnabled(false);
-	bCanAttack = false;
-	bCanRotate = false;
+	bSetTargetData = false;
+	bAttacking = false;
+	bMoveStarted = false;
 	if (AttackData.TargetActor)
 	{
 		AttackData.TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
@@ -160,11 +180,23 @@ void  UPalAttackComponent::EndAttack()
 
 void UPalAttackComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (bCanAttack == false || bMoveStarted == false || Result != EPathFollowingResult::Type::Success)
+	if (bMoveStarted == false || Result != EPathFollowingResult::Type::Success)
 	{
+		EndAttack();
 		return;
 	}
 	bMoveStarted = false;
-	bAttacking = true;
-	bCanRotate = true;
+}
+
+float UPalAttackComponent::GetTargetRotationYaw() const
+{
+	float dot = FVector::DotProduct(
+		(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
+		GetOwner()->GetActorForwardVector().GetSafeNormal2D());
+	float Angle = FMath::RadiansToDegrees(FMath::Acos(dot));
+	float Direction = FVector::DotProduct(
+		(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
+		GetOwner()->GetActorRightVector().GetSafeNormal2D());
+	Direction = Direction > 0 ? 1.0 : -1.0f;
+	return Angle  * Direction;
 }
