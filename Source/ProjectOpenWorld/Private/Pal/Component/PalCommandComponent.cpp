@@ -56,7 +56,7 @@ bool UPalCommandComponent::PopCommand()
 	{
 		SetComponentTickEnabled(false);
 		ResetCommand(*CurrentCommand);
-		ResetCurrentCommand();
+		ResetCurrentCommand();	
 		LastCommand = nullptr;
 		//UE_LOG(LogTemp, Log, TEXT("%s : Command None"), *GetOwner()->GetName());
 		return false;

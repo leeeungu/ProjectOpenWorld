@@ -8,6 +8,7 @@
 class UAnimSequence;
 class APalAIController;
 struct FAIRequestID;
+class ABaseCharacter;
 namespace EPathFollowingResult { enum Type : int; }
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPalAttack);
@@ -47,7 +48,8 @@ protected:
 	FPalTempAttackAnim Default{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
 	FPalTempAttackAnim Skill01{};
-	
+	UPROPERTY()
+	TObjectPtr< ABaseCharacter> OwnerCharacter{};
 	UPROPERTY()
 	TObjectPtr<APalAIController> Controller{};
 
@@ -56,6 +58,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	float AttackAngle{};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	float RotateAngle{};
 
 	double AttackRange{};
 	float HalfAttackAngle{};
