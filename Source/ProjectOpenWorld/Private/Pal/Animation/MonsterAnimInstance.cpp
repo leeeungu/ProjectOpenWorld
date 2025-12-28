@@ -1,8 +1,8 @@
 #include "Pal/Animation/MonsterAnimInstance.h"
-
 #include "Creature/Character/BaseMonster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "GameBase/MetaData/AnimMetaData_LoopData.h"
 
 void UMonsterAnimInstance::NativeInitializeAnimation()
 {
@@ -13,6 +13,8 @@ void UMonsterAnimInstance::NativeInitializeAnimation()
 	MovementComponent = OwnerPalCreature->GetCharacterMovement();
 	AttackComponent = OwnerPalCreature->GetAttackComponent();
 	CommandComponent = OwnerPalCreature->GetCommandComponent();
+
+
 }
 
 void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -29,12 +31,60 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Speed = FMath::Clamp(Speed, 0.0f, 1.0f);
 	CurrentCommandKind = CommandComponent->GetCurrentCommand_C()->CommandKind;
 	SubCommandType = CommandComponent->GetCurrentCommand_C()->SubCommandType;
-	bActionStarted = OwnerPalCreature->GetActionStarted();
 	AttckAnimations = AttackComponent->GetAnimation();
 	bAttacking = AttackComponent->GetAttacking();
-	if (CurrentCommandKind == EPalCommandKind::Work && SubCommandType == (uint8)ESubWorkType::Transport && bActionStarted)
+
+	if (AttckAnimations.Loop )
 	{
-		Speed = FMath::Clamp(Speed, 0.0f, 0.46f);
-	}	
-	PreSpeed = Speed;
+		if (bAttackLoop)
+		{
+			UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
+			if (Data)
+			{
+				if (CurrentTime >= 0)
+				{
+					CurrentTime -= DeltaSeconds;
+					if (CurrentTime < 0)
+					{
+						SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
+						IAnimMetaDataUpdateInterface::Execute_InitUpdateMetaData(Data, OwnerPalCreature, AttckAnimations.Loop->GetPlayLength());
+					}
+				}
+				else
+				{
+					IAnimMetaDataUpdateInterface::Execute_UpdateMetaData(Data, DeltaSeconds);
+					if (IAnimMetaDataUpdateInterface::Execute_IsLoopingEnd(Data))
+					{
+						bAttackLoop = false;
+						SetRootMotionMode(ERootMotionMode::RootMotionFromEverything);
+						OwnerPalCreature->GetCharacterMovement()->bUseControllerDesiredRotation = true;
+					}
+				}
+
+			}
+		}
+	}
+}
+
+void UMonsterAnimInstance::AnimNotify_AttackStart()
+{
+	if (!AttckAnimations.Start)
+		return;
+	CurrentTime = AttckAnimations.Start->GetPlayLength();
+	bAttackLoop = true;
+}
+
+void UMonsterAnimInstance::AnimNotify_TestStop()
+{
+	//IsPlayingSlotAnimation
+}
+
+void UMonsterAnimInstance::AnimNotify_TestEnd()
+{
+	//if (!AttckAnimations.Loop)
+	//	return;
+	//UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
+	//if (!Data)
+	//	return;
+	//Data->DataEnd();
 }

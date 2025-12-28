@@ -5,6 +5,7 @@
 #if WITH_EDITOR
 void UTurnNotifyState::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)
 {
+	Super::OnAnimNotifyCreatedInEditor(ContainingAnimNotifyEvent);
 	ContainingAnimNotifyEvent.SetTime(0);
 	if (ContainingAnimNotifyEvent.EndLink.GetLinkedSequence())
 	{

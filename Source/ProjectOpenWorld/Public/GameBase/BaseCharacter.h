@@ -10,11 +10,6 @@ UCLASS()
 class PROJECTOPENWORLD_API ABaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
-private:
-	float TurnAngle{};
-	UPROPERTY()
-	TObjectPtr<AActor> TurnTarget{};
-	bool IsTurning{};
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
@@ -28,14 +23,4 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintPure, Category = "Turn")
-	float GetTurnAngle() const { return TurnAngle; }
-	UFUNCTION(BlueprintPure, Category = "Turn")
-	bool GetIsTurning() const { return IsTurning; }
-	void SetTurnAngle(float Value) { TurnAngle = Value; }
-	void SetTurning(bool Value ) { IsTurning = Value; }
-
-	AActor* GetTurnTarget() const { return TurnTarget; }
-	void SetTurnTarget(AActor* Value) { TurnTarget = Value; }
 };

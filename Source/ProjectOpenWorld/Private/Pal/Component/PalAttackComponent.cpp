@@ -48,27 +48,31 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		{
 			bMoveStarted = true;
 			bAttacking = false;
-			EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
-			if (PathResult == EPathFollowingRequestResult::Failed)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
-				EndAttack();
-				return;
-			}
-			else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
-				return;
+			bCanRotate = false;
+			//EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
+			////UE_LOG(LogTemp, Warning, TEXT("Move To Target"));
+			//if (PathResult == EPathFollowingRequestResult::Failed)
+			//{
+			//	UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
+			//	EndAttack();
+			//	return;
+			//}
+			//else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
+			//	return;
 		}
 
-		if (!OwnerCharacter->GetIsTurning())
-		{
-			float Angle = GetTargetRotationYaw();
-			if (-HalfAttackAngle > Angle || Angle > HalfAttackAngle)
-			{
-				bAttacking = false;
-				return;
-			}
-		}
+		//if (!bCanRotate)
+		//{
+		//	float Angle = GetTargetRotationYaw();
+		//	if (-HalfAttackAngle > Angle || Angle > HalfAttackAngle)
+		//	{
+		//		bCanRotate = true;
+		//		bAttacking = false;
+		//		return;
+		//	}
+		//}
 		bAttacking = true;
+		bCanRotate = false;
 	}
 }
 
@@ -126,37 +130,38 @@ void  UPalAttackComponent::EndAttack()
 
 void UPalAttackComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (bMoveStarted == false || Result == EPathFollowingResult::Type::Invalid)
-		//|| Result == EPathFollowingResult::Type::Invalid
+	if (bMoveStarted == false || Result == EPathFollowingResult::Type::Invalid 
+		|| Result == EPathFollowingResult::Type::Aborted)
+		//|| Result == EPathFollowingResult::Type::Aborted)
 	{
 		
 		EndAttack();
 		return;
 	}
-	switch (Result)
-	{
-	case EPathFollowingResult::Success:
-		UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Success"));
-		break;
-	case EPathFollowingResult::Blocked:
-		UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Blocked"));
-		break;
-	case EPathFollowingResult::OffPath:
-		UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove OffPath"));
-		break;
-	case EPathFollowingResult::Aborted:
-		UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Aborted"));
-		break;
-	case EPathFollowingResult::Skipped_DEPRECATED:
-		UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Skipped"));
-		break;
-	case EPathFollowingResult::Invalid:
-		UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Invalid"));
-		return;
-		break;
-	default:
-		break;
-	}
+	//switch (Result)
+	//{
+	//case EPathFollowingResult::Success:
+	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Success"));
+	//	break;
+	//case EPathFollowingResult::Blocked:
+	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Blocked"));
+	//	break;
+	//case EPathFollowingResult::OffPath:
+	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove OffPath"));
+	//	break;
+	//case EPathFollowingResult::Skipped_DEPRECATED:
+	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Skipped"));
+	//	break;
+	////case EPathFollowingResult::Aborted:
+	////	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Aborted"));
+	////	break;
+	////case EPathFollowingResult::Invalid:
+	////	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Invalid"));
+	////	return;
+	////	break;
+	//default:
+	//	break;
+	//}
 	bMoveStarted = false;
 }
 

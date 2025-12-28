@@ -67,7 +67,7 @@ protected:
 	FPalAttackData AttackData{};
 	bool bSetTargetData{};
 	bool bAttacking{};
-
+	bool bCanRotate{};
 	bool bMoveStarted{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")

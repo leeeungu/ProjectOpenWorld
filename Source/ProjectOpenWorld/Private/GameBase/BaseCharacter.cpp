@@ -1,6 +1,7 @@
-
 #include "GameBase/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/AnimMetaData.h"
+
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -25,24 +26,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	//UAnimationAsset* Asset{};
+	//Asset->FindMetaDataByClass<UAnimMetaData>();
 
 }
-//
-//void ABaseCharacter::TurnRotate()
-//{
-//	float Yaw{};
-//	if (GetMesh() && GetMesh()->GetAnimInstance() && 
-//		GetMesh()->GetAnimInstance()->GetCurveValue(TEXT("DistanceCurve"), Yaw))
-//	{
-//	/*	float newOrient{};
-//		GetMesh()->GetAnimInstance()->GetCurveValue(TEXT("blendOrient1"), newOrient);
-//		UE_LOG(LogTemp, Warning, TEXT("Yaw : %f"), Yaw);
-//		GetCharacterMovement()->bOrientRotationToMovement = static_cast<bool>(newOrient);
-//		FRotator NewRot = GetActorRotation();	
-//		NewRot.Yaw = static_cast<double>(Yaw) - 90.0f;
-//		GetMesh()->SetRelativeRotation(NewRot);
-//		NewRot.Yaw = -NewRot.Yaw;*/
-//		//SetActorRotation(NewRot);
-//	}
-//}
-//

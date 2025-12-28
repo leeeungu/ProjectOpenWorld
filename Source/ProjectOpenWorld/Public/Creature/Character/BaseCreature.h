@@ -18,7 +18,9 @@ class IGenericTeamAgentInterface;
 class UInteractionComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, public IPalCommandInterface, public IResourceInterface, public IArchitectureInterface
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, 
+	public IPalCommandInterface,
+	public IResourceInterface, public IArchitectureInterface
 {
 	GENERATED_BODY()
 protected:
