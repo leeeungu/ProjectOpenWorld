@@ -10,7 +10,7 @@ class ACharacter;
 class UCurveVector;
 
 UCLASS()
-class PROJECTOPENWORLD_API UAnimMetaData_LoopData : public UAnimMetaData, public IAnimMetaDataMovementInterface
+class PROJECTOPENWORLD_API UAnimMetaData_LoopData : public UAnimMetaData, public IAnimMetaDatLoopInterface
 {
 	GENERATED_BODY()
 protected:
@@ -21,20 +21,23 @@ protected:
 
 	uint8 TempCount{};
 	TimerClass Timer{};
-	TObjectPtr<ACharacter> OwnerCharacter{};
 
-	float StartLength{};
 	float LoopLength{};
-	float TotalLoopLength{};
-	float EndLength{};
+	float StartLength{};
 	float TotalLength{};
-	bool IsMoving{};
+	//TObjectPtr<ACharacter> OwnerCharacter{};
+	//float StartLength{};
+	//float LoopLength{};
+	//float TotalLoopLength{};
+	//float EndLength{};
+	//float TotalLength{};
+	//bool IsMoving{};
 
 public:
+	uint8 GetLoopCount() const { return LoopCount; }
 	//virtual void StartMetaData_Implementation(ACharacter* pOwner) override;
 
-	virtual void InitUpdateMetaData_Implementation(ACharacter* pOwner, float StartLength, float LoopLength, float EndLength) override;
-	virtual void UpdateMetaData_Implementation(float DeltaTime) override;
-	virtual bool IsMoveEnd_Implementation() const override { return IsMoving; }
+	virtual void InitLoopMetaData_Implementation(ACharacter* pOwner, float StartLength, float LoopLength) override;
+	virtual void LoopUpdate_Implementation(float DeltaTime) override;
 	virtual bool IsLoopingEnd_Implementation() const override { return TempCount >= LoopCount; }
 };

@@ -34,21 +34,21 @@ public:
 
 
 UINTERFACE(MinimalAPI)
-class UAnimMetaDataUpdateInterface : public UInterface
+class UAnimMetaDatLoopInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class PROJECTOPENWORLD_API IAnimMetaDataUpdateInterface
+class PROJECTOPENWORLD_API IAnimMetaDatLoopInterface
 {
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimMetaData")
-	void InitUpdateMetaData(ACharacter* pOwner, float UpdateLength);
+	void InitLoopMetaData(ACharacter* pOwner, float Start, float Loop);
 
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimMetaData")
-	void UpdateMetaData(float DeltaTime);
+	void LoopUpdate(float DeltaTime);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AnimMetaData")
 	bool IsLoopingEnd() const;
 };

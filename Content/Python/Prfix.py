@@ -4,9 +4,9 @@ import unreal
 #  수정하고 싶은 폴더 경로 + 제거할 PREFIX 입력
 # ==========================================================
 
-ANIM_DIR = "/Game/Pal/Model/Monster/Kitsunebi_Ice/Animation"   # ← 원하는 경로
-REMOVE_PREFIX = "AS_Kitsunebi" # ← 지우고 싶던 prefix
-PREFIX  = "AS_Kitsunebi_Ice"
+ANIM_DIR = "/Game/Pal/Model/Monster/Anubis2/Animation"   # ← 원하는 경로
+REMOVE_PREFIX = "AS_Anubis2" # ← 지우고 싶던 prefix
+PREFIX  = "AS_Anubis"
 
 # ==========================================================
 #  유틸

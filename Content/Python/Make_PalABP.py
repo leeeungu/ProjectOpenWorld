@@ -17,8 +17,8 @@ from PalConfig import (
 #  - 결과 ABP 이름   : ABP_<PAL_NAME>
 #  - 결과 위치       : /Game/Pal/Model/Monster/<PAL_NAME> (pal_folder 루트)
 # ============================================================
-PAL_NAME = "Kitsunebi_Ice" 
-TEMPLATE_ABP_NAME = "_Monster"
+PAL_NAME = "Anubis2" 
+TEMPLATE_ABP_NAME = "_Boss"
 TARGET_ABP_PATH   = f"{GLOBAL_DIR}/ABP_MM{TEMPLATE_ABP_NAME}Template"
 
 editor_lib  = unreal.EditorAssetLibrary

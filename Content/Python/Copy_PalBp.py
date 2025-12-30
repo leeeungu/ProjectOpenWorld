@@ -20,7 +20,7 @@ from PalConfig import (
 #  - SkeletalMesh            : Monster/<PAL_NAME>/Mesh/SK_<PAL_NAME> 를 사용
 # ============================================================
 
-PAL_NAME = "Anubis"
+PAL_NAME = "Anubis2"
 CHILD_BP_POSTFIX = "_Monster"
 #Script/Engine.Blueprint'/Game/Pal/Model/Global/Bp_MonsterBase.Bp_MonsterBase'
 TARGET_BP_PATH     = "/Game/Pal/Model/Global/Bp_MonsterBase"
