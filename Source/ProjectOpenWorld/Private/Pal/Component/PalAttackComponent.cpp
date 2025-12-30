@@ -49,16 +49,16 @@ void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			bMoveStarted = true;
 			bAttacking = false;
 			bCanRotate = false;
-			//EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
-			////UE_LOG(LogTemp, Warning, TEXT("Move To Target"));
-			//if (PathResult == EPathFollowingRequestResult::Failed)
-			//{
-			//	UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
-			//	EndAttack();
-			//	return;
-			//}
-			//else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
-			//	return;
+			EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
+			//UE_LOG(LogTemp, Warning, TEXT("Move To Target"));
+			if (PathResult == EPathFollowingRequestResult::Failed)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
+				EndAttack();
+				return;
+			}
+			else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
+				return;
 		}
 
 		//if (!bCanRotate)
@@ -130,11 +130,13 @@ void  UPalAttackComponent::EndAttack()
 
 void UPalAttackComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (bMoveStarted == false || Result == EPathFollowingResult::Type::Invalid 
+	if (bMoveStarted == false)
+		return;
+	if (Result == EPathFollowingResult::Type::Invalid
 		|| Result == EPathFollowingResult::Type::Aborted)
 		//|| Result == EPathFollowingResult::Type::Aborted)
 	{
-		
+
 		EndAttack();
 		return;
 	}

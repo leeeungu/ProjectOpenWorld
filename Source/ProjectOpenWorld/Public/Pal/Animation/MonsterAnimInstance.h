@@ -56,8 +56,6 @@ class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance//, public
 		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool bAttackLoop{};
 
-		float CurrentTime{};
-
 	public:
 		virtual void NativeInitializeAnimation() override;
 		virtual void NativeUpdateAnimation(float DeltaSeconds) override;

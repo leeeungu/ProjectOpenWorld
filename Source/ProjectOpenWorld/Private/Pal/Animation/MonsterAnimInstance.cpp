@@ -34,33 +34,21 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	AttckAnimations = AttackComponent->GetAnimation();
 	bAttacking = AttackComponent->GetAttacking();
 
-	if (AttckAnimations.Loop )
+	if (AttckAnimations.Start)
 	{
-		if (bAttackLoop)
+		UAnimMetaData_LoopData* Data = AttckAnimations.Start->FindMetaDataByClass<UAnimMetaData_LoopData>();
+		if (Data)
 		{
-			UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
-			if (Data)
+			IAnimMetaDataMovementInterface::Execute_UpdateMetaData(Data, DeltaSeconds);
+			if (bAttackLoop)
 			{
-				if (CurrentTime >= 0)
+				if (IAnimMetaDataMovementInterface::Execute_IsLoopingEnd(Data))
 				{
-					CurrentTime -= DeltaSeconds;
-					if (CurrentTime < 0)
-					{
-						SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
-						IAnimMetaDataUpdateInterface::Execute_InitUpdateMetaData(Data, OwnerPalCreature, AttckAnimations.Loop->GetPlayLength());
-					}
+					bAttackLoop = false;
 				}
-				else
-				{
-					IAnimMetaDataUpdateInterface::Execute_UpdateMetaData(Data, DeltaSeconds);
-					if (IAnimMetaDataUpdateInterface::Execute_IsLoopingEnd(Data))
-					{
-						bAttackLoop = false;
-						SetRootMotionMode(ERootMotionMode::RootMotionFromEverything);
-						OwnerPalCreature->GetCharacterMovement()->bUseControllerDesiredRotation = true;
-					}
-				}
-
+			}
+			if (IAnimMetaDataMovementInterface::Execute_IsMoveEnd(Data))
+			{
 			}
 		}
 	}
@@ -70,7 +58,17 @@ void UMonsterAnimInstance::AnimNotify_AttackStart()
 {
 	if (!AttckAnimations.Start)
 		return;
-	CurrentTime = AttckAnimations.Start->GetPlayLength();
+	UAnimMetaData_LoopData* Data = AttckAnimations.Start->FindMetaDataByClass<UAnimMetaData_LoopData>();
+	if (Data)
+	{
+		float StartLength = AttckAnimations.Start->GetPlayLength();
+		float LoopLength{};
+		if (AttckAnimations.Loop)
+			LoopLength = AttckAnimations.Loop->GetPlayLength();
+		float EndLength  = AttckAnimations.Loop->GetPlayLength();
+		IAnimMetaDataMovementInterface::Execute_InitUpdateMetaData(Data, OwnerPalCreature, 
+			StartLength, LoopLength, EndLength);
+	}
 	bAttackLoop = true;
 }
 
