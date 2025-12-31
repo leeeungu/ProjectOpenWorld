@@ -34,14 +34,15 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	AttckAnimations = AttackComponent->GetAnimation();
 	bAttacking = AttackComponent->GetAttacking();
 
-	if (AttckAnimations.Start)
+	if (AttckAnimations.Loop)
 	{
-		UAnimMetaData_LoopData* Data = AttckAnimations.Start->FindMetaDataByClass<UAnimMetaData_LoopData>();
+		UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
+
 		if (Data)
 		{
-			IAnimMetaDatLoopInterface::Execute_LoopUpdate(Data, DeltaSeconds);
 			if (bAttackLoop)
 			{
+				IAnimMetaDatLoopInterface::Execute_LoopUpdate(Data, DeltaSeconds);
 				if (IAnimMetaDatLoopInterface::Execute_IsLoopingEnd(Data))
 				{
 					bAttackLoop = false;
@@ -53,18 +54,17 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UMonsterAnimInstance::AnimNotify_AttackStart()
 {
-	if (!AttckAnimations.Start)
+	if (!AttckAnimations.Loop || !AttckAnimations.Start)
 		return;
-	UAnimMetaData_LoopData* Data = AttckAnimations.Start->FindMetaDataByClass<UAnimMetaData_LoopData>();
+	UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
 	if (Data && Data->GetLoopCount() > 0)
 	{
 		float StartLength = AttckAnimations.Start->GetPlayLength();
-		float LoopLength{};
-		if (AttckAnimations.Loop)
-			LoopLength = AttckAnimations.Loop->GetPlayLength();
+		float LoopLength = AttckAnimations.Loop->GetPlayLength();
 		IAnimMetaDatLoopInterface::Execute_InitLoopMetaData(Data, OwnerPalCreature,
 			StartLength, LoopLength);
-		bAttackLoop = true;
+		bAttackLoop = true; // IAnimMetaDatLoopInterface::Execute_IsLoopingEnd(Data);
+		//AttackComponent->
 	}
 }
 

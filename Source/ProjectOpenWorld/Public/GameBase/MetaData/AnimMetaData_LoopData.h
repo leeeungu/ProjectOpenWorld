@@ -39,5 +39,5 @@ public:
 
 	virtual void InitLoopMetaData_Implementation(ACharacter* pOwner, float StartLength, float LoopLength) override;
 	virtual void LoopUpdate_Implementation(float DeltaTime) override;
-	virtual bool IsLoopingEnd_Implementation() const override { return TempCount >= LoopCount; }
+	virtual bool IsLoopingEnd_Implementation() const override { return TempCount >= LoopCount ; }
 };

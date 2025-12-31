@@ -49,17 +49,17 @@ void UPalCommandExecutor_Attack::Abort()
 	if (bStartedAttacking == false)
 		return;
 	bStartedAttacking = false;
-	if (OwnerPal)	
+	if (OwnerPal)
 	{
 		OwnerPal->SetActionStarted(false);
-		if (AttackComponent)
+		if (OwnerPal->GetController())
 		{
-			AttackComponent->EndAttack();
+			OwnerPal->GetController()->StopMovement();
 		}
 	}
-	if (OwnerPal->GetController())
+	if (AttackComponent)
 	{
-		OwnerPal->GetController()->StopMovement();
+		AttackComponent->EndAttack();
 	}
 }
 

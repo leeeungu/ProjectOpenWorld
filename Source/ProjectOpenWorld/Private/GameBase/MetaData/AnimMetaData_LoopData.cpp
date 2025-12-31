@@ -72,25 +72,23 @@
 void UAnimMetaData_LoopData::InitLoopMetaData_Implementation(ACharacter* pOwner, float Start, float Loop)
 {
 	TempCount = 0;
-	LoopLength = Loop;
 	StartLength = Start;
+	LoopLength = Loop;
 	TotalLength = StartLength + LoopLength * LoopCount;
 	Timer.StartTimer(TotalLength);
 }
 
 void UAnimMetaData_LoopData::LoopUpdate_Implementation(float DeltaTime)
 {
-	Timer.UpdateTimer(DeltaTime);
 	if (Timer.IsFinished())
 	{
+		TempCount = LoopCount;
 		return;
 	}
+	Timer.UpdateTimer(DeltaTime);
 	float curTime = Timer.GetCurrentTime();
-	if (StartLength < curTime && curTime < StartLength + LoopLength * LoopCount)
+	if (curTime >= StartLength + LoopLength * TempCount)
 	{
-		if (curTime >= StartLength + LoopLength * (TempCount + 1))
-		{
-			TempCount++;
-		}
+		TempCount++;
 	}
 }
