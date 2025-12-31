@@ -3,9 +3,11 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalCommandData.h"
+#include "GameBase/Class/TimerClass.h"
 #include "PalAttackComponent.generated.h"
 
 class UAnimSequence;
+class UAnimMontage;
 class APalAIController;
 struct FAIRequestID;
 class ABaseCharacter;
@@ -22,6 +24,9 @@ public:
 	TObjectPtr<AActor> TargetActor{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	ESubAttackType AttackSlot{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	TArray<TObjectPtr<UAnimMontage>> AttackData{};
+
 };
 
 USTRUCT(BlueprintType)
@@ -42,12 +47,10 @@ class PROJECTOPENWORLD_API UPalAttackComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
+	FPalAttackData AttackData{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PalAttackData")
-	FPalTempAttackAnim Current{};
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
-	FPalTempAttackAnim Default{};
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
-	FPalTempAttackAnim Skill01{};
+	TObjectPtr<UAnimMontage> Curent{};
 	UPROPERTY()
 	TObjectPtr< ABaseCharacter> OwnerCharacter{};
 	UPROPERTY()
@@ -56,19 +59,13 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	float AttackDistance{};
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	float AttackAngle{};
+	TimerClass Timer{};
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	float RotateAngle{};
-
-	double AttackRange{};
-	float HalfAttackAngle{};
-	FPalAttackData AttackData{};
+	int AttackIndex{};
 	bool bSetTargetData{};
 	bool bAttacking{};
-	bool bCanRotate{};
-	bool bMoveStarted{};
+	float AttackTime{};
+	bool ChangeAnim{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -83,9 +80,7 @@ protected:
 	void TargetIsDead(AActor* Actor);
 
 	UFUNCTION()
-	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
-
-	float GetTargetRotationYaw() const;
+	void PlayNextAttack( UAnimMontage* Montage, bool bInterrupted);
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -95,8 +90,11 @@ public:
 	void  StartAttack();
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
 	void  EndAttack();
-	FPalTempAttackAnim GetAnimation() const { return Current; }
 
+	//UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	//UAnimMontage* GetAttackAnimation() const { return Curent; }
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool IsChangeAnim() const { return ChangeAnim; }
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool GetAttacking() const { return bAttacking ; }
 

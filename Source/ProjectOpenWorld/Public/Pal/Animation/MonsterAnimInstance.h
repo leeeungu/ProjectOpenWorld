@@ -25,6 +25,7 @@ class UPalCommandComponent;
 //	UFUNCTION()
 //	virtual void AnimNotify_AttackStart() = 0;
 //};
+class UAnimSequence;
 
 UCLASS()
 class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance//, public MetaDataStartInterface
@@ -41,7 +42,7 @@ class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance//, public
 		UPalCommandComponent* CommandComponent{};
 
 		UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
-		FPalTempAttackAnim AttckAnimations{};
+		TObjectPtr<UAnimSequence> AttckAnimations{};
 
 		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool IsFalling{};

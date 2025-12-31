@@ -1,11 +1,15 @@
 #include "GameBase/Class/TimerClass.h"
 
-void TimerClass::StartTimer(float InMaxTime) 
+void TimerClass::InitTimer(float InMaxTime)
 {
 	MaxTime = InMaxTime;
 	CurrentTime = 0.0f;
-	bIsActive = true;
 	bIsFinished = false;
+}
+
+void TimerClass::StartTimer()
+{
+	bIsActive = true;
 }
 
 void TimerClass::StopTimer() 

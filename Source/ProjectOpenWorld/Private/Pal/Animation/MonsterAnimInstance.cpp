@@ -31,12 +31,12 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Speed = FMath::Clamp(Speed, 0.0f, 1.0f);
 	CurrentCommandKind = CommandComponent->GetCurrentCommand_C()->CommandKind;
 	SubCommandType = CommandComponent->GetCurrentCommand_C()->SubCommandType;
-	AttckAnimations = AttackComponent->GetAnimation();
+	//AttckAnimations = AttackComponent->GetAttackAnimation();
 	bAttacking = AttackComponent->GetAttacking();
 
-	if (AttckAnimations.Loop)
+	/*if (AttckAnimations)
 	{
-		UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
+		UAnimMetaData_LoopData* Data = AttckAnimations->FindMetaDataByClass<UAnimMetaData_LoopData>();
 
 		if (Data)
 		{
@@ -49,23 +49,23 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 				}
 			}
 		}
-	}
+	}*/
 }
 
 void UMonsterAnimInstance::AnimNotify_AttackStart()
 {
-	if (!AttckAnimations.Loop || !AttckAnimations.Start)
+	if (!AttckAnimations)
 		return;
-	UAnimMetaData_LoopData* Data = AttckAnimations.Loop->FindMetaDataByClass<UAnimMetaData_LoopData>();
-	if (Data && Data->GetLoopCount() > 0)
-	{
-		float StartLength = AttckAnimations.Start->GetPlayLength();
-		float LoopLength = AttckAnimations.Loop->GetPlayLength();
-		IAnimMetaDatLoopInterface::Execute_InitLoopMetaData(Data, OwnerPalCreature,
-			StartLength, LoopLength);
-		bAttackLoop = true; // IAnimMetaDatLoopInterface::Execute_IsLoopingEnd(Data);
-		//AttackComponent->
-	}
+	//UAnimMetaData_LoopData* Data = AttckAnimations->FindMetaDataByClass<UAnimMetaData_LoopData>();
+	//if (Data && Data->GetLoopCount() > 0)
+	//{
+	//	//float StartLength = AttckAnimations.Start->GetPlayLength();
+	//	float LoopLength = AttckAnimations->GetPlayLength();
+	//	IAnimMetaDatLoopInterface::Execute_InitLoopMetaData(Data, OwnerPalCreature,
+	//		0.0f, LoopLength);
+	//	bAttackLoop = true; // IAnimMetaDatLoopInterface::Execute_IsLoopingEnd(Data);
+	//	//AttackComponent->
+	//}
 }
 
 void UMonsterAnimInstance::AnimNotify_TestStop()

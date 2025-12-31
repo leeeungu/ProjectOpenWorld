@@ -29,7 +29,7 @@ void UPalAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	CurrentCommandKind = CommandComponent->GetCurrentCommand_C()->CommandKind;
 	SubCommandType = CommandComponent->GetCurrentCommand_C()->SubCommandType;
 	bActionStarted = OwnerPalCreature->GetActionStarted();
-	AttckAnimations = AttackComponent->GetAnimation();
+	//AttckAnimations = AttackComponent->GetAttackAnimation();
 	bAttacking = AttackComponent->GetAttacking();
 	if (CurrentCommandKind == EPalCommandKind::Work && SubCommandType == (uint8)ESubWorkType::Transport && bActionStarted)
 	{

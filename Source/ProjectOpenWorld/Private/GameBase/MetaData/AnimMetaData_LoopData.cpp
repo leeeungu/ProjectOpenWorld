@@ -75,7 +75,8 @@ void UAnimMetaData_LoopData::InitLoopMetaData_Implementation(ACharacter* pOwner,
 	StartLength = Start;
 	LoopLength = Loop;
 	TotalLength = StartLength + LoopLength * LoopCount;
-	Timer.StartTimer(TotalLength);
+	Timer.InitTimer(TotalLength);
+	Timer.StartTimer();
 }
 
 void UAnimMetaData_LoopData::LoopUpdate_Implementation(float DeltaTime)
