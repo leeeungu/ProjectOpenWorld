@@ -102,7 +102,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	float GetAttackDistance() const { return AttackDistance; }
-
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool IsSetTarget() const { return bSetTargetData; }
 	//UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	//bool GetCanRotate() const { return bCanRotate; }
 	//UFUNCTION(BlueprintCallable, Category = "PalAttackData")
