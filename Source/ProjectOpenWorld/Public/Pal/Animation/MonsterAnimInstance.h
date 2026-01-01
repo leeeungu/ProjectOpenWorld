@@ -42,7 +42,10 @@ class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance//, public
 		UPalCommandComponent* CommandComponent{};
 
 		UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
-		TObjectPtr<UAnimSequence> AttckAnimations{};
+		TObjectPtr<UAnimMontage> CurrentMontage{};
+
+		UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
+		TObjectPtr< UAnimMetaData> LoopMetaData{};
 
 		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool IsFalling{};
@@ -54,9 +57,12 @@ class PROJECTOPENWORLD_API UMonsterAnimInstance : public UAnimInstance//, public
 		uint8 SubCommandType{};
 		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 		bool bAttacking{};
-		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
-		bool bAttackLoop{};
-
+		int LoopCount{};
+protected:
+		UFUNCTION()
+		void StartMontage(UAnimMontage* Montage);
+		UFUNCTION()
+		void MontageBlendingEvent(UAnimMontage* Montage, bool bInterrupted);
 	public:
 		virtual void NativeInitializeAnimation() override;
 		virtual void NativeUpdateAnimation(float DeltaSeconds) override;

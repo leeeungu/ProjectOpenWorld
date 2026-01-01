@@ -66,7 +66,7 @@
 //	{
 //		UE_LOG(LogTemp, Log, TEXT("SubMoveTime %d  %s"), TempCount, *MoveData->GetVectorValue(curTime).ToString());
 //	}
-//	
+//	 
 //}
 
 void UAnimMetaData_LoopData::InitLoopMetaData_Implementation(ACharacter* pOwner, float Start, float Loop)
@@ -81,15 +81,18 @@ void UAnimMetaData_LoopData::InitLoopMetaData_Implementation(ACharacter* pOwner,
 
 void UAnimMetaData_LoopData::LoopUpdate_Implementation(float DeltaTime)
 {
-	if (Timer.IsFinished())
-	{
-		TempCount = LoopCount;
-		return;
-	}
-	Timer.UpdateTimer(DeltaTime);
-	float curTime = Timer.GetCurrentTime();
-	if (curTime >= StartLength + LoopLength * TempCount)
-	{
-		TempCount++;
-	}
+	TempCount++;
 }
+//{
+//	if (Timer.IsFinished())
+//	{
+//		TempCount = LoopCount;
+//		return;
+//	}
+//	Timer.UpdateTimer(DeltaTime);
+//	float curTime = Timer.GetCurrentTime();
+//	if (curTime >= StartLength + LoopLength * TempCount)
+//	{
+//		TempCount++;
+//	}
+//}

@@ -8,7 +8,8 @@
 
 class ACharacter;
 class UCurveVector;
-
+// metatdata는 해당 animation 에 종속적이라 변수 값 변경하려하면 다른 character에서도 동시에 수정이 될 수 있음
+// => interface 나 count 변경은 안됨
 UCLASS()
 class PROJECTOPENWORLD_API UAnimMetaData_LoopData : public UAnimMetaData, public IAnimMetaDatLoopInterface
 {
@@ -34,6 +35,7 @@ protected:
 	//bool IsMoving{};
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Loop Data")
 	uint8 GetLoopCount() const { return LoopCount; }
 	//virtual void StartMetaData_Implementation(ACharacter* pOwner) override;
 

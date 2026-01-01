@@ -30,7 +30,7 @@ void UPalAttackComponent::BeginPlay()
 	if (Controller)
 	{
 		//Controller->ReceiveMoveCompleted.AddDynamic(this, &UPalAttackComponent::FinishMove);
-		OwnerCharacter->GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &UPalAttackComponent::PlayNextAttack);
+		//OwnerCharacter->GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &UPalAttackComponent::PlayNextAttack);
 	}
 }
 

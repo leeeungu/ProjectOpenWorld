@@ -4,6 +4,53 @@
 #include "Pal/Component/PalCommandComponent.h"
 #include "GameBase/MetaData/AnimMetaData_LoopData.h"
 
+void UMonsterAnimInstance::StartMontage(UAnimMontage* Montage)
+{
+	if (Montage)
+		UE_LOG(LogTemp, Warning, TEXT("StartMontage %s"), *Montage->GetName());
+	if (CurrentMontage == Montage)
+		return;
+	CurrentMontage = Montage;
+	LoopMetaData = nullptr;
+	LoopCount = 0;
+	if (CurrentMontage)
+	{
+		if (UAnimMetaData_LoopData* LoopData = CurrentMontage->FindMetaDataByClass<UAnimMetaData_LoopData>())
+		{
+			if (LoopData->GetLoopCount()  - 1> 0)
+			{
+				IAnimMetaDatLoopInterface::Execute_InitLoopMetaData(LoopData, OwnerPalCreature,
+					0.0f, CurrentMontage->GetPlayLength());
+				LoopCount = LoopData->GetLoopCount() - 1;
+				LoopMetaData = LoopData;
+			}
+		}
+	}
+}
+
+void UMonsterAnimInstance::MontageBlendingEvent(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage)
+		UE_LOG(LogTemp, Warning, TEXT("MontageBlendingEvent %s"), *Montage->GetName());
+	if (CurrentMontage == Montage && LoopMetaData)
+	{
+		IAnimMetaDatLoopInterface::Execute_LoopUpdate(LoopMetaData, 0.0f);
+		if (!IAnimMetaDatLoopInterface::Execute_IsLoopingEnd(LoopMetaData))
+		{
+			Montage_Play(Montage);
+		}
+		else
+		{
+			Montage_Stop(0.2f);
+			//bMontageLoop = false;
+		}
+	}
+	else
+	{
+	
+	}
+}
+
 void UMonsterAnimInstance::NativeInitializeAnimation()
 {
 	UAnimInstance::NativeInitializeAnimation();
@@ -14,7 +61,8 @@ void UMonsterAnimInstance::NativeInitializeAnimation()
 	AttackComponent = OwnerPalCreature->GetAttackComponent();
 	CommandComponent = OwnerPalCreature->GetCommandComponent();
 
-
+	OnMontageBlendingOut.AddDynamic(this, &UMonsterAnimInstance::MontageBlendingEvent);
+	OnMontageStarted.AddDynamic(this, &UMonsterAnimInstance::StartMontage);
 }
 
 void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -54,9 +102,9 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UMonsterAnimInstance::AnimNotify_AttackStart()
 {
-	if (!AttckAnimations)
-		return;
-	//UAnimMetaData_LoopData* Data = AttckAnimations->FindMetaDataByClass<UAnimMetaData_LoopData>();
+	//if (!AttckAnimations)
+	//	return;
+	////UAnimMetaData_LoopData* Data = AttckAnimations->FindMetaDataByClass<UAnimMetaData_LoopData>();
 	//if (Data && Data->GetLoopCount() > 0)
 	//{
 	//	//float StartLength = AttckAnimations.Start->GetPlayLength();
