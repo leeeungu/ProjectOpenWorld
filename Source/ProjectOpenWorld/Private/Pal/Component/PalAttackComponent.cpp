@@ -3,12 +3,12 @@
 #include "GameBase/BaseCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameBase/Interface/AttackInterface.h"
-#include "GameBase/MetaData/AnimMetaData_LoopData.h"
+#include "GameBase/Animation/BaseAnimInstance.h"
 #include "Animation/AnimInstance.h"
 
 UPalAttackComponent::UPalAttackComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 	AttackDistance = 50.0f;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetComponentTickEnabled(false);
@@ -26,76 +26,11 @@ void UPalAttackComponent::BeginPlay()
 		GetOwner()->Destroy();
 		return;
 	}
-
-	if (Controller)
-	{
-		//Controller->ReceiveMoveCompleted.AddDynamic(this, &UPalAttackComponent::FinishMove);
-		//OwnerCharacter->GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &UPalAttackComponent::PlayNextAttack);
-	}
 }
 
 void UPalAttackComponent::TargetIsDead(AActor* Actor)
 {
 	EndAttack();
-}
-
-void UPalAttackComponent::PlayNextAttack(UAnimMontage* Montage, bool bInterrupted)
-{
-	AttackIndex++;
-	if (AttackData.AttackData.IsValidIndex(AttackIndex))
-	{
-		Curent = AttackData.AttackData[AttackIndex];
-		OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Play(Curent);
-		float Length = Curent->GetPlayLength();
-		UAnimMetaData_LoopData* Loop = Curent->FindMetaDataByClass<UAnimMetaData_LoopData>();
-		if (Loop)
-		{
-			Length = Length * Loop->GetLoopCount();
-		}
-		ChangeAnim = true;
-		AttackTime += Length;
-		return;
-	}
-	else
-	{
-		EndAttack();
-	}
-}
-
-void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	//Timer.UpdateTimer(DeltaTime);
-	//if (Timer.IsFinished())
-	//{
-	//	EndAttack();
-	//	return;
-	//}
-	//float Current = Timer.GetCurrentTime();
-
-	//if (AttackTime <= Current + 0.1f)
-	//{
-	//	AttackIndex++;
-	//	if (AttackData.AttackData.IsValidIndex(AttackIndex))
-	//	{
-	//		Curent = AttackData.AttackData[AttackIndex];
-	//		OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Play(Curent);
-	//		float Length = Curent->GetPlayLength();
-	//		UAnimMetaData_LoopData* Loop = Curent->FindMetaDataByClass<UAnimMetaData_LoopData>();
-	//		if (Loop)
-	//		{
-	//			Length = Length * Loop->GetLoopCount();
-	//		}
-	//		ChangeAnim = true;
-	//		AttackTime += Length;
-	//		return;
-	//	}
-	//	else
-	//	{
-	//		EndAttack();
-	//	}
-	//}
-	//ChangeAnim = false;
 }
 
 void UPalAttackComponent::SetAttackData(FPalAttackData sData)
@@ -112,10 +47,6 @@ void UPalAttackComponent::SetAttackData(FPalAttackData sData)
 	AttackData.AttackSlot = sData.AttackSlot;
 	AttackData.TargetActor = sData.TargetActor;
 	AttackIndex = 0;
-
-	//Current = Default;
-	//if(AttackData.AttackSlot == ESubAttackType::Skill01)
-	//	Current = Skill01;
 }
 
 void UPalAttackComponent::StartAttack()
@@ -126,25 +57,15 @@ void UPalAttackComponent::StartAttack()
 		EndAttack();
 		return;
 	}
-	float Total{};
-	for (const TObjectPtr<UAnimMontage>& Anim : AttackData.AttackData)
+
+	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
+	if (Anim)
 	{
-		float Length = Anim->GetPlayLength();
-		UAnimMetaData_LoopData* Loop = Anim->FindMetaDataByClass<UAnimMetaData_LoopData>();
-		if (Loop)
-		{
-			Length = Length * Loop->GetLoopCount();
-		}
-		Total += Length;
+		Anim->SetMontageQueueInterface(this);
+		Anim->PlayMontageQueue();
 	}
-	if (AttackData.AttackData.Num() > 0)
-		Curent = AttackData.AttackData[0];
-	OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Play(Curent);
-	Timer.InitTimer(Total);
 	bAttacking = true;
 	Controller->SetFocus(AttackData.TargetActor);
-	Timer.StartTimer();
-	AttackTime = 0;
 	AttackIndex = 0;
 	if (OnPalAttackStart.IsBound())
 	{
@@ -155,12 +76,9 @@ void UPalAttackComponent::StartAttack()
 
 void  UPalAttackComponent::EndAttack()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: EndAttack"));
 	SetComponentTickEnabled(false);
-	Timer.StopTimer();
 	bSetTargetData = false;
 	bAttacking = false;
-	//bMoveStarted = false;
 	Controller->SetFocus(nullptr);
 	if (AttackData.TargetActor)
 	{
@@ -171,5 +89,34 @@ void  UPalAttackComponent::EndAttack()
 		OnPalAttackEnd.Broadcast();
 	}
 	AttackData.TargetActor = nullptr;
-	Curent = nullptr;
+}
+
+UAnimMontage* UPalAttackComponent::GetMontage() const
+{
+	UAnimMontage* NextMontage = nullptr;
+	if (AttackData.AttackData.IsValidIndex(AttackIndex))
+	{
+		NextMontage = AttackData.AttackData[AttackIndex];
+	}
+	return NextMontage;
+}
+
+void UPalAttackComponent::MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("MontageStartEvent"));
+}
+
+void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!Montage || !BaseAnim)
+		return;
+	if (!BaseAnim->IsLoop())
+		AttackIndex++;
+	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
+	{
+		BaseAnim->SetMontageQueueInterface(nullptr);
+		EndAttack();
+		return;
+	}
+	BaseAnim->PlayMontageQueue();
 }
