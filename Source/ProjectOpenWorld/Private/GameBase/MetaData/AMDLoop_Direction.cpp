@@ -20,12 +20,6 @@ void UAnimLoopObject_Direction::Initialize(UAnimInstance* Animinstance, UAMDLoop
 		MoveSpeed = Data->GetMoveSpeed();
 		MoveDistance = Data->GetMoveDistance();
 		CurrenDistance = MoveDistance;
-		if (UCharacterMovementComponent* Movemnt = Cast< UCharacterMovementComponent>(OwnerAniminstance->TryGetPawnOwner()->GetMovementComponent()))
-		{
-			InitMovement = Movemnt->MovementMode;
-			InitCustomMovement = Movemnt->CustomMovementMode;
-			Movemnt->SetMovementMode(Data->GetMovemntMode(), Data->GetCustomMovemntMode());
-		}
 	}
 	else if (OwnerAniminstance && OwnerAniminstance->TryGetPawnOwner())
 	{
@@ -42,17 +36,11 @@ void UAnimLoopObject_Direction::UpdateLoop(float DeltaTime)
 	bLoop = CurrenDistance > 0;
 	if (bLoop)
 	{
-		CurrenDistance -= MoveSpeed * DeltaTime;
-		OwnerAniminstance->TryGetPawnOwner()->AddActorWorldOffset(MoveWorldDirection * MoveSpeed * DeltaTime);
+		float DeltaMove = MoveSpeed * DeltaTime;
+		if (DeltaMove > CurrenDistance)
+			DeltaMove = CurrenDistance;
+		CurrenDistance -= DeltaMove;
+		OwnerAniminstance->TryGetPawnOwner()->AddActorWorldOffset(MoveWorldDirection * DeltaMove);
 	}
 }
 
-void UAnimLoopObject_Direction::EndLoop()
-{
-	if (!OwnerAniminstance || !OwnerAniminstance->TryGetPawnOwner())
-		return;
-	if (UCharacterMovementComponent* Movemnt = Cast< UCharacterMovementComponent>(OwnerAniminstance->TryGetPawnOwner()->GetMovementComponent()))
-	{
-		Movemnt->SetMovementMode(InitMovement, InitCustomMovement);
-	}
-}

@@ -74,6 +74,10 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
+	if (OnDamagedDelegate.IsBound())
+	{
+		OnDamagedDelegate.Broadcast(pOther);
+	}
 	//UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
 	if (Hp <= 0.f)
 	{

@@ -1,6 +1,4 @@
 #include "GameBase/MetaData/AMDLoop.h"
-#include "Animation/AnimInstance.h"
-#include "Animation/AnimMetaData.h"
 
 TSubclassOf<UAnimLoopObject> UAMDLoop::GetInstanceClass() const
 {

@@ -2,6 +2,7 @@
 #include "GameBase/MetaData/AMDLoop.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameBase/MetaData/AMD_MontageChangeEvent.h"
 
 void UBaseAnimInstance::OnMontageStartedFunc(UAnimMontage* Montage)
 {
@@ -15,6 +16,7 @@ void UBaseAnimInstance::OnMontageBlendingOutFunc(UAnimMontage* Montage, bool bIn
 {
 	if (MontageQueue && MontageQueue.GetObject())
 	{
+		//Montage->GetAssetUserDataOfClass<>();
 		if (LoopObject)
 		{
 			LoopObject->UpdateBlendOut();
@@ -69,19 +71,42 @@ void UBaseAnimInstance::PlayMontageQueue()
 {
 	if (MontageQueue && MontageQueue.GetObject())
 	{
-		if (UAnimMontage* NextMontage = MontageQueue->GetMontage())
+		UAnimMontage* NextMontage = MontageQueue->GetMontage();
 		{
 			Montage_Play(NextMontage);
 			if (CurrentMontage != NextMontage)
 			{
-				if (UAMDLoop* LoopData = NextMontage->FindMetaDataByClass<UAMDLoop>())
+				if (CurrentMontage)
 				{
-					LoopObject = LoopData->CreateInstanceObject(GetWorld());
-					if (LoopObject)
-						LoopObject->Initialize(this, LoopData);
+					const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
+					for (UAnimMetaData* Data : MetaData)
+					{
+						if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
+						{
+							ChangeEvent->EndEvent(this);
+						}
+					}
 				}
+				if (NextMontage)
+				{
+					const TArray<UAnimMetaData*>& MetaData = NextMontage->GetMetaData();
+					LoopObject = nullptr;
+					for (UAnimMetaData* Data : MetaData)
+					{
+						if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
+						{
+							ChangeEvent->StartEvent(this);
+						}
+						if (UAMDLoop* LoopData = Cast<UAMDLoop>(Data))
+						{
+							LoopObject = LoopData->CreateInstanceObject(GetWorld());
+							if (LoopObject)
+								LoopObject->Initialize(this, LoopData);
+						}
+					}
+				}
+				CurrentMontage = NextMontage;
 			}
-			CurrentMontage = NextMontage;
 		}
 	}
 }

@@ -7,18 +7,6 @@
 class UAnimInstance;
 
 UCLASS()
-class PROJECTOPENWORLD_API UAnimLoopObject_Count : public UAnimLoopObject
-{
-	GENERATED_BODY()
-private:
-	int LoopCount{};
-public:
-	virtual void Initialize(UAnimInstance* OwnerAniminstance, UAMDLoop* MetaData) override;
-	virtual void UpdateBlendOut() override;
-};
-
-
-UCLASS()
 class PROJECTOPENWORLD_API UAMDLoop_Count : public UAMDLoop
 {
 	GENERATED_BODY()
@@ -26,7 +14,20 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "Loop Data")
 	uint8 LoopCount = 1;
 public:
-	UAMDLoop_Count (const FObjectInitializer& ObjectInitializer);
+	UAMDLoop_Count(const FObjectInitializer& ObjectInitializer);
 	UFUNCTION(BlueprintPure, Category = "Loop Data")
 	uint8 GetLoopCount() const { return LoopCount; }
 };
+
+
+UCLASS()
+class PROJECTOPENWORLD_API UAnimLoopObject_Count : public UAnimLoopObject
+{
+	GENERATED_BODY()
+private:
+	int LoopCount{};
+public:
+	virtual void Initialize(UAnimInstance* Animinstance, UAMDLoop* MetaData) override;
+	virtual void UpdateBlendOut() override;
+};
+

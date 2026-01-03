@@ -48,7 +48,9 @@ public:
 	bool GetActionStarted() const { return bActionStarted; }
 	void SetActionStarted(bool bValue);
 	virtual void PossessedBy(AController* NewController) override;
-
+public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
+	FOnDamageedDelegate OnDamagedDelegate{};
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

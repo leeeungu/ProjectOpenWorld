@@ -14,6 +14,7 @@ bool UAnimLoopObject_Location::CheckDisSq()
 	return FVector::DistSquared(OwnerAniminstance->TryGetPawnOwner()->GetActorLocation(), MoveLocation) > 100.f*100.0f;
 }
 
+
 void UAnimLoopObject_Location::Initialize(UAnimInstance* Animinstance, UAMDLoop* MetaData)
 {
 	Super::Initialize(Animinstance, MetaData);
@@ -31,13 +32,6 @@ void UAnimLoopObject_Location::Initialize(UAnimInstance* Animinstance, UAMDLoop*
 		InitDisSq =  FVector::DistSquared(StartLocation, MoveLocation);
 		MoveDir = (MoveLocation - StartLocation).GetSafeNormal();
 		bLoop = CheckDisSq();
-
-		if (UCharacterMovementComponent* Movemnt = Cast< UCharacterMovementComponent>(OwnerAniminstance->TryGetPawnOwner()->GetMovementComponent()))
-		{
-			InitMovement = Movemnt->MovementMode;
-			InitCustomMovement = Movemnt->CustomMovementMode;
-			Movemnt->SetMovementMode(Data->GetMovemntMode(), Data->GetCustomMovemntMode());
-		}
 	}
 	else if (OwnerAniminstance && OwnerAniminstance->TryGetPawnOwner())
 	{
@@ -70,15 +64,5 @@ void UAnimLoopObject_Location::UpdateLoop(float DeltaTime)
 			bLoop = false;
 
 		}
-	}
-}
-
-void UAnimLoopObject_Location::EndLoop()
-{
-	if (!OwnerAniminstance || !OwnerAniminstance->TryGetPawnOwner())
-		return;
-	if (UCharacterMovementComponent* Movemnt = Cast< UCharacterMovementComponent>(OwnerAniminstance->TryGetPawnOwner()->GetMovementComponent()))
-	{
-		Movemnt->SetMovementMode(InitMovement, InitCustomMovement);
 	}
 }

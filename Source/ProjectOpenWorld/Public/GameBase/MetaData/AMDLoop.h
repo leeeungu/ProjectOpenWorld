@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimMetaData.h"
+#include "Animation/AnimInstance.h"
 #include "AMDLoop.generated.h"
 
-class UAnimInstance;
 class UAnimLoopObject;
 
-UCLASS()
+UCLASS(Abstract)
 class PROJECTOPENWORLD_API UAMDLoop : public UAnimMetaData
 {
 	GENERATED_BODY()
@@ -18,7 +18,7 @@ public:
 	UAnimLoopObject* CreateInstanceObject(UWorld* WorldInstance) const;
 };
 
-UCLASS()
+UCLASS(Abstract)
 class PROJECTOPENWORLD_API UAnimLoopObject : public UObject
 {
 	GENERATED_BODY()
@@ -35,3 +35,4 @@ public:
 	virtual bool IsLoop() const { return bLoop; }
 	virtual void EndLoop() {}
 };
+

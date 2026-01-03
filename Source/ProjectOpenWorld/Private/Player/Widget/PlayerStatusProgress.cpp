@@ -1,11 +1,11 @@
-﻿#include "Player/Widget/PlayerStatusProgress.h"
+#include "Player/Widget/PlayerStatusProgress.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 
 void UPlayerStatusProgress::NativePreConstruct()
 {
-	UUserWidget::NativePreConstruct();
+	Super::NativePreConstruct();
 	if (StatusText)
 	{
 		StatusText->SetText(FText::FromString(TEXT("0")));
@@ -22,6 +22,34 @@ void UPlayerStatusProgress::NativePreConstruct()
 	if (StatusImage)
 	{
 		StatusImage->SetBrushFromTexture(StatusTexture);
+	}
+	ABasePlayer* Player= GetOwningPlayerPawn<ABasePlayer>();
+	if (Player)
+	{
+		SetStatusProgress(Player->GetStatusRef(StatusType), Player->GetStatusRef(MaxStatusType));
+		UpdateStatus();
+	}
+}
+
+void UPlayerStatusProgress::NativeConstruct()
+{
+	Super::NativeConstruct();
+	ABasePlayer* Player = GetOwningPlayerPawn<ABasePlayer>();
+	if (Player)
+	{
+		SetStatusProgress(Player->GetStatusRef(StatusType), Player->GetStatusRef(MaxStatusType));
+		UpdateStatus();
+	}
+}
+
+void UPlayerStatusProgress::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	ABasePlayer* Player = GetOwningPlayerPawn<ABasePlayer>();
+	if (Player)
+	{
+		SetStatusProgress(Player->GetStatusRef(StatusType), Player->GetStatusRef(MaxStatusType));
+		UpdateStatus();
 	}
 }
 

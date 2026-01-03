@@ -1,4 +1,4 @@
-﻿#include "Player/Widget/PlayerStatusWidget.h"
+#include "Player/Widget/PlayerStatusWidget.h"
 #include "Player/Widget/PlayerStatusProgress.h"
 #include "Player/Widget/PlayerStatusSlot.h"
 #include "Player/Character/BasePlayer.h"
@@ -52,28 +52,28 @@ void UPlayerStatusWidget::NativeConstruct()
 	if (!Player)
 		return;
 
-	TPair<EStatusSlotType, EStatusType> arSlot[6] =
-	{
-		{EStatusSlotType::MaxHp, EStatusType::MaxHp},
-		{EStatusSlotType::Stamina, EStatusType::Stamina},
-		{EStatusSlotType::Attack, EStatusType::Attack},
-		{EStatusSlotType::Defense, EStatusType::Defense},
-		{EStatusSlotType::WorkSpeed, EStatusType::WorkSpeed},
-		{EStatusSlotType::MaxWeight, EStatusType::MaxWeight}
-	};
-	for (TPair<EStatusSlotType, EStatusType>& Type : arSlot)
-	{
-		SetStatusSlot(Type.Key, *(Player->GetStatusRef(Type.Value)));
-	}
+	//TPair<EStatusSlotType, EStatusType> arSlot[6] =
+	//{
+	//	{EStatusSlotType::MaxHp, EStatusType::MaxHp},
+	//	{EStatusSlotType::Stamina, EStatusType::Stamina},
+	//	{EStatusSlotType::Attack, EStatusType::Attack},
+	//	{EStatusSlotType::Defense, EStatusType::Defense},
+	//	{EStatusSlotType::WorkSpeed, EStatusType::WorkSpeed},
+	//	{EStatusSlotType::MaxWeight, EStatusType::MaxWeight}
+	//};
+	//for (TPair<EStatusSlotType, EStatusType>& Type : arSlot)
+	//{
+	//	SetStatusSlot(Type.Key, *(Player->GetStatusRef(Type.Value)));
+	//}
 
-	TTuple<EStatusProgressType, EStatusType, EStatusType > arProgress[3] =
-	{
-		{EStatusProgressType::Hp, EStatusType::Hp, EStatusType::MaxHp},
-		{EStatusProgressType::Shield, EStatusType::Shield, EStatusType::MaxShield},
-		{EStatusProgressType::Health, EStatusType::Health, EStatusType::MaxHealth}
-	};
-	for (TTuple<EStatusProgressType, EStatusType, EStatusType >& Type : arProgress)
-	{
-		SetStatusProgress(Type.Get<0>(), *(Player->GetStatusRef(Type.Get<1>())), *(Player->GetStatusRef(Type.Get<2>())));
-	}
+	//TTuple<EStatusProgressType, EStatusType, EStatusType > arProgress[3] =
+	//{
+	//	{EStatusProgressType::Hp, EStatusType::Hp, EStatusType::MaxHp},
+	//	{EStatusProgressType::Shield, EStatusType::Shield, EStatusType::MaxShield},
+	//	{EStatusProgressType::Health, EStatusType::Health, EStatusType::MaxHealth}
+	//};
+	//for (TTuple<EStatusProgressType, EStatusType, EStatusType >& Type : arProgress)
+	//{
+	//	SetStatusProgress(Type.Get<0>(), *(Player->GetStatusRef(Type.Get<1>())), *(Player->GetStatusRef(Type.Get<2>())));
+	//}
 }
