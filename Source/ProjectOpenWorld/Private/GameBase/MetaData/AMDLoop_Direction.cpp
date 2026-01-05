@@ -45,16 +45,17 @@ void UAnimLoopObject_Direction::UpdateLoop(float DeltaTime)
 		if (DeltaMove > CurrenDistance)
 			DeltaMove = CurrenDistance;
 		CurrenDistance -= DeltaMove;
-		FHitResult Hit{};
-		OwnerAniminstance->TryGetPawnOwner()->AddActorWorldOffset(MoveWorldDirection * DeltaMove, true, &Hit, ETeleportType::ResetPhysics);
-		if (Hit.bBlockingHit)
+		//UE_LOG(LogTemp, Warning, TEXT("DeltaMove: %f, CurrenDistance: %f"), DeltaMove, CurrenDistance);
+		//FHitResult Hit{};
+		OwnerAniminstance->TryGetPawnOwner()->AddActorWorldOffset(MoveWorldDirection * DeltaMove, true, nullptr, ETeleportType::None);
+	/*	if (Hit.bBlockingHit)
 		{
 			ACharacter* Other = Cast< ACharacter>(Hit.GetActor());
 			if (Other)
 			{
 				Other->LaunchCharacter(MoveWorldDirection * (MoveSpeed * 0.5f), true, true);
 			}
-		}
+		}*/
 	}
 }
 

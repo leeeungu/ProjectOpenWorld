@@ -30,6 +30,10 @@ enum class ESubAttackType : uint8
 	Default,
 	Skill01,
 	Skill02,
+	Skill03,
+	Skill04,
+	Skill05,
+	Skill06,
 	Max_AttackType UMETA(Hidden),
 };
 

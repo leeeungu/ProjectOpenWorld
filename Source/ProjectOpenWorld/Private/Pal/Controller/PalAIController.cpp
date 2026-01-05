@@ -49,16 +49,16 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 		return EPathFollowingRequestResult::Failed;
 	// 왜 이동에 오차가 생길까
 	FVector Location = TargetActor->GetActorLocation();
-	Location.Z = GetPawn()->GetActorLocation().Z;
+	//Location.Z = GetPawn()->GetActorLocation().Z;
 	FAIMoveRequest MoveReq(Location);
 	MoveReq.SetUsePathfinding(false);
 	MoveReq.SetAllowPartialPath(false);
-	MoveReq.SetAcceptanceRadius(fAcceptanceRadius);
+	MoveReq.SetAcceptanceRadius(fAcceptanceRadius *0.8f);
 	MoveReq.SetReachTestIncludesAgentRadius(false);
 	MoveReq.SetCanStrafe(false);
 	MoveReq.SetReachTestIncludesGoalRadius(false);
 	MoveReq.SetRequireNavigableEndLocation(false);
-	EPathFollowingRequestResult::Type result = MoveTo(MoveReq);
+	EPathFollowingRequestResult::Type result = AAIController::MoveTo(MoveReq);
 	if (result == EPathFollowingRequestResult::Failed)
 	{
 		UE_LOG(LogTemp, Error, TEXT("MoveToActor :: None Path"));

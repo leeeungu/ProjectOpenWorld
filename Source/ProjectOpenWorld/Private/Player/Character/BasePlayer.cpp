@@ -171,7 +171,7 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 	if (Hp <= 0.f)
 	{
 		Hp = 0.0f;
-		if (GetMesh())
+		/*if (GetMesh())
 		{
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 			GetMesh()->SetSimulatePhysics(true);
@@ -184,7 +184,7 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FTimerHandle handle{};
 		bDead = true;
-		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);
+		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);*/
 	}
 	return true;
 }

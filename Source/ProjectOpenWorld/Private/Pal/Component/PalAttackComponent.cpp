@@ -6,6 +6,7 @@
 #include "GameBase/Animation/BaseAnimInstance.h"
 #include "Animation/AnimInstance.h"
 #include "Engine/DataAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 {
@@ -38,6 +39,7 @@ void UPalAttackComponent::ResetAttackData()
 {
 	bSetAttackData = false;
 	bAttacking = false;
+	OwnerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
 
 void UPalAttackComponent::SetAttackTarget(AActor* Actor)
@@ -102,6 +104,8 @@ void UPalAttackComponent::StartAttack()
 	}
 	bAttacking = true;
 	Controller->SetFocus(TargetActor);
+	OwnerCharacter->GetCharacterMovement()->StopMovementImmediately();
+	OwnerCharacter->GetCharacterMovement()->DisableMovement();
 	AttackIndex = 0;
 	if (OnPalAttackStart.IsBound())
 	{
@@ -112,6 +116,7 @@ void UPalAttackComponent::StartAttack()
 
 void  UPalAttackComponent::EndAttack()
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack "), *GetOwner()->GetName());
 	SetComponentTickEnabled(false);
 	ResetAttackData();
 	bSetTargetData= false;

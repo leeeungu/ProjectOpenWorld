@@ -10,6 +10,9 @@ class PROJECTOPENWORLD_API UTurnNotifyState : public UAnimNotifyState
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(EditAnywhere, Category = "Turn", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	float TurnRate = 10.0f;
+
 public:
 #if WITH_EDITOR
 	virtual void OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent) override;
