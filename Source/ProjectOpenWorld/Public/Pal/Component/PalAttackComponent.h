@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalCommandData.h"
 #include "GameBase/Class/TimerClass.h"
+#include "Engine/DataTable.h"
 #include "GameBase/Interface/MontageQueueInterface.h"
 #include "PalAttackComponent.generated.h"
 
@@ -12,21 +13,22 @@ class UAnimMontage;
 class APalAIController;
 struct FAIRequestID;
 class ABaseCharacter;
+class UDataAsset;
 namespace EPathFollowingResult { enum Type : int; }
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPalAttack);
 
 USTRUCT(BlueprintType)
-struct FPalAttackData
+struct FPalAttackDataTable : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	TObjectPtr<AActor> TargetActor{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	ESubAttackType AttackSlot{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	TArray<TObjectPtr<UAnimMontage>> AttackData{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	float AttackDistance = 100.0f;
 };
 
 
@@ -36,18 +38,25 @@ class PROJECTOPENWORLD_API UPalAttackComponent : public UActorComponent, public 
 	GENERATED_BODY()
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
-	FPalAttackData AttackData{};
+	FPalAttackDataTable AttackData{};
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	TObjectPtr<AActor> TargetActor{};
 	UPROPERTY()
 	TObjectPtr< ABaseCharacter> OwnerCharacter{};
 	UPROPERTY()
 	TObjectPtr<APalAIController> Controller{};
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	float AttackDistance{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
+	TObjectPtr<UDataTable> AttackDataAsset{};
 
 	int AttackIndex{};
+	UPROPERTY(VisibleAnywhere, Category = "PalAttackData")
 	bool bSetTargetData{};
+	UPROPERTY(VisibleAnywhere, Category = "PalAttackData")
 	bool bAttacking{};
+	UPROPERTY(VisibleAnywhere, Category = "PalAttackData")
+	bool bSetAttackData{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -60,11 +69,14 @@ protected:
 
 	UFUNCTION()
 	void TargetIsDead(AActor* Actor);
+	void ResetAttackData();
 public:	
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
-	void  SetAttackData(FPalAttackData sData);
+	void  SetAttackTarget(AActor* Actor);
+	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
+	void  SetAttackData(ESubAttackType eType);
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
 	void  StartAttack();
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
@@ -74,9 +86,16 @@ public:
 	bool GetAttacking() const { return bAttacking ; }
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
-	float GetAttackDistance() const { return AttackDistance; }
+	float GetAttackDistance() const { return AttackData.AttackDistance; }
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool IsSetTarget() const { return bSetTargetData; }
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool IsAttacking() const { return bAttacking; }
+
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	AActor* GetTargetActor() const { return TargetActor; }
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool IsSetAttackData()const { return bSetAttackData; }
 
 	// IMontageQueueInterface을(를) 통해 상속됨
 	UAnimMontage* GetMontage() const override;

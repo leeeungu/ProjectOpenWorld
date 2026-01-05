@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Player/Character/BasePlayer.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Interaction/Component/InteractionComponent.h"
 
 ASoliderProjectile::ASoliderProjectile()
 {
@@ -64,16 +65,11 @@ void ASoliderProjectile::ProjectileOverlap(UPrimitiveComponent* OverlappedCompon
 {
 	if (!OtherActor)
 		return;
-	ABasePlayer* Player = Cast<ABasePlayer>(OtherActor);
-	if (Player)
+	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(OtherActor);
+	if (AttackInterface && OtherActor != GetInstigator())
 	{
-		FVector NewLocation = Player->GetActorLocation();
-		NewLocation.Z = GetActorLocation().Z;
-		SetActorRotation(Player->GetActorRotation());
-		SetActorLocation(NewLocation);
-		AddActorWorldOffset(Player->GetActorForwardVector() * 100.0f);
-		PreViewMeshComp->SetVisibility(false);
-		PreViewMeshComp->SetHiddenInGame(true);
+		if(AttackInterface->Execute_DamagedCharacter(OtherActor, GetInstigator()))
+			Destroy();
 	}
 }
 
@@ -98,13 +94,16 @@ void ASoliderProjectile::Tick(float DeltaTime)
 		ABasePlayer* Player = Cast<ABasePlayer>(HitResult.GetActor());
 		if (Player)
 		{
+			if (Player->GetInteractionComponent())
+			{
+				Player->GetInteractionComponent()->SetInteractionTarget(this);
+			}
 			NewLocation = Player->GetActorLocation();
 			NewLocation.Z = GetActorLocation().Z;
-			//rotate forwardvector to otherforwardvector
-
-			PreViewMeshComp->SetWorldRotation(Player->GetActorRotation() + FRotator(0,-90,0));
+			FRotator NewRot = FRotator(0,Player->GetControlRotation().Yaw,0);
+			PreViewMeshComp->SetWorldRotation(NewRot + FRotator(0,-90,0));
 			PreViewMeshComp->SetWorldLocation(NewLocation);
-			PreViewMeshComp->AddWorldOffset(Player->GetActorForwardVector() * 100.0f);
+			PreViewMeshComp->AddWorldOffset((NewRot.Quaternion() * FVector(1, 0, 0)) * (AttackCollision->GetScaledCapsuleHalfHeight() * 1.1f));
 			PreViewMeshComp->SetVisibility(true);
 			PreViewMeshComp->SetHiddenInGame(false);
 		}
@@ -129,5 +128,30 @@ void ASoliderProjectile::ChangeDirection(const FVector& NewDirection)
 		angle = -angle;
 	
 	AddActorWorldRotation(FRotator(0,angle, 0));
+}
+
+
+void ASoliderProjectile::OnInteractionStart_Implementation(ACharacter* pOther)
+{
+	ABasePlayer* Player = Cast<ABasePlayer>(pOther);
+	if (Player && GetSquaredDistanceTo(pOther) < InteractionDistance * InteractionDistance)
+	{
+		if (Player->GetInteractionComponent())
+		{
+			if (Player->GetInteractionComponent()->GetTargetActor() != this)
+				return;
+			SetInstigator(Player);
+			Player->GetInteractionComponent()->ResetInteractionTarget(this);
+		}
+		FVector NewLocation = Player->GetActorLocation();
+		NewLocation.Z = GetActorLocation().Z;
+		FRotator NewRot = FRotator(0, Player->GetControlRotation().Yaw, 0);
+		SetActorRotation(NewRot);
+		SetActorLocation(NewLocation);
+		AddActorWorldOffset((NewRot.Quaternion() * FVector(1,0,0)) * (AttackCollision->GetScaledCapsuleHalfHeight() * 1.1f));
+		PreViewMeshComp->SetVisibility(false);
+		PreViewMeshComp->SetHiddenInGame(true);
+		
+	}
 }
 

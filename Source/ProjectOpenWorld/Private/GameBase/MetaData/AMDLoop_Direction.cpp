@@ -1,6 +1,7 @@
 #include "GameBase/MetaData/AMDLoop_Direction.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Character.h"
 
 UAMDLoop_Direction::UAMDLoop_Direction(const FObjectInitializer& ObjectInitializer) : 
 	UAMDLoop(ObjectInitializer)
@@ -17,6 +18,10 @@ void UAnimLoopObject_Direction::Initialize(UAnimInstance* Animinstance, UAMDLoop
 	if (UAMDLoop_Direction * Data = Cast< UAMDLoop_Direction>(LoopMetaData))
 	{
 		MoveWorldDirection = Data->GetMoveDirection().GetSafeNormal();
+		if (!Data->GetWorldDirection())
+		{
+			MoveWorldDirection = OwnerAniminstance->TryGetPawnOwner()->GetActorRotation().RotateVector(MoveWorldDirection);
+		}
 		MoveSpeed = Data->GetMoveSpeed();
 		MoveDistance = Data->GetMoveDistance();
 		CurrenDistance = MoveDistance;
@@ -40,7 +45,16 @@ void UAnimLoopObject_Direction::UpdateLoop(float DeltaTime)
 		if (DeltaMove > CurrenDistance)
 			DeltaMove = CurrenDistance;
 		CurrenDistance -= DeltaMove;
-		OwnerAniminstance->TryGetPawnOwner()->AddActorWorldOffset(MoveWorldDirection * DeltaMove);
+		FHitResult Hit{};
+		OwnerAniminstance->TryGetPawnOwner()->AddActorWorldOffset(MoveWorldDirection * DeltaMove, true, &Hit, ETeleportType::ResetPhysics);
+		if (Hit.bBlockingHit)
+		{
+			ACharacter* Other = Cast< ACharacter>(Hit.GetActor());
+			if (Other)
+			{
+				Other->LaunchCharacter(MoveWorldDirection * (MoveSpeed * 0.5f), true, true);
+			}
+		}
 	}
 }
 

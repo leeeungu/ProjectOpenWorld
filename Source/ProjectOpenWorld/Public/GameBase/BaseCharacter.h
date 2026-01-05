@@ -10,9 +10,12 @@ UCLASS()
 class PROJECTOPENWORLD_API ABaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
+protected:
+	bool bDead{};
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

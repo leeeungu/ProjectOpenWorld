@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/InteractionInterface.h"
 #include "SoliderProjectile.generated.h"
 
 class UNiagaraComponent;
@@ -9,12 +10,14 @@ class UStaticMeshComponent;
 class UCapsuleComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ASoliderProjectile : public AActor
+class PROJECTOPENWORLD_API ASoliderProjectile : public AActor, public IInteractionInterface
 {
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile")
-	float MoveSpeed = 100.0f;
+	float MoveSpeed = 800.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile")
+	float InteractionDistance = 300.0f;
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
 	//FVector MoveDirection{};
 
@@ -40,4 +43,8 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 	void ChangeDirection(const FVector& NewDirection);
+
+
+public: // IInteractionInterface
+	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;
 };

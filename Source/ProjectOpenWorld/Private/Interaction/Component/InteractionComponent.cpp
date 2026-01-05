@@ -31,21 +31,21 @@ void UInteractionComponent::ResetInteractionTarget(AActor* DestroyedActor)
 
 void UInteractionComponent::SetInteractionTarget(TScriptInterface<IInteractionInterface> NewTarget)
 {
-	if (NewTarget && NewTarget.GetObject())
+	if (NewTarget && NewTarget.GetObject() && InteractionTarget != NewTarget)
 	{
 		AActor* Target = Cast< AActor>(NewTarget.GetObject());
 		if (Target)
 		{
-			Target->OnDestroyed.AddDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+			Target->OnDestroyed.AddUniqueDynamic(this, &UInteractionComponent::ResetInteractionTarget);
 		}
 		InteractionTarget = NewTarget;
 	}
-	else
+	/*else
 	{
 		InteractionTarget = nullptr;
 		bIsInteraction = false;
-	}
-	
+		bIsSetTarget = false;
+	}*/
 }
 
 void UInteractionComponent::OnInteractionStart()
@@ -91,6 +91,11 @@ void UInteractionComponent::OnActorCancel()
 		bIsInteraction = false;
 		InteractionTarget = nullptr;
 	}
+}
+
+bool UInteractionComponent::IsSetTarget() const
+{
+	return InteractionTarget && InteractionTarget.GetObject();
 }
 
 AActor* UInteractionComponent::GetTargetActor() const

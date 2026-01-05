@@ -57,6 +57,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	FVector TargetLocation = FVector::ZeroVector;
 	UPROPERTY(VisibleAnywhere)
+	float TargetValue{};
+	UPROPERTY(VisibleAnywhere)
 	uint8 SubCommandType{};
 
 	FPalCommand& operator=(const FPalCommand& rhs)
@@ -66,6 +68,7 @@ public:
 		pTarget = rhs.pTarget ;
 		TargetLocation = rhs.TargetLocation ;
 		SubCommandType = rhs.SubCommandType;
+		TargetValue = rhs.TargetValue;
 		return *this;
 	}
 	bool operator==(const FPalCommand& rhs)
@@ -74,7 +77,8 @@ public:
 			pInstigatorActor == rhs.pInstigatorActor &&
 			pTarget == rhs.pTarget &&
 			TargetLocation == rhs.TargetLocation &&
-			SubCommandType == rhs.SubCommandType)
+			SubCommandType == rhs.SubCommandType && 
+			TargetValue == rhs.TargetValue)
 			return true;
 		return false;
 	}
@@ -86,6 +90,7 @@ public:
 		pTarget = nullptr;
 		TargetLocation = FVector::ZeroVector;
 		SubCommandType = 0;
+		TargetValue = 0;
 	}
 	static bool IsValidCommand(const FPalCommand& Command)
 	{

@@ -32,11 +32,12 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 	OwnerPal->SetActionStarted(true);
 	if (AttackComponent)
 	{
-		FPalAttackData NewAttackData{};
-		NewAttackData.TargetActor = Command.pTarget.Get();
-		NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
-		AttackComponent->SetAttackData(NewAttackData);
-		AttackComponent->StartAttack();
+		//FPalAttackDataTable NewAttackData{};
+		////NewAttackData.TargetActor = Command.pTarget.Get();
+		//NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
+		AttackComponent->SetAttackTarget(Command.pTarget.Get());
+		//AttackComponent->SetAttackData(NewAttackData);
+		//AttackComponent->StartAttack();
 		IsCommandStarted = true;
 		return true;
 	}

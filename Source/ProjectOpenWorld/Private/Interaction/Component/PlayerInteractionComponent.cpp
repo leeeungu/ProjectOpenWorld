@@ -18,11 +18,13 @@ void UPlayerInteractionComponent::BeginPlay()
 void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!IsValid(InteractionTarget.GetObject()))
+	if (!IsSetTarget())
 	{
 		InteractionTarget = nullptr;
 		bIsInteraction = false;
 	}
+	else
+		return;
 	if (!OwnerCharacter || bIsInteraction)
 		return;
 

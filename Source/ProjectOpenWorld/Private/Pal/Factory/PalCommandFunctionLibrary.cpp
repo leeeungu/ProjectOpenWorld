@@ -1,16 +1,17 @@
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 
-FPalCommand UPalCommandFunctionLibrary::CommandMoveToLocation(AActor* pInstigator, FVector TargetLocation)
+FPalCommand UPalCommandFunctionLibrary::CommandMoveToLocation(AActor* pInstigator, FVector TargetLocation, float MoveDistance)
 {
 	FPalCommand command{};
 	command.CommandKind = EPalCommandKind::Move;
 	command.SubCommandType = (uint8)ESubMoveType::Location;
 	command.TargetLocation = TargetLocation;
 	command.pInstigatorActor = pInstigator;
+	command.TargetValue = MoveDistance;
 	return command;
 }
 
-FPalCommand UPalCommandFunctionLibrary::CommandMoveToActor(AActor* pInstigator, AActor* pTargetActor)
+FPalCommand UPalCommandFunctionLibrary::CommandMoveToActor(AActor* pInstigator, AActor* pTargetActor, float MoveDistance)
 {
 	if (!pTargetActor)
 		return FPalCommand();
@@ -19,6 +20,7 @@ FPalCommand UPalCommandFunctionLibrary::CommandMoveToActor(AActor* pInstigator, 
 	command.SubCommandType = (uint8)ESubMoveType::Actor;
 	command.pTarget = pTargetActor;
 	command.pInstigatorActor = pInstigator;
+	command.TargetValue = MoveDistance;
 	return command;
 }
 

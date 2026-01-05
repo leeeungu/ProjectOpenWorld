@@ -103,6 +103,10 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitec
 	UPROPERTY()
 	TObjectPtr< UBuildingModeWidget> BuildingWidget{};
 public:
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
+	FOnDamageedDelegate OnDamagedDelegate{};
+public:
 	ABasePlayer();
 
 
@@ -165,6 +169,7 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
+	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
 
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
@@ -176,7 +181,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void SetStatus(EStatusType StatusType, float Value);
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	bool GetStatus(EStatusType StatusType, float& Result);
+	bool GetStatus(EStatusType StatusType, float& Result) const;
 
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;

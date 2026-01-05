@@ -49,7 +49,8 @@ void ABaseMonster::PossessedBy(AController* NewController)
 
 void ABaseMonster::RetAttackValue_Implementation()
 {
-	Attack = 1.0f;
+	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: RetAttackValue Not set"));
+	//Attack = 10.0f;
 }
 
 bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
@@ -69,14 +70,16 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	{
 		CommandComponent->ResetCommandQue();
 	}
-	if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	if (AttackComponent && !AttackComponent->IsSetTarget())
 	{
+		//pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+		AttackComponent->SetAttackTarget(pOther);
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
-		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+		//CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
 	if (OnDamagedDelegate.IsBound())
 	{
-		OnDamagedDelegate.Broadcast(pOther);
+		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
 	//UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
 	if (Hp <= 0.f)

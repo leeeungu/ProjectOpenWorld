@@ -38,6 +38,9 @@ public:
 	void OnInteractionCompleted();
 	void OnActorCancel();
 
+	bool IsInteracting() const { return bIsInteraction; }
+	bool IsSetTarget() const;
+
 	UFUNCTION(BlueprintPure, Category = "Interaction")
 	AActor* GetTargetActor() const;
 };

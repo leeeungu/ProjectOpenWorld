@@ -5,11 +5,12 @@
 #include "GameBase/Interface/AttackInterface.h"
 #include "GameBase/Animation/BaseAnimInstance.h"
 #include "Animation/AnimInstance.h"
+#include "Engine/DataAsset.h"
 
-UPalAttackComponent::UPalAttackComponent()
+UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	AttackDistance = 50.0f;
+	//AttackData.AttackDistance = 50.0f;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetComponentTickEnabled(false);
 }
@@ -33,19 +34,54 @@ void UPalAttackComponent::TargetIsDead(AActor* Actor)
 	EndAttack();
 }
 
-void UPalAttackComponent::SetAttackData(FPalAttackData sData)
+void UPalAttackComponent::ResetAttackData()
 {
-	if (!sData.TargetActor || sData.TargetActor->IsPendingKillPending() || bAttacking)
+	bSetAttackData = false;
+	bAttacking = false;
+}
+
+void UPalAttackComponent::SetAttackTarget(AActor* Actor)
+{
+	TargetActor = Actor;
+	if (!TargetActor || TargetActor->IsPendingKillPending() || bAttacking)
 		return;
-	if (!sData.TargetActor->Implements<UAttackInterface>())
+	if (!TargetActor->Implements<UAttackInterface>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetActor has not interface"), *sData.TargetActor.Get()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetActor has not interface"), *TargetActor.Get()->GetName());
 		return;
 	}
-	sData.TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
+	TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bSetTargetData = true;
-	AttackData.AttackSlot = sData.AttackSlot;
-	AttackData.TargetActor = sData.TargetActor;
+}
+
+void UPalAttackComponent::SetAttackData(ESubAttackType eType)
+{
+	if (!AttackDataAsset)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no AttackDataAsset "), *GetOwner()->GetName());
+		AttackData.AttackSlot = ESubAttackType::None_AttackType;
+		AttackIndex = 0;
+		bSetAttackData = false;
+		return;
+	}
+	bSetAttackData = false;
+	TArray<FPalAttackDataTable*> ArrayData{};
+
+	AttackDataAsset->GetAllRows("", ArrayData);
+	uint8 Index = static_cast<uint8>(eType);
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData in DataTable %d"), *GetOwner()->GetName(), Index);
+	if (ArrayData.IsValidIndex(Index))
+	{
+		AttackData.AttackData = ArrayData[Index]->AttackData;
+		AttackData.AttackDistance = ArrayData[Index]->AttackDistance;
+		bSetAttackData = true;
+	}
+	else
+	{
+		eType = ESubAttackType::None_AttackType;
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no data in DataTable "), *GetOwner()->GetName());
+	}
+	AttackData.AttackSlot = eType;
 	AttackIndex = 0;
 }
 
@@ -65,7 +101,7 @@ void UPalAttackComponent::StartAttack()
 		Anim->PlayMontageQueue();
 	}
 	bAttacking = true;
-	Controller->SetFocus(AttackData.TargetActor);
+	Controller->SetFocus(TargetActor);
 	AttackIndex = 0;
 	if (OnPalAttackStart.IsBound())
 	{
@@ -77,18 +113,18 @@ void UPalAttackComponent::StartAttack()
 void  UPalAttackComponent::EndAttack()
 {
 	SetComponentTickEnabled(false);
-	bSetTargetData = false;
-	bAttacking = false;
+	ResetAttackData();
+	bSetTargetData= false;
 	Controller->SetFocus(nullptr);
-	if (AttackData.TargetActor)
+	if (TargetActor)
 	{
-		AttackData.TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
+		TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
 	}
 	if (OnPalAttackEnd.IsBound())
 	{
 		OnPalAttackEnd.Broadcast();
 	}
-	AttackData.TargetActor = nullptr;
+	TargetActor = nullptr;
 }
 
 UAnimMontage* UPalAttackComponent::GetMontage() const
@@ -115,7 +151,7 @@ void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAni
 	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
 	{
 		BaseAnim->SetMontageQueueInterface(nullptr);
-		EndAttack();
+		ResetAttackData();
 		return;
 	}
 	BaseAnim->PlayMontageQueue();

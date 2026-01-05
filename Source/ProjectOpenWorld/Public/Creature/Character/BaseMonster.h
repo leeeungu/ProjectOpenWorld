@@ -30,7 +30,6 @@ protected:
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
 	bool bActionStarted{};
-	bool bDead{};
 
 public:
 	ABaseMonster();

@@ -4,12 +4,11 @@
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
 #include "NavigationSystem.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Landscape.h"
 
 APalAIController::APalAIController() : AAIController{}
 {
 	//GetPathFollowingComponent()->block
-
+	//OnMoveCompleted.AddDynamic(this, &APalAIController::OnMoveCompletedHandler);
 }
 
 bool APalAIController::FindLandscapeBelow(FVector StartLocation, FVector EndLocation, FVector& Result)
@@ -44,24 +43,28 @@ bool APalAIController::FindLandscapeBelow(FVector StartLocation, FVector EndLoca
 	}
 	return false;
 }
-EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius )
+EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius)
 {
 	if (!TargetActor)
 		return EPathFollowingRequestResult::Failed;
-	FAIMoveRequest MoveReq(TargetActor);
-	MoveReq.SetUsePathfinding(true);
-	MoveReq.SetAllowPartialPath(true);
-	MoveReq.SetRequireNavigableEndLocation(true);
+
+	FVector Location = TargetActor->GetActorLocation();
+	Location.Z = GetPawn()->GetActorLocation().Z;
+	FAIMoveRequest MoveReq(Location);
+	MoveReq.SetUsePathfinding(false);
+	MoveReq.SetAllowPartialPath(false);
 	MoveReq.SetAcceptanceRadius(fAcceptanceRadius);
-	MoveReq.SetReachTestIncludesAgentRadius(true);
-	MoveReq.SetCanStrafe(true);
-	MoveReq.SetReachTestIncludesGoalRadius(true);
-	FNavPathSharedPtr OutPath{};
-	FPathFollowingRequestResult result = MoveTo(MoveReq, &OutPath);
-	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
+	MoveReq.SetReachTestIncludesAgentRadius(false);
+	MoveReq.SetCanStrafe(false);
+	MoveReq.SetReachTestIncludesGoalRadius(false);
+	MoveReq.SetRequireNavigableEndLocation(false);
+	EPathFollowingRequestResult::Type result = MoveTo(MoveReq);
+	if (result == EPathFollowingRequestResult::Failed)
 	{
 		UE_LOG(LogTemp, Error, TEXT("MoveToActor :: None Path"));
 	}
+	UE_LOG(LogTemp, Warning, TEXT("MoveToActor :: Already At Goal %f %f %f"), TargetActor->GetDistanceTo(GetPawn()),
+		FVector::Dist2D(TargetActor->GetActorLocation(), GetPawn()->GetActorLocation()), fAcceptanceRadius);
 	return result;
 }
 

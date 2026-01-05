@@ -40,13 +40,21 @@ protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 public:
 	void SetStatusProgress(float* Value, float* MaxValue);
 
 	// IStatusUpdateInterface을(를) 통해 상속됨
+	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void UpdateStatus() override;
+
+	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
+	FORCEINLINE FText GetStatusText() const;
+	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
+	FORCEINLINE FText GetMaxStatusText() const;
 
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
 	FORCEINLINE float GetStatusPercent() const;
 };
-	
+		

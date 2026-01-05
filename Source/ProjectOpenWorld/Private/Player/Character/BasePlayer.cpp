@@ -15,10 +15,11 @@
 #include "Player/Animation/PlayerAnimInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "Building/Widget/BuildingModeWidget.h"
+#include "GenericTeamAgentInterface.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
-ABasePlayer::ABasePlayer()
+ABasePlayer::ABasePlayer() : ABaseCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -120,7 +121,7 @@ void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 	}
 }
 
-bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result)
+bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 {
 	if (StatusArray.IsValidIndex((uint8)StatusType))
 	{
@@ -132,11 +133,14 @@ bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result)
 
 float ABasePlayer::GetAttackValue_Implementation() const
 {
-	return 0.0f;
+	float Result = 0.0f;
+	GetStatus(EStatusType::Attack, Result);
+	return Result;
 }
 
 void ABasePlayer::SetAttackValue_Implementation(float NewValue)
 {
+	SetStatus(EStatusType::Attack, NewValue);
 }
 
 void ABasePlayer::RetAttackValue_Implementation()
@@ -145,7 +149,44 @@ void ABasePlayer::RetAttackValue_Implementation()
 
 bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
 {
-	return false;
+	if (!Other || !Other.GetObject())
+		return false;
+	APawn* pOther = Cast < APawn>(Other.GetObject());
+	if (pOther  && FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) == ETeamAttitude::Friendly)
+	{
+		return false;
+	}
+	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
+	float Hp{};
+	GetStatus(EStatusType::Hp, Hp);
+	if (Hp < Damage)
+		Damage = Hp;
+	Hp -= Damage;
+	SetStatus(EStatusType::Hp, Hp);
+	if (OnDamagedDelegate.IsBound())
+	{
+		OnDamagedDelegate.Broadcast(pOther, Damage);
+	}
+	UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
+	if (Hp <= 0.f)
+	{
+		Hp = 0.0f;
+		if (GetMesh())
+		{
+			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+			GetMesh()->SetSimulatePhysics(true);
+			if (pOther)
+			{
+				GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
+			}
+		}
+		GetMesh()->bPauseAnims = true;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		FTimerHandle handle{};
+		bDead = true;
+		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);
+	}
+	return true;
 }
 
 bool ABasePlayer::IsDead_Implementation() const
@@ -358,6 +399,7 @@ void ABasePlayer::OnInteractionStart(const FInputActionValue& Value)
 {
 	if (InteractionComponent)
 	{
+
 		InteractionComponent->OnInteractionStart();
 	}
 }

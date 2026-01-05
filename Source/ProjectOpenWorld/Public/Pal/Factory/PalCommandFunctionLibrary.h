@@ -15,9 +15,9 @@ class PROJECTOPENWORLD_API UPalCommandFunctionLibrary : public UBlueprintFunctio
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
-	static FPalCommand CommandMoveToLocation(AActor* pInstigator, FVector TargetLocation);
+	static FPalCommand CommandMoveToLocation(AActor* pInstigator, FVector TargetLocation, float MoveDistance = 50.0f);
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
-	static FPalCommand CommandMoveToActor(AActor* pInstigator, AActor* pTargetActor );
+	static FPalCommand CommandMoveToActor(AActor* pInstigator, AActor* pTargetActor, float MoveDistance = 50.0f);
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
 	static FPalCommand CommandArchitecture(AActor* pInstigator, AActor* pTargetActor);
 	// pDestination final , pTargetActor 옮길 물체

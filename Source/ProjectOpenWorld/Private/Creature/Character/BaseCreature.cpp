@@ -83,10 +83,14 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 	//{
 	//	CommandComponent->ResetCommandQue();
 	//}
-	if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	//if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	//{
+	//	//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
+	//	CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+	//}
+	if (OnDamagedDelegate.IsBound())
 	{
-		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
-		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
 
 	if (Hp <= 0.f)

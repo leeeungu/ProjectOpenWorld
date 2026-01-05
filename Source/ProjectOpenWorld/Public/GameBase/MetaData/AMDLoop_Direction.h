@@ -15,6 +15,8 @@ protected:
 	float MoveSpeed = 3500.f;
 	UPROPERTY(EditInstanceOnly, Category = "Loop Data")
 	float MoveDistance = 3500.f;
+	UPROPERTY(EditInstanceOnly, Category = "Loop Data")
+	bool bWorldDirection = true;
 public:
 	UAMDLoop_Direction(const FObjectInitializer& ObjectInitializer);
 	UFUNCTION(BlueprintPure, Category = "Loop Data")
@@ -23,6 +25,8 @@ public:
 	float GetMoveSpeed() const { return  MoveSpeed; }
 	UFUNCTION(BlueprintPure, Category = "Loop Data")
 	float GetMoveDistance() const { return MoveDistance; }
+	UFUNCTION(BlueprintPure, Category = "Loop Data")
+	bool GetWorldDirection() const { return  bWorldDirection; }
 };
 
 

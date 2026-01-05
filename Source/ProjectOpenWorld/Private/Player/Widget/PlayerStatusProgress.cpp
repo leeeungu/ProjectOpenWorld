@@ -8,15 +8,16 @@ void UPlayerStatusProgress::NativePreConstruct()
 	Super::NativePreConstruct();
 	if (StatusText)
 	{
-		StatusText->SetText(FText::FromString(TEXT("0")));
+		StatusText->SetText(GetStatusText());
 	}
 	if (MaxStatusText)
 	{
-		MaxStatusText->SetText(FText::FromString(TEXT(" / 1")));
+		MaxStatusText->SetText(GetMaxStatusText());
 	}
 	if (StatusProgress)
 	{
 		StatusProgress->SetFillColorAndOpacity(ProgressColor);
+		StatusProgress->SetPercent(GetStatusPercent());
 	}
 
 	if (StatusImage)
@@ -40,6 +41,12 @@ void UPlayerStatusProgress::NativeConstruct()
 		SetStatusProgress(Player->GetStatusRef(StatusType), Player->GetStatusRef(MaxStatusType));
 		UpdateStatus();
 	}
+}
+
+void UPlayerStatusProgress::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+	UpdateStatus();
 }
 
 void UPlayerStatusProgress::NativeOnInitialized()
@@ -70,17 +77,37 @@ void UPlayerStatusProgress::UpdateStatus()
 	}
 	if (StatusText)
 	{
-		StatusText->SetText(FText::Format(FText::FromString(TEXT("{0}")), (int)*StatusRef));
+		StatusText->SetText(GetStatusText());
 	}
 	if (MaxStatusText)
 	{
-		MaxStatusText->SetText(FText::Format(FText::FromString(TEXT(" / {0}")), (int)*MaxStatusRef));
+		MaxStatusText->SetText(GetMaxStatusText());
 	}
+}
+
+
+FText UPlayerStatusProgress::GetStatusText() const
+{
+	if (!StatusRef)
+	{
+		return FText::FromString(TEXT("0"));
+	}
+	return FText::Format(FText::FromString(TEXT("{0}")), (int)*StatusRef);
+}
+
+FText UPlayerStatusProgress::GetMaxStatusText() const
+{
+	if (!MaxStatusRef)
+	{
+		return FText::FromString(TEXT(" / 1"));
+	}
+	return FText::Format(FText::FromString(TEXT(" / {0}")), (int)*MaxStatusRef);
 }
 
 float UPlayerStatusProgress::GetStatusPercent() const
 {
+//	UE_LOG(LogTemp, Warning, TEXT("GetStatusPercent : %f / %f"), StatusRef ? *StatusRef : 0.0f, MaxStatusRef ? *MaxStatusRef : 0.0f);
 	if (StatusRef && MaxStatusRef)
 		return *StatusRef / *MaxStatusRef;
-	return 0.4f;
+	return 0.1f;
 }
