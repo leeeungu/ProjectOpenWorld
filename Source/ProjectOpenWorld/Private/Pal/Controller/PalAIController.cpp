@@ -47,7 +47,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 {
 	if (!TargetActor)
 		return EPathFollowingRequestResult::Failed;
-
+	// 왜 이동에 오차가 생길까
 	FVector Location = TargetActor->GetActorLocation();
 	Location.Z = GetPawn()->GetActorLocation().Z;
 	FAIMoveRequest MoveReq(Location);
