@@ -7,7 +7,7 @@
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "GenericTeamAgentInterface.h"
+#include "Pal/Component/PalMonsterInteractionComponent.h"
 
 ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
@@ -15,6 +15,7 @@ ABaseMonster::ABaseMonster() :
 	AIControllerClass = APalMonsterController::StaticClass();
 	CommandComponent = CreateDefaultSubobject<UPalMonsterCommandComponent>(TEXT("PalCommand"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
+	MonsterInteractionComponent = CreateDefaultSubobject<UPalMonsterInteractionComponent>(TEXT("MonsterInteractionComponent"));
 	Hp = 100;
 	Attack = 10.0f;
 }
@@ -41,10 +42,10 @@ void ABaseMonster::SetAttackValue_Implementation(float NewValue)
 void ABaseMonster::PossessedBy(AController* NewController)
 {
 	ABaseCharacter::PossessedBy(NewController);
-	if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
+	/*if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
 	{
-		newTeam->SetGenericTeamId(FGenericTeamId(1));
-	}
+		newTeam->SetGenericTeamId(FGenericTeamId(2));
+	}*/
 }
 
 void ABaseMonster::RetAttackValue_Implementation()

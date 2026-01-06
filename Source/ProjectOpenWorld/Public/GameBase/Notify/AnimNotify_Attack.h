@@ -6,6 +6,17 @@
 
 class UAttackObject;
 
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EAttackObjectUtill : uint8
+{
+	None = 0 UMETA(Hidden),
+	Attack = 1 ,
+	KnockBackDirection = 2 ,
+	PlayerStun = 4,
+	Impulse = 8,
+};
+
+
 UCLASS()
 class PROJECTOPENWORLD_API UAnimNotify_Attack : public UAnimNotify
 {
@@ -22,6 +33,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Instanced)
 	TArray< TObjectPtr<UAttackObject>> AttackEventObject{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Editor", meta = (Bitmask, BitmaskEnum = "EAttackObjectUtill"))
+	int32 ObjectUtillMask = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Editor")
+	bool bInstanceObject = false;
+public:
+#if WITH_EDITOR
+	virtual void OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent) override;
+#endif
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	TObjectPtr<UAttackObject> GetAttackObjectByUtill(EAttackObjectUtill Utill) const;
 private:
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);

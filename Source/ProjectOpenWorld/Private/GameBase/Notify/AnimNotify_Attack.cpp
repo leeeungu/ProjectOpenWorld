@@ -4,13 +4,78 @@
 #include "GenericTeamAgentInterface.h"
 #include "GameBase/Object/AttackObject.h"
 
+void UAnimNotify_Attack::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)
+{
+	Super::OnAnimNotifyCreatedInEditor(ContainingAnimNotifyEvent);
+	for (UAttackObject* AttackObject : AttackEventObject)
+	{
+		if (AttackObject)
+		{
+			//AttackObject->insti
+		}
+	}
+}
+
+void UAnimNotify_Attack::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+
+	FName PropertyName = PropertyChangedEvent.GetPropertyName();
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UAnimNotify_Attack, bInstanceObject))
+	{
+		if (bInstanceObject)
+		{
+			bInstanceObject = false;
+			for (int32 i = 0; i < 8; ++i)
+			{
+				EAttackObjectUtill Utill = static_cast<EAttackObjectUtill>(1 << i);
+				if (EnumHasAnyFlags(static_cast<EAttackObjectUtill>(ObjectUtillMask), Utill))
+				{
+					TObjectPtr<UAttackObject> NewAttackObject = GetAttackObjectByUtill(Utill);
+					if (NewAttackObject)
+					{
+						AttackEventObject.Add(NewAttackObject);
+					}
+				}
+			}
+			ObjectUtillMask = 0;
+		}
+	}
+}
+
+TObjectPtr<UAttackObject> UAnimNotify_Attack::GetAttackObjectByUtill(EAttackObjectUtill Utill) const
+{
+	const UClass* AttackObjectClass = nullptr;
+	switch (Utill)
+	{
+	case EAttackObjectUtill::Attack:
+		AttackObjectClass = UAttackObject_Attack::StaticClass();
+		break;
+	case EAttackObjectUtill::KnockBackDirection:
+		AttackObjectClass = UAttackObject_KnockBackDirection::StaticClass();
+		break;
+	case EAttackObjectUtill::PlayerStun:
+		AttackObjectClass = UAttackObject_PlayerStun::StaticClass();
+		break;
+	case EAttackObjectUtill::Impulse:
+		AttackObjectClass = UAttackObject_Impulse::StaticClass();
+		break;
+	default:
+		break;
+	}
+	if (AttackObjectClass)
+		return NewObject< UAttackObject>(const_cast<UAnimNotify_Attack*>(this), AttackObjectClass);
+	return nullptr;
+}
+
 void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
 	FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 	UWorld* pWorld = MeshComp->GetWorld();
-	if (MeshComp->GetOwner())
+	if (MeshComp->GetOwner() && pWorld)
 	{
 		APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
 		TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(MeshComp->GetOwner());
@@ -19,7 +84,7 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		FCollisionQueryParams Param{};
 		Param.AddIgnoredActor(MeshComp->GetOwner());
 		FCollisionResponseParams ResponseParam{};
-		if (MeshComp->GetWorld()->SweepMultiByChannel(arResult, NewLocation, NewLocation, FQuat::Identity, ECollisionChannel::ECC_Pawn,
+		if (pWorld->SweepMultiByChannel(arResult, NewLocation, NewLocation, FQuat::Identity, ECollisionChannel::ECC_Pawn,
 			Collision, Param))
 		{
 			TSet< APawn*> Attacked{};
@@ -27,16 +92,17 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 			{
 				bool bReadldyIn{};
 				APawn* Pawn = Cast< APawn>(Hit.GetActor());
-				if (!Pawn)
+				if (!Pawn || Pawn == OwnerPawn)
+					continue;
+				UE_LOG(LogTemp, Warning, TEXT("Hit Pawn : %s"), *Pawn->GetName());
+				UE_LOG(LogTemp, Warning, TEXT("Owner Pawn : %s"), *OwnerPawn->GetName());
+				UE_LOG(LogTemp, Warning, TEXT("%d %d"), (uint8)Cast<IGenericTeamAgentInterface>(Pawn->GetController())->GetGenericTeamId(),
+					(uint8)Cast<IGenericTeamAgentInterface>(OwnerPawn->GetController())->GetGenericTeamId());
+				if (FGenericTeamId::GetAttitude(Pawn->GetController(), OwnerPawn->GetController()) != ETeamAttitude::Hostile)
 					continue;
 				Attacked.FindOrAdd(Pawn, &bReadldyIn);
 				if (bReadldyIn)
 					continue;
-				TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(Hit.GetActor());
-				if (OtherAttack && FGenericTeamId::GetAttitude(Hit.GetActor(), OwnerPawn->GetController()) != ETeamAttitude::Friendly)
-				{
-					IAttackInterface::Execute_DamagedCharacter(Hit.GetActor(), AttackInterface);
-				}
 
 				for (UAttackObject* AttackObject : AttackEventObject)
 				{
@@ -49,13 +115,12 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		}
 	}
 #if WITH_EDITOR	
-		DrawDebugSphere(pWorld, NewLocation, AttackRadius, 20, FColor::Red, false, 0.5f, 0, 0.5f);
-		for (UAttackObject* AttackObject : AttackEventObject)
+	for (UAttackObject* AttackObject : AttackEventObject)
+	{
+		if (AttackObject)
 		{
-			if (AttackObject)
-			{
-				AttackObject->ExecuteDebugAttackEvent(MeshComp);
-			}
+			AttackObject->ExecuteDebugAttackEvent(MeshComp, NewLocation, AttackRadius);
 		}
+	}
 #endif
 }

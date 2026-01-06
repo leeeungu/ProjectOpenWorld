@@ -2,7 +2,9 @@
 #include "GameFramework/Character.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameBase/Interface/AttackInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GenericTeamAgentInterface.h"
 
 void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
@@ -26,6 +28,21 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 			TargetCharacter->LaunchCharacter(LaunchVelocity, true, true);
 		}
 	}
+}
+
+void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
+{
+	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
+		return;
+	FVector Direction = KnockBackDirection;
+	Direction.Normalize();
+	if (!bIsWorldDirection )
+	{
+		Direction = FRotator(0,90,0).RotateVector(Direction);
+	}
+	FVector LaunchVelocity = Direction * KnockBackForce;
+	DrawDebugDirectionalArrow(CauserMesh->GetWorld(), CauserMesh->GetOwner()->GetActorLocation() , CauserMesh->GetOwner()->GetActorLocation()+ Direction * 100.f,
+		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
 }
 
 void UAttackObject_PlayerStun::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
@@ -65,8 +82,8 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 
 			// Èû º¤ÅÍ °è»ê
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
-			LaunchDirection.X *= 3;
-			LaunchDirection.Y *= 3;
+			//LaunchDirection.X *= 3;
+			//LaunchDirection.Y *= 3;
 			LaunchDirection.Z = abs(LaunchDirection.Z);
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
@@ -80,10 +97,35 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 	}
 }
 
-void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* AttackCauser) const
+void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
 {
-	if (!AttackCauser || !AttackCauser->GetWorld())
+	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
-	FVector NewLocation = AttackCauser->GetSocketLocation(SocketName) + AttackCauser->GetComponentRotation().Quaternion() * SocketOffset;
-	DrawDebugSphere(AttackCauser->GetWorld(), NewLocation, AttackRadius, 20, FColor::Purple, false, 0.5f, 0, 0.5f);
+	FVector NewLocation = CauserMesh->GetSocketLocation(SocketName) + CauserMesh->GetComponentRotation().Quaternion() * SocketOffset;
+	DrawDebugSphere(CauserMesh->GetWorld(), NewLocation, AttackRadius, 20, FColor::Purple, false, DebugData.DebugLifeTime, 0, 0.5f);
+
+	FVector Direction = {1,0,0};
+	Direction = FRotator(0, 90, 0).RotateVector(Direction);
+	DrawDebugDirectionalArrow(CauserMesh->GetWorld(), CauserMesh->GetOwner()->GetActorLocation(), CauserMesh->GetOwner()->GetActorLocation() + Direction * 100.f,
+		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
+}
+
+void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+{
+	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+	if (!CauserCharacter)
+		return;
+	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
+	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+	if (OtherAttack)
+	{
+		IAttackInterface::Execute_DamagedCharacter(HitData.GetActor(), AttackInterface);
+	}
+}
+
+void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
+{
+	if (!CauserMesh || !CauserMesh->GetWorld())
+		return;
+	DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, HitRadius, 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
 }

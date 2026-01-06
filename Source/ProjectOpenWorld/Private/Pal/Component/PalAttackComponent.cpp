@@ -58,7 +58,7 @@ void UPalAttackComponent::SetAttackTarget(AActor* Actor)
 
 void UPalAttackComponent::SetAttackData(ESubAttackType eType)
 {
-	if (!AttackDataAsset)
+	if (!AttackDataAsset && AttackData.AttackData.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no AttackDataAsset "), *GetOwner()->GetName());
 		AttackData.AttackSlot = ESubAttackType::None_AttackType;
@@ -67,21 +67,24 @@ void UPalAttackComponent::SetAttackData(ESubAttackType eType)
 		return;
 	}
 	bSetAttackData = false;
-	TArray<FPalAttackDataTable*> ArrayData{};
+	if (AttackDataAsset)
+	{
+		TArray<FPalAttackDataTable*> ArrayData{};
 
-	AttackDataAsset->GetAllRows("", ArrayData);
-	uint8 Index = static_cast<uint8>(eType);
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData in DataTable %d"), *GetOwner()->GetName(), Index);
-	if (ArrayData.IsValidIndex(Index))
-	{
-		AttackData.AttackData = ArrayData[Index]->AttackData;
-		AttackData.AttackDistance = ArrayData[Index]->AttackDistance;
-		bSetAttackData = true;
-	}
-	else
-	{
-		eType = ESubAttackType::None_AttackType;
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no data in DataTable "), *GetOwner()->GetName());
+		AttackDataAsset->GetAllRows("", ArrayData);
+		uint8 Index = static_cast<uint8>(eType);
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData in DataTable %d"), *GetOwner()->GetName(), Index);
+		if (ArrayData.IsValidIndex(Index))
+		{
+			AttackData.AttackData = ArrayData[Index]->AttackData;
+			AttackData.AttackDistance = ArrayData[Index]->AttackDistance;
+			bSetAttackData = true;
+		}
+		else
+		{
+			eType = ESubAttackType::None_AttackType;
+			UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no data in DataTable "), *GetOwner()->GetName());
+		}
 	}
 	AttackData.AttackSlot = eType;
 	AttackIndex = 0;
