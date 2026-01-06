@@ -60,10 +60,10 @@ void UPalMonsterInteractionComponent::BeginPlay()
 void UPalMonsterInteractionComponent::RegisterMonsterInteractionInterface(uint8 InteractionID, TScriptInterface<IMonsterInteractionInterface> MonsterInteractionInterface, AActor* Interaction)
 {
 	TArray < TObjectPtr<AActor>>* TargetList = nullptr;
-	if (!MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
+	while (!MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
 	{
 		MonsterInteractionInterfaceList.Push(TArray<TObjectPtr<AActor>>());
-		MonsterInteractionInterfaceList[InteractionID].Reserve(10);
+		MonsterInteractionInterfaceList.Last().Reserve(10);
 	}
 	TargetList = &MonsterInteractionInterfaceList[InteractionID];
 	if (TargetList->Find(Interaction) == INDEX_NONE)

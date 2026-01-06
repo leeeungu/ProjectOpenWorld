@@ -105,16 +105,10 @@ void ACameraSceneActor::Tick(float DeltaTime)
 	currentTime += DeltaTime;
 	FVector targetLocation = SplineComp->GetLocationAtTime(currentTime, ESplineCoordinateSpace::World);
 	CameraComp->SetWorldLocation(targetLocation);
-	FVector Direction = (CustomTargetComp->GetComponentLocation() - targetLocation).GetSafeNormal2D();
-	FVector Forward = { 1.0f, 0.0f, 0.0f };
-	float angle = FMath::RadiansToDegrees( FMath::Acos(FVector::DotProduct(Forward, Direction)));
-	float Dir = FVector::DotProduct(FVector::RightVector, Direction);
-	if (Dir < 0)
-	{
-		angle = -angle;
-	}
-	FRotator targetRotation = FRotator(0.0f, angle, 0.0f);
-	CameraComp->SetRelativeRotation(targetRotation);
+	FVector Direction = (CustomTargetComp->GetComponentLocation() - targetLocation).GetSafeNormal();
+	UE_LOG(LogTemp, Warning, TEXT("CameraSceneActor Tick Angle: %s"), *Direction.ToString());
+	FRotator targetRotation = FRotator(Direction.Rotation().Pitch, Direction.Rotation().Yaw, 0.0f);
+	CameraComp->SetWorldRotation(targetRotation);
 
 	// 포인트에 충분히 근접하면 다음 포인트로
 	//if (currentTime >= SceneTime)
