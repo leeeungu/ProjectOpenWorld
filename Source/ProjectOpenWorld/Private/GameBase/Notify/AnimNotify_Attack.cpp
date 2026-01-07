@@ -94,10 +94,12 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 				APawn* Pawn = Cast< APawn>(Hit.GetActor());
 				if (!Pawn || Pawn == OwnerPawn)
 					continue;
-				UE_LOG(LogTemp, Warning, TEXT("Hit Pawn : %s"), *Pawn->GetName());
-				UE_LOG(LogTemp, Warning, TEXT("Owner Pawn : %s"), *OwnerPawn->GetName());
-				UE_LOG(LogTemp, Warning, TEXT("%d %d"), (uint8)Cast<IGenericTeamAgentInterface>(Pawn->GetController())->GetGenericTeamId(),
-					(uint8)Cast<IGenericTeamAgentInterface>(OwnerPawn->GetController())->GetGenericTeamId());
+#if WITH_EDITOR	
+				//UE_LOG(LogTemp, Warning, TEXT("Hit Pawn : %s"), *Pawn->GetName());
+				//UE_LOG(LogTemp, Warning, TEXT("Owner Pawn : %s"), *OwnerPawn->GetName());
+				//UE_LOG(LogTemp, Warning, TEXT("%d %d"), (uint8)Cast<IGenericTeamAgentInterface>(Pawn->GetController())->GetGenericTeamId(),
+				// (uint8)Cast<IGenericTeamAgentInterface>(OwnerPawn->GetController())->GetGenericTeamId());
+#endif
 				if (FGenericTeamId::GetAttitude(Pawn->GetController(), OwnerPawn->GetController()) != ETeamAttitude::Hostile)
 					continue;
 				Attacked.FindOrAdd(Pawn, &bReadldyIn);

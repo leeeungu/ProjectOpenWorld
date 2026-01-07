@@ -4,7 +4,13 @@
 #include "Components/ActorComponent.h"
 #include "GameBase/Interface/MonsterInteractionInterface.h"
 #include "PalMonsterInteractionComponent.generated.h"
-
+UENUM(BlueprintType)
+enum class EMonsterInteractionEvent : uint8
+{
+	Default UMETA(DisplayName = "Default"),
+	InteractionStart UMETA(DisplayName = "InteractionStart"),
+	InteractionEnd UMETA(DisplayName = "InteractionEnd"),
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPalMonsterInteractionComponent : public UActorComponent
@@ -12,6 +18,7 @@ class PROJECTOPENWORLD_API UPalMonsterInteractionComponent : public UActorCompon
 	GENERATED_BODY()
 protected:
 	TArray<TArray<TObjectPtr<AActor>>> MonsterInteractionInterfaceList{};
+	TMap<TObjectPtr<AActor>, TObjectPtr<ACharacter>> mapActiveInteraction{};
 public:
 	UPalMonsterInteractionComponent();
 
@@ -27,6 +34,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Pal Monster Interface")
 	TArray<AActor*> GetMonsterInteractionInterfaceListByID(uint8 InteractionID) const;
 	UFUNCTION(BlueprintCallable, Category = "Pal Monster Interface")
-	void InvokeInteractionEvent(uint8 InteractionID, ACharacter* TargetMonster);
+	void InvokeInteractionEvent(uint8 InteractionID, ACharacter* TargetMonster, EMonsterInteractionEvent Type = EMonsterInteractionEvent::Default);
+	UFUNCTION(BlueprintCallable, Category = "Pal Monster Interface")
+	void EndActiveInteraction();
 
 };

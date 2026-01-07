@@ -18,6 +18,11 @@ public:
 	void OnInteractionEvent(ACharacter* TargetMonster);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Monster Interaction")
+	void OnInteractionStartEvent(ACharacter* TargetMonster);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Monster Interaction")
+	void OnInteractionEndEvent(ACharacter* TargetMonster);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Monster Interaction")
 	uint8 GetInteractionID() const;
 
 	// IMonsterInteractionInterface

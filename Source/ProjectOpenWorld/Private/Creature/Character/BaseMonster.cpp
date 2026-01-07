@@ -129,3 +129,12 @@ bool ABaseMonster::IsCommandFinished_Implementation()
 	return IsPendingKillPending();
 }
 
+void ABaseMonster::SetStunned()
+{
+	bIsStunned = true;
+}
+
+void ABaseMonster::ResetStunned()
+{
+	bIsStunned = false;
+}

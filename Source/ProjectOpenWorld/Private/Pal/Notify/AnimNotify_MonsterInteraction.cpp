@@ -10,7 +10,7 @@ void UAnimNotify_MonsterInteraction::Notify(USkeletalMeshComponent* MeshComp, UA
 		ABaseMonster* Monster = Cast<ABaseMonster>(MeshComp->GetOwner());
 		if (Monster && Monster->GetMonsterInteractionComponent())
 		{
-			Monster->GetMonsterInteractionComponent()->InvokeInteractionEvent(InteractionID, Monster);
+			Monster->GetMonsterInteractionComponent()->InvokeInteractionEvent(InteractionID, Monster, InteractionEventType);
 		}
 	}
 }

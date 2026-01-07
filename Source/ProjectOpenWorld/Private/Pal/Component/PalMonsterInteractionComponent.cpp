@@ -13,7 +13,7 @@ UPalMonsterInteractionComponent::UPalMonsterInteractionComponent()
 void UPalMonsterInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	MonsterInteractionInterfaceList.Reserve(50);
+	MonsterInteractionInterfaceList.Reserve(20);
 	FOnActorSpawned::FDelegate del{};
 	//del.BindUObject(this, &UPalMonsterInteractionComponent::CommandActorSpawned);
 	if (GetWorld())
@@ -63,7 +63,7 @@ void UPalMonsterInteractionComponent::RegisterMonsterInteractionInterface(uint8 
 	while (!MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
 	{
 		MonsterInteractionInterfaceList.Push(TArray<TObjectPtr<AActor>>());
-		MonsterInteractionInterfaceList.Last().Reserve(10);
+		MonsterInteractionInterfaceList.Last().Reserve(20);
 	}
 	TargetList = &MonsterInteractionInterfaceList[InteractionID];
 	if (TargetList->Find(Interaction) == INDEX_NONE)
@@ -81,7 +81,7 @@ TArray< AActor*> UPalMonsterInteractionComponent::GetMonsterInteractionInterface
 	return TArray< AActor*>();
 }
 
-void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID, ACharacter* TargetMonster)
+void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID, ACharacter* TargetMonster, EMonsterInteractionEvent Type)
 {
 	if (MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
 	{
@@ -90,7 +90,23 @@ void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID
 			if (InterfaceItem)
 			{
 				UE_LOG(LogTemp, Log, TEXT("InvokeInteractionEvent ID : %d , TargetMonster : %s"), InteractionID, *InterfaceItem->GetName());
-				IMonsterInteractionInterface::Execute_OnInteractionEvent(InterfaceItem, TargetMonster);
+				switch (Type)
+				{
+				case EMonsterInteractionEvent::Default:
+					IMonsterInteractionInterface::Execute_OnInteractionEvent(InterfaceItem, TargetMonster);
+					mapActiveInteraction.Add(InterfaceItem, TargetMonster);
+					break;
+				case EMonsterInteractionEvent::InteractionStart:
+					IMonsterInteractionInterface::Execute_OnInteractionStartEvent(InterfaceItem, TargetMonster);
+					mapActiveInteraction.Add(InterfaceItem, TargetMonster);
+					break;
+				case EMonsterInteractionEvent::InteractionEnd:
+					IMonsterInteractionInterface::Execute_OnInteractionEndEvent(InterfaceItem, TargetMonster);
+					mapActiveInteraction.Remove(InterfaceItem);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		if (MonsterInteractionInterfaceList[InteractionID].IsEmpty())
@@ -102,6 +118,18 @@ void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InvokeInteractionEvent Invalid InteractionID : %d"), InteractionID);
 	}
+}
+
+void UPalMonsterInteractionComponent::EndActiveInteraction()
+{
+	for (auto ActiveActor : mapActiveInteraction)
+	{
+		if (ActiveActor.Key && ActiveActor.Value)
+		{
+			IMonsterInteractionInterface::Execute_OnInteractionEndEvent(ActiveActor.Key, ActiveActor.Value);
+		}
+	}
+	mapActiveInteraction.Empty(400);
 }
 
 //void UPalMonsterInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

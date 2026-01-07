@@ -29,6 +29,7 @@ void ASpawnSolider::BeginPlay()
 	}
 	FVector endLocation = SplineComp->GetLocationAtSplinePoint(SplineComp->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World);
 	SpawnCount = FMath::CeilToInt(FVector::Distance(SpawnLocation, endLocation) / SpawnOffset.X);
+	arSolider.Reserve(SpawnCount);
 }
 
 ACharacter* ASpawnSolider::SpawnSolider()
@@ -52,10 +53,26 @@ void ASpawnSolider::Tick(float DeltaTime)
 
 void ASpawnSolider::OnInteractionEvent_Implementation(ACharacter* TargetMonster)
 {
+	if (arSolider.Num() > 0)
+		return;
 	for (uint8 i = 0; i < SpawnCount; ++i)
 	{
-		SpawnSolider();
+		arSolider.Push(SpawnSolider());
 	}
-	SpawnCount = 0;
+}
+
+void ASpawnSolider::OnInteractionStartEvent_Implementation(ACharacter* TargetMonster)
+{
+	IMonsterInteractionInterface::Execute_OnInteractionEvent(this, TargetMonster);
+}
+
+void ASpawnSolider::OnInteractionEndEvent_Implementation(ACharacter* TargetMonster)
+{
+	for (ACharacter* Soilder : arSolider)
+	{
+		Soilder->Destroy();
+	}
+	arSolider.Empty(SpawnCount);
+	SpawnLocation = SplineComp->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World);
 }
 

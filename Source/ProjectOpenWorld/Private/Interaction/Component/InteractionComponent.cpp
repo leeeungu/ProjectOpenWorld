@@ -38,7 +38,17 @@ void UInteractionComponent::SetInteractionTarget(TScriptInterface<IInteractionIn
 		{
 			Target->OnDestroyed.AddUniqueDynamic(this, &UInteractionComponent::ResetInteractionTarget);
 		}
+		if (InteractionTarget)
+		{
+			if (bIsInteraction)
+			{
+				bIsInteraction = false;
+				IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), OwnerCharacter.Get());
+			}
+			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
+		}
 		InteractionTarget = NewTarget;
+		IInteractionInterface::Execute_OnBeginDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
 	}
 	/*else
 	{

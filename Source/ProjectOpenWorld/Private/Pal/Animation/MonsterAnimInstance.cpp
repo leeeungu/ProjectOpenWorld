@@ -19,4 +19,5 @@ void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 	CurrentCommandKind = CommandComponent->GetCurrentCommand_C()->CommandKind;
 	SubCommandType = CommandComponent->GetCurrentCommand_C()->SubCommandType;
+	bIsStun = OwnerPalCreature->IsStunned();
 }

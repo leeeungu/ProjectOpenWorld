@@ -24,6 +24,8 @@ protected:
 	EPalCommandKind CurrentCommandKind{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 	uint8 SubCommandType{};
+	UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
+	bool bIsStun{};
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;

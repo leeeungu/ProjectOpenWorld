@@ -29,6 +29,11 @@ void ACameraSceneActor::BeginPlay()
 
 void ACameraSceneActor::OnInteractionEvent_Implementation(ACharacter* TargetMonster)
 {
+	IMonsterInteractionInterface::Execute_OnInteractionStartEvent(this, TargetMonster);
+}
+
+void ACameraSceneActor::OnInteractionStartEvent_Implementation(ACharacter* TargetMonster)
+{
 	if (bIsCameraMoving)
 		return;
 	CachedPlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
@@ -53,7 +58,7 @@ void ACameraSceneActor::OnInteractionEvent_Implementation(ACharacter* TargetMons
 		PreviousViewTarget = Controller->GetViewTarget();
 
 		// 이 액터로 뷰 전환 (블렌드)
-		Controller->SetViewTargetWithBlend(this, 0.002f, EViewTargetBlendFunction::VTBlend_EaseIn);
+		Controller->SetViewTargetWithBlend(this, FadeInTime, EViewTargetBlendFunction::VTBlend_EaseIn);
 
 		// 카메라 컴포넌트 위치를 플레이어 위치로 맞춰 시작 (원하면 스플라인 시작점으로 설정)
 		FVector playerLocation = Player->GetActorLocation();
@@ -73,6 +78,22 @@ void ACameraSceneActor::OnInteractionEvent_Implementation(ACharacter* TargetMons
 	SplinePointIndex = 0;
 }
 
+void ACameraSceneActor::OnInteractionEndEvent_Implementation(ACharacter* TargetMonster)
+{
+	if (currentTime <= 0)
+		return;
+	APlayerController* Controller = Cast<APlayerController>(CachedPlayerCharacter->GetController());
+	if (Controller)
+	{
+		currentTime = 0;
+		// 이전 뷰타겟이 유효하면 복귀, 
+		// 아니면 플레이어에게 복귀
+		AActor* TargetToRestore = PreviousViewTarget ? PreviousViewTarget : CachedPlayerCharacter;
+		CachedPlayerCharacter->EnableInput(Controller);
+		Controller->SetViewTargetWithBlend(TargetToRestore, FadeOutTime);
+	}
+}
+
 void ACameraSceneActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -81,22 +102,32 @@ void ACameraSceneActor::Tick(float DeltaTime)
 
 	if (currentTime >= SceneTime)
 	{
+		if (bEndWait)
+		{
+			bIsCameraMoving = false;
+			SetActorTickEnabled(false);
+			APlayerController* Controller = Cast<APlayerController>(CachedPlayerCharacter->GetController());
+			if (Controller)
+			{
+				CachedPlayerCharacter->EnableInput(Controller);
+			}
+			return;
+		}
+
+		if (bLoop)
+		{
+			currentTime = 0;
+			return;
+		}
+	
 		// 완료 처리
 		bIsCameraMoving = false;
 		SetActorTickEnabled(false);
 
 		// 원래 뷰로 복귀
-		if (CachedPlayerCharacter)
+		if (CachedPlayerCharacter && SplineComp->IsClosedLoop())
 		{
-			APlayerController* Controller = Cast<APlayerController>(CachedPlayerCharacter->GetController());
-			if (Controller)
-			{
-				// 이전 뷰타겟이 유효하면 복귀, 
-				// 아니면 플레이어에게 복귀
-				AActor* TargetToRestore = PreviousViewTarget ? PreviousViewTarget : CachedPlayerCharacter;
-				CachedPlayerCharacter->EnableInput(Controller);
-				Controller->SetViewTargetWithBlend(TargetToRestore, 0.02f);
-			}
+			IMonsterInteractionInterface::Execute_OnInteractionEndEvent(this, Monster);
 		}
 		PreviousViewTarget = nullptr;
 		Monster = nullptr;
@@ -106,7 +137,6 @@ void ACameraSceneActor::Tick(float DeltaTime)
 	FVector targetLocation = SplineComp->GetLocationAtTime(currentTime, ESplineCoordinateSpace::World);
 	CameraComp->SetWorldLocation(targetLocation);
 	FVector Direction = (CustomTargetComp->GetComponentLocation() - targetLocation).GetSafeNormal();
-	UE_LOG(LogTemp, Warning, TEXT("CameraSceneActor Tick Angle: %s"), *Direction.ToString());
 	FRotator targetRotation = FRotator(Direction.Rotation().Pitch, Direction.Rotation().Yaw, 0.0f);
 	CameraComp->SetWorldRotation(targetRotation);
 

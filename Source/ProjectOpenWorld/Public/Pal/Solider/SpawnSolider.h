@@ -25,6 +25,8 @@ protected:
 	FVector SpawnLocation{};
 	FVector SpawnDirection{};
 	uint8 SpawnCount{ 0 };
+
+	TArray< TObjectPtr<ACharacter>> arSolider{};
 public:	
 	ASpawnSolider();
 
@@ -38,4 +40,6 @@ public:
 	// IMonsterInteractionInterface
 	virtual void OnInteractionEvent_Implementation(ACharacter* TargetMonster) override;
 	virtual uint8 GetInteractionID_Implementation() const override { return InteractionID; }
+	virtual void OnInteractionStartEvent_Implementation(ACharacter* TargetMonster) override;
+	virtual void OnInteractionEndEvent_Implementation(ACharacter* TargetMonster) override;
 };

@@ -39,11 +39,19 @@ protected:
 	
 	int32 SplinePointIndex{ 0 };
 	bool bIsCameraMoving{ false };
+	UPROPERTY(EditAnywhere, Category = "CameraSceneActor")
+	float FadeInTime = 0.f;
+	UPROPERTY(EditAnywhere, Category = "CameraSceneActor")
+	float FadeOutTime = 0.f;
 
 	UPROPERTY(EditAnywhere, Category = "CameraSceneActor")
 	float SceneTime = 2.f;
 	float currentTime{};
-	float CameraMoveSpeed{ 300.0f };
+	UPROPERTY(EditAnywhere, Category = "CameraSceneActor")
+	bool bLoop{};
+	UPROPERTY(EditAnywhere, Category = "CameraSceneActor")
+	bool bEndWait{};
+
 	UPROPERTY(EditAnywhere, Category = "CameraSceneActor")
 	ETargetType TargetType{};
 
@@ -65,4 +73,6 @@ public:
 
 	virtual void OnInteractionEvent_Implementation(ACharacter* TargetMonster) override;
 	virtual uint8 GetInteractionID_Implementation() const override { return InteractionID; }
+	virtual void OnInteractionStartEvent_Implementation(ACharacter* TargetMonster) override;
+	virtual void OnInteractionEndEvent_Implementation(ACharacter* TargetMonster) override;
 };

@@ -32,6 +32,7 @@ protected:
 	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
 	bool bActionStarted{};
 
+	bool bIsStunned{};
 public:
 	ABaseMonster();
 
@@ -67,4 +68,9 @@ public:
 	virtual uint8 GetSubCommandType_Implementation() override;
 	virtual FPalCommand GetCommand_Implementation() override;
 	virtual bool IsCommandFinished_Implementation() override;
+
+	void SetStunned();
+	void ResetStunned();
+	UFUNCTION(BlueprintPure, Category = "MonsterStatus")
+	bool IsStunned() const { return bIsStunned; }
 };

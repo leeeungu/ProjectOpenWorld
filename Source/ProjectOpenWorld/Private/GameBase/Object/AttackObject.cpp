@@ -87,6 +87,7 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 			LaunchDirection.Z = abs(LaunchDirection.Z);
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
+			UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Ratio: %f, ForceMultiplier: %f, ImpulseForce: %s"), Distance, Ratio, ForceMultiplier, *ImpulseForce.ToString());
 			// Èû Àû¿ë
 			TargetCharacter->LaunchCharacter(ImpulseForce, true, true);
 		}

@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Player/Character/BasePlayer.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Creature/Character/BaseMonster.h"
 #include "Interaction/Component/InteractionComponent.h"
 
 ASoliderProjectile::ASoliderProjectile()
@@ -54,6 +55,8 @@ ASoliderProjectile::ASoliderProjectile()
 	PreViewMeshComp->SetHiddenInGame(true);
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComp"));
 	NiagaraComp->SetupAttachment(RootComponent);
+
+	SetLifeSpan(10);
 }
 
 void ASoliderProjectile::BeginPlay()
@@ -66,10 +69,21 @@ void ASoliderProjectile::ProjectileOverlap(UPrimitiveComponent* OverlappedCompon
 	if (!OtherActor)
 		return;
 	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(OtherActor);
-	if (AttackInterface && OtherActor != GetInstigator())
+	if (!AttackInterface || !AttackInterface.GetObject() || !OtherActor->Implements< UAttackInterface>())
+		return;
+	if (OtherActor != GetInstigator())
 	{
-		if(AttackInterface->Execute_DamagedCharacter(OtherActor, GetInstigator()))
+		if (ABaseMonster* Monster = Cast<ABaseMonster>(OtherActor))
+		{
+			if (IAttackInterface::Execute_IsDead(OtherActor))
+			{
+
+			}
+		}
+		if (IAttackInterface::Execute_DamagedCharacter(OtherActor, GetInstigator()))
+		{
 			Destroy();
+		}
 	}
 }
 
