@@ -78,6 +78,7 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 		//CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
+	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: DamagedCharacter Hp : %f"), Hp);
 	if (OnDamagedDelegate.IsBound())
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
@@ -129,12 +130,3 @@ bool ABaseMonster::IsCommandFinished_Implementation()
 	return IsPendingKillPending();
 }
 
-void ABaseMonster::SetStunned()
-{
-	bIsStunned = true;
-}
-
-void ABaseMonster::ResetStunned()
-{
-	bIsStunned = false;
-}

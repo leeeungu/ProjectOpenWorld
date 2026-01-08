@@ -18,7 +18,7 @@ class PROJECTOPENWORLD_API UPalMonsterInteractionComponent : public UActorCompon
 	GENERATED_BODY()
 protected:
 	TArray<TArray<TObjectPtr<AActor>>> MonsterInteractionInterfaceList{};
-	TMap<TObjectPtr<AActor>, TObjectPtr<ACharacter>> mapActiveInteraction{};
+	TArray<TPair<TObjectPtr<AActor>, TObjectPtr<ACharacter>>> setActiveInteraction;
 public:
 	UPalMonsterInteractionComponent();
 

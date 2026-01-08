@@ -39,7 +39,7 @@ void UPalAttackComponent::ResetAttackData()
 {
 	bSetAttackData = false;
 	bAttacking = false;
-	OwnerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	AttackIndex = 0;
 }
 
 void UPalAttackComponent::SetAttackTarget(AActor* Actor)
@@ -135,10 +135,16 @@ void  UPalAttackComponent::EndAttack()
 	TargetActor = nullptr;
 }
 
+void UPalAttackComponent::StopAttack()
+{
+	ResetAttackData();
+	OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.01f);
+}
+
 UAnimMontage* UPalAttackComponent::GetMontage() const
 {
 	UAnimMontage* NextMontage = nullptr;
-	if (AttackData.AttackData.IsValidIndex(AttackIndex))
+	if (AttackData.AttackData.IsValidIndex(AttackIndex) && bSetAttackData)
 	{
 		NextMontage = AttackData.AttackData[AttackIndex];
 	}

@@ -15,8 +15,9 @@ protected:
 	float MoveSpeed{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MoveDirection")
 	bool bIsWorldSpace{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MoveDirection")
+	bool bIsIgnoreZ{};
 
-	FVector ApplyDirection{};
 #if WITH_EDITOR
 	virtual void OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent) override;
 #endif

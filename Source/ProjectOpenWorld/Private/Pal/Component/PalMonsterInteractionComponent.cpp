@@ -29,32 +29,8 @@ void UPalMonsterInteractionComponent::BeginPlay()
 			if (!monsterInteractionInterface && !actor->Implements<UMonsterInteractionInterface>())
 				continue;
 			RegisterMonsterInteractionInterface(IMonsterInteractionInterface::Execute_GetInteractionID(actor), monsterInteractionInterface, actor);
-			//CommandActorSpawned(actor);
 		}
 	}
-	//GetWorld()->PersistentLevel->Actors;
-	//TActorIterator<AActor> itActor(GetWorld());
-	//GetWorld()->¤Á¤µ¤§¤¡
-	//getspaned world actor
-	//GetWorld()->
-	/*TArray<TEnumAsByte<EObjectTypeQuery>> arQuery{};
-	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
-	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-	TArray<AActor*> IgnoreActors;
-	IgnoreActors.Add(GetOwner());
-	TArray<FHitResult> arHitted{};
-	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
-		GetWorld(),
-		GetActorLocation(), GetActorLocation(), CampBounds->GetScaledSphereRadius(), arQuery,
-		false, IgnoreActors, EDrawDebugTrace::Type::None, arHitted, true);
-
-	for (FHitResult& hit : arHitted)
-	{
-		CommandActorSpawned(hit.GetActor());
-	}*/
 }
 
 void UPalMonsterInteractionComponent::RegisterMonsterInteractionInterface(uint8 InteractionID, TScriptInterface<IMonsterInteractionInterface> MonsterInteractionInterface, AActor* Interaction)
@@ -94,15 +70,21 @@ void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID
 				{
 				case EMonsterInteractionEvent::Default:
 					IMonsterInteractionInterface::Execute_OnInteractionEvent(InterfaceItem, TargetMonster);
-					mapActiveInteraction.Add(InterfaceItem, TargetMonster);
+					//mapActiveInteraction.Add(InterfaceItem, TargetMonster);
 					break;
 				case EMonsterInteractionEvent::InteractionStart:
 					IMonsterInteractionInterface::Execute_OnInteractionStartEvent(InterfaceItem, TargetMonster);
-					mapActiveInteraction.Add(InterfaceItem, TargetMonster);
+					setActiveInteraction.Add({ InterfaceItem, TargetMonster });
 					break;
 				case EMonsterInteractionEvent::InteractionEnd:
+				{
 					IMonsterInteractionInterface::Execute_OnInteractionEndEvent(InterfaceItem, TargetMonster);
-					mapActiveInteraction.Remove(InterfaceItem);
+					INT32 index = setActiveInteraction.Find({ InterfaceItem ,TargetMonster });
+					if (index != INDEX_NONE)
+					{
+						setActiveInteraction[index] = { nullptr, nullptr };
+					}
+				}
 					break;
 				default:
 					break;
@@ -122,14 +104,16 @@ void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID
 
 void UPalMonsterInteractionComponent::EndActiveInteraction()
 {
-	for (auto ActiveActor : mapActiveInteraction)
+	int nSize = setActiveInteraction.Num();
+	for (int i = nSize - 1; i >= 0; --i)
 	{
+		auto& ActiveActor = setActiveInteraction[i];
 		if (ActiveActor.Key && ActiveActor.Value)
 		{
 			IMonsterInteractionInterface::Execute_OnInteractionEndEvent(ActiveActor.Key, ActiveActor.Value);
 		}
 	}
-	mapActiveInteraction.Empty(400);
+	setActiveInteraction.Empty(400);
 }
 
 //void UPalMonsterInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

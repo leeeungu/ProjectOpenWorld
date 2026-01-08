@@ -70,18 +70,9 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	}
 }
 
-//MOVE_Walking	UMETA(DisplayName = "Walking"), 1
-//MOVE_NavWalking	UMETA(DisplayName = "Navmesh Walking"),2
-//MOVE_Falling	UMETA(DisplayName = "Falling"),3 // jump falling 전부
-//MOVE_Swimming	UMETA(DisplayName = "Swimming"),4
-//MOVE_Flying		UMETA(DisplayName = "Flying"),5
-//MOVE_Custom		UMETA(DisplayName = "Custom"),6
-
-
 void ABasePlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//UE_LOG(LogTemp, Warning, TEXT("%d"), GetCharacterMovement()->MovementMode);
 }
 
 void ABasePlayer::SetTopDownMode(bool bTopDown)
@@ -90,6 +81,7 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
+		UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
 		PlayerController->SetShowMouseCursor(TopDownMode);
 	}
 	if (TopDownMode)
@@ -363,7 +355,6 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (TopDownMode)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("TopDown MouseL Triggered"));
 			// 화면에서 지면으로 위치를 pick 하고 이동 방향 계산
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
@@ -373,7 +364,6 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
-					// 스크린 투 월드 레이 생성
 					if (PC->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDir))
 					{
 						const FVector TraceStart = WorldOrigin;
@@ -383,43 +373,27 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 						FCollisionQueryParams Params(SCENE_QUERY_STAT(TopDownClick), true);
 						Params.AddIgnoredActor(this);
 
-						// 지면/월드 충돌 검사 (Visibility 채널 사용, 필요하면 채널 변경)
 						GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params);
 						{
 							const FVector HitLocation = Hit.ImpactPoint;
 
-							// 2D 평면에서의 이동 방향 (Z 무시)
 							FVector MoveDirection = (HitLocation - GetActorLocation()).GetSafeNormal2D();
 
 							const FRotator Rotation = MoveDirection.Rotation();
 							const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-							// get forward vector
 							const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-							// get right vector 
 							const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 							// add movement 
 							AddMovementInput(ForwardDirection, 6);
-						//	AddMovementInput(RightDirection, 6);
 
-							// 디버그 시각화 (에디터/개발용)
 #if ENABLE_DRAW_DEBUG
-							DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
+							// 디버그 시각화 (에디터/개발용)
+							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif
 
-							// 방향 정보 사용: 즉시 한 프레임 입력으로 이동시키거나,
-							// Click-to-move용으로 TargetLocation을 저장해 Tick에서 이동 처리하도록 구현 가능.
-							// 여기서는 즉시 방향을 얻고 AddMovementInput으로 한 프레임 이동 명령을 보냄.
-							UE_LOG(LogTemp, Warning, TEXT("MoveDirection: %s"), *MoveDirection.ToString());
-
-							//// 원한다면 캐릭터를 해당 방향으로 회전
-							//FRotator TargetRot = MoveDirection.Rotation();
-							//TargetRot.Pitch = 0.f;
-							//TargetRot.Roll = 0.f;
-							//SetActorRotation(TargetRot);
 						}
 					}
 				}

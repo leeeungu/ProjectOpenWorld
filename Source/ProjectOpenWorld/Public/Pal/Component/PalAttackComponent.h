@@ -81,6 +81,8 @@ public:
 	void  StartAttack();
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
 	void  EndAttack();
+	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
+	void StopAttack();
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool GetAttacking() const { return bAttacking ; }

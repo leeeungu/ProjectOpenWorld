@@ -24,26 +24,16 @@ void UAnimNotifyState_MoveDirection::NotifyTick(USkeletalMeshComponent* MeshComp
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 	if (MeshComp && MoveSpeed != 0.f && MeshComp->GetOwner())
 	{
-		FVector Direction = MoveDirection.GetSafeNormal2D();
+		FVector Direction = MoveDirection.GetSafeNormal();
+		if (bIsIgnoreZ)
+		{
+			Direction = MoveDirection.GetSafeNormal2D();
+		}
 		if (!bIsWorldSpace)
 		{
 			Direction = MeshComp->GetOwner()->GetActorRotation().RotateVector(Direction);
 		}
 		FVector DeltaLocation = Direction * MoveSpeed * FrameDeltaTime;
-		FHitResult HitResult{};
-		MeshComp->GetOwner()->AddActorWorldOffset(DeltaLocation, true, &HitResult);
-		if (HitResult.bBlockingHit && HitResult.GetActor())
-		{
-			if (ACharacter* Other = Cast<ACharacter>(HitResult.GetActor()))
-			{
-				if (FGenericTeamId::GetAttitude(Other->Controller, Cast<ACharacter>(MeshComp->GetOwner())->Controller)
-					!= ETeamAttitude::Friendly)
-					return;
-			}
-			// 충돌 법선(ImpactNormal)을 사용
-			FVector HitNormal = HitResult.GetActor()->GetActorForwardVector().GetSafeNormal2D();
-			MoveDirection = 2 * HitNormal + Direction;
-			MoveDirection.GetSafeNormal2D();
-		}
+		MeshComp->GetOwner()->AddActorWorldOffset(DeltaLocation, false);
 	}
 }

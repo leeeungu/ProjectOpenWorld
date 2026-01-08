@@ -4,6 +4,8 @@
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
 #include "NavigationSystem.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 APalAIController::APalAIController() : AAIController{}
 {
@@ -50,40 +52,38 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 	// 왜 이동에 오차가 생길까
 	//FVector Location = TargetActor->GetActorLocation();
 	////Location.Z = GetPawn()->GetActorLocation().Z;
+
+	//GetCharacter()->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_NavWalking, 0) ;
+
 	FAIMoveRequest MoveReq(TargetActor);
-	MoveReq.SetUsePathfinding(false);
-	MoveReq.SetAllowPartialPath(false);
-	MoveReq.SetAcceptanceRadius(fAcceptanceRadius *0.8f);
+	MoveReq.SetUsePathfinding(true);
+	MoveReq.SetAllowPartialPath(true);
+	MoveReq.SetAcceptanceRadius(fAcceptanceRadius );
 	MoveReq.SetReachTestIncludesAgentRadius(false);
-	MoveReq.SetCanStrafe(false);
+	MoveReq.SetCanStrafe(true);
 	MoveReq.SetReachTestIncludesGoalRadius(false);
 	MoveReq.SetRequireNavigableEndLocation(false);
-	EPathFollowingRequestResult::Type result = AAIController::MoveTo(MoveReq);
-	if (result == EPathFollowingRequestResult::Failed)
+	FPathFollowingRequestResult result = AAIController::MoveTo(MoveReq);
+	Resut = result.Code;
+	if (Resut == EPathFollowingRequestResult::Failed)
 	{
 		UE_LOG(LogTemp, Error, TEXT("MoveToActor :: None Path"));
 	}
-	UE_LOG(LogTemp, Warning, TEXT("MoveToActor :: Already At Goal %f %f %f"), TargetActor->GetDistanceTo(GetPawn()),
-		FVector::Dist2D(TargetActor->GetActorLocation(), GetPawn()->GetActorLocation()), fAcceptanceRadius);
+	if (Resut == EPathFollowingRequestResult::AlreadyAtGoal)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MoveToActor :: Already At Goal %f %f %f"), TargetActor->GetDistanceTo(GetPawn()),
+			FVector::Dist2D(TargetActor->GetActorLocation(), GetPawn()->GetActorLocation()), fAcceptanceRadius);
+	}
+	if (Resut == EPathFollowingRequestResult::RequestSuccessful)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MoveToActor :: RequestSuccessful %f %f %f %s"), TargetActor->GetDistanceTo(GetPawn()),
+			FVector::Dist2D(TargetActor->GetActorLocation(), GetPawn()->GetActorLocation()), fAcceptanceRadius, *result.MoveId.ToString());
+	}
 	return result;
 }
 
 EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector TargetLocation, float fAcceptanceRadius )
 {
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	//if (NavSystem == nullptr)
-	//	return EPathFollowingRequestResult::Type::Failed;
-	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, TargetLocation);
-	////UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), TargetLocation);
-	////FPathFindingQuery query{};
-	////UNavigationSystemV1::FindPathSync(query, EPathFindingMode::Type::Hierarchical);
-	////
-	////	// AI 한테 찍은 좌표로 이동시키라고 명령
-	////auto a = UAIBlueprintHelperLibrary::CreateMoveToProxyObject(GetWorld(), GetPawn(), TargetLocation, nullptr, fAcceptanceRadius, true);
-	////a->
-	////(this, TargetLocation);
-	//UE_LOG(LogTemp, Warning, TEXT("APalAIController::MoveToLocation Start PathFind"));
-	//	return EPathFollowingRequestResult::Type::RequestSuccessful;
 	FAIMoveRequest MoveReq(TargetLocation);
 	MoveReq.SetUsePathfinding(true);
 	MoveReq.SetAllowPartialPath(true);
@@ -94,6 +94,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 	MoveReq.SetRequireNavigableEndLocation(true);
 	FNavPathSharedPtr OutPath{};
 	FPathFollowingRequestResult result = MoveTo(MoveReq, &OutPath);
+	Resut = result.Code;
 	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
 		FVector NewLocation{};
@@ -113,7 +114,9 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 			UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path"));
 		}
 	}
-
-
 	return result.Code;
+}
+bool APalAIController::GetMoveResult() const
+{
+	return  Resut != EPathFollowingRequestResult::Failed;
 }

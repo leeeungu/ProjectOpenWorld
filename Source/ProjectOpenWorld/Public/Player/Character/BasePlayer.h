@@ -118,10 +118,13 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable )
+	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
 	void SetTopDownMode(bool bTopDown);
-	UFUNCTION(BlueprintCallable )
+	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
 	void StartClimb();
+	UFUNCTION(BlueprintPure, Category = "PlayerMode")
+	bool IsTopDownMode() const { return TopDownMode; }
+
 	UFUNCTION(BlueprintCallable )
 	void StartTravel();
 

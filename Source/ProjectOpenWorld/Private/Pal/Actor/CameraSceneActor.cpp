@@ -54,7 +54,6 @@ void ACameraSceneActor::OnInteractionStartEvent_Implementation(ACharacter* Targe
 	}
 	if (Player && Controller)
 	{
-		Player->DisableInput(Controller);
 		PreviousViewTarget = Controller->GetViewTarget();
 
 		// 이 액터로 뷰 전환 (블렌드)
@@ -88,6 +87,7 @@ void ACameraSceneActor::OnInteractionEndEvent_Implementation(ACharacter* TargetM
 		currentTime = 0;
 		// 이전 뷰타겟이 유효하면 복귀, 
 		// 아니면 플레이어에게 복귀
+		//Controller->EndViewTarget(Controller);
 		AActor* TargetToRestore = PreviousViewTarget ? PreviousViewTarget : CachedPlayerCharacter;
 		CachedPlayerCharacter->EnableInput(Controller);
 		Controller->SetViewTargetWithBlend(TargetToRestore, FadeOutTime);
@@ -106,11 +106,6 @@ void ACameraSceneActor::Tick(float DeltaTime)
 		{
 			bIsCameraMoving = false;
 			SetActorTickEnabled(false);
-			APlayerController* Controller = Cast<APlayerController>(CachedPlayerCharacter->GetController());
-			if (Controller)
-			{
-				CachedPlayerCharacter->EnableInput(Controller);
-			}
 			return;
 		}
 

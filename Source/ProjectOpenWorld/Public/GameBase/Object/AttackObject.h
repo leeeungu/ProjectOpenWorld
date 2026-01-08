@@ -19,7 +19,7 @@ public:
 };
 
 //UCLASS(Blueprintable, abstract, editinlinenew, hidecategories = Object, collapsecategories, MinimalAPI)
-UCLASS(Blueprintable, editinlinenew, abstract)
+UCLASS(Blueprintable, editinlinenew, Abstract)
 class PROJECTOPENWORLD_API UAttackObject : public UObject
 {
 	GENERATED_BODY()

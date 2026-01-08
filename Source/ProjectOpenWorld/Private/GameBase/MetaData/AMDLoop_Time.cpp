@@ -25,7 +25,6 @@ void UAnimLoopObject_Time::UpdateLoop(float DeltaTime)
 	if (!bLoop)
 		return;
 	CurrentTime += DeltaTime;
-	UE_LOG(LogTemp, Warning, TEXT("UAnimLoopObject_Time :: Loop End %f"), CurrentTime);
 	if (CurrentTime >= LoopTime)
 	{
 		bLoop = false;

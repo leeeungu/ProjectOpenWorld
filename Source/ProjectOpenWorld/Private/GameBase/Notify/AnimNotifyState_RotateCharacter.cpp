@@ -8,7 +8,6 @@ void UAnimNotifyState_RotateCharacter::OnAnimNotifyCreatedInEditor(FAnimNotifyEv
 	if (ContainingAnimNotifyEvent.EndLink.GetLinkedSequence())
 	{
 		ContainingAnimNotifyEvent.SetDuration(ContainingAnimNotifyEvent.EndLink.GetLinkedSequence()->GetPlayLength());
-		//UE_LOG(LogTemp, Error, TEXT("EditorCreate %f"), ContainingAnimNotifyEvent.EndLink.GetLinkedSequence()->GetPlayLength());
 	}
 	if (ContainingAnimNotifyEvent.EndLink.GetLinkedMontage())
 	{
