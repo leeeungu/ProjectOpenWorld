@@ -9,8 +9,7 @@
 
 class UPalCommandComponent;
 class UPalAttackComponent;
-class IGenericTeamAgentInterface;
-
+class UPalMonsterInteractionComponent;
 UCLASS()
 class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface, public ICommanderManageable
 {
@@ -29,8 +28,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
 	bool bActionStarted{};
-	bool bDead{};
 
 public:
 	ABaseMonster();
@@ -40,7 +40,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
-	UPalCommandComponent* GetCommandComponent() const { return CommandComponent; }
+	FORCEINLINE UPalCommandComponent* GetCommandComponent() const { return CommandComponent; }
+	UFUNCTION(BlueprintPure, Category = "CreatureAction")
+	FORCEINLINE UPalMonsterInteractionComponent* GetMonsterInteractionComponent() const { return MonsterInteractionComponent; }
+
 	 // //virtual bool Attacked_Implementation(IAttackInterface* Other) override;
 	 // virtual float GetAttackValue_Implementation() const override;
 
@@ -48,7 +51,9 @@ public:
 	bool GetActionStarted() const { return bActionStarted; }
 	void SetActionStarted(bool bValue);
 	virtual void PossessedBy(AController* NewController) override;
-
+public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
+	FOnDamageedDelegate OnDamagedDelegate{};
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

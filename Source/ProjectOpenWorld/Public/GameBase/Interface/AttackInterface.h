@@ -10,6 +10,9 @@ class UAttackInterface : public UInterface
 	GENERATED_BODY()
 };
 
+class AActor;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamageedDelegate, AActor*, Other, float , Damaage);
+
 class IAttackInterface
 {
 	GENERATED_BODY()

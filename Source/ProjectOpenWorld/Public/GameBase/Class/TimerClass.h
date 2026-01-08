@@ -12,7 +12,8 @@ public:
 	TimerClass() = default;
 	virtual ~TimerClass() = default;
 
-	void StartTimer(float InMaxTime);
+	void InitTimer(float InMaxTime);
+	void StartTimer();
 	void StopTimer();
 	void UpdateTimer(float DeltaTime);
 	float GetCurrentTime() const { return CurrentTime; }

@@ -31,21 +31,31 @@ void UInteractionComponent::ResetInteractionTarget(AActor* DestroyedActor)
 
 void UInteractionComponent::SetInteractionTarget(TScriptInterface<IInteractionInterface> NewTarget)
 {
-	if (NewTarget && NewTarget.GetObject())
+	if (NewTarget && NewTarget.GetObject() && InteractionTarget != NewTarget)
 	{
 		AActor* Target = Cast< AActor>(NewTarget.GetObject());
 		if (Target)
 		{
-			Target->OnDestroyed.AddDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+			Target->OnDestroyed.AddUniqueDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+		}
+		if (InteractionTarget)
+		{
+			if (bIsInteraction)
+			{
+				bIsInteraction = false;
+				IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), OwnerCharacter.Get());
+			}
+			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
 		}
 		InteractionTarget = NewTarget;
+		IInteractionInterface::Execute_OnBeginDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
 	}
-	else
+	/*else
 	{
 		InteractionTarget = nullptr;
 		bIsInteraction = false;
-	}
-	
+		bIsSetTarget = false;
+	}*/
 }
 
 void UInteractionComponent::OnInteractionStart()
@@ -74,6 +84,11 @@ void UInteractionComponent::OnInteractionCompleted()
 	}
 	else
 	{
+		AActor* Target = Cast< AActor>(InteractionTarget.GetObject());
+		if (Target)
+		{
+			Target->OnDestroyed.RemoveDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+		}
 		bIsInteraction = false;
 		InteractionTarget = nullptr;
 	}
@@ -88,9 +103,19 @@ void UInteractionComponent::OnActorCancel()
 			IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), OwnerCharacter.Get());
 		else
 			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
+		AActor* Target = Cast< AActor>(InteractionTarget.GetObject());
+		if (Target)
+		{
+			Target->OnDestroyed.RemoveDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+		}
 		bIsInteraction = false;
 		InteractionTarget = nullptr;
 	}
+}
+
+bool UInteractionComponent::IsSetTarget() const
+{
+	return InteractionTarget && InteractionTarget.GetObject();
 }
 
 AActor* UInteractionComponent::GetTargetActor() const

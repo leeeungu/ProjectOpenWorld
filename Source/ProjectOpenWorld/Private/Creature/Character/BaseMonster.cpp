@@ -7,7 +7,7 @@
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "GenericTeamAgentInterface.h"
+#include "Pal/Component/PalMonsterInteractionComponent.h"
 
 ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
@@ -15,6 +15,7 @@ ABaseMonster::ABaseMonster() :
 	AIControllerClass = APalMonsterController::StaticClass();
 	CommandComponent = CreateDefaultSubobject<UPalMonsterCommandComponent>(TEXT("PalCommand"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
+	MonsterInteractionComponent = CreateDefaultSubobject<UPalMonsterInteractionComponent>(TEXT("MonsterInteractionComponent"));
 	Hp = 100;
 	Attack = 10.0f;
 }
@@ -41,15 +42,16 @@ void ABaseMonster::SetAttackValue_Implementation(float NewValue)
 void ABaseMonster::PossessedBy(AController* NewController)
 {
 	ABaseCharacter::PossessedBy(NewController);
-	if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
+	/*if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
 	{
-		newTeam->SetGenericTeamId(FGenericTeamId(1));
-	}
+		newTeam->SetGenericTeamId(FGenericTeamId(2));
+	}*/
 }
 
 void ABaseMonster::RetAttackValue_Implementation()
 {
-	Attack = 1.0f;
+	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: RetAttackValue Not set"));
+	//Attack = 10.0f;
 }
 
 bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
@@ -69,10 +71,17 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	{
 		CommandComponent->ResetCommandQue();
 	}
-	if (AttackComponent && pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	if (AttackComponent && !AttackComponent->IsSetTarget())
 	{
+		//pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+		AttackComponent->SetAttackTarget(pOther);
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
-		CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+		//CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+	}
+	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: DamagedCharacter Hp : %f"), Hp);
+	if (OnDamagedDelegate.IsBound())
+	{
+		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
 	//UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
 	if (Hp <= 0.f)

@@ -17,6 +17,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float DetectionDistance = 500.0f;
+
+	bool bCanAiming = false;
 public:	
 	UPlayerInteractionComponent();
 
@@ -26,4 +28,7 @@ protected:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 		
+public:
+	FORCEINLINE void SetCanAiming(bool bEnable) { bCanAiming = bEnable; }
+	FORCEINLINE bool IsCanAiming() const { return bCanAiming; }
 };

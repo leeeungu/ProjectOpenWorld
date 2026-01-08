@@ -43,11 +43,13 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Defend{};	
 	bool bActionStarted{};
-	bool bDead{};
 
 protected:
 	virtual void BeginPlay() override;
-	
+public:
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
+	FOnDamageedDelegate OnDamagedDelegate{};
 public:
 	ABaseCreature();
 	virtual bool ReceiveCommand_Implementation(FPalCommand Command) override;

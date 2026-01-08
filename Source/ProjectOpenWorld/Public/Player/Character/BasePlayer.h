@@ -5,6 +5,7 @@
 #include "Logging/LogMacros.h"
 #include "Building/Interface/ArchitectureInterface.h"
 #include "Resource/Interface/ResourceInterface.h"
+#include "Player/Interface/PlayerInputInterface.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "BasePlayer.generated.h"
 
@@ -40,6 +41,7 @@ enum class EStatusType : uint8
 
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface, public IAttackInterface
+	, public IPlayerInputInterface, public IPlayerInputSettingInterface
 {
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -102,69 +104,61 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitec
 
 	UPROPERTY()
 	TObjectPtr< UBuildingModeWidget> BuildingWidget{};
+
+	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
+
+	bool TopDownMode{};
+public:
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
+	FOnDamageedDelegate OnDamagedDelegate{};
 public:
 	ABasePlayer();
 
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable )
+	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
+	void SetTopDownMode(bool bTopDown);
+	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
 	void StartClimb();
+	UFUNCTION(BlueprintPure, Category = "PlayerMode")
+	bool IsTopDownMode() const { return TopDownMode; }
+
 	UFUNCTION(BlueprintCallable )
 	void StartTravel();
 
 	void UpdateWeight(float InventoryWeight);
 
+	UFUNCTION()
+	void OnStartEvent(const FInputActionValue& Value, EInputKeyType KeyType);
+	UFUNCTION()
+	void OnTriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType);
+	UFUNCTION()
+	void OnCompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType);
 
+	// IPlayerInputInterface interface
+	virtual void StartEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
+	virtual void TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
+	virtual void CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
+
+	virtual void SetInputInterface(EInputKeyType KeyType, TScriptInterface<IPlayerInputInterface> InputInterface) override;
+	virtual void ResetDeaflut(EInputKeyType KeyType) override;
 protected:
-
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-	void OnMoveCompleted(const FInputActionValue& Value);
+	///** Called for movement input */
 	void MoveClimb(const FInputActionValue& Value);
 	void MoveTravel(const FInputActionValue& Value);
-
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-
-
-	UFUNCTION()
-	void OnInteractionStart(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnInteraction(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnInteractionEnd(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnActionExit(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnActionKeyC(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnActionMouseWheel(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnActionMouseR(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnActionMouseL(const FInputActionValue& Value);
-	UFUNCTION()
-	void OnToggleBuildingMode(const FInputActionValue& Value);
-
-	UFUNCTION()
-	void OnJump();
-
-
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	// To add mapping context
 	virtual void BeginPlay();
-
-
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE  USpringArmComponent* const  GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
+	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
 
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
@@ -176,7 +170,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void SetStatus(EStatusType StatusType, float Value);
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	bool GetStatus(EStatusType StatusType, float& Result);
+	bool GetStatus(EStatusType StatusType, float& Result) const;
 
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;

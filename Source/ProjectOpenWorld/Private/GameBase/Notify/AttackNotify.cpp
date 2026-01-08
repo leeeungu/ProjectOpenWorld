@@ -1,49 +1,20 @@
-癤�#include "GameBase/Notify/AttackNotify.h"
-#include "GameBase/Interface/AttackInterface.h"
-#include "Kismet/GameplayStatics.h"
-#include "GenericTeamAgentInterface.h"
+#include "GameBase/Notify/AttackNotify.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+#include "Styling/CoreStyle.h"
 
-void UAttackNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UAttackNotify::PostInitProperties()
 {
-	UAnimNotify::Notify(MeshComp, Animation, EventReference);
+	Super::PostInitProperties();
 
-	FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
-	UWorld* pWorld = MeshComp->GetWorld();
-	if (MeshComp->GetOwner())
+	// 에디터 전용: 노티 인스턴스가 생성될 때 디자이너에게 한 번만 경고 알림을 보여줍니다.
+	if (GIsEditor && !HasAnyFlags(RF_ClassDefaultObject))
 	{
-		APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
-		TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(MeshComp->GetOwner());
-		TArray<FHitResult> arResult{};
-		FCollisionShape Collision = FCollisionShape::MakeSphere(AttackRadius);
-		FCollisionQueryParams Param{};
-		Param.AddIgnoredActor(MeshComp->GetOwner());
-		FCollisionResponseParams ResponseParam{};
-		DrawDebugSphere(pWorld, NewLocation, AttackRadius, 20, FColor::Red, false, 0.5f, 0, 0.5f);
-		if (MeshComp->GetWorld()->SweepMultiByChannel(arResult, NewLocation, NewLocation, FQuat::Identity, ECollisionChannel::ECC_Pawn,
-			Collision, Param))
-		{
-			TSet< APawn*> Attacked{};
-			for (const FHitResult& Hit : arResult)
-			{
-				bool bReadldyIn{};
-				APawn* Pawn = Cast< APawn>(Hit.GetActor());
-				if (!Pawn)
-					continue;
-				Attacked.FindOrAdd(Pawn, &bReadldyIn);
-				if (bReadldyIn)
-					continue;
-				TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(Hit.GetActor());
-				if (OtherAttack && FGenericTeamId::GetAttitude(Hit.GetActor(), OwnerPawn->GetController()) != ETeamAttitude::Friendly)
-				{
-					IAttackInterface::Execute_DamagedCharacter(Hit.GetActor(), AttackInterface);
-				}
-			}
-		}
-	}
-	else 
-	{
-#if WITH_EDITOR	
-		DrawDebugSphere(pWorld, NewLocation, AttackRadius, 20, FColor::Red, false, 0.5f, 0, 0.5f);
-#endif
+		FNotificationInfo Info(FText::FromString(TEXT("AttackNotify is deprecated. Use UAnimNotify_Attack instead.")));
+		Info.ExpireDuration = 8.0f;
+		Info.bUseLargeFont = false;
+		Info.Image = FCoreStyle::Get().GetBrush(TEXT("MessageLog.Warning"));
+
+		//FSlateNotificationManager::Get().AddNotification(Info);
 	}
 }

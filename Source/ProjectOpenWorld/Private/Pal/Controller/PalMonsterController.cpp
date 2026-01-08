@@ -14,5 +14,6 @@ APalMonsterController::APalMonsterController()
 void APalMonsterController::BeginPlay()
 {
 	APalAIController::BeginPlay();
-	RunBehaviorTree(MonsterBTree);
+	if (MonsterBTree)
+		RunBehaviorTree(MonsterBTree);
 }

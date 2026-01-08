@@ -3,11 +3,15 @@
 #include "GameBase/BaseCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameBase/Interface/AttackInterface.h"
+#include "GameBase/Animation/BaseAnimInstance.h"
+#include "Animation/AnimInstance.h"
+#include "Engine/DataAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
-UPalAttackComponent::UPalAttackComponent()
+UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 {
-	PrimaryComponentTick.bCanEverTick = true;
-	AttackDistance = 50.0f;
+	PrimaryComponentTick.bCanEverTick = false;
+	//AttackData.AttackDistance = 50.0f;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetComponentTickEnabled(false);
 }
@@ -24,11 +28,6 @@ void UPalAttackComponent::BeginPlay()
 		GetOwner()->Destroy();
 		return;
 	}
-
-	if (Controller)
-	{
-		Controller->ReceiveMoveCompleted.AddDynamic(this, &UPalAttackComponent::FinishMove);
-	}
 }
 
 void UPalAttackComponent::TargetIsDead(AActor* Actor)
@@ -36,61 +35,59 @@ void UPalAttackComponent::TargetIsDead(AActor* Actor)
 	EndAttack();
 }
 
-void UPalAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UPalAttackComponent::ResetAttackData()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (bMoveStarted == false && bSetTargetData && OwnerCharacter)
-	{
-		AttackRange = AttackDistance * AttackDistance;
-		HalfAttackAngle = abs(AttackAngle * 0.5f);
-		double DisSquer = FVector::DistSquared(AttackData.TargetActor->GetActorLocation(), GetOwner()->GetActorLocation());
-		if (DisSquer > AttackRange)
-		{
-			bMoveStarted = true;
-			bAttacking = false;
-			bCanRotate = false;
-			EPathFollowingRequestResult::Type PathResult = Controller->MoveToActor(AttackData.TargetActor, AttackDistance);
-			//UE_LOG(LogTemp, Warning, TEXT("Move To Target"));
-			if (PathResult == EPathFollowingRequestResult::Failed)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Move Failed"));
-				EndAttack();
-				return;
-			}
-			else if (PathResult == EPathFollowingRequestResult::RequestSuccessful)
-				return;
-		}
-
-		//if (!bCanRotate)
-		//{
-		//	float Angle = GetTargetRotationYaw();
-		//	if (-HalfAttackAngle > Angle || Angle > HalfAttackAngle)
-		//	{
-		//		bCanRotate = true;
-		//		bAttacking = false;
-		//		return;
-		//	}
-		//}
-		bAttacking = true;
-		bCanRotate = false;
-	}
+	bSetAttackData = false;
+	bAttacking = false;
+	AttackIndex = 0;
 }
 
-void UPalAttackComponent::SetAttackData(FPalAttackData sData)
+void UPalAttackComponent::SetAttackTarget(AActor* Actor)
 {
-	if (!sData.TargetActor || sData.TargetActor->IsPendingKillPending())
+	TargetActor = Actor;
+	if (!TargetActor || TargetActor->IsPendingKillPending() || bAttacking)
 		return;
-	if (!sData.TargetActor->Implements<UAttackInterface>())
+	if (!TargetActor->Implements<UAttackInterface>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetActor has not interface"), *sData.TargetActor.Get()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetActor has not interface"), *TargetActor.Get()->GetName());
 		return;
 	}
-	sData.TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
+	TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bSetTargetData = true;
-	AttackData = sData;
-	Current = Default;
-	if(AttackData.AttackSlot == ESubAttackType::Skill01)
-		Current = Skill01;
+}
+
+void UPalAttackComponent::SetAttackData(ESubAttackType eType)
+{
+	if (!AttackDataAsset && AttackData.AttackData.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no AttackDataAsset "), *GetOwner()->GetName());
+		AttackData.AttackSlot = ESubAttackType::None_AttackType;
+		AttackIndex = 0;
+		bSetAttackData = false;
+		return;
+	}
+	bSetAttackData = false;
+	if (AttackDataAsset)
+	{
+		TArray<FPalAttackDataTable*> ArrayData{};
+
+		AttackDataAsset->GetAllRows("", ArrayData);
+		uint8 Index = static_cast<uint8>(eType);
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData in DataTable %d"), *GetOwner()->GetName(), Index);
+		if (ArrayData.IsValidIndex(Index))
+		{
+			AttackData.AttackData = ArrayData[Index]->AttackData;
+			AttackData.AttackDistance = ArrayData[Index]->AttackDistance;
+			bSetAttackData = true;
+		}
+		else
+		{
+			eType = ESubAttackType::None_AttackType;
+			UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no data in DataTable "), *GetOwner()->GetName());
+		}
+	}
+	AttackData.AttackSlot = eType;
+	AttackIndex = 0;
 }
 
 void UPalAttackComponent::StartAttack()
@@ -101,91 +98,75 @@ void UPalAttackComponent::StartAttack()
 		EndAttack();
 		return;
 	}
-	Controller->SetFocus(AttackData.TargetActor);
-	SetComponentTickEnabled(true);
+
+	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
+	if (Anim)
+	{
+		Anim->SetMontageQueueInterface(this);
+		Anim->PlayMontageQueue();
+	}
+	bAttacking = true;
+	Controller->SetFocus(TargetActor);
+	OwnerCharacter->GetCharacterMovement()->StopMovementImmediately();
+	OwnerCharacter->GetCharacterMovement()->DisableMovement();
+	AttackIndex = 0;
 	if (OnPalAttackStart.IsBound())
 	{
 		OnPalAttackStart.Broadcast();
 	}
+	SetComponentTickEnabled(true);
 }
 
 void  UPalAttackComponent::EndAttack()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: EndAttack"));
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack "), *GetOwner()->GetName());
 	SetComponentTickEnabled(false);
-	bSetTargetData = false;
-	bAttacking = false;
-	bMoveStarted = false;
+	ResetAttackData();
+	bSetTargetData= false;
 	Controller->SetFocus(nullptr);
-	if (AttackData.TargetActor)
+	if (TargetActor)
 	{
-		AttackData.TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
+		TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
 	}
 	if (OnPalAttackEnd.IsBound())
 	{
 		OnPalAttackEnd.Broadcast();
 	}
-	AttackData.TargetActor = nullptr;
+	TargetActor = nullptr;
 }
 
-void UPalAttackComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UPalAttackComponent::StopAttack()
 {
-	if (bMoveStarted == false)
-		return;
-	if (Result == EPathFollowingResult::Type::Invalid
-		|| Result == EPathFollowingResult::Type::Aborted)
-		//|| Result == EPathFollowingResult::Type::Aborted)
-	{
+	ResetAttackData();
+	OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.01f);
+}
 
-		EndAttack();
+UAnimMontage* UPalAttackComponent::GetMontage() const
+{
+	UAnimMontage* NextMontage = nullptr;
+	if (AttackData.AttackData.IsValidIndex(AttackIndex) && bSetAttackData)
+	{
+		NextMontage = AttackData.AttackData[AttackIndex];
+	}
+	return NextMontage;
+}
+
+void UPalAttackComponent::MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("MontageStartEvent"));
+}
+
+void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!Montage || !BaseAnim)
+		return;
+	if (!BaseAnim->IsLoop())
+		AttackIndex++;
+	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
+	{
+		BaseAnim->SetMontageQueueInterface(nullptr);
+		ResetAttackData();
 		return;
 	}
-	//switch (Result)
-	//{
-	//case EPathFollowingResult::Success:
-	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Success"));
-	//	break;
-	//case EPathFollowingResult::Blocked:
-	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Blocked"));
-	//	break;
-	//case EPathFollowingResult::OffPath:
-	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove OffPath"));
-	//	break;
-	//case EPathFollowingResult::Skipped_DEPRECATED:
-	//	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Skipped"));
-	//	break;
-	////case EPathFollowingResult::Aborted:
-	////	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Aborted"));
-	////	break;
-	////case EPathFollowingResult::Invalid:
-	////	UE_LOG(LogTemp, Warning, TEXT("UPalAttackComponent :: FinishMove Invalid"));
-	////	return;
-	////	break;
-	//default:
-	//	break;
-	//}
-	bMoveStarted = false;
+	BaseAnim->PlayMontageQueue();
 }
-
-float UPalAttackComponent::GetTargetRotationYaw() const
-{
-	float dot = FVector::DotProduct(
-		(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
-		GetOwner()->GetActorForwardVector().GetSafeNormal2D());
-	float Angle = FMath::RadiansToDegrees(FMath::Acos(dot));
-	float Direction = FVector::DotProduct(
-		(AttackData.TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal2D(),
-		GetOwner()->GetActorRightVector().GetSafeNormal2D());
-	Direction = Direction > 0 ? 1.0 : -1.0f;
-	return Angle  * Direction;
-}
-
-
-//DrawDebugLine(OwnerCharacter->GetWorld(),
-	//	OwnerCharacter->GetActorLocation(), 
-	//	OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * 100.0f,
-	//	FColor::Red, false , 1.0f);
-	//DrawDebugLine(OwnerCharacter->GetWorld(),
-	//	OwnerCharacter->GetActorLocation(), 
-	//	OwnerCharacter->GetActorLocation() + (OwnerCharacter->GetActorForwardVector().RotateAngleAxis(OwnerCharacter->GetTurnAngle(), FVector{ 0,0,1 }))* 100.0f,
-	//	FColor::Green, false, 1.0f);

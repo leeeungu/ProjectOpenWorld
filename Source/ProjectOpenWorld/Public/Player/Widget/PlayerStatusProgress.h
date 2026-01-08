@@ -1,8 +1,9 @@
-Ôªø#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Player/Interface/StatusUpdateInterface.h"
+#include "Player/Character/BasePlayer.h"
 #include "PlayerStatusProgress.generated.h"
 
 class UProgressBar;
@@ -30,15 +31,30 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
 	TObjectPtr < UTexture2D> StatusTexture{};
+
+	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus")
+	EStatusType StatusType{ EStatusType::None };
+	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus")
+	EStatusType MaxStatusType{ EStatusType::None };
 protected:
 	virtual void NativePreConstruct() override;
+	virtual void NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 public:
 	void SetStatusProgress(float* Value, float* MaxValue);
 
-	// IStatusUpdateInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
+	// IStatusUpdateInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
+	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void UpdateStatus() override;
+
+	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
+	FORCEINLINE FText GetStatusText() const;
+	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
+	FORCEINLINE FText GetMaxStatusText() const;
 
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
 	FORCEINLINE float GetStatusPercent() const;
 };
-	
+		

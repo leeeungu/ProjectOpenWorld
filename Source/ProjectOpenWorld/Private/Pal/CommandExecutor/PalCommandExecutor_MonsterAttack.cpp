@@ -29,14 +29,14 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 		return false;
 	}
 	bStartedAttacking = true;
-	//OwnerPal->SetActionStarted(true);
 	if (AttackComponent)
 	{
-		FPalAttackData NewAttackData{};
-		NewAttackData.TargetActor = Command.pTarget.Get();
-		NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
-		AttackComponent->SetAttackData(NewAttackData);
-		AttackComponent->StartAttack();
+		//FPalAttackDataTable NewAttackData{};
+		////NewAttackData.TargetActor = Command.pTarget.Get();
+		//NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
+		//AttackComponent->SetAttackData(NewAttackData);
+		AttackComponent->SetAttackTarget(Command.pTarget.Get());
+		//AttackComponent->StartAttack();
 		IsCommandStarted = true;
 		return true;
 	}
@@ -46,12 +46,9 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 
 void UPalCommandExecutor_MonsterAttack::Abort()
 {
-	if (bStartedAttacking == false)
-		return;
 	bStartedAttacking = false;
 	if (OwnerPal)
 	{
-		//OwnerPal->SetActionStarted(false);
 		if (AttackComponent)
 		{
 			AttackComponent->EndAttack();
@@ -65,6 +62,8 @@ void UPalCommandExecutor_MonsterAttack::Abort()
 
 void UPalCommandExecutor_MonsterAttack::EndAttack()
 {
+	if (bStartedAttacking == false)
+		return;
 	Abort();
 	EndCommand();
 }

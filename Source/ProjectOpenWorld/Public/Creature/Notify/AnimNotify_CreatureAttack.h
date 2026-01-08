@@ -1,10 +1,10 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "AnimNotify_CreatureAttack.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class PROJECTOPENWORLD_API UAnimNotify_CreatureAttack : public UAnimNotify
 {
 	GENERATED_BODY()
