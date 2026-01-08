@@ -46,7 +46,7 @@ void AResourceActor::SpawnRandomItem()
 	FVector Force = FVector(0, 0, 1);
 	Force.X = FMath::RandRange(-0.5f,0.5f);
 	Force.Y = FMath::RandRange(-0.5f,0.5f);
-	Item->GetRootMesh()->AddImpulse(Force * 1000);
+	Item->GetItemMesh()->AddImpulse(Force * 1000);
 	int idx = rand() % ItemData.Num();
 	Item->Init(ItemData[idx], ItemData.Num() + 2);
 	ExtractCount--;

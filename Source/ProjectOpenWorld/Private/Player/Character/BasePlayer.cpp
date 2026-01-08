@@ -81,14 +81,20 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
-		UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
+		//UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
 		PlayerController->SetShowMouseCursor(TopDownMode);
+	
 	}
 	if (TopDownMode)
 	{
 		EnableInput(PlayerController);
 	}
-	UE_LOG(LogTemp, Log, TEXT("TopDownMode : %d"), TopDownMode);
+	UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
+	if (InteractionComp)
+	{
+		InteractionComp->SetCanAiming(!TopDownMode);
+	}
+	//UE_LOG(LogTemp, Log, TEXT("TopDownMode : %d"), TopDownMode);
 }
 
 void ABasePlayer::StartClimb()

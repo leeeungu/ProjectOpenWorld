@@ -7,8 +7,9 @@
 #include "ItemActor.generated.h"
 
 class UItemPrimaryDataAsset;
-class USkeletalMeshComponent;
+class UStaticMeshComponent;
 class UWidgetComponent;
+class USphereComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface
@@ -16,8 +17,9 @@ class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterf
 	GENERATED_BODY()
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
-	
-	TObjectPtr<USkeletalMeshComponent> ItemSkeletalMesh{};
+	TObjectPtr<USphereComponent> ItemCollision{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> ItemMesh{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UWidgetComponent> ItemWidget{};
 	
@@ -59,5 +61,5 @@ public: // IInteractionInterface
 	virtual void OnTransportCancel_Implementation(AActor* Other) override {}
 	virtual ETransportState GetTransportState_Implementation() override;
 
-	FORCEINLINE USkeletalMeshComponent* GetRootMesh() const { return ItemSkeletalMesh; }
+	FORCEINLINE UStaticMeshComponent* GetItemMesh() const { return ItemMesh; }
 };

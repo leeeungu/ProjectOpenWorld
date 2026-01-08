@@ -84,6 +84,11 @@ void UInteractionComponent::OnInteractionCompleted()
 	}
 	else
 	{
+		AActor* Target = Cast< AActor>(InteractionTarget.GetObject());
+		if (Target)
+		{
+			Target->OnDestroyed.RemoveDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+		}
 		bIsInteraction = false;
 		InteractionTarget = nullptr;
 	}
@@ -98,6 +103,11 @@ void UInteractionComponent::OnActorCancel()
 			IInteractionInterface::Execute_OnInteractionEnd(InteractionTarget.GetObject(), OwnerCharacter.Get());
 		else
 			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
+		AActor* Target = Cast< AActor>(InteractionTarget.GetObject());
+		if (Target)
+		{
+			Target->OnDestroyed.RemoveDynamic(this, &UInteractionComponent::ResetInteractionTarget);
+		}
 		bIsInteraction = false;
 		InteractionTarget = nullptr;
 	}

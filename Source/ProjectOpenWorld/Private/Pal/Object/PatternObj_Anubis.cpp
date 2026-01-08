@@ -39,7 +39,6 @@ void UPatternObj_Anubis01::UpdatePattern(float DeltaTime)
 {
 	if (!bIsPatternActive)
 		return;
-
 	CurTime += DeltaTime;
 	if (CurTime >= PatternStopTime)
 	{
@@ -64,7 +63,8 @@ void UPatternObj_Anubis01::UpdatePattern(float DeltaTime)
 		}
 	}
 	FRotator CurrentRotation = { 0, PatternRotateSpeedYaw * DeltaTime, 0 };
-	OwnerCharacter->AddActorWorldRotation(CurrentRotation);
+	if(OwnerCharacter)
+		OwnerCharacter->AddActorWorldRotation(CurrentRotation);
 }
 
 void UPatternObj_Anubis01::EndPattern()

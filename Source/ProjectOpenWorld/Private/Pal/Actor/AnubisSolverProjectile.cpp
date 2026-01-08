@@ -18,8 +18,6 @@ AAnubisSolverProjectile::AAnubisSolverProjectile()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
 	
-	Collision->OnComponentBeginOverlap.AddDynamic(this, &AAnubisSolverProjectile::OnAnubisSolverBeginOverlap);
-	Collision->OnComponentEndOverlap.AddDynamic(this, &AAnubisSolverProjectile::OnAnubisSolverEndOverlap);
 	PatternType = EAnubisPatternType::Anubis_Pattern_01;
 	bProjectileActive = false;
 }
@@ -29,6 +27,9 @@ void AAnubisSolverProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	Mesh->SetVisibility(false);
+
+	Collision->OnComponentBeginOverlap.AddUniqueDynamic(this, &AAnubisSolverProjectile::OnAnubisSolverBeginOverlap);
+	Collision->OnComponentEndOverlap.AddUniqueDynamic(this, &AAnubisSolverProjectile::OnAnubisSolverEndOverlap);
 }
 
 void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -45,9 +46,9 @@ void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* Ov
 			if (AnubisBoss->GetPatternComponent()->IsPatternActive(Index))
 			{
 				AnubisBoss->GetPatternComponent()->UpdatePatternCondition(Index);
-				if (!AnubisBoss->GetPatternComponent()->IsPatternActive(Index))
-				{
-				}
+				//if (!AnubisBoss->GetPatternComponent()->IsPatternActive(Index))
+				//{
+				//}
 			}
 		}
 		else if(ABasePlayer* Player = Cast<ABasePlayer>(OtherActor))
@@ -56,6 +57,7 @@ void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* Ov
 			UInteractionComponent* InteractionComp = TargetPlayer->GetInteractionComponent();
 			if (!InteractionComp)
 				return;
+			//UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Begin Overlap with Player"));
 			InteractionComp->SetInteractionTarget(this);
 			bProjectileActive = true;
 	
@@ -72,7 +74,7 @@ void AAnubisSolverProjectile::OnAnubisSolverEndOverlap(UPrimitiveComponent* Over
 {
 	if (TargetPlayer == OtherActor && !OtherActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile End Overlap with Player"));
+		//UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile End Overlap with Player"));
 		UInteractionComponent* InteractionComp = TargetPlayer->GetInteractionComponent();
 		if (!InteractionComp)
 			return;
@@ -95,9 +97,9 @@ void AAnubisSolverProjectile::Tick(float DeltaTime)
 void AAnubisSolverProjectile::OnInteractionStart_Implementation(ACharacter* pOther)
 {
 	APlayerController* PC = Cast<APlayerController>(pOther->GetController());
-	UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Interaction Start"));
-	UE_LOG(LogTemp, Warning, TEXT("bProjectileActive : %d"), bProjectileActive);
-	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer : %s"), TargetPlayer ? *TargetPlayer->GetName() : TEXT("nullptr"));
+	//UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Interaction Start"));
+	//UE_LOG(LogTemp, Warning, TEXT("bProjectileActive : %d"), bProjectileActive);
+	//UE_LOG(LogTemp, Warning, TEXT("TargetPlayer : %s"), TargetPlayer ? *TargetPlayer->GetName() : TEXT("nullptr"));
 	if (!bProjectileActive || !TargetPlayer || !TargetPlayer->IsTopDownMode())
 		return;
 	if (PC)

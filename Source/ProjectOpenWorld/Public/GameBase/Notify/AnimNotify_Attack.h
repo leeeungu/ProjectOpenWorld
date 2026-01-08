@@ -33,7 +33,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Instanced)
 	TArray< TObjectPtr<UAttackObject>> AttackEventObject{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Editor", meta = (Bitmask, BitmaskEnum = "EAttackObjectUtill"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Editor", meta = (Bitmask, BitmaskEnum = "/Script/ProjectOpenWorld.EAttackObjectUtill"))
 	int32 ObjectUtillMask = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Editor")
 	bool bInstanceObject = false;
