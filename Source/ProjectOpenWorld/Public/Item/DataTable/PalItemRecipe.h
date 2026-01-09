@@ -74,6 +74,6 @@ public:
 	// Craft Exp Rate
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
 	//float CraftExpRate{};
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	//int32 Editor_RowNameHash{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
+	int64 Editor_RowNameHash{};
 };

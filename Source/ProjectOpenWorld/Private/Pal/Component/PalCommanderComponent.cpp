@@ -1,4 +1,4 @@
-#include "Pal/Component/PalCommanderComponent.h"
+﻿#include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Interface/CommanderManageable.h"
 #include "Pal/Component/PalCommandComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -102,6 +102,9 @@ bool UPalCommanderComponent::WorkOnePal(const FPalCommand& Command)
 {
 	if (ArrayIter == pals.end())
 		return false;
+	UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::WorkOnePal %d"), Command.CommandKind);
+	if (Command.pTarget.Get())
+		UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::Target %s"), *Command.pTarget.Get()->GetName());
 	ABaseCreature* pal = ArrayIter->Get();
 	ArrayIter++;
 	if (ArrayIter == pals.end())

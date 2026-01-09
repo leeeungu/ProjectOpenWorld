@@ -23,10 +23,10 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		return;
 	if (!IsSetTarget())
 	{
-		InteractionTarget = nullptr;
-		bIsInteraction = false;
+		OnDetectEnd();
+		OnInteractionCompleted();
 	}
-	if (!OwnerCharacter || bIsInteraction)
+	if (!OwnerCharacter || IsInteracting())
 		return;
 
 	FHitResult HitResult{};
@@ -43,30 +43,24 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * DetectionDistance + CameraManager->GetCameraLocation(),
-			//200.0f,
 			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true);
 		if (HitResult.GetActor())
 		{
-			if (IInteractionInterface* Interaction = Cast<IInteractionInterface>(HitResult.GetActor()))
+			TScriptInterface< IInteractionInterface> Other = TScriptInterface< IInteractionInterface>(HitResult.GetActor());
+			if (!CheckSameTarget(Other))
 			{
-				if (Interaction != InteractionTarget)
-				{
-					if (InteractionTarget)
-						IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
-					InteractionTarget = TScriptInterface< IInteractionInterface>(HitResult.GetActor());
-					IInteractionInterface::Execute_OnBeginDetected(HitResult.GetActor(), OwnerCharacter.Get());
-				}
+				OnDetectEnd(); // 이전 타겟에 대한 감지 종료
+				SetTarget(Other);
+				OnDetectBegin(); // 새로운 타겟에 대한 감지 시작
 			}
-			else if (InteractionTarget)
+			else if (!Other)
 			{
-				IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
-				InteractionTarget = nullptr;
+				OnDetectEnd();
 			}
 		}
-		else if (!HitResult.GetActor() && InteractionTarget)
+		else if (!HitResult.GetActor() && IsSetTarget())
 		{
-			IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
-			InteractionTarget = nullptr;
+			OnDetectEnd();
 		}
 	}
 }

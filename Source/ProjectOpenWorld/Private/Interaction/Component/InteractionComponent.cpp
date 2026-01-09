@@ -20,6 +20,11 @@ void UInteractionComponent::BeginPlay()
 	OwnerCharacter = Cast< ACharacter>(GetOwner());
 }
 
+void UInteractionComponent::SetTarget(TScriptInterface<IInteractionInterface> NewTarget)
+{
+	InteractionTarget = NewTarget;
+}
+
 void UInteractionComponent::ResetInteractionTarget(AActor* DestroyedActor)
 {
 	if (InteractionTarget == DestroyedActor)
@@ -94,6 +99,25 @@ void UInteractionComponent::OnInteractionCompleted()
 	}
 }
 
+void UInteractionComponent::OnDetectEnd()
+{
+	if (InteractionTarget && InteractionTarget.GetObject())
+	{
+		IInteractionInterface::Execute_OnEndDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
+	}
+	InteractionTarget = nullptr;
+	bIsDetect = false;
+}
+
+void UInteractionComponent::OnDetectBegin()
+{
+	if (InteractionTarget && InteractionTarget.GetObject())
+	{
+		bIsDetect = true;
+		IInteractionInterface::Execute_OnBeginDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
+	}
+}
+
 void UInteractionComponent::OnActorCancel()
 {
 	if (InteractionTarget && InteractionTarget.GetObject())
@@ -116,6 +140,11 @@ void UInteractionComponent::OnActorCancel()
 bool UInteractionComponent::IsSetTarget() const
 {
 	return InteractionTarget && InteractionTarget.GetObject();
+}
+
+bool UInteractionComponent::CheckSameTarget(TScriptInterface<IInteractionInterface> Other) const
+{
+	return InteractionTarget == Other;
 }
 
 AActor* UInteractionComponent::GetTargetActor() const

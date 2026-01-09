@@ -71,13 +71,13 @@ struct FPalStaticItemDataStruct : public FTableRowBase
 public:
 	// Override Name
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	FString OverrideName;
+	FString OverrideName{};
 	// Override Description
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	FString OverrideDescription;
+	FString OverrideDescription{};
 	// Icon Name
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	FString IconName;
+	FString IconName{};
 	//// Type A
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	//FString TypeA;
@@ -115,12 +115,13 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	//bool bLegalInGame = true;
 
-
 	//VisualBlueprintClassName
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	FString VisualBlueprintClassName;
+	FString VisualBlueprintClassName{};
 	//	VisualBlueprintClassSoft
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	TSoftClassPtr<AItemActor> VisualBlueprintClassSoft;
+	TSoftClassPtr<AItemActor> VisualBlueprintClassSoft{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
+	int64 Editor_RowNameHash{};
 };

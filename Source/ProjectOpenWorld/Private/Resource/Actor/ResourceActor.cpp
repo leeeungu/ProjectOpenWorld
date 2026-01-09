@@ -1,4 +1,4 @@
-#include "Resource/Actor/ResourceActor.h"
+﻿#include "Resource/Actor/ResourceActor.h"
 #include "Item/Actor/ItemActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
@@ -46,7 +46,7 @@ void AResourceActor::SpawnRandomItem()
 	FVector Force = FVector(0, 0, 1);
 	Force.X = FMath::RandRange(-0.5f,0.5f);
 	Force.Y = FMath::RandRange(-0.5f,0.5f);
-	Item->GetItemMesh()->AddImpulse(Force * 1000);
+	Item->GetItemCollision()->AddImpulse(Force * 1000);
 	int idx = rand() % ItemData.Num();
 	Item->Init(ItemData[idx], ItemData.Num() + 2);
 	ExtractCount--;
@@ -99,6 +99,7 @@ void AResourceActor::UpdateResource(ACharacter* pOther)
 
 void AResourceActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
+	UE_LOG(LogTemp, Log, TEXT("AResourceActor:beginDetected"));
 }
 
 void AResourceActor::OnEndDetected_Implementation(ACharacter* pOther)

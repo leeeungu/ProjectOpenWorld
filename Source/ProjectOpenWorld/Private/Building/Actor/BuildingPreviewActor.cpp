@@ -1,4 +1,4 @@
-ï»¿#include "Building/Actor/BuildingPreviewActor.h"
+#include "Building/Actor/BuildingPreviewActor.h"
 #include "Engine/StaticMeshSocket.h"
 #include "AssetToolsModule.h"
 #include "Subsystems/EditorAssetSubsystem.h"
@@ -26,7 +26,7 @@ void ABuildingPreviewActor::BeginPlay()
 	//{
 	//	UStaticMesh* Mesh = BuildingMesh->GetStaticMesh();
 	//	UE_LOG(LogTemp, Warning, TEXT("%d"), BuildingMesh->GetStaticMesh()->Sockets.Num());
-	//	Mesh->Modify(); // â­ ë°˜ë“œì‹œ ë¨¼ì € í˜¸ì¶œ (Undo/Redo + ì—ì…‹ ìˆ˜ì • ì‹œìž‘)
+	//	Mesh->Modify(); // ? ¹Ýµå½Ã ¸ÕÀú È£Ãâ (Undo/Redo + ¿¡¼Â ¼öÁ¤ ½ÃÀÛ)
 
 	//	MeshSocket = Mesh->FindSocket(TEXT("TestSocket"));
 	//	if (!MeshSocket)

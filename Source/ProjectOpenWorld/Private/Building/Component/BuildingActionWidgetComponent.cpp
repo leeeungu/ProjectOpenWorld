@@ -1,4 +1,4 @@
-﻿#include "Building/Component/BuildingActionWidgetComponent.h"
+#include "Building/Component/BuildingActionWidgetComponent.h"
 #include "Building/Widget/BaseBuildingAction.h"
 
 UBuildingActionWidgetComponent::UBuildingActionWidgetComponent() : 

@@ -17,14 +17,17 @@ class PROJECTOPENWORLD_API UInteractionComponent : public UActorComponent
 protected:
 	UPROPERTY()
 	TSoftObjectPtr<ACharacter> OwnerCharacter{};
+private:
 	UPROPERTY(VisibleAnywhere)
 	TScriptInterface<IInteractionInterface> InteractionTarget{};
 	
 	bool bIsInteraction{};
+	bool bIsDetect{};
 protected:
 	virtual void BeginPlay() override;
 
 	
+	void SetTarget(TScriptInterface<IInteractionInterface> NewTarget);
 public:	
 	UFUNCTION()
 	void ResetInteractionTarget(AActor* DestroyedActor);
@@ -36,10 +39,15 @@ public:
 	void OnInteractionStart();
 	void OnInteractionTriggered();
 	void OnInteractionCompleted();
+	void OnDetectEnd();
+	void OnDetectBegin();
+
+	// 잘못 만든 함수 삭제 필요
 	void OnActorCancel();
 
 	bool IsInteracting() const { return bIsInteraction; }
 	bool IsSetTarget() const;
+	bool CheckSameTarget(TScriptInterface<IInteractionInterface> Other) const;
 
 	UFUNCTION(BlueprintPure, Category = "Interaction")
 	AActor* GetTargetActor() const;

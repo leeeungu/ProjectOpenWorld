@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -32,6 +32,7 @@ public:
 	void StorePal(AActor* NewPal);
 	void RemovePal(AActor* targetPal);
 
+	UFUNCTION(BlueprintCallable, Category = "Commander")
 	void RegisterWork(AActor* WorkActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Commander")

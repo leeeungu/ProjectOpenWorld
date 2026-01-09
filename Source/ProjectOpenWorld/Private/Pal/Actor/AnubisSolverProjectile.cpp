@@ -97,9 +97,6 @@ void AAnubisSolverProjectile::Tick(float DeltaTime)
 void AAnubisSolverProjectile::OnInteractionStart_Implementation(ACharacter* pOther)
 {
 	APlayerController* PC = Cast<APlayerController>(pOther->GetController());
-	//UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Interaction Start"));
-	//UE_LOG(LogTemp, Warning, TEXT("bProjectileActive : %d"), bProjectileActive);
-	//UE_LOG(LogTemp, Warning, TEXT("TargetPlayer : %s"), TargetPlayer ? *TargetPlayer->GetName() : TEXT("nullptr"));
 	if (!bProjectileActive || !TargetPlayer || !TargetPlayer->IsTopDownMode())
 		return;
 	if (PC)
@@ -126,8 +123,6 @@ void AAnubisSolverProjectile::OnInteractionStart_Implementation(ACharacter* pOth
 					FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal2D();
 					MoveDirection = Direction;
 				}
-				//DrawDebugSphere(GetWorld(), Hit.Location, 20.f, 12, FColor::Red, false, 1.0f);
-				//DrawDebugLine(GetWorld(), GetActorLocation(), TraceEnd, FColor::Green, false, 1.0f);
 			}
 		}
 	}
