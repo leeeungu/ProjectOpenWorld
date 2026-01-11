@@ -23,7 +23,7 @@ private:
 		TMap<FName, const T*> ItemDataMap{}; // Key: Editor_RowNameHash
 		T Dummy{};
 	};
-
+	static UItemDataSubsystem* SingletonInstance;
 protected:
 
 	DataTableStruct< FPalStaticItemDataStruct> PalStaticItemDataTableStruct{};
@@ -51,55 +51,57 @@ protected:
 		return true;
 	}
 
-	bool GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data) const;
-	bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data) const;
-	bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data) const;
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	FPalStaticItemDataStruct GetPalStaticItemDataByName(FName RowName) const;
+	static bool IsValidInstance() { return SingletonInstance != nullptr; }
+	static bool GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data) ;
+	static bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data) ;
+	static bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	FString GetPalStaticItemOverrideNameByName(FName RowName) const;
+	static FPalStaticItemDataStruct GetPalStaticItemDataByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	FString GetPalStaticItemOverrideDescriptionByName(FName RowName) const;
+	static FString GetPalStaticItemOverrideNameByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	FString GetPalStaticItemIconNameByName(FName RowName) const;
+	static FString GetPalStaticItemOverrideDescriptionByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	int32 GetPalStaticItemMaxStackCountByName(FName RowName) const;
+	static FString GetPalStaticItemIconNameByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	float GetPalStaticItemWeightByName(FName RowName) const;
+	static int32 GetPalStaticItemMaxStackCountByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	int32 GetPalStaticItemPriceByName(FName RowName) const;
+	static float GetPalStaticItemWeightByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	int32 GetPalStaticItemSortIDByName(FName RowName) const;
+	static int32 GetPalStaticItemPriceByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	TSoftClassPtr<AItemActor> GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) const;
+	static int32 GetPalStaticItemSortIDByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	FString GetPalItemRecipeProductIdByName(FName RowName) const;
+	static TSoftClassPtr<AItemActor> GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	int32 GetPalItemRecipeProductCountByName(FName RowName) const;
+	static FString GetPalItemRecipeProductIdByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	float GetPalItemRecipeWorkAmountByName(FName RowName) const;
+	static int32 GetPalItemRecipeProductCountByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	FString GetPalItemRecipeUnlockItemIDByName(FName RowName) const;
+	static float GetPalItemRecipeWorkAmountByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	const TArray< FMaterialData>& GetPalItemRecipeMaterialsByName(FName RowName) const;
+	static FString GetPalItemRecipeUnlockItemIDByName(FName RowName) ;
+
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static const TArray< FRecipeMaterialData>& GetPalItemRecipeMaterialsByName(FName RowName) ;
 
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	UTexture2D* GetPalItemIconTextureByName(FName RowName) const;
+	static UTexture2D* GetPalItemIconTextureByName(FName RowName) ;
 };

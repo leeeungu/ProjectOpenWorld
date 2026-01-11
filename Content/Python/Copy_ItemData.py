@@ -2,18 +2,24 @@ import json
 import unreal
 from pathlib import Path
 
-#/Script/Engine.DataTable'/Game/Item/DataTable/DT_ItemDataTable.DT_ItemDataTable'
 # 1) 입력 파일 경로
-JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Item\DataTable\DT_ItemRecipeDataTable_Source.json"
-TARGET_DT_ASSET = "/Game/Item/DataTable/DT_ItemRecipeDataTable.DT_ItemRecipeDataTable"  # 수정할 DataTable 에셋 경로
+JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Building\DataTable\DT_BuildObjectDataTable_Source.json"
+#/Script/Engine.DataTable'/Game/Building/DataTable/DT_BuildObjectDataTable.DT_BuildObjectDataTable'
+TARGET_DT_ASSET = "/Game/Building/DataTable/DT_BuildObjectDataTable.DT_BuildObjectDataTable"  # 수정할 DataTable 에셋 경로
 
 # 2) 뽑고 싶은 Row Key 목록
 WANTED_KEYS = [
-    "Product_Id",
-    "Product_Count",
-    "WorkAmount",
-    "UnlockItemID",
-    "Editor_RowNameHash"
+    "MapObjectId",
+    "SortId",
+    "BuildCapacity",
+    "RequiredBuildWorkAmount",
+    "AssetValue",
+    "InstallNeighborThreshold",
+    "bIsInstallOnlyOnBase",
+    "bIsInstallOnlyInDoor",
+    "bIsInstallOnlyHubAround",
+    "InstallMaxNumInBaseCamp",
+    "bInstallableNoObstacleFromCamera"
 ]
 
 def main():

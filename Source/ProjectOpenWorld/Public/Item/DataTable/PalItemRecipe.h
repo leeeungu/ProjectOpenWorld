@@ -30,7 +30,7 @@
 //    },
 
 USTRUCT(BlueprintType)
-struct FMaterialData
+struct FRecipeMaterialData
 {
 	GENERATED_BODY()
 public:
@@ -60,7 +60,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
 	FString UnlockItemID{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	TArray< FMaterialData> Materials{};
+	TArray< FRecipeMaterialData> Materials{};
 
 	// Workable Attribute
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")

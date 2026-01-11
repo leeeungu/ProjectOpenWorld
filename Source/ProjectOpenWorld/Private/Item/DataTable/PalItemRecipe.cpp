@@ -5,5 +5,5 @@
 
 FPalItemRecipe::FPalItemRecipe()
 {
-	Materials.Init(FMaterialData(), GetMaxMaterialCount());
+	Materials.Init(FRecipeMaterialData(), GetMaxMaterialCount());
 }

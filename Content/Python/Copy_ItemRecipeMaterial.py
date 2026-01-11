@@ -2,9 +2,10 @@ import json
 import unreal
 from pathlib import Path
 
-JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Item\DataTable\DT_ItemRecipeDataTable_Source.json"
-#/Script/Engine.DataTable'/Game/Item/DataTable/DT_ItemIconDataTable.DT_ItemIconDataTable'
-TARGET_DT_ASSET = r"/Game/Item/DataTable/DT_ItemRecipeDataTable.DT_ItemRecipeDataTable"
+# 1) 입력 파일 경로
+JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Building\DataTable\DT_BuildObjectDataTable_Source.json"
+#/Script/Engine.DataTable'/Game/Building/DataTable/DT_BuildObjectDataTable.DT_BuildObjectDataTable'
+TARGET_DT_ASSET = "/Game/Building/DataTable/DT_BuildObjectDataTable.DT_BuildObjectDataTable"  # 수정할 DataTable 에셋 경로
 
 
 
