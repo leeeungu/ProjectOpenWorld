@@ -63,6 +63,9 @@ public:
 	static FPalStaticItemDataStruct GetPalStaticItemDataByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static FPalItemRecipe GetPalItemRecipeDataByName(FName RowName);
+
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FString GetPalStaticItemOverrideNameByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")

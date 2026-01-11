@@ -9,6 +9,15 @@ void UPalItemRecipeMaterialWidget::SetMaterialData(const FName& InMaterialID, in
 {
 	Material_ID = InMaterialID;
 	Material_Count = InMaterialCount;
+	if (Material_ID == NAME_None)
+	{
+		SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalStaticItemDataStruct* Result{};

@@ -6,7 +6,7 @@
 
 class UTextBlock;
 class UImage;
-struct FPalStaticItemDataStruct;
+class UVerticalBox;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalItemRecipeWidget : public UUserWidget
@@ -20,7 +20,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> ItemIconImage{};
 
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr< UVerticalBox> MaterialList{};
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "ItemMaterial")

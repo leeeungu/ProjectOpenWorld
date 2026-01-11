@@ -69,6 +69,15 @@ FPalStaticItemDataStruct UItemDataSubsystem::GetPalStaticItemDataByName(FName Ro
 	return FPalStaticItemDataStruct{};
 }
 
+FPalItemRecipe UItemDataSubsystem::GetPalItemRecipeDataByName(FName RowName)
+{
+	const FPalItemRecipe* Result{};
+	GetPalItemRecipeDataPtr(RowName, Result);
+	if (Result)
+		return *Result;
+	return FPalItemRecipe();
+}
+
 FString UItemDataSubsystem::GetPalStaticItemOverrideNameByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
