@@ -8,9 +8,24 @@
 #include "Components/Image.h"
 #include "Item/Widget/PalItemRecipeMaterialWidget.h"
 
+void UPalItemRecipeWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+}
+
 void UPalItemRecipeWidget::SetItemRecipe(const FName& InItemRecipe)
 {
 	ItemRecipe_ID = InItemRecipe;
+	if (ItemRecipe_ID == NAME_None)
+	{
+		SetVisibility(ESlateVisibility::Hidden);
+		return;
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalItemRecipe* Recipe{};
@@ -30,7 +45,7 @@ void UPalItemRecipeWidget::SetItemRecipe(const FName& InItemRecipe)
 		}
 		if (ItemIconImage)
 		{
-			UTexture2D* IconTexture = UItemDataSubsystem::GetPalItemIconTextureByName(ItemRecipe_ID);
+			UTexture2D* IconTexture = UItemDataSubsystem::GetPalItemIconTextureByName(*Result->IconName);
 			if (IconTexture)
 			{
 				ItemIconImage->SetBrushFromTexture(IconTexture);

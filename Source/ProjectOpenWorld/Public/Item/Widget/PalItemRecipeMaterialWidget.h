@@ -13,7 +13,7 @@ class PROJECTOPENWORLD_API UPalItemRecipeMaterialWidget : public UUserWidget
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemMaterial")
-	FName Material_ID{};
+	FName Material_ID = NAME_None;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ItemMaterial")
 	int Material_Count{};
 

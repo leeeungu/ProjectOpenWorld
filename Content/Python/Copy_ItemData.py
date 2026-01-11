@@ -22,6 +22,38 @@ WANTED_KEYS = [
     "bInstallableNoObstacleFromCamera"
 ]
 
+JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Item\DataTable\DT_PalStaticItemData_Source.json"
+#/Script/Engine.DataTable'/Game/Item/DataTable/DT_PalStaticItemData.DT_PalStaticItemData'
+TARGET_DT_ASSET = "/Game/Item/DataTable/DT_PalStaticItemData.DT_PalStaticItemData"  # 수정할 DataTable 에셋 경로
+WANTED_KEYS  = [
+   "OverrideName",
+   "OverrideDescription",
+   "IconName",
+   "MaxStackCount",
+   "Weight",
+   "Price",
+   "SortID",
+   "bNotConsumed",
+   "bEnableHandcraft",
+   "VisualBlueprintClassName",
+   "VisualBlueprintClassSoft",
+   "Editor_RowNameHash"
+]
+
+
+JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Item\DataTable\DT_ItemRecipeDataTable_Source.json"
+#/Script/Engine.DataTable'/Game/Item/DataTable/DT_PalStaticItemData.DT_PalStaticItemData'
+TARGET_DT_ASSET = "/Game/Item/DataTable/DT_ItemRecipeDataTable.DT_ItemRecipeDataTable"  # 수정할 DataTable 에셋 경로
+WANTED_KEYS  = [
+   "Product_Id",
+   "Product_Count",
+   "WorkAmount",
+   "UnlockItemID",
+   "Editor_RowNameHash"
+]
+
+
+
 def main():
     # source
     doc = json.loads(Path(JSON_PATH).read_text(encoding="utf-8"))

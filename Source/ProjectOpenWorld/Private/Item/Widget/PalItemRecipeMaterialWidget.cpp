@@ -40,7 +40,7 @@ void UPalItemRecipeMaterialWidget::SetMaterialData(const FName& InMaterialID, in
 
 		if (ItemIconImage)
 		{
-			UTexture2D* IconTexture = UItemDataSubsystem::GetPalItemIconTextureByName(Material_ID);
+			UTexture2D* IconTexture = UItemDataSubsystem::GetPalItemIconTextureByName(*Result->IconName);
 			if (IconTexture)
 			{
 				ItemIconImage->SetBrushFromTexture(IconTexture);
