@@ -1,4 +1,4 @@
-﻿#include "Inventory/Widget/InventoryGirdSlotWidget.h"
+#include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Inventory/Widget/InventorySlotWidget.h"
@@ -6,6 +6,7 @@
 #include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Inventory/Widget/InventoryDDO.h"
+#include "Inventory/Widget/InventorySlotToolTip.h"
 
 UInventoryGirdSlotWidget::UInventoryGirdSlotWidget(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget{ ObjectInitializer }
@@ -23,6 +24,11 @@ void UInventoryGirdSlotWidget::SetSlotData_Implementation(const FInventorySlot& 
 	if (inventorySlotUW)
 	{
 		IInventorySlotInterface::Execute_SetSlotData(inventorySlotUW.Get(), Data);
+	}
+	UInventorySlotToolTip* toolTipWidget = Cast<UInventorySlotToolTip>(GetToolTip());
+	if (toolTipWidget)
+	{
+		toolTipWidget->SetRecipeID(Data.ItemID);
 	}
 }
 
@@ -51,6 +57,12 @@ bool UInventoryGirdSlotWidget::SwapSlot_Index(int Row, int Col)
 UInventorySlotWidget* UInventoryGirdSlotWidget::GetInventorySlotWidget() const
 {
 	return inventorySlotUW.Get();
+}
+
+void UInventoryGirdSlotWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	SetToolTip(CreateWidget<UInventorySlotToolTip>(this, ToolTipWidgetClass));
 }
 
 void UInventoryGirdSlotWidget::NativeConstruct()

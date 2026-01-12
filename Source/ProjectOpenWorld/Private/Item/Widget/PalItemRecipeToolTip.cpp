@@ -1,4 +1,4 @@
-﻿#include "Item/Widget/PalItemRecipeToolTip.h"
+#include "Item/Widget/PalItemRecipeToolTip.h"
 #include "Item/Widget/PalItemRecipeMaterialWidget.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
@@ -76,6 +76,7 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 		}
 	}
 }
+
 
 void UPalItemRecipeToolTip::UpdateToolTipWidget()
 {

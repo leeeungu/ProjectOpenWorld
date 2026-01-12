@@ -17,6 +17,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float DetectionDistance = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	float InteractionRadius = 30.0f;
 
 	bool bCanAiming = false;
 public:	

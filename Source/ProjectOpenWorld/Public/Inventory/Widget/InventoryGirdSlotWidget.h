@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -7,16 +7,20 @@
 
 class UCanvasPanel;
 class UInventorySlotWidget;
+class UInventorySlotToolTip;
 
 UCLASS()
 class PROJECTOPENWORLD_API UInventoryGirdSlotWidget : public UUserWidget , public IInventorySlotInterface
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> inventorySlotCanvas{};
 
 	TSoftObjectPtr<UInventorySlotWidget> inventorySlotUW{};
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory")
+	TSubclassOf<UInventorySlotToolTip> ToolTipWidgetClass{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
 	int inventoryRow{};
@@ -35,8 +39,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE UInventorySlotWidget* GetInventorySlotWidget() const;
 protected:
-
+	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
+	
 	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;

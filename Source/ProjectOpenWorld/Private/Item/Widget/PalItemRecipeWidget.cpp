@@ -1,4 +1,4 @@
-ï»¿#include "Item/Widget/PalItemRecipeWidget.h"
+#include "Item/Widget/PalItemRecipeWidget.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/DataTable/PalItemRecipe.h"
@@ -82,19 +82,21 @@ void UPalItemRecipeWidget::OnMakeButtonClicked()
 				}
 				Inventory->AddItem(ItemRecipe_ID, MakeItemCount);
 
+				int nMinCount{};
+				if (nMaxCount > 0)
+					nMinCount = 1;
 				if (MakeItemMaxCountText)
 				{
 					MakeItemMaxCountText->SetText(FText::AsNumber(nMaxCount));
 				}
 				if (MakeItemCountSlider)
 				{
-					MakeItemCountSlider->SetMinValue(0);
+					MakeItemCountSlider->SetMinValue(nMinCount);
 					MakeItemCountSlider->SetMaxValue(nMaxCount);
-					MakeItemCountSlider->SetValue(0);
+					MakeItemCountSlider->SetValue(nMinCount);
 				}
 				if (MakeItemMinCountText)
 				{
-					int nMinCount{};
 					MakeItemMinCountText->SetText(FText::AsNumber(nMinCount));
 				}
 			}
@@ -171,7 +173,7 @@ void UPalItemRecipeWidget::SetItemRecipe( FName InItemRecipe)
 		int32 Count = MaterialList->GetChildrenCount();
 		const TArray<FRecipeMaterialData>& RecipeMaterials = Recipe->Materials;
 		int nMaxCount{ INT32_MAX };
-		for (int32 i = 0 ; i< Count; ++i)
+		for (int32 i = 0; i < Count; ++i)
 		{
 			UPalItemRecipeMaterialWidget* ChildWidget = Cast< UPalItemRecipeMaterialWidget>(MaterialList->GetChildAt(i));
 			if (ChildWidget)
@@ -184,28 +186,30 @@ void UPalItemRecipeWidget::SetItemRecipe( FName InItemRecipe)
 				}
 				else
 				{
-					ChildWidget->SetMaterialData(NAME_None,0);
+					ChildWidget->SetMaterialData(NAME_None, 0);
 				}
 			}
 		}
+		int nMinCount{};
+		if (nMaxCount > 0)
+			nMinCount = 1;
 		if (MakeItemMaxCountText)
 		{
 			MakeItemMaxCountText->SetText(FText::AsNumber(nMaxCount));
 		}
 		if (MakeItemCountSlider)
 		{
-			MakeItemCountSlider->SetMinValue(0);
+			MakeItemCountSlider->SetMinValue(nMinCount);
 			MakeItemCountSlider->SetMaxValue(nMaxCount);
-			MakeItemCountSlider->SetValue(0);
+			MakeItemCountSlider->SetValue(nMinCount);
 		}
 		if (MakeItemMinCountText)
 		{
-			int nMinCount{};
 			MakeItemMinCountText->SetText(FText::AsNumber(nMinCount));
 		}
-	}
-	if (WorkingAmountText)
-	{
-		WorkingAmountText->SetText(FText::Format(FText::FromString("{0}"), FText::AsNumber(Recipe->WorkAmount / 100.0f))); // ìž‘ì—…ëŸ‰")));
+		if (WorkingAmountText)
+		{
+			WorkingAmountText->SetText(FText::Format(FText::FromString("{0}"), FText::AsNumber(Recipe->WorkAmount / 100.0f))); // ÀÛ¾÷·®")));
+		}
 	}
 }

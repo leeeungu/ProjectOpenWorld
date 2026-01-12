@@ -40,9 +40,10 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
 		buildPointIgnore.Add(OwnerCharacter.Get());
-		UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
+		UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(),
 			CameraManager->GetCameraLocation(),
 			UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * DetectionDistance + CameraManager->GetCameraLocation(),
+			InteractionRadius,
 			buildPointObjectTypes, true, buildPointIgnore, EDrawDebugTrace::Type::None, HitResult, true);
 		if (HitResult.GetActor())
 		{
