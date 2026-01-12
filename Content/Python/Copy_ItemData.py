@@ -53,6 +53,18 @@ WANTED_KEYS  = [
 ]
 
 
+#/Script/Engine.DataTable'/Game/Pal/DataTable/DT_PalSpawnerPlacement.DT_PalSpawnerPlacement'
+JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Pal\DataTable\DT_PalSpawnerPlacement_Source.json"
+#/Script/Engine.DataTable'/Game/Item/DataTable/DT_PalStaticItemData.DT_PalStaticItemData'
+TARGET_DT_ASSET = "/Game/Pal/DataTable/DT_PalSpawnerPlacement.DT_PalSpawnerPlacement"  # 수정할 DataTable 에셋 경로
+WANTED_KEYS  = [
+  "InstanceName",
+  "SpawnerName",
+  "Location",
+  "StaticRadius",
+  "SpawnerClass",
+  "RespawnCoolTime"
+]
 
 def main():
     # source
