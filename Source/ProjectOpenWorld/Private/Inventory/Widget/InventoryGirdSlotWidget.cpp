@@ -10,11 +10,6 @@
 UInventoryGirdSlotWidget::UInventoryGirdSlotWidget(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget{ ObjectInitializer }
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> DefaultSlot(TEXT("/Game/Inventory/Widget/Slot/WBP_Inventory_Default.WBP_Inventory_Default_C"));
-	if (DefaultSlot.Succeeded())
-	{
-		inventorySlotClass = DefaultSlot.Class;
-	}
 }
 
 void UInventoryGirdSlotWidget::SetSlotData_Implementation(const FInventorySlot& Data)
@@ -24,28 +19,6 @@ void UInventoryGirdSlotWidget::SetSlotData_Implementation(const FInventorySlot& 
 	if (itemPointer && itemPointer->isEmpthySlot)
 	{
 		itemPointer = nullptr;
-	}
-
-	TSubclassOf<UInventorySlotWidget> SlotClass = inventorySlotClass;
-
-	if (Data.ItemDataAsset)
-		SlotClass = Data.ItemDataAsset->GetInventorySlotWidgetClass();
-	if(inventorySlotUW && inventorySlotUW->GetClass() != SlotClass)
-	{
-		bChange = true;
-		if (inventorySlotUW)
-			inventorySlotUW->RemoveFromParent();
-		inventorySlotUW = nullptr;
-	}
-	if (bChange)
-	{
-		inventorySlotUW = CreateWidget(this, SlotClass);
-		if (inventorySlotUW && bChange)
-		{
-			UCanvasPanelSlot* PanelSlot = inventorySlotCanvas->AddChildToCanvas(inventorySlotUW.Get());
-			PanelSlot->SetAnchors(FAnchors(0, 0, 1, 1));
-			PanelSlot->SetSize(FVector2D::ZeroVector);
-		}
 	}
 	if (inventorySlotUW)
 	{
@@ -78,6 +51,15 @@ bool UInventoryGirdSlotWidget::SwapSlot_Index(int Row, int Col)
 UInventorySlotWidget* UInventoryGirdSlotWidget::GetInventorySlotWidget() const
 {
 	return inventorySlotUW.Get();
+}
+
+void UInventoryGirdSlotWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	if (inventorySlotCanvas && inventorySlotCanvas->Slot && inventorySlotCanvas->Slot->Content)
+	{
+		inventorySlotUW =  Cast<UInventorySlotWidget>(inventorySlotCanvas->GetChildAt(0)) ;
+	}
 }
 
 FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

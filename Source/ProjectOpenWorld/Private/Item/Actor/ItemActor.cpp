@@ -1,6 +1,5 @@
-#include "Item/Actor/ItemActor.h"
+﻿#include "Item/Actor/ItemActor.h"
 #include "Inventory/Component/InventoryComponent.h"
-#include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
@@ -8,30 +7,30 @@
 #include "GameFramework/Character.h"
 #include "Player/Character/BasePlayer.h"
 #include "Interaction/Component/InteractionComponent.h"
+#include "Item/DataTable/PalStaticItemDataStruct.h"
+#include "Item/System/ItemDataSubsystem.h"
 
 AItemActor::AItemActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	ItemCollision = CreateDefaultSubobject< USphereComponent>(TEXT("ItemCollision"));
-	SetRootComponent(ItemCollision);
-	ItemCollision->SetSimulatePhysics(true);
-	ItemCollision->SetCollisionProfileName(TEXT("NoCollision"));
-	ItemCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	ItemCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);;
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	ItemCollision->SetLinearDamping(5.f);
-	ItemCollision->SetAngularDamping(5.f);
+	//ItemCollision = CreateDefaultSubobject< USphereComponent>(TEXT("ItemCollision"));
+	ItemSkeletalMesh = CreateDefaultSubobject< USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+	SetRootComponent(ItemSkeletalMesh);
+	ItemSkeletalMesh->SetSimulatePhysics(true);
+	ItemSkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	ItemSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	ItemSkeletalMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);;
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	ItemSkeletalMesh->SetLinearDamping(5.f);
+	ItemSkeletalMesh->SetAngularDamping(5.f);
 
-	ItemMesh = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("SkeletalMesh"));
-	ItemMesh->SetupAttachment(GetRootComponent());
-	ItemMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	//Script/Engine.StaticMesh'/Game/Pal/Model/Weapon/PalSphere/Mesh/SM_PalSphere.SM_PalSphere'
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Game/Pal/Model/Weapon/PalSphere/Mesh/SM_PalSphere.SM_PalSphere"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshObj(TEXT("/Game/Pal/Model/Weapon/PalSphere/Mesh/SK_PalSphere.SK_PalSphere"));
 	if(MeshObj.Succeeded())
 	{
-		ItemMesh->SetStaticMesh(MeshObj.Object);
+		ItemSkeletalMesh->SetSkeletalMesh(MeshObj.Object);
 	}
 	ItemWidget = CreateDefaultSubobject< UWidgetComponent>(TEXT("Widget"));
 	ItemWidget->SetupAttachment(GetRootComponent());
@@ -53,23 +52,35 @@ void AItemActor::BeginPlay()
 	Super::BeginPlay();
 
 	//ItemSkeletalMesh->SetLinearDamping(5.f);
-	ItemMesh->SetAngularDamping(5.f);
+	ItemSkeletalMesh->SetAngularDamping(5.f);
 	if (ItemWidget && ToolTipWidget)
 		ItemWidget->SetWidget(ToolTipWidget.Get());
 }
 
-void AItemActor::Init(TObjectPtr<UItemPrimaryDataAsset> IteData, int Count)
+
+void AItemActor::Init(FName NewItemID, int Count)
 {
-	this->ItemData = IteData;
-	this->itemCount = Count;
+	ItemID = NewItemID;
+	itemCount = Count;
+	if (!UItemDataSubsystem::IsValidInstance())
+		return;
+	const FPalStaticItemDataStruct* ItemDataStruct{};
+	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	if (!ItemDataStruct)
+		return;
+	//ItemData = ItemDataStruct->ItemPrimaryDataAsset;
+	if (ItemSkeletalMesh)
+	{
+		//ItemSkeletalMesh->SetSkeletalMesh(ItemData->GetItemSkeletalMesh());
+	}
+		
 }
 
 void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
-	//ItemData.LoadSynchronous();
-	if (ToolTipWidget && ItemData)
+	if (ToolTipWidget )
 	{
-		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemData->GetItemName());
+		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemID);
 	}
 	if (ToolTipWidget)
 	{
@@ -105,7 +116,7 @@ void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	{
 		Player->GetInteractionComponent()->OnInteractionCompleted();
 	}
-	if (Inventory->AddItem(ItemData.Get(), itemCount))
+	if (Inventory->AddItem(ItemID, itemCount))
 	{
 		Destroy();
 	}
@@ -122,7 +133,7 @@ void AItemActor::OnTransportRegister_Implementation(AActor* Other)
 
 	TransportState = ETransportState::Transport;
 	Transport = Other;
-	ItemMesh->SetSimulatePhysics(false);
+	ItemSkeletalMesh->SetSimulatePhysics(false);
 	AttachToComponent(pTarget->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_Transport"));
 }
 
@@ -132,13 +143,18 @@ void AItemActor::OnTransportUnRegister_Implementation(AActor* Other)
 		return;
 	TransportState = ETransportState::NotTransport;
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	ItemMesh->SetSimulatePhysics(true);
+	ItemSkeletalMesh->SetSimulatePhysics(true);
 	Transport = nullptr;
 }
 
 ETransportState AItemActor::GetTransportState_Implementation()
 {
 	return TransportState;
+}
+
+UPrimitiveComponent* AItemActor::GetItemCollision() const
+{
+	return ItemSkeletalMesh.Get();
 }
 
 

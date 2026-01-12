@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -30,10 +30,14 @@
 //    },
 
 USTRUCT(BlueprintType)
-struct FMaterialData
+struct FRecipeMaterialData
 {
 	GENERATED_BODY()
 public:
+	FRecipeMaterialData()
+	{
+		Material_Id = FName(NAME_None).ToString();
+	}
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaterialData")
 	FString Material_Id{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaterialData")
@@ -60,7 +64,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
 	FString UnlockItemID{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	TArray< FMaterialData> Materials{};
+	TArray< FRecipeMaterialData> Materials{};
 
 	// Workable Attribute
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
@@ -74,6 +78,6 @@ public:
 	// Craft Exp Rate
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
 	//float CraftExpRate{};
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	//int32 Editor_RowNameHash{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
+	int64 Editor_RowNameHash{};
 };

@@ -1,4 +1,4 @@
-#include "Building/Widget/BuildingModeImage.h"
+﻿#include "Building/Widget/BuildingModeImage.h"
 #include "Building/Widget/BuildingModeWidget.h"
 #include "Components/Button.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
@@ -11,7 +11,7 @@ void UBuildingModeImage::OnStartBuilding()
 {
 	if (!ParentWidget || !BuildingMesh)
 		return;
-	ParentWidget->StartBuildingMode(BuildingMesh);
+	ParentWidget->StartBuildingMode(BuildObjectId, BuildingMesh);
 }
 
 void UBuildingModeImage::OnHoverBuilding()

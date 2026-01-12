@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -7,7 +7,7 @@
 #include "ItemActor.generated.h"
 
 class UItemPrimaryDataAsset;
-class UStaticMeshComponent;
+class USkeletalMeshComponent;
 class UWidgetComponent;
 class USphereComponent;
 
@@ -16,15 +16,17 @@ class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterf
 {
 	GENERATED_BODY()
 protected:
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	//TObjectPtr<USphereComponent> ItemCollision{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
-	TObjectPtr<USphereComponent> ItemCollision{};
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
-	TObjectPtr<UStaticMeshComponent> ItemMesh{};
+	TObjectPtr<USkeletalMeshComponent> ItemSkeletalMesh{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UWidgetComponent> ItemWidget{};
 	
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
+	//TObjectPtr<UItemPrimaryDataAsset> ItemData{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
-	TObjectPtr<UItemPrimaryDataAsset> ItemData{};
+	FName ItemID = NAME_None;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
 	TSubclassOf<UUserWidget> ToolTipWidgetClass{};
@@ -40,13 +42,13 @@ public:
 	AItemActor();
 //	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintPure, Category = "ItemData")
-	FORCEINLINE UItemPrimaryDataAsset* const GetItemDataAsset() const { return ItemData.Get(); }
+	//UFUNCTION(BlueprintPure, Category = "ItemData")
+	//FORCEINLINE UItemPrimaryDataAsset* const GetItemDataAsset() const { return ItemData.Get(); }
 protected:
 	virtual void BeginPlay() override;
 
 public: // IInteractionInterface
-	void Init(TObjectPtr<UItemPrimaryDataAsset> Data, int Count);
+	void Init(FName NewItemID, int Count);
 
 	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
 	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;
@@ -61,5 +63,5 @@ public: // IInteractionInterface
 	virtual void OnTransportCancel_Implementation(AActor* Other) override {}
 	virtual ETransportState GetTransportState_Implementation() override;
 
-	FORCEINLINE UStaticMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE UPrimitiveComponent* GetItemCollision() const;
 };

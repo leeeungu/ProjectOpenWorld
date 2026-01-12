@@ -5,7 +5,7 @@
 #include "SnapRule.generated.h"
 
 
-// X Y Z
+// 400x400x400 기준 스냅 위치
 UENUM(BlueprintType)
 enum class ESnapAnchor : uint8
 {

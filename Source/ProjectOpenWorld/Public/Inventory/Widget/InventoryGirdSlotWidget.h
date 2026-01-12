@@ -16,7 +16,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> inventorySlotCanvas{};
 
-	TSubclassOf<UInventorySlotWidget> inventorySlotClass{};
 	TSoftObjectPtr<UInventorySlotWidget> inventorySlotUW{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
@@ -36,6 +35,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE UInventorySlotWidget* GetInventorySlotWidget() const;
 protected:
+
+	virtual void NativeConstruct() override;
 	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;

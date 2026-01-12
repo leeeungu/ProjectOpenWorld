@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,7 +8,6 @@
 #include "Interaction/InteractionInterface.h"
 #include "ResourceActor.generated.h"
 
-class UItemPrimaryDataAsset;
 class AItemActor;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExtractEnd);
@@ -21,10 +20,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
 	TObjectPtr<UStaticMeshComponent> ResourceMesh{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
-	TArray<TObjectPtr<UItemPrimaryDataAsset>> ItemData{};
+	TArray<FName> ItemData{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
 	int ExtractCount = 5;
-	// count∏¶ ¡‡º≠ ∑•¥˝¿∏∑Œ ±Ô¿ª ¡ˆ  vs ≥ª±∏µµ∏¶ ¡÷∞Ì ∑•¥˝¿∏∑Œ ¡Ÿ¡ˆ 
+	// countÎ•º Ï§òÏÑú Îû®Îç§ÏúºÎ°ú ÍπçÏùÑ ÏßÄ  vs ÎÇ¥Íµ¨ÎèÑÎ•º Ï£ºÍ≥† Îû®Îç§ÏúºÎ°ú Ï§ÑÏßÄ 
 
 	UPROPERTY()
 	TSet< TWeakObjectPtr<UObject>> InteractionList{};
