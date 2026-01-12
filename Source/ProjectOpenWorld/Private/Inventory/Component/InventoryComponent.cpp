@@ -1,5 +1,4 @@
 ﻿#include "Inventory/Component/InventoryComponent.h"
-#include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/Character/BasePlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
