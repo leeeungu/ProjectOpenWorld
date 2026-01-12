@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -21,6 +21,12 @@ protected:
 	TArray<FName> RecipeIDList{};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ItemRecipe")
 	TSubclassOf<UPalItemRecipeSlot> RecipeWidgetClass{};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ItemRecipe")
+	int32 MaxRecipePerRow{ 8 };
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ItemRecipe")
+	int32 MaxRecipePerCol{ 5 };
+
 
 protected:
 	virtual void NativeOnInitialized() override;

@@ -40,9 +40,20 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool AddItem(UItemPrimaryDataAsset* ItemData, int ItemCount = 1);
+	bool AddItem(FName NewItemID, int ItemCount = 1);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool SetInevntorySlot(int Row, int Col, UItemPrimaryDataAsset* ItemData, int ItemCount = 1);
+	bool HasItem(FName SearchItemID, int SearchItemCount = 1) const;
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool RemoveItem(FName RemoveItemID, int RemoveItemCount = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool DeleteItem(int Row, int Col);
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	int GetItemCount(FName SearchItemID) const;
+
+
+	//UFUNCTION(BlueprintCallable, Category = "Inventory")
+	//bool SetInevntorySlot(int Row, int Col, FName NewItemID, int ItemCount = 1);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol);
 

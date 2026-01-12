@@ -1,9 +1,8 @@
-#include "Item/System/ItemDataSubsystem.h"
+﻿#include "Item/System/ItemDataSubsystem.h"
 
-	
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
 
-bool UItemDataSubsystem::GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data) 
+bool UItemDataSubsystem::GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data)
 {
 	if (!SingletonInstance)
 		return false;
@@ -15,6 +14,8 @@ bool UItemDataSubsystem::GetPalStaticItemDataPtr(FName RowName, const FPalStatic
 	Data = &SingletonInstance->PalStaticItemDataTableStruct.Dummy;
 	return false;
 }
+
+
 
 bool UItemDataSubsystem::GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data)
 {

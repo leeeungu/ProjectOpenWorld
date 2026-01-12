@@ -93,8 +93,8 @@ void UInventoryWidget::UpdateAllInventorySlot()
 
 void UInventoryWidget::UpdateInventoryWeight()
 {
-	int MaxWeight = inventoryComponent ? inventoryComponent->GetInventoryMaxWeight() : 0;
-	int CurWeight = inventoryComponent ? inventoryComponent->GetInventoryWeight() : 1;
+	float MaxWeight = inventoryComponent ? inventoryComponent->GetInventoryMaxWeight() : 0;
+	float CurWeight = inventoryComponent ? inventoryComponent->GetInventoryWeight() : 1;
 	WeightProgressBar->SetPercent(CurWeight / (float)MaxWeight);
 	WeightPercentTextBlock->SetText(FText::Format(FText::FromString(TEXT("{0} / {1}")), CurWeight, MaxWeight));
 }

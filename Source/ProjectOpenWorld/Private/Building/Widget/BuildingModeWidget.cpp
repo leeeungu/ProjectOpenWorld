@@ -1,4 +1,4 @@
-#include "Building/Widget/BuildingModeWidget.h"
+﻿#include "Building/Widget/BuildingModeWidget.h"
 #include "Building/BuildingAssistComponent.h"
 #include "Player/Character/BasePlayer.h" 
 #include "Materials/MaterialInstance.h"
@@ -82,12 +82,12 @@ void UBuildingModeWidget::NativeConstruct()
 
 void UBuildingModeWidget::NativeDestruct()
 {
-	UUserWidget::NativeDestruct();
+	Super::NativeDestruct();
 }
 
 void UBuildingModeWidget::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UUserWidget::PostEditChangeProperty(PropertyChangedEvent);
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (ButtonPanel)
 		ButtonPanel->PreConstruct();
 }
@@ -121,11 +121,11 @@ void UBuildingModeWidget::EndViewWidget()
 	UWidgetBlueprintLibrary::CancelDragDrop();
 }
 
-void UBuildingModeWidget::StartBuildingMode(UStaticMesh* Mesh)
+void UBuildingModeWidget::StartBuildingMode(FName BuildingID, UStaticMesh* Mesh)
 {
 	if (!BuildingAssistComp || !Mesh)
 		return;
-	BuildingAssistComp->SetBuildingStaticMesh(Mesh);
+	BuildingAssistComp->SetBuildingStaticMesh(BuildingID, Mesh);
 	BuildingAssistComp->StartBuilding();
 	EndViewWidget();
 }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -38,7 +38,7 @@ public:
 	void ToggleWidget();
 
 	UFUNCTION()
-	void StartBuildingMode(UStaticMesh* Mesh);
+	void StartBuildingMode(FName BuildingID , UStaticMesh* Mesh);
 	UFUNCTION()
 	void HoverBuildingMode(int SlotIndex);
 };

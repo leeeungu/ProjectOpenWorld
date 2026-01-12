@@ -1,4 +1,4 @@
-#include "Player/Character/BasePlayer.h"
+ï»¿#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -88,6 +88,8 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 	if (TopDownMode)
 	{
 		EnableInput(PlayerController);
+		BuildAssistComponent->EndBuilding();
+		//InteractionComponent->OnInteractionCompleted();
 	}
 	UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
 	if (InteractionComp)
@@ -286,7 +288,7 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent)
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionStart();
 		}
@@ -296,13 +298,13 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::KeyC:
 		break;
 	case EInputKeyType::MouseR:
-		if (BuildAssistComponent && !TopDownMode)
+		if (BuildAssistComponent && !TopDownMode && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
 		}
 		break;
 	case EInputKeyType::MouseL:
-		if (BuildAssistComponent && !TopDownMode)
+		if (BuildAssistComponent && !TopDownMode && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
 			BuildAssistComponent->EndBuilding();
@@ -343,7 +345,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 		}
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent)
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionTriggered();
 		}
@@ -351,7 +353,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::Esc:
 		break;
 	case EInputKeyType::KeyC:
-		if (InteractionComponent)
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnActorCancel();
 		}
@@ -361,12 +363,12 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (TopDownMode)
 		{
-			// È­¸é¿¡¼­ Áö¸éÀ¸·Î À§Ä¡¸¦ pick ÇÏ°í ÀÌµ¿ ¹æÇâ °è»ê
+			// í™”ë©´ì—ì„œ ì§€ë©´ìœ¼ë¡œ ìœ„ì¹˜ë¥¼ pick í•˜ê³  ì´ë™ ë°©í–¥ ê³„ì‚°
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
 			{
 				float MouseX = 0.f, MouseY = 0.f;
-				// ¸¶¿ì½º ÁÂÇ¥ ¾ò±â
+				// ë§ˆìš°ìŠ¤ ì¢Œí‘œ ì–»ê¸°
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
@@ -395,7 +397,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 							AddMovementInput(ForwardDirection, 6);
 
 #if ENABLE_DRAW_DEBUG
-							// µğ¹ö±× ½Ã°¢È­ (¿¡µğÅÍ/°³¹ß¿ë)
+							// ë””ë²„ê·¸ ì‹œê°í™” (ì—ë””í„°/ê°œë°œìš©)
 							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif
@@ -409,7 +411,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseWheel:
 	{
 		FVector2D LookAxisVector = Value.Get<FVector2D>();
-		if (BuildAssistComponent)
+		if (BuildAssistComponent && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->RotateBuilding(LookAxisVector.X * 5.0f);
 		}
@@ -445,17 +447,17 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent)
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionCompleted();
 		}
 		break;
 	case EInputKeyType::Esc:
-		if (BuildAssistComponent)
+		if (BuildAssistComponent && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->EndBuilding();
 		}
-		if (InteractionComponent)
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionCompleted();
 		}

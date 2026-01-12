@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -19,7 +19,9 @@ private:
 	template<typename T>
 	struct DataTableStruct
 	{
+		UPROPERTY()
 		TObjectPtr<UDataTable> ItemDataTable{};
+		UPROPERTY()
 		TMap<FName, const T*> ItemDataMap{}; // Key: Editor_RowNameHash
 		T Dummy{};
 	};

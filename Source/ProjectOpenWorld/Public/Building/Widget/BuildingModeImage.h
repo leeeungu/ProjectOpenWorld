@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/Button.h"
@@ -16,6 +16,8 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "BuildingMode")
 	uint8 SlotIndex{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BuildingMode")
+	FName BuildObjectId{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BuildingMode")
 	TObjectPtr<UStaticMesh> BuildingMesh{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BuildingMode")

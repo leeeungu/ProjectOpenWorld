@@ -1,6 +1,5 @@
 ﻿#include "Item/Actor/ItemActor.h"
 #include "Inventory/Component/InventoryComponent.h"
-#include "Item/DataAsset/ItemPrimaryDataAsset.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
@@ -8,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "Player/Character/BasePlayer.h"
 #include "Interaction/Component/InteractionComponent.h"
+#include "Item/DataTable/PalStaticItemDataStruct.h"
+#include "Item/System/ItemDataSubsystem.h"
 
 AItemActor::AItemActor()
 {
@@ -56,17 +57,30 @@ void AItemActor::BeginPlay()
 		ItemWidget->SetWidget(ToolTipWidget.Get());
 }
 
-void AItemActor::Init(TObjectPtr<UItemPrimaryDataAsset> IteData, int Count)
+
+void AItemActor::Init(FName NewItemID, int Count)
 {
-	this->ItemData = IteData;
-	this->itemCount = Count;
+	ItemID = NewItemID;
+	itemCount = Count;
+	if (!UItemDataSubsystem::IsValidInstance())
+		return;
+	const FPalStaticItemDataStruct* ItemDataStruct{};
+	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	if (!ItemDataStruct)
+		return;
+	//ItemData = ItemDataStruct->ItemPrimaryDataAsset;
+	if (ItemSkeletalMesh)
+	{
+		//ItemSkeletalMesh->SetSkeletalMesh(ItemData->GetItemSkeletalMesh());
+	}
+		
 }
 
 void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
-	if (ToolTipWidget && ItemData)
+	if (ToolTipWidget )
 	{
-		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemData->GetItemName());
+		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemID);
 	}
 	if (ToolTipWidget)
 	{
@@ -102,7 +116,7 @@ void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	{
 		Player->GetInteractionComponent()->OnInteractionCompleted();
 	}
-	if (Inventory->AddItem(ItemData.Get(), itemCount))
+	if (Inventory->AddItem(ItemID, itemCount))
 	{
 		Destroy();
 	}

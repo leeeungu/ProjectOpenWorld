@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -6,6 +6,7 @@
 
 class UTextBlock;
 class UImage;
+class USizeBox;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalItemRecipeMaterialWidget : public UUserWidget
@@ -18,13 +19,27 @@ protected:
 	int Material_Count{};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<USizeBox> MaterialSizeBox{};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UTextBlock> ItemNameText{};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr< UImage> ItemIconImage{};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UTextBlock> MaterialCountText{};
 
+	
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "ItemMaterial")
-	void SetMaterialData(const FName& InMaterialID, int InMaterialCount);
+	void SetMaterialData( FName InMaterialID, int InMaterialCount);
+
+	void SetWidgetSize(FVector2D InSize);
+
+	void UpdateMaterialWidget();
+
+	bool HasMaterial() const;
+	FName GetMaterialID() const { return Material_ID; }
+	int GetMaterialCount() const { return Material_Count; }
+	int GetMakeableCount() const;
+	
 };

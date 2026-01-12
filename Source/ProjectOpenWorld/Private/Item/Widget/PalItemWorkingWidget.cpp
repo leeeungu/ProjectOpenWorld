@@ -1,4 +1,4 @@
-#include "Item/Widget/PalItemWorkingWidget.h"
+﻿#include "Item/Widget/PalItemWorkingWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
 #include "Item/Widget/PalItemRecipeWidget.h"
@@ -12,11 +12,11 @@ void UPalItemWorkingWidget::NativeOnInitialized()
 	if (RecipeUniformGrid && RecipeWidgetClass && WidgetTree)
 	{
 		RecipeUniformGrid->ClearChildren();
-		int32 Count = 5 * 9;
+		int32 Count = MaxRecipePerCol * MaxRecipePerRow;
 		int i = 0;
-		for (int Row = 0; Row < 9; Row++)
+		for (int Row = 0; Row < MaxRecipePerRow; Row++)
 		{
-			for (int Col = 0; Col < 5; Col++)
+			for (int Col = 0; Col < MaxRecipePerCol; Col++)
 			{
 				UPalItemRecipeSlot* NewRecipeSlot = CreateWidget<UPalItemRecipeSlot>(this, RecipeWidgetClass);
 				if (NewRecipeSlot)
@@ -32,6 +32,7 @@ void UPalItemWorkingWidget::NativeOnInitialized()
 				}
 				else
 				{
+					RecipeUniformGrid->GetChildAt(i)->SetVisibility(ESlateVisibility::Hidden);
 					UE_LOG(LogTemp, Warning, TEXT("UPalItemWorkingWidget::NativeOnInitialized Failed to Create Recipe Slot Widget"));
 				}
 				i++;
@@ -46,11 +47,11 @@ void UPalItemWorkingWidget::NativePreConstruct()
 	if (RecipeUniformGrid && RecipeWidgetClass && WidgetTree)
 	{
 		RecipeUniformGrid->ClearChildren();
-		int32 Count = 5 * 9;
+		int32 Count = MaxRecipePerCol * MaxRecipePerRow;
 		int i = 0;
-		for (int Row = 0; Row < 9; Row++)
+		for (int Row = 0; Row < MaxRecipePerRow; Row++)
 		{
-			for (int Col = 0; Col < 5; Col++)
+			for (int Col = 0; Col < MaxRecipePerCol; Col++)
 			{
 				UPalItemRecipeSlot* NewRecipeSlot = CreateWidget<UPalItemRecipeSlot>(this, RecipeWidgetClass);
 				if (NewRecipeSlot)
@@ -61,11 +62,12 @@ void UPalItemWorkingWidget::NativePreConstruct()
 					if (RecipeIDList.IsValidIndex(i))
 					{
 						NewRecipeSlot->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-						NewRecipeSlot->SetRecipeID(RecipeIDList[i]);
+					//	NewRecipeSlot->SetRecipeID(RecipeIDList[i]);
 					}
 				}
 				else
 				{
+					RecipeUniformGrid->GetChildAt(i)->SetVisibility(ESlateVisibility::Hidden);
 					UE_LOG(LogTemp, Warning, TEXT("UPalItemWorkingWidget::NativeOnInitialized Failed to Create Recipe Slot Widget"));
 				}
 				i++;

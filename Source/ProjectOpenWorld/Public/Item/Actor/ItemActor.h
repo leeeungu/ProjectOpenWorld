@@ -23,8 +23,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UWidgetComponent> ItemWidget{};
 	
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
+	//TObjectPtr<UItemPrimaryDataAsset> ItemData{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
-	TObjectPtr<UItemPrimaryDataAsset> ItemData{};
+	FName ItemID = NAME_None;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
 	TSubclassOf<UUserWidget> ToolTipWidgetClass{};
@@ -40,13 +42,13 @@ public:
 	AItemActor();
 //	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintPure, Category = "ItemData")
-	FORCEINLINE UItemPrimaryDataAsset* const GetItemDataAsset() const { return ItemData.Get(); }
+	//UFUNCTION(BlueprintPure, Category = "ItemData")
+	//FORCEINLINE UItemPrimaryDataAsset* const GetItemDataAsset() const { return ItemData.Get(); }
 protected:
 	virtual void BeginPlay() override;
 
 public: // IInteractionInterface
-	void Init(TObjectPtr<UItemPrimaryDataAsset> Data, int Count);
+	void Init(FName NewItemID, int Count);
 
 	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
 	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;

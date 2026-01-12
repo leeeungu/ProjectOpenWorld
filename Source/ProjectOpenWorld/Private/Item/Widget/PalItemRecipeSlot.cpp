@@ -1,4 +1,5 @@
-#include "Item/Widget/PalItemRecipeSlot.h"
+﻿#include "Item/Widget/PalItemRecipeSlot.h"
+#include "Item/Widget/PalItemRecipeToolTip.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
@@ -11,6 +12,13 @@ void UPalItemRecipeSlot::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	ItemButton->OnClicked.AddDynamic(this, &UPalItemRecipeSlot::OnItemButtonClicked);
+	ItemButton->OnHovered.AddDynamic(this, &UPalItemRecipeSlot::OnItemButtonHovered);
+	ItemButton->OnUnhovered.AddDynamic(this, &UPalItemRecipeSlot::OnItemButtonUnhovered);
+
+
+	SetToolTip(CreateWidget<UPalItemRecipeToolTip>(this, ToolTipWidgetClass));
+	//ToolTipWidget = );
+	//UPalItemRecipeToolTip
 }
 
 void UPalItemRecipeSlot::NativeConstruct()
@@ -26,6 +34,11 @@ void UPalItemRecipeSlot::NativeConstruct()
 	}
 }
 
+void UPalItemRecipeSlot::NativeDestruct()
+{
+	Super::NativeDestruct();
+	OnItemButtonUnhovered();
+}
 
 void UPalItemRecipeSlot::OnItemButtonClicked()
 {
@@ -35,7 +48,28 @@ void UPalItemRecipeSlot::OnItemButtonClicked()
 	}
 }
 
-void UPalItemRecipeSlot::SetRecipeID(const FName& InRecipeID)
+void UPalItemRecipeSlot::OnItemButtonHovered()
+{
+	UPalItemRecipeToolTip* RecipeToolTip = Cast<UPalItemRecipeToolTip>(GetToolTip());
+	if (RecipeToolTip)
+	{
+		RecipeToolTip->UpdateToolTipWidget();
+	}
+	if (SlotFrame)
+	{
+		SlotFrame->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void UPalItemRecipeSlot::OnItemButtonUnhovered()
+{
+	if (SlotFrame)
+	{
+		SlotFrame->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UPalItemRecipeSlot::SetRecipeID(FName InRecipeID)
 {
 	RecipeID = InRecipeID;
 	if (RecipeID == NAME_None)
@@ -73,5 +107,10 @@ void UPalItemRecipeSlot::SetRecipeID(const FName& InRecipeID)
 				}
 			}
 		}
+	}
+	UPalItemRecipeToolTip* RecipeToolTip = Cast<UPalItemRecipeToolTip>(GetToolTip());
+	if (RecipeToolTip)
+	{
+		RecipeToolTip->SetRecipeID(RecipeID);
 	}
 }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -43,7 +43,7 @@ struct FBuildMaterialData
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaterialData")
-	FString Material_Id{};
+	FName Material_Id{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaterialData")
 	int32 Material_Count = 0;
 };

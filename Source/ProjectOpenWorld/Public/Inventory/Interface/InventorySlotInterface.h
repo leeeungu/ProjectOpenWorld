@@ -13,11 +13,14 @@ struct FInventorySlot
 public:
 	FInventorySlot() = default;
 
-	FInventorySlot(UItemPrimaryDataAsset* DataAsset);
+	FInventorySlot(FName NewItemID);
+	//FInventorySlot(UItemPrimaryDataAsset* DataAsset);
 
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
-	TObjectPtr<UItemPrimaryDataAsset> ItemDataAsset{};
+	FName ItemID{};
+	//UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
+	//TObjectPtr<UItemPrimaryDataAsset> ItemDataAsset{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	int ItemCount{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
@@ -26,7 +29,6 @@ public:
 	bool isEmpthySlot = true;
 
 	bool operator==(const FInventorySlot& sDst);
-	bool operator==(const UItemPrimaryDataAsset* pDst);
 };
 
 UINTERFACE(MinimalAPI)
