@@ -10,7 +10,7 @@ public class ProjectOpenWorld : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Landscape", "UMG",
-            "AIModule", "SlateCore", "NavigationSystem", "VaRest", "Niagara"
+            "AIModule", "SlateCore", "NavigationSystem", "VaRest", "Niagara", "ProceduralMeshComponent"
 
         });
 
