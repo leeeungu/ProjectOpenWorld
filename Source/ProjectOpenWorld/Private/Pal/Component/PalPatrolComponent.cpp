@@ -1,0 +1,78 @@
+﻿#include "Pal/Component/PalPatrolComponent.h"
+#include "Pal/DataTable/PalMonsterData.h"
+#include "NavigationSystem.h"
+
+UPalPatrolComponent::UPalPatrolComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
+
+void UPalPatrolComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+
+void UPalPatrolComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void UPalPatrolComponent::SetPatrolData(const FPalMonsterPatrolData* InPatrolData)
+{
+	PatrolDataPtr = InPatrolData;
+}
+
+void UPalPatrolComponent::UpdatePatrolIndex()
+{
+	if (!PatrolDataPtr || PatrolDataPtr->PatrolPoint.Num() == 0)
+	{
+		return;
+	}
+	else if (!PatrolDataPtr->bRandom)
+	{
+		CurrentPatrolIndex++;
+		if (CurrentPatrolIndex >= PatrolDataPtr->PatrolPoint.Num())
+		{
+			if (PatrolDataPtr->bLoop)
+			{
+				CurrentPatrolIndex = 0;
+			}
+			else
+			{
+				CurrentPatrolIndex = PatrolDataPtr->PatrolPoint.Num() - 1; // Stay at last point
+			}
+		}
+	}
+
+}
+
+FVector UPalPatrolComponent::GetCurrentPatrolPoint() const
+{
+	if (PatrolDataPtr && PatrolDataPtr->bRandom)
+	{
+		FNavLocation NavLocation{};
+		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+		if (NavSys && NavSys->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), PatrolDataPtr->RandomRadius, NavLocation))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Random Patrol Location: %s"), *NavLocation.Location.ToString());
+			return NavLocation.Location;
+		}
+	}
+	else if (PatrolDataPtr && PatrolDataPtr->PatrolPoint.IsValidIndex(CurrentPatrolIndex))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Patrol Location: %s"), *PatrolDataPtr->PatrolPoint[CurrentPatrolIndex].ToString());
+		return PatrolDataPtr->PatrolPoint[CurrentPatrolIndex];
+	}
+	else if (!PatrolDataPtr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Patrol Data is nullptr"));
+	}
+	if (GetOwner())
+	{
+		return GetOwner()->GetActorLocation();
+	}
+	return FVector::ZeroVector;
+}
+

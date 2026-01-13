@@ -16,6 +16,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Building/Widget/BuildingModeWidget.h"
 #include "GenericTeamAgentInterface.h"
+#include "NavigationInvokerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -68,6 +69,8 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	{
 		BuildingWidget = CreateWidget< UBuildingModeWidget>(GetWorld(), WidgetClass.Class);
 	}
+
+	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)

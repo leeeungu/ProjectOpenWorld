@@ -1,4 +1,4 @@
-#include "Creature/Character/BaseMonster.h"
+﻿#include "Creature/Character/BaseMonster.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
@@ -8,6 +8,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Pal/Component/PalMonsterInteractionComponent.h"
+#include "Pal/DataTable/PalMonsterData.h"
 
 ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
@@ -46,6 +47,18 @@ void ABaseMonster::PossessedBy(AController* NewController)
 	{
 		newTeam->SetGenericTeamId(FGenericTeamId(2));
 	}*/
+}
+
+void ABaseMonster::SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData)
+{
+	Level = lv;
+	Hp = LevelData.MaxHP;
+	Attack = LevelData.AttackPower;
+	Defend = LevelData.Armor;
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = LevelData.MoveSpeed;
+	}
 }
 
 void ABaseMonster::RetAttackValue_Implementation()

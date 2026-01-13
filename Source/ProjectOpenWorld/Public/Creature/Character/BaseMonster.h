@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -10,11 +10,14 @@
 class UPalCommandComponent;
 class UPalAttackComponent;
 class UPalMonsterInteractionComponent;
+struct FPalMonsterLevelData;
 UCLASS()
 class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface, public ICommanderManageable
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
+	int Level{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Hp{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
@@ -54,6 +57,8 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
 	FOnDamageedDelegate OnDamagedDelegate{};
+	void SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData);
+
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

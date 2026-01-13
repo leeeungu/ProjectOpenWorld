@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -29,17 +29,17 @@ struct FSpawnCharacterData
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	FName Pal;
+	FName Pal = NAME_None;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	FName NPC;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	int32 LvMin;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	int32 LvMax;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	int32 NumMin;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	int32 NumMax;
+	FName NPC = NAME_None;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow", meta = (ClampMin = 1))
+	int32 LvMin = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow", meta = (ClampMax = 255))
+	int32 LvMax = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow", meta = (ClampMin = 0))
+	int32 NumMin = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow", meta = (ClampMax = 10))
+	int32 NumMax = 1;
 };
 //{
 //    "SpawnerName": "Test",
@@ -56,7 +56,7 @@ struct FPalWildSpawnerDatabaseRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	FName SpawnerName{};
+	FName SpawnerName = NAME_None;
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
 	//FName SpawnerType;
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")

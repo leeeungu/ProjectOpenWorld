@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -18,6 +18,7 @@ class UInteractionComponent;
 class UBuildingAssistComponent;
 class UPlayerAnimationComponent;
 class UBuildingModeWidget;
+class UNavigationInvokerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -55,6 +56,8 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitec
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr < UPlayerAnimationComponent>	PlayerAnimationComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UNavigationInvokerComponent> NavigationInvokerComp{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext{};
