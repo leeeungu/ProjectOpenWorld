@@ -20,8 +20,8 @@ from PalConfig import (
 #  - SkeletalMesh            : Monster/<PAL_NAME>/Mesh/SK_<PAL_NAME> 를 사용
 # ============================================================
 
-PAL_NAME = "Anubis2"
-CHILD_BP_POSTFIX = "_Monster"
+PAL_NAME = "FlowerDinosaur"
+CHILD_BP_POSTFIX = "_Pal"
 TARGET_BP_PATH     = f"/Game/Pal/Model/Global/Bp{CHILD_BP_POSTFIX}Base"
 TARGET_ANIMBP_PATH = f"/Game/Pal/Model/Monster/{PAL_NAME}/ABP_{PAL_NAME}{CHILD_BP_POSTFIX}"
 CHILD_BP_PREFIX    = "Bp_" 
