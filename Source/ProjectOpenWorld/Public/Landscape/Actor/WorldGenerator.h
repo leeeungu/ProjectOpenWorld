@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "ProceduralMeshComponent.h"
@@ -63,12 +63,17 @@ protected:
 	TArray<float> amplitudes{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	FHeightMapPngData HeightMapData{};
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	int SectionCreateTickCount{};
+	int MaxSection{};
 
 	UPROPERTY(BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UProceduralMeshComponent> TerrainMesh{};
-
-
+	UPROPERTY(BlueprintReadOnly, Category = "Landscape Settings")
+	TObjectPtr<UProceduralMeshComponent> TerrainPreMesh{};
+	UPROPERTY()
+	TArray< TObjectPtr<UProceduralMeshComponent>> arrTerrainMeshs{};
+	int CurrentMeshIndex{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr< UMaterialInterface> TerrainMaterial{};
@@ -77,24 +82,19 @@ protected:
 	bool GeneratorBusy = false;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Landscape Settings")
-	bool TileDataReady = false;
+	bool TileDataReady = false;	
 
-	UPROPERTY(BlueprintReadOnly, Category = "Landscape Settings")
-	TMap<FIntPoint, int> QueuedTiles{};
-
-
-
-	int SectionIndexX{};
-	int SectionIndexY{};
+	int PlayerSectionIndexX{};
+	int PlayerSectionIndexY{};
 
 	//int PlayerSectionIndexX{};
 	//int PlayerSectionIndexY{};
 
-	TArray<FVector> SubVertices{};
-	TArray<FVector2D> SubUVs{};
-	TArray<int32> SubTriangles{};
-	TArray<FVector> SubNormals{};
-	TArray<FProcMeshTangent> SubTangents{};
+	TArray<TArray<FVector>> SumVertices{};
+	TArray<TArray<FVector2D>> SumUVs{};
+	TArray<TArray<int32>> SumTriangles{};
+	TArray<TArray<FVector>> SumNormals{};
+	TArray<TArray<FProcMeshTangent>> SumTangents{};
 
 	TArray<int32> Triangles{};
 
@@ -111,49 +111,78 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 protected:
+	void SetCurrentMesh();
+
+protected:
 	virtual void BeginPlay() override;
 
 	void OnUpdatePlayerLocation(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport);
 
+	void UpdateTerrain();
 public:	
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
-	void GenerateTerrain(const int inSectionIndexX, const int inSectionIndexY);
-	//void GenerateTerrainInRange(const FIntPoint& StartCoord, const FIntPoint& EndCoord);
-
-	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
-	void GenerateTerrainAsync(const int inSectionIndexX, const int inSectionIndexY);
-
-	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
-	void DrawTile();
 	//UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
+	//void GenerateTerrain(const int inSectionIndexX, const int inSectionIndexY);
+	////void GenerateTerrainInRange(const FIntPoint& StartCoord, const FIntPoint& EndCoord);
+	//
+	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
+	void GenerateTerrainAsync(const int inSectionIndexX = 0, const int inSectionIndexY = 0);
+
+	//UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
+	//void DrawTile();
+	////UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
 
 	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
 	FVector GetPlayerLocation() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
-	FVector2D GetTileLocation(FIntPoint TileCoordinate) const;
-
-	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
-	bool GetClosestQueuedTile(FIntPoint& Result ) const;
-
-	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
-	int GetFurthestTile() const;
-	public:
+	//UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
+	//FVector2D GetTileLocation(FIntPoint TileCoordinate) const;
+	//
+	//UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
+	//bool GetClosestQueuedTile(FIntPoint& Result ) const;
+	//
+	FIntPoint GetSectionIndex(FVector Location);
+	//
+	//UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
+	//int GetFurthestTile() const;
+public:/*
 	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
 	float GetHeight(float inX, float inY) const;
-	float PerlinNoiseExtended(float x, float y, float scale, float Amplitude, FVector2D offset = FVector2D::ZeroVector) const;
+	float PerlinNoiseExtended(float x, float y, float scale, float Amplitude, FVector2D offset = FVector2D::ZeroVector) const;*/
 };
 
 
 class FAsyncWorldGenerater : public FNonAbandonableTask
 {
+	struct TrraninNode
+	{
+		int SectionIndexX{};
+		int SectionIndexY{};
+		TrraninNode(int inSectionIndexX, int inSectionIndexY)
+			:SectionIndexX(inSectionIndexX), SectionIndexY(inSectionIndexY)
+		{
+		}
+		TrraninNode() = default;
+		bool operator==(const TrraninNode& Other) const
+		{
+			return SectionIndexX == Other.SectionIndexX && SectionIndexY == Other.SectionIndexY;
+		}
+		bool operator<(const TrraninNode& Other) const
+		{
+			if (SectionIndexX != Other.SectionIndexX)
+			{
+				return SectionIndexX < Other.SectionIndexX;
+			}
+			return SectionIndexY < Other.SectionIndexY;
+		}
+	};
 public:
 	FAsyncWorldGenerater(AWorldGenerator* InWorldGenerator)
 	{
 		WorldGenerator = InWorldGenerator;
+		InitGenerater();
 	}
 
 	FORCEINLINE	TStatId GetStatId() const
@@ -163,8 +192,17 @@ public:
 
 	void DoWork();
 
+	void InitGenerater();
+	void GenerateTerrainTile(const int inSectionIndexX, const int inSectionIndexY);
+	float GetHeight(float inX, float inY) const;
+	float PerlinNoiseExtended(float x, float y, float scale, float Amplitude, FVector2D offset = FVector2D::ZeroVector) const;
+
+private:
+	int MeshSectionIndex{};
 private:
 	UPROPERTY()
 	TObjectPtr<AWorldGenerator> WorldGenerator{};
-
+	FIntPoint PlayerSectionIndex{};
+	int TargetIndex{};
+	TArray<int32> Triangles{};
 };
