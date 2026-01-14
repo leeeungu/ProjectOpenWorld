@@ -1,4 +1,4 @@
-﻿#include "Landscape/Actor/WorldGenerator.h"
+#include "Landscape/Actor/WorldGenerator.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/GameplayStatics.h"
@@ -145,7 +145,7 @@ void AWorldGenerator::SetCurrentMesh()
 			TerrainMesh->SetVisibility(true);
 			TerrainMesh->SetActive(true);
 			TerrainMesh->SetComponentTickEnabled(true);
-			TerrainMesh->UpdateNavigationBounds();
+			//TerrainMesh->UpdateNavigationBounds();
 			UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
 		}
 	}
