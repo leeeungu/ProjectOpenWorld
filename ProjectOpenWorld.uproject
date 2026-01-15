@@ -47,6 +47,10 @@
 		{
 			"Name": "VaRest",
 			"Enabled": true
+		},
+		{
+			"Name": "PCG",
+			"Enabled": true
 		}
 	]
 }

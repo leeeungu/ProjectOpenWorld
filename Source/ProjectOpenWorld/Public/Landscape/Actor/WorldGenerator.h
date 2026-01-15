@@ -9,11 +9,14 @@ class UProceduralMeshComponent;
 enum class EUpdateTransformFlags : int32;
 enum class ETeleportType : uint8;
 class FObjectPreSaveContext;
+class UHierarchicalInstancedStaticMeshComponent;
+class UInstancedStaticMeshComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AWorldGenerator : public AActor
 {
 	friend class FAsyncWorldGenerater;
+	friend class UQuadtreeWorldSubsystem;
 	GENERATED_BODY()
 protected:
 
@@ -29,14 +32,23 @@ protected:
 	int MeshSectionIndex = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
 	int SectionCreateTickCount{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
+	int TickFoliageCount{};
+
+	int CurrentFoliageCount{};
+	int FolliageSectionIndex{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TArray<float> scales{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TArray<float> amplitudes{};
 
 	int MaxSection{};
-	UPROPERTY(BlueprintReadOnly, Category = "Landscape Settings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UProceduralMeshComponent> TerrainMesh{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	TObjectPtr<UInstancedStaticMeshComponent> FoligeMesh{};
+	
 
 	UPROPERTY(BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UProceduralMeshComponent> GenerateTerrain{};
@@ -88,6 +100,7 @@ public:
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
 	void GenerateTerrainAsync();
+	void GenerateTerrain_Editor(int inSectionIndexX, int inSectionIndexY);
 
 	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
 	FVector GetPlayerLocation() const;
