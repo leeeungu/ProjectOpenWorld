@@ -65,19 +65,6 @@ public:
 	FString UnlockItemID{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
 	TArray< FRecipeMaterialData> Materials{};
-
-	// Workable Attribute
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	//int32 WorkableAttribute = 0;
-	// Energy Type
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	//FString EnergyType{};
-	//// Energy Amount
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	//int32 EnergyAmount = 0;
-	// Craft Exp Rate
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
-	//float CraftExpRate{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemRecipe")
 	int64 Editor_RowNameHash{};
 };

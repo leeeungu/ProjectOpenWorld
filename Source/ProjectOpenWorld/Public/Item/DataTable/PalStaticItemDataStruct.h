@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -78,19 +78,6 @@ public:
 	// Icon Name
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	FString IconName{};
-	//// Type A
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	//FString TypeA;
-	//// Type B
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	//FString TypeB;
-	// Rank
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	//int32 Rank = 0;
-	// Rarity
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	//int32 Rarity = 0;
-	// Max Stack Count
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	int32 MaxStackCount = 0;
 	// Weight
@@ -102,26 +89,16 @@ public:
 	// Sort ID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	int32 SortID = 0;
-	// b In Treasure Box
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	//bool bInTreasureBox = false;
-	// b Not Consumed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	bool bNotConsumed = false;
 	// b Enable Handcraft
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	bool bEnableHandcraft = false;
-	// b Legal In Game
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	//bool bLegalInGame = true;
-
-	//VisualBlueprintClassName
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	FString VisualBlueprintClassName{};
 	//	VisualBlueprintClassSoft
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	TSoftClassPtr<AItemActor> VisualBlueprintClassSoft{};
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	int64 Editor_RowNameHash{};
 };

@@ -157,16 +157,13 @@ void AWorldGenerator::SetCurrentMesh()
 {
 	if (TerrainMesh != GenerateTerrain)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Switch Mesh %d"), CurrentMeshIndex);
 		if (TerrainMesh)
 		{
-			//TerrainMesh->ClearAllMeshSections();
 			TerrainMesh->SetVisibility(false);
 			TerrainMesh->SetActive(false);
 			TerrainMesh->SetComponentTickEnabled(false);
 		}
 		UProceduralMeshComponent* Temp = TerrainMesh;
-		UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Switch Mesh %s -> %s"), *GetNameSafe(Temp), *GetNameSafe(GenerateTerrain));
 		TerrainMesh = GenerateTerrain;
 		GenerateTerrain = Temp;
 		if (TerrainMesh)
@@ -174,7 +171,6 @@ void AWorldGenerator::SetCurrentMesh()
 			TerrainMesh->SetVisibility(true);
 			TerrainMesh->SetActive(true);
 			TerrainMesh->SetComponentTickEnabled(true);
-			//TerrainMesh->UpdateNavigationBounds();
 			UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
 		}
 	}
@@ -202,16 +198,19 @@ void AWorldGenerator::UpdateTerrain()
 	{
 		for (MeshSectionIndex; MeshSectionIndex < Max; MeshSectionIndex++)
 		{
-			if (GenerateTerrain->GetProcMeshSection(MeshSectionIndex) && SumVertices[MeshSectionIndex].Num() == GenerateTerrain->GetProcMeshSection(MeshSectionIndex)->ProcVertexBuffer.Num())
+			if (GenerateTerrain->GetProcMeshSection(MeshSectionIndex) && SumVertices[MeshSectionIndex].Num()
+				== GenerateTerrain->GetProcMeshSection(MeshSectionIndex)->ProcVertexBuffer.Num())
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Update Mesh Section %d"), MeshSectionIndex);
-				GenerateTerrain->UpdateMeshSection(MeshSectionIndex, SumVertices[MeshSectionIndex], SumNormals[MeshSectionIndex], 
+				GenerateTerrain->UpdateMeshSection(MeshSectionIndex, SumVertices[MeshSectionIndex],
+					SumNormals[MeshSectionIndex], 
 					SumUVs[MeshSectionIndex], TArray<FColor>(), SumTangents[MeshSectionIndex]);
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Create Mesh Section %d"), MeshSectionIndex);
-				GenerateTerrain->CreateMeshSection(MeshSectionIndex, SumVertices[MeshSectionIndex], SumTriangles[MeshSectionIndex], SumNormals[MeshSectionIndex],
+				GenerateTerrain->CreateMeshSection(MeshSectionIndex, SumVertices[MeshSectionIndex],
+					SumTriangles[MeshSectionIndex], SumNormals[MeshSectionIndex],
 					SumUVs[MeshSectionIndex], TArray<FColor>(), SumTangents[MeshSectionIndex], true);
 			}
 			if (TerrainMaterial)
@@ -401,7 +400,8 @@ void FAsyncWorldGenerater::DoWork()
 		{
 			int NewX = Node.SectionIndexX + Dx[i];
 			int NewY = Node.SectionIndexY + Dy[i];
-			if( (NewX - PlayerSectionIndexX) * (NewX - PlayerSectionIndexX) + (NewY - PlayerSectionIndexY) * (NewY - PlayerSectionIndexY) > dissqr)
+			if( (NewX - PlayerSectionIndexX) * (NewX - PlayerSectionIndexX) +
+				(NewY - PlayerSectionIndexY) * (NewY - PlayerSectionIndexY) > dissqr)
 			{
 				continue;
 			}
