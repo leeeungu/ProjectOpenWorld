@@ -49,11 +49,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UInstancedStaticMeshComponent> FoligeMesh{};
 	
-
-	UPROPERTY(BlueprintReadOnly, Category = "Landscape Settings")
+	UPROPERTY(VisibleAnywhere, Category = "Landscape Settings")
 	TObjectPtr<UProceduralMeshComponent> GenerateTerrain{};
-	UPROPERTY()
-	TArray< TObjectPtr<UProceduralMeshComponent>> arrTerrainMeshs{};
 	int CurrentMeshIndex{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")

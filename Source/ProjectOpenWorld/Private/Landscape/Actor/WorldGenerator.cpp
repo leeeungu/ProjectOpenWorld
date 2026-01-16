@@ -19,28 +19,14 @@ AWorldGenerator::AWorldGenerator()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	FoligeMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("FoligeMesh"));
 	FoligeMesh->SetupAttachment(RootComponent);
-
-	//TerrainMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("TerrainMesh"));
-	//NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
-	//NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
-	arrTerrainMeshs.Reserve(10);
-	for (int i = 0; i < 10; i++)
-	{
-		UProceduralMeshComponent* pTerrainMesh = CreateDefaultSubobject<UProceduralMeshComponent>(FName(*(FString(TEXT("TerrainMesh") + FString::FromInt(i)))));
-		arrTerrainMeshs.Push(pTerrainMesh);
-		if (pTerrainMesh)
-		{
-			pTerrainMesh->ClearAllMeshSections();
-			pTerrainMesh->SetVisibility(false);
-			pTerrainMesh->SetActive(false);
-			pTerrainMesh->SetComponentTickEnabled(false);
-			pTerrainMesh->DetachFromParent();
-			pTerrainMesh->MarkRenderStateDirty();
-			pTerrainMesh->SetCanEverAffectNavigation(true);
-			pTerrainMesh->bNavigationRelevant = true;
-			pTerrainMesh->SetCollisionProfileName(TEXT("BlockAll"));
-		}
-	}
+	TerrainMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("TerrainMesh"));
+	TerrainMesh->SetupAttachment(RootComponent);
+	GenerateTerrain = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GenerateTerrain"));
+	GenerateTerrain->SetupAttachment(RootComponent);
+	GenerateTerrain->SetVisibility(false);
+	GenerateTerrain->SetActive(false);
+	GenerateTerrain->SetComponentTickEnabled(false);
+	SetGeneratorMesh();
 	scales =
 	{
 		0.00001f,
@@ -60,43 +46,43 @@ void AWorldGenerator::PreSave(FObjectPreSaveContext ObjectSaveContext)
 {
 	Super::PreSave(ObjectSaveContext);
 #if WITH_EDITOR
-	if (TerrainMesh && SumVertices.Num() >= MaxSection)
-	{
-		for (int i = 0; i < MaxSection; i++)
-		{
-			if (TerrainMesh->GetProcMeshSection(i))
-			{
-				TerrainMesh->UpdateMeshSection(i, SumVertices[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i]);
-			}
-			//else
-			//	TerrainMesh->CreateMeshSection(i, SumVertices[i], SumTriangles[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i], true);
-			if (TerrainMaterial)
-			{
-				TerrainMesh->SetMaterial(i, TerrainMaterial);
-			}
-		}
-	}
-	FolliageSectionIndex = 0;
-	CurrentFoliageCount = 0;
-	if (FolliageSectionIndex < MaxSection && SumVertices.Num() > FolliageSectionIndex)
-	{
-		if (FoligeMesh)
-		{
-			FoligeMesh->ClearInstances();
-			int Size = SumVertices[FolliageSectionIndex].Num();
-			for (CurrentFoliageCount; CurrentFoliageCount < Size ; CurrentFoliageCount++)
-			{
-				FVector location = SumVertices[FolliageSectionIndex][CurrentFoliageCount];
-				if (location.Z > GetActorLocation().Z && ((int)location.Z % 255) == 1)
-				{
-					//location.Z -= 10.0f;
-					{
-						FoligeMesh->AddInstance(FTransform(location), true);
-					}
-				}
-			}
-		}
-	}
+	//if (TerrainMesh && SumVertices.Num() >= MaxSection)
+	//{
+	//	for (int i = 0; i < MaxSection; i++)
+	//	{
+	//		if (TerrainMesh->GetProcMeshSection(i))
+	//		{
+	//			TerrainMesh->UpdateMeshSection(i, SumVertices[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i]);
+	//		}
+	//		//else
+	//		//	TerrainMesh->CreateMeshSection(i, SumVertices[i], SumTriangles[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i], true);
+	//		if (TerrainMaterial)
+	//		{
+	//			TerrainMesh->SetMaterial(i, TerrainMaterial);
+	//		}
+	//	}
+	//}
+	//FolliageSectionIndex = 0;
+	//CurrentFoliageCount = 0;
+	//if (FolliageSectionIndex < MaxSection && SumVertices.Num() > FolliageSectionIndex)
+	//{
+	//	if (FoligeMesh)
+	//	{
+	//		FoligeMesh->ClearInstances();
+	//		int Size = SumVertices[FolliageSectionIndex].Num();
+	//		for (CurrentFoliageCount; CurrentFoliageCount < Size ; CurrentFoliageCount++)
+	//		{
+	//			FVector location = SumVertices[FolliageSectionIndex][CurrentFoliageCount];
+	//			if (location.Z > GetActorLocation().Z && ((int)location.Z % 255) == 1)
+	//			{
+	//				//location.Z -= 10.0f;
+	//				{
+	//					FoligeMesh->AddInstance(FTransform(location), true);
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 #endif // 
 }
 
@@ -118,7 +104,6 @@ void AWorldGenerator::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 			PropertyName == GET_MEMBER_NAME_CHECKED(AWorldGenerator, MeshSectionIndex) || 
 			PropertyName == GET_MEMBER_NAME_CHECKED(AWorldGenerator, TerrainMaterial))
 		{
-			TerrainMesh = arrTerrainMeshs[0];
 			FVector CameraLocation = GetActorLocation();
 			FRotator CameraRotation{};
 			UUnrealEditorSubsystem* SubSystem = GEditor->GetEditorSubsystem<UUnrealEditorSubsystem>();
@@ -127,11 +112,12 @@ void AWorldGenerator::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 				SubSystem->GetLevelViewportCameraInfo(CameraLocation, CameraRotation);
 			}
 			FIntPoint PlayerSectionIndex = GetSectionIndex(CameraLocation);
-			GenerateTerrain_Editor(PlayerSectionIndex.X, PlayerSectionIndex.Y);
-			int nSections = TerrainMesh->GetNumSections();
-			for (int i = 0; i < nSections; i++)
+			FAsyncWorldGenerater Generator(this);
+			Generator.DoWork();
+			SetGeneratorMesh();
+			while (FolliageSectionIndex != MaxSection || MaxSection != MeshSectionIndex)
 			{
-				TerrainMesh->SetMaterial(i, TerrainMaterial);
+				UpdateTerrain();
 			}
 		}
 	}
@@ -143,11 +129,6 @@ void AWorldGenerator::BeginPlay()
 {
 	Super::BeginPlay();
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	MeshSectionIndex = 0;
-	GeneratorBusy = false;
-	TileDataReady = false;
-
-	FoligeMesh->ClearInstances();
 	if (PlayerCharacter)
 	{
 		FIntPoint PlayerSectionIndex = GetSectionIndex(PlayerCharacter->GetActorLocation());
@@ -183,50 +164,35 @@ void AWorldGenerator::SetCurrentMesh()
 			TerrainMesh->SetVisibility(false);
 			TerrainMesh->SetActive(false);
 			TerrainMesh->SetComponentTickEnabled(false);
-			TerrainMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-			TerrainMesh->MarkRenderStateDirty();
 		}
+		UProceduralMeshComponent* Temp = TerrainMesh;
+		UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Switch Mesh %s -> %s"), *GetNameSafe(Temp), *GetNameSafe(GenerateTerrain));
 		TerrainMesh = GenerateTerrain;
+		GenerateTerrain = Temp;
 		if (TerrainMesh)
 		{
-			TerrainMesh->SetupAttachment(GetRootComponent());
 			TerrainMesh->SetVisibility(true);
 			TerrainMesh->SetActive(true);
 			TerrainMesh->SetComponentTickEnabled(true);
 			//TerrainMesh->UpdateNavigationBounds();
 			UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
 		}
-		GenerateTerrain = nullptr;
 	}
 }
 
 void AWorldGenerator::SetGeneratorMesh()
 {
-	if (arrTerrainMeshs.Num() <= 1)
-	{
-		GenerateTerrain = TerrainMesh;
-		return;
-	}
-
-	CurrentMeshIndex++;
-	if (!arrTerrainMeshs.IsValidIndex(CurrentMeshIndex))
-		CurrentMeshIndex = 0;
-	UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Set Generator Mesh Index %d"), CurrentMeshIndex);
-	GenerateTerrain = arrTerrainMeshs[CurrentMeshIndex];
 	if (GenerateTerrain)
 	{
-		//GenerateTerrain->ClearAllMeshSections();
-		GenerateTerrain->SetVisibility(false);
-		GenerateTerrain->SetActive(false);
-		GenerateTerrain->SetComponentTickEnabled(false);
 		//FoligeMesh->ClearInstances();
+		FoligeMesh->ClearInstances();
 		MaxSection = SumVertices.Num();
 		MeshSectionIndex = 0;
 		FolliageSectionIndex = 0;
 		CurrentFoliageCount = 0;
+		GeneratorBusy = false;
 		UpdateTerrain();
 	}
-	GeneratorBusy = false;
 }
 
 void AWorldGenerator::UpdateTerrain()
@@ -234,26 +200,24 @@ void AWorldGenerator::UpdateTerrain()
 	int Max = FMath::Min(MaxSection, MeshSectionIndex + SectionCreateTickCount);
 	if (GenerateTerrain)
 	{
-		for (int i = MeshSectionIndex; i < Max; i++)
+		for (MeshSectionIndex; MeshSectionIndex < Max; MeshSectionIndex++)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Create Mesh Section %d"), i);
-			if (GenerateTerrain->GetProcMeshSection(i))
+			if (GenerateTerrain->GetProcMeshSection(MeshSectionIndex) && SumVertices[MeshSectionIndex].Num() == GenerateTerrain->GetProcMeshSection(MeshSectionIndex)->ProcVertexBuffer.Num())
 			{
-				GenerateTerrain->UpdateMeshSection(i, SumVertices[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i]);
+				UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Update Mesh Section %d"), MeshSectionIndex);
+				GenerateTerrain->UpdateMeshSection(MeshSectionIndex, SumVertices[MeshSectionIndex], SumNormals[MeshSectionIndex], 
+					SumUVs[MeshSectionIndex], TArray<FColor>(), SumTangents[MeshSectionIndex]);
 			}
 			else
 			{
-				GenerateTerrain->CreateMeshSection(i, SumVertices[i], SumTriangles[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i], true);
+				UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Create Mesh Section %d"), MeshSectionIndex);
+				GenerateTerrain->CreateMeshSection(MeshSectionIndex, SumVertices[MeshSectionIndex], SumTriangles[MeshSectionIndex], SumNormals[MeshSectionIndex],
+					SumUVs[MeshSectionIndex], TArray<FColor>(), SumTangents[MeshSectionIndex], true);
 			}
 			if (TerrainMaterial)
 			{
-				GenerateTerrain->SetMaterial(i, TerrainMaterial);
+				GenerateTerrain->SetMaterial(MeshSectionIndex, TerrainMaterial);
 			}
-		}
-		MeshSectionIndex = Max;
-		if (MaxSection == MeshSectionIndex)
-		{
-			SetCurrentMesh();
 		}
 	}
 	if (FolliageSectionIndex < MaxSection)
@@ -287,6 +251,7 @@ void AWorldGenerator::UpdateTerrain()
 	if (FolliageSectionIndex == MaxSection && MaxSection == MeshSectionIndex)
 	{
 		int Sqr = SectionRadiusCount * SectionRadiusCount;
+		SetCurrentMesh();
 		SumVertices.Empty(Sqr);
 		SumUVs.Empty(Sqr);
 		SumTriangles.Empty(Sqr);
@@ -317,89 +282,82 @@ void AWorldGenerator::Tick(float DeltaTime)
 
 void AWorldGenerator::GenerateTerrainAsync()
 {
-	if (GeneratorBusy)
+	if (!GeneratorBusy && !TileDataReady)
 	{
-		if (TileDataReady)
-		{
-			SetCurrentMesh();
-		}
-		return;
-	}
-	if (TileDataReady)
-		return;
-	GeneratorBusy = true;
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
-		{
-			auto WorldGenTask = new FAsyncTask< FAsyncWorldGenerater>(this);
+		GeneratorBusy = true;
+		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
+			{
+				auto WorldGenTask = new FAsyncTask< FAsyncWorldGenerater>(this);
 				WorldGenTask->StartBackgroundTask();
 				WorldGenTask->EnsureCompletion();
-			delete WorldGenTask;
-		}
-	);
+				delete WorldGenTask;
+			}
+		);
+	}
 }
 
 void AWorldGenerator::GenerateTerrain_Editor(int inSectionIndexX, int inSectionIndexY)
 {
-	int Sqr = SectionRadiusCount * SectionRadiusCount;
-	SumVertices.Empty(Sqr);
-	SumUVs.Empty(Sqr);
-	SumTriangles.Empty(Sqr);
-	SumNormals.Empty(Sqr);
-	SumTangents.Empty(Sqr);
-	PlayerSectionIndexX = inSectionIndexX;
-	PlayerSectionIndexY = inSectionIndexY;
-	FAsyncWorldGenerater WorldGenTask(this);
-	WorldGenTask.DoWork();
-	TileDataReady = false;
-	MaxSection = SumVertices.Num();
-	MeshSectionIndex = 0;
-	if (TerrainMesh)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GenerateTerrain_Editor Create Mesh Sections In Editor %d"), TerrainMesh->GetNumSections());
-		//if (TerrainMesh->GetNumSections() > MaxSection)
-		TerrainMesh->ClearAllMeshSections();
-		FoligeMesh->ClearInstances();
-		for (int i = 0; i < MaxSection; i++)
-		{
-			TerrainMesh->CreateMeshSection(i, SumVertices[i], SumTriangles[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i], true);
-			if (TerrainMaterial)
-			{
-				TerrainMesh->SetMaterial(i, TerrainMaterial);
-			}
-		}
-		MeshSectionIndex = MaxSection;
-		TerrainMesh->SetupAttachment(TerrainMesh);
-		TerrainMesh->SetVisibility(true);
-		TerrainMesh->SetActive(true);
-	}
-	if (FolliageSectionIndex < MaxSection)
-	{
-		if (FoligeMesh)
-		{
-			int Count{};
-			int Size = SumVertices[FolliageSectionIndex].Num();
-			for (CurrentFoliageCount; CurrentFoliageCount < Size && Count < TickFoliageCount; CurrentFoliageCount++)
-			{
-				FVector location = SumVertices[FolliageSectionIndex][CurrentFoliageCount];
-				if (location.Z > GetActorLocation().Z && ((int)location.Z % 255) == 1)
-				{
-					//location.Z -= 10.0f;
-					if (FoligeMesh->GetNumInstances() <= CurrentFoliageCount)
-					{
-						FoligeMesh->AddInstance(FTransform(location), true);
-					}
-					else
-						FoligeMesh->UpdateInstanceTransform(CurrentFoliageCount, FTransform(location), true);
-					Count++;
-				}
-			}
-			if (CurrentFoliageCount == Size)
-			{
-				CurrentFoliageCount = 0;
-				FolliageSectionIndex++;
-			}
-		}
-	}
+	//int Sqr = SectionRadiusCount * SectionRadiusCount;
+	//SumVertices.Empty(Sqr);
+	//SumUVs.Empty(Sqr);
+	//SumTriangles.Empty(Sqr);
+	//SumNormals.Empty(Sqr);
+	//SumTangents.Empty(Sqr);
+	//PlayerSectionIndexX = inSectionIndexX;
+	//PlayerSectionIndexY = inSectionIndexY;
+	//FAsyncWorldGenerater WorldGenTask(this);
+	//WorldGenTask.DoWork();
+	//TileDataReady = false;
+	//MaxSection = SumVertices.Num();
+	//MeshSectionIndex = 0;
+	//if (TerrainMesh)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("GenerateTerrain_Editor Create Mesh Sections In Editor %d"), TerrainMesh->GetNumSections());
+	//	//if (TerrainMesh->GetNumSections() > MaxSection)
+	//	TerrainMesh->ClearAllMeshSections();
+	//	FoligeMesh->ClearInstances();
+	//	for (int i = 0; i < MaxSection; i++)
+	//	{
+	//		TerrainMesh->CreateMeshSection(i, SumVertices[i], SumTriangles[i], SumNormals[i], SumUVs[i], TArray<FColor>(), SumTangents[i], true);
+	//		if (TerrainMaterial)
+	//		{
+	//			TerrainMesh->SetMaterial(i, TerrainMaterial);
+	//		}
+	//	}
+	//	MeshSectionIndex = MaxSection;
+	//	TerrainMesh->SetupAttachment(TerrainMesh);
+	//	TerrainMesh->SetVisibility(true);
+	//	TerrainMesh->SetActive(true);
+	//}
+	//if (FolliageSectionIndex < MaxSection)
+	//{
+	//	if (FoligeMesh)
+	//	{
+	//		int Count{};
+	//		int Size = SumVertices[FolliageSectionIndex].Num();
+	//		for (CurrentFoliageCount; CurrentFoliageCount < Size && Count < TickFoliageCount; CurrentFoliageCount++)
+	//		{
+	//			FVector location = SumVertices[FolliageSectionIndex][CurrentFoliageCount];
+	//			if (location.Z > GetActorLocation().Z && ((int)location.Z % 255) == 1)
+	//			{
+	//				//location.Z -= 10.0f;
+	//				if (FoligeMesh->GetNumInstances() <= CurrentFoliageCount)
+	//				{
+	//					FoligeMesh->AddInstance(FTransform(location), true);
+	//				}
+	//				else
+	//					FoligeMesh->UpdateInstanceTransform(CurrentFoliageCount, FTransform(location), true);
+	//				Count++;
+	//			}
+	//		}
+	//		if (CurrentFoliageCount == Size)
+	//		{
+	//			CurrentFoliageCount = 0;
+	//			FolliageSectionIndex++;
+	//		}
+	//	}
+	//}
 }
 
 FVector AWorldGenerator::GetPlayerLocation() const
