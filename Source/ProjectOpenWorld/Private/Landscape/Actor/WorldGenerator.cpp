@@ -179,7 +179,7 @@ void AWorldGenerator::SetCurrentMesh()
 		//UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Switch Mesh %d"), CurrentMeshIndex);
 		if (TerrainMesh)
 		{
-			TerrainMesh->ClearAllMeshSections();
+			//TerrainMesh->ClearAllMeshSections();
 			TerrainMesh->SetVisibility(false);
 			TerrainMesh->SetActive(false);
 			TerrainMesh->SetComponentTickEnabled(false);
@@ -196,6 +196,7 @@ void AWorldGenerator::SetCurrentMesh()
 			//TerrainMesh->UpdateNavigationBounds();
 			UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
 		}
+		GenerateTerrain = nullptr;
 	}
 }
 
@@ -253,12 +254,6 @@ void AWorldGenerator::UpdateTerrain()
 		if (MaxSection == MeshSectionIndex)
 		{
 			SetCurrentMesh();
-			GenerateTerrain = nullptr;
-			int Sqr = SectionRadiusCount * SectionRadiusCount;
-			SumUVs.Empty(Sqr);
-			SumTriangles.Empty(Sqr);
-			SumNormals.Empty(Sqr);
-			SumTangents.Empty(Sqr);
 		}
 	}
 	if (FolliageSectionIndex < MaxSection)
@@ -293,6 +288,10 @@ void AWorldGenerator::UpdateTerrain()
 	{
 		int Sqr = SectionRadiusCount * SectionRadiusCount;
 		SumVertices.Empty(Sqr);
+		SumUVs.Empty(Sqr);
+		SumTriangles.Empty(Sqr);
+		SumNormals.Empty(Sqr);
+		SumTangents.Empty(Sqr);
 		TileDataReady = false;
 	}
 }
