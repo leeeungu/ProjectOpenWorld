@@ -9,6 +9,7 @@ class UPalCommanderComponent;
 class USceneComponent;
 class UStaticMeshComponent;
 class USphereComponent;
+class UNavigationInvokerComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API APalBaseCamp : public AActor
@@ -25,9 +26,14 @@ protected:
 	TObjectPtr<UStaticMeshComponent> CampMesh{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < USphereComponent> CampBounds{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UNavigationInvokerComponent> NavInvoker{};
+	
 public:	
 	APalBaseCamp();
-
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 protected:
 	virtual void BeginPlay() override;
 

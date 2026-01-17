@@ -30,7 +30,6 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 		EndBuilding();
 		return false;
 	}
-	
 	//UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
 	if (OwnerController)
 	{
@@ -38,11 +37,10 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 
 		//TargetBuilding->GetBuildingProgress()->ActiveBuildingNav();
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 410.f);
+		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 600.f);
 		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
 			//UE_LOG(ArchitectureCommand, Error, TEXT("StartCommand::Can Find Path %s ") , *TargetBuilding->GetFullName());
-			IsCommandStarted = false;
 			EndBuilding();
 			//TargetBuilding->GetBuildingProgress()->DeActiveBuildingNav();
 			return false;
@@ -68,6 +66,7 @@ void UPalCommandExecutor_Architecture::Abort()
 	if (bActionStart == false)
 		return;
 	bActionStart = false;
+	IsCommandStarted = false;
 	if (TargetBuilding)
 	{
 		TargetBuilding->GetBuildingProgress()->StopBuilding(OwnerPal);

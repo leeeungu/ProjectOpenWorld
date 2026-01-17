@@ -97,19 +97,19 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 	Resut = result.Code;
 	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
 	{
-		FVector NewLocation{};
-		if (FindLandscapeBelow(TargetLocation, TargetLocation + FVector(0, 0, -600), NewLocation))
-		{
-			MoveReq.SetGoalLocation(NewLocation);
-			result = MoveTo(MoveReq, &OutPath);
-			if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
-			{
-					GetPawn()->SetActorLocation(NewLocation);
-				UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path Even After Landscape Adjust"));
-				return EPathFollowingRequestResult::AlreadyAtGoal;
-			}
-		}
-		else
+		//FVector NewLocation{};
+		//if (FindLandscapeBelow(TargetLocation, TargetLocation + FVector(0, 0, -600), NewLocation))
+		//{
+		//	MoveReq.SetGoalLocation(NewLocation);
+		//	result = MoveTo(MoveReq, &OutPath);
+		//	if (result.Code == EPathFollowingRequestResult::Failed && !OutPath.IsValid())
+		//	{
+		//		//	GetPawn()->SetActorLocation(NewLocation);
+		//		UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path Even After Landscape Adjust"));
+		//		return EPathFollowingRequestResult::AlreadyAtGoal;
+		//	}
+		//}
+		//else
 		{
 			UE_LOG(LogTemp, Error, TEXT("APalAIController::MoveToLocation :: None Path"));
 		}

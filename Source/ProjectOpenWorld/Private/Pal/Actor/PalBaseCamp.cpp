@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
 #include "Creature/Character/BaseMonster.h"
+#include "NavigationInvokerComponent.h"
 
 APalBaseCamp::APalBaseCamp()
 {
@@ -22,7 +23,15 @@ APalBaseCamp::APalBaseCamp()
 	CampBounds = CreateDefaultSubobject <USphereComponent >(TEXT("CampBound"));
 	CampBounds->SetupAttachment(RootComponent);
 	CampBounds->SetSphereRadius(1200.0f);
+	
+	NavInvoker = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavInvoker"));
 }
+#if WITH_EDITOR
+void APalBaseCamp::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}	
+#endif
 
 void APalBaseCamp::BeginPlay()
 {

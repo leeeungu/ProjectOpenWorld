@@ -1,4 +1,4 @@
-﻿#include "Building/Widget/BuildingModeWidget.h"
+#include "Building/Widget/BuildingModeWidget.h"
 #include "Building/BuildingAssistComponent.h"
 #include "Player/Character/BasePlayer.h" 
 #include "Materials/MaterialInstance.h"
@@ -94,7 +94,7 @@ void UBuildingModeWidget::PostEditChangeProperty(FPropertyChangedEvent& Property
 
 void UBuildingModeWidget::ToggleWidget()
 {
-	if (!GetIsVisible())
+	if (!IsInViewport())
 	{
 		StartViewWidget();
 	}

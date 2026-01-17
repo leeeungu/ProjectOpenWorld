@@ -1,4 +1,4 @@
-﻿#include "Pal/Actor/PalMonsterSpawnActor.h"
+#include "Pal/Actor/PalMonsterSpawnActor.h"
 #include "Pal/DataTable/PalSpawnerPlacementDatabaseRow.h"
 #include "Pal/DataTable/PalWildSpawnerDatabaseRow.h"
 #include "Kismet/DataTableFunctionLibrary.h"
@@ -93,13 +93,13 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 				const int32 SpawnNum = FMath::RandRange(SpawnCharacterData.NumMin, SpawnCharacterData.NumMax);
 				for (int32 i = 0; i < SpawnNum; ++i)
 				{
-					//UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-					//FNavLocation SpawnLocation{};
-					//NavSys->GetRandomReachablePointInRadius( SpawnerData->SpawnerData->Location, SpawnerData->SpawnerData->StaticRadius, SpawnLocation);
-					FVector SpawnLocation = GetActorLocation();
+					UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+					FNavLocation SpawnLocation{};
+					NavSys->GetRandomReachablePointInRadius( SpawnerData->SpawnerData->Location, SpawnerData->SpawnerData->StaticRadius, SpawnLocation);
 					FRotator SpawnRotation = GetActorRotation();
 					FActorSpawnParameters SpawnParams{};
-					ABaseMonster* SpawnedMonster = GetWorld()->SpawnActor<ABaseMonster>(MonsterData->MonsterData->MonsterClass, SpawnLocation, SpawnRotation, SpawnParams);
+					ABaseMonster* SpawnedMonster = GetWorld()->SpawnActor<ABaseMonster>(MonsterData->MonsterData->MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
+					//UE_LOG(LogTemp, Warning, TEXT("Spawned Monster: %s at Location: %s"), *MonsterData->MonsterData->MonsterName.ToString(), *SpawnLocation.ToString());
 					if (SpawnedMonster)
 					{
 						MonsterData->SpawnedMonsters.Add(SpawnedMonster);
@@ -121,6 +121,10 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 				}
 			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Spawner Data not found : %s"), *SpanwerName.ToString());
 	}
 }
 
