@@ -19,7 +19,8 @@ UGeneratorSectionComponent::UGeneratorSectionComponent() : UActorComponent{}
 	amplitudes =
 	{20000.000000, 800.000000, 100.000000, 50.000000};
 	OnGenerateStart.Clear();
-	OnUpdateSection.Clear();
+	OnNewSection.Clear();
+	OnDeleteSection.Clear();
 	OnGenerateFinished.Clear();
 }
 
@@ -48,7 +49,7 @@ void UGeneratorSectionComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 					FAsyncWorldGenerater Generator(this);
 					Generator.DoWork();
 					StartGenerateTerrain();
-					while (MaxSection != CurrentIndex)
+					while (TileDataReady)
 					{
 						UpdateTerrain();
 					}
@@ -67,19 +68,22 @@ void UGeneratorSectionComponent::BeginPlay()
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->GetRootComponent()->TransformUpdated.AddUObject(this, &UGeneratorSectionComponent::OnUpdatePlayerLocation);
+		FIntPoint PlayerSectionIndex = GetSectionIndex(GetPlayerLocation());
+		PlayerSectionIndexX = PlayerSectionIndex.X;
+		PlayerSectionIndexY = PlayerSectionIndex.Y;
+		GenerateTerrainAsync();
 	}
 }
 
 void UGeneratorSectionComponent::OnUpdatePlayerLocation(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
-	FIntPoint PlayerSectionIndex = GetSectionIndex(UpdatedComponent->GetComponentLocation());
-	if (PlayerSectionIndex.X == PlayerSectionIndexX && PlayerSectionIndex.Y == PlayerSectionIndexY)
-	{
-		return;
-	}
-	//UE_LOG(LogTemp, Warning, TEXT("AWorldGenerator Player Move To Section X:%d Y:%d"), PlayerSectionIndex.X, PlayerSectionIndex.Y);
 	if (!GeneratorBusy && !TileDataReady)
 	{
+		FIntPoint PlayerSectionIndex = GetSectionIndex(UpdatedComponent->GetComponentLocation());
+		if (PlayerSectionIndex.X == PlayerSectionIndexX && PlayerSectionIndex.Y == PlayerSectionIndexY)
+		{
+			return;
+		}
 		PlayerSectionIndexX = PlayerSectionIndex.X;
 		PlayerSectionIndexY = PlayerSectionIndex.Y;
 		GenerateTerrainAsync();
@@ -88,24 +92,41 @@ void UGeneratorSectionComponent::OnUpdatePlayerLocation(USceneComponent* Updated
 void UGeneratorSectionComponent::StartGenerateTerrain()
 {
 	GeneratorBusy = false;
-	MaxSection = SumVertices.Num();
-	CurrentIndex = 0;
+	MaxSection = UpdateSectionArray.Num();
+	CurrentIndex = MaxSection - 1;
 	OnGenerateStart.Broadcast();
 }
 void UGeneratorSectionComponent::UpdateTerrain()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("UGeneratorSectionComponent Update Terrain Start Index:%d"), CurrentIndex);
-	int Max = FMath::Min(MaxSection, CurrentIndex + SectionUpdateTickCount);
-	for (CurrentIndex; CurrentIndex < Max; CurrentIndex++)
+	int Max = FMath::Max(0, CurrentIndex - SectionUpdateTickCount);
+	for (CurrentIndex; CurrentIndex >= Max; CurrentIndex--)
 	{
-		OnUpdateSection.Broadcast(CurrentIndex,
-			SumVertices[CurrentIndex],
-			SumUVs[CurrentIndex],
-			SumTriangles[CurrentIndex],
-			SumNormals[CurrentIndex],
-			SumTangents[CurrentIndex]);
+		FIntPoint SectionID = UpdateSectionArray[CurrentIndex];
+		if (nDeleteSectionCount <= CurrentIndex)
+		{
+			OnDeleteSection.Broadcast(SectionID, *SumVertices.Find(SectionID),
+				*SumUVs.Find(SectionID),
+				*SumTriangles.Find(SectionID),
+				*SumNormals.Find(SectionID),
+				*SumTangents.Find(SectionID));
+
+			SumVertices.Remove(SectionID);
+			SumUVs.Remove(SectionID);
+			SumTriangles.Remove(SectionID);
+			SumNormals.Remove(SectionID);
+			SumTangents.Remove(SectionID);
+			SectionMap.Remove(SectionID);
+		}
+		else if (CurrentIndex < nDeleteSectionCount)
+		{
+			OnNewSection.Broadcast(SectionID, *SumVertices.Find(SectionID),
+				*SumUVs.Find(SectionID),
+				*SumTriangles.Find(SectionID),
+				*SumNormals.Find(SectionID),
+				*SumTangents.Find(SectionID));
+		}
 	}
-	if (MaxSection == CurrentIndex)
+	if (0 > CurrentIndex)
 	{
 		EndGenerateTerrain();
 	}
@@ -113,12 +134,12 @@ void UGeneratorSectionComponent::UpdateTerrain()
 
 void UGeneratorSectionComponent::EndGenerateTerrain()
 {
-	int Sqr = SectionRadiusCount * SectionRadiusCount;
-	SumVertices.Empty(Sqr);
-	SumUVs.Empty(Sqr);
-	SumTriangles.Empty(Sqr);
-	SumNormals.Empty(Sqr);
-	SumTangents.Empty(Sqr);
+	//int Sqr = SectionRadiusCount * SectionRadiusCount;
+	//SumVertices.Empty(Sqr);
+	//SumUVs.Empty(Sqr);
+	//SumTriangles.Empty(Sqr);
+	//SumNormals.Empty(Sqr);
+	//SumTangents.Empty(Sqr);
 	OnGenerateFinished.Broadcast();
 	TileDataReady = false;
 }
@@ -148,7 +169,8 @@ void UGeneratorSectionComponent::BindGenerteComponent(UGenerateWorldComponent* I
 	if (!InGenerateWorldComponent)
 		return;
 	OnGenerateStart.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::StartGenerateWorld);
-	OnUpdateSection.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::UpdateGenerateWorld);
+	OnNewSection.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::NewGenerateWorld);
+	OnDeleteSection.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::DelGenerateWorld);
 	OnGenerateFinished.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::FinishGenerateWorld);
 }
 
@@ -181,16 +203,80 @@ FIntPoint UGeneratorSectionComponent::GetSectionIndex(FVector Location)
 
 void FAsyncWorldGenerater::DoWork()
 {
-	int PlayerSectionIndexX = PlayerSectionIndex.X;
-	int PlayerSectionIndexY = PlayerSectionIndex.Y;
+	int Index{};
+
+	TSet<FIntPoint> DelSectionSet = WorldGenerator->SectionMap;
+	WorldGenerator->UpdateSectionArray.Empty();
 
 	for (int i = -WorldGenerator->SectionRadiusCount; i < WorldGenerator->SectionRadiusCount; i++)
 	{
 		for (int k = -WorldGenerator->SectionRadiusCount; k < WorldGenerator->SectionRadiusCount; k++)
 		{
-			GenerateTerrainTile(PlayerSectionIndexX + i, PlayerSectionIndexY + k);
+			FIntPoint NewSectionIndex = FIntPoint(PlayerSectionIndex.X + i, PlayerSectionIndex.Y + k);
+			if (!WorldGenerator->SectionMap.Find(NewSectionIndex))
+			{
+				GenerateTerrainTile(PlayerSectionIndex.X + i, PlayerSectionIndex.Y + k);
+				WorldGenerator->UpdateSectionArray.Add(NewSectionIndex);
+				WorldGenerator->SectionMap.Add(NewSectionIndex);
+			}
+			DelSectionSet.Remove(NewSectionIndex);
+			Index++;
 		}
 	}
+	FIntPoint Temp = PlayerSectionIndex;
+	WorldGenerator->UpdateSectionArray.Sort
+	(
+		[Temp](const FIntPoint& A, const FIntPoint& B)
+		{
+			float DistA = (Temp - A).SizeSquared();
+			float DistB = (B - Temp).SizeSquared();
+			return DistA > DistB;
+		}
+	);
+
+	for (const FIntPoint& point : DelSectionSet)
+	{
+		WorldGenerator->UpdateSectionArray.Add(point);
+	}
+	WorldGenerator->nDeleteSectionCount = WorldGenerator->UpdateSectionArray.Num() - DelSectionSet.Num();
+
+	
+
+	//int Dx[4] = { 1,-1,0,0 };
+	//int Dy[4] = { 0,0,1,-1 };
+	//int HalfX = WorldGenerator->SectionRadiusCount / 2;
+	//int HalfY = WorldGenerator->SectionRadiusCount / 2;
+	//using namespace std;
+	//queue<FAsyncWorldGenerater::TrraninNode> Q{};
+	//Q.push({ PlayerSectionIndexX, PlayerSectionIndexY });
+	//set<FAsyncWorldGenerater::TrraninNode> Visited{};
+	//Visited.insert({ PlayerSectionIndexX, PlayerSectionIndexY });
+	//int dissqr = WorldGenerator->SectionRadiusCount * WorldGenerator->SectionRadiusCount;
+	//while (!Q.empty() && WorldGenerator)
+	//{
+	//	FAsyncWorldGenerater::TrraninNode Node = Q.front();
+	//	Q.pop();
+	//	GenerateTerrainTile(Node.SectionIndexX, Node.SectionIndexY);
+	//	for (int i = 0; i < 4 && WorldGenerator; i++)
+	//	{
+	//		int NewX = Node.SectionIndexX + Dx[i];
+	//		int NewY = Node.SectionIndexY + Dy[i];
+	//		if ((NewX - PlayerSectionIndexX) * (NewX - PlayerSectionIndexX) +
+	//			(NewY - PlayerSectionIndexY) * (NewY - PlayerSectionIndexY) > dissqr)
+	//		{
+	//			continue;
+	//		}
+	//		{
+	//			FAsyncWorldGenerater::TrraninNode NewNode(NewX, NewY);
+	//			if (Visited.find(NewNode) == Visited.end())
+	//			{
+	//				Visited.insert(NewNode);
+	//				Q.push(NewNode);
+	//			}
+	//		}
+	//	}
+	//}
+
 
 	if (WorldGenerator)
 	{
@@ -295,11 +381,12 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 	}
 	if (WorldGenerator)
 	{
-		WorldGenerator->SumVertices.Push(SubVertices);
-		WorldGenerator->SumUVs.Push(SubUVs);
-		WorldGenerator->SumTriangles.Push(SubTriangles);
-		WorldGenerator->SumNormals.Push(SubNormals);
-		WorldGenerator->SumTangents.Push(SubTangents);
+		FIntPoint SectionIndexKey = FIntPoint(inSectionIndexX, inSectionIndexY);
+		WorldGenerator->SumVertices.Add(SectionIndexKey, SubVertices);
+		WorldGenerator->SumUVs.Add(SectionIndexKey, SubUVs);
+		WorldGenerator->SumTriangles.Add(SectionIndexKey, SubTriangles);
+		WorldGenerator->SumNormals.Add(SectionIndexKey, SubNormals);
+		WorldGenerator->SumTangents.Add(SectionIndexKey, SubTangents);
 	}
 }
 float FAsyncWorldGenerater::GetHeight(float inX, float inY) const
@@ -320,38 +407,3 @@ float FAsyncWorldGenerater::PerlinNoiseExtended(float inX, float inY, float scal
 }
 
 
-// 순서 대로 안넣으니 nav가 망가짐
-//int Dx[4] = { 1,-1,0,0 };
-//int Dy[4] = { 0,0,1,-1 };
-//int HalfX = NumOfSectionsX / 2;
-//int HalfY = NumOfSectionsY / 2;
-//using namespace std;
-//queue<FAsyncWorldGenerater::TrraninNode> Q{};
-//Q.push({ PlayerSectionIndexX, PlayerSectionIndexY });
-//set<FAsyncWorldGenerater::TrraninNode> Visited{};
-//Visited.insert({ PlayerSectionIndexX, PlayerSectionIndexY });
-//int dissqr = WorldGenerator->SectionRadiusCount * WorldGenerator->SectionRadiusCount;
-//while (!Q.empty() && WorldGenerator)
-//{
-//	FAsyncWorldGenerater::TrraninNode Node = Q.front();
-//	Q.pop();
-//	GenerateTerrainTile(Node.SectionIndexX, Node.SectionIndexY);
-//	for (int i = 0; i < 4 && WorldGenerator; i++)
-//	{
-//		int NewX = Node.SectionIndexX + Dx[i];
-//		int NewY = Node.SectionIndexY + Dy[i];
-//		if( (NewX - PlayerSectionIndexX) * (NewX - PlayerSectionIndexX) +
-//			(NewY - PlayerSectionIndexY) * (NewY - PlayerSectionIndexY) > dissqr)
-//		{
-//			continue;
-//		}
-//		{
-//			FAsyncWorldGenerater::TrraninNode NewNode(NewX, NewY);
-//			if (Visited.find(NewNode) == Visited.end())
-//			{
-//				Visited.insert(NewNode);
-//				Q.push(NewNode);
-//			}
-//		}
-//	}
-//}

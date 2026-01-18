@@ -15,7 +15,7 @@ class UHierarchicalInstancedStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 class UGenerateWorldComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnSectionTerrainGenerate, int, SectionIndex, const TArray<FVector>&, Vertices, const TArray<FVector2D>&, UVs, const TArray<int32>&, Triangles, const TArray<FVector>&, Normals, const TArray<FProcMeshTangent >&, SumTangents);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnSectionTerrainGenerate, FIntPoint, SectionID, const TArray<FVector>&, Vertices, const TArray<FVector2D>&, UVs, const TArray<int32>&, Triangles, const TArray<FVector>&, Normals, const TArray<FProcMeshTangent >&, SumTangents);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSectionEvent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -55,19 +55,25 @@ protected:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Landscape Settings")
 	bool TileDataReady = false;
 
-	TArray<TArray<FVector>> SumVertices{};
-	TArray<TArray<FVector2D>> SumUVs{};
-	TArray<TArray<int32>> SumTriangles{};
-	TArray<TArray<FVector>> SumNormals{};
-	TArray<TArray<FProcMeshTangent>> SumTangents{};
+	TMap<FIntPoint, TArray<FVector>> SumVertices{};
+	TMap<FIntPoint, TArray<FVector2D>> SumUVs{};
+	TMap<FIntPoint, TArray<int32>> SumTriangles{};
+	TMap<FIntPoint, TArray<FVector>> SumNormals{};
+	TMap<FIntPoint, TArray<FProcMeshTangent>> SumTangents{};
+	//TArray<TPair<FIntPoint, int>> SectionIndexArray{};
+	TSet<FIntPoint> SectionMap{};
+	TArray<FIntPoint> UpdateSectionArray{};
+	int nDeleteSectionCount{};
+
 
 	int MaxSection{};
 	int CurrentIndex{};
 public:	
 	UGeneratorSectionComponent();
 
-	FOnSectionTerrainGenerate OnUpdateSection{};
 	FOnSectionEvent OnGenerateStart{};
+	FOnSectionTerrainGenerate OnNewSection{};
+	FOnSectionTerrainGenerate OnDeleteSection{};
 	FOnSectionEvent OnGenerateFinished{};
 public:
 #if WITH_EDITOR
