@@ -1,4 +1,4 @@
-#include "Landscape/Component/GenerateTerrainComponent.h"
+﻿#include "Landscape/Component/GenerateTerrainComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "NavigationSystem.h"
 
@@ -30,8 +30,16 @@ void UGenerateTerrainComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UGenerateTerrainComponent::StartGenerateWorld()
+void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
 {
+	if (bEditor)
+	{
+		SectionIDToMeshIndex.Empty();
+		EmptySectionIndex.Empty();
+		UpdateSectionIndex.Empty();
+		SectionIndex = 0;
+		GenerateTerrain->ClearAllMeshSections();
+	}
 }
 
 void UGenerateTerrainComponent::NewGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents)

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -17,7 +17,7 @@ protected:
 	TObjectPtr <UGeneratorSectionComponent> GeneratorSectionComponent{};
 
 	UFUNCTION()
-	virtual void StartGenerateWorld() {};
+	virtual void StartGenerateWorld(bool bEditor = false) {};
 	UFUNCTION()
 	virtual void NewGenerateWorld(FIntPoint SectionID,  const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) {}
 	UFUNCTION()

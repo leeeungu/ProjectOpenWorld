@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -16,6 +16,7 @@ class UInstancedStaticMeshComponent;
 class UGenerateWorldComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnSectionTerrainGenerate, FIntPoint, SectionID, const TArray<FVector>&, Vertices, const TArray<FVector2D>&, UVs, const TArray<int32>&, Triangles, const TArray<FVector>&, Normals, const TArray<FProcMeshTangent >&, SumTangents);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSectionStartEvent, bool , Editor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSectionEvent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -68,10 +69,11 @@ protected:
 
 	int MaxSection{};
 	int CurrentIndex{};
+	bool bDelayUpdate{};
 public:	
 	UGeneratorSectionComponent();
 
-	FOnSectionEvent OnGenerateStart{};
+	FOnSectionStartEvent OnGenerateStart{};
 	FOnSectionTerrainGenerate OnNewSection{};
 	FOnSectionTerrainGenerate OnDeleteSection{};
 	FOnSectionEvent OnGenerateFinished{};
@@ -93,7 +95,7 @@ protected:
 
 	FIntPoint GetSectionIndex(FVector Location);
 
-	void StartGenerateTerrain();
+	void StartGenerateTerrain(bool bEditor = false);
 	void UpdateTerrain();
 	void EndGenerateTerrain();
 
