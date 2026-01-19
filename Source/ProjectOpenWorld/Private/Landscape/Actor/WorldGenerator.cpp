@@ -2,6 +2,7 @@
 #include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateTerrainComponent.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"
+#include "Landscape/Component/GemerateStaticObjectComponent.h"
 
 AWorldGenerator::AWorldGenerator() : AActor{}
 {
@@ -15,6 +16,10 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	FoliageGenerator = CreateDefaultSubobject<UGenerateFoliageComponent>(TEXT("FoliageGenerator"));
 	SectionGenerator->BindGenerteComponent(FoliageGenerator);
 	FoliageGenerator->Initialize(RootComponent);
+
+	StaticObjectGenerator = CreateDefaultSubobject<UGemerateStaticObjectComponent>(TEXT("StaticObjectGenerator"));
+	SectionGenerator->BindGenerteComponent(StaticObjectGenerator);
+	StaticObjectGenerator->Initialize(RootComponent);
 
 	////SectionGenerator->OnGenerateStart.AddDynamic(this, &AWorldGenerator::SetGeneratorMesh);
 	//SectionGenerator->OnUpdateSection.AddUniqueDynamic(TerrainGenerator, &UGenerateTerrainComponent::UpdateMesh);

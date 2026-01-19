@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -93,13 +93,13 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Landscape Generation")
 	FVector GetPlayerLocation() const;
 
-	FIntPoint GetSectionIndex(FVector Location);
 
 	void StartGenerateTerrain(bool bEditor = false);
 	void UpdateTerrain();
 	void EndGenerateTerrain();
 
 public:	
+	FIntPoint GetSectionIndex(FVector Location) const;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	void BindGenerteComponent(UGenerateWorldComponent* InGenerateWorldComponent);

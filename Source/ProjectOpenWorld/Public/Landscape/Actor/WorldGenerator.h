@@ -8,6 +8,7 @@ class UInstancedStaticMeshComponent;
 class UGeneratorSectionComponent;
 class UGenerateTerrainComponent;
 class UGenerateFoliageComponent;
+class UGemerateStaticObjectComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AWorldGenerator : public AActor
@@ -23,6 +24,9 @@ protected:
 	TObjectPtr<UInstancedStaticMeshComponent> TreeInstancedMeshComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGenerateFoliageComponent> FoliageGenerator{};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	TObjectPtr<UGemerateStaticObjectComponent> StaticObjectGenerator{};
 	
 	
 public:	

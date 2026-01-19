@@ -187,6 +187,7 @@ void UGeneratorSectionComponent::BindGenerteComponent(UGenerateWorldComponent* I
 {
 	if (!InGenerateWorldComponent)
 		return;
+	InGenerateWorldComponent->SetGeneratorSectionComponent(this);
 	OnGenerateStart.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::StartGenerateWorld);
 	OnNewSection.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::NewGenerateWorld);
 	OnDeleteSection.AddUniqueDynamic(InGenerateWorldComponent, &UGenerateWorldComponent::DelGenerateWorld);
@@ -215,7 +216,7 @@ FVector UGeneratorSectionComponent::GetPlayerLocation() const
 	return FVector();
 }
 
-FIntPoint UGeneratorSectionComponent::GetSectionIndex(FVector Location)
+FIntPoint UGeneratorSectionComponent::GetSectionIndex(FVector Location) const
 {
 	return FIntPoint(FMath::FloorToInt(Location.X / (CellSize * (xVertexCount - 1))),
 		FMath::FloorToInt(Location.Y / (CellSize * (yVertexCount - 1))));

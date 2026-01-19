@@ -38,7 +38,7 @@ void UGenerateFoliageComponent::UpdateFoliageInstances()
 		if (!FoliageInstance || !FoliageInstance.Get())
 		{
 			FoliageInstance = Cast<UFoliageInstancedStaticMeshComponent>(GetOwner()->AddComponentByClass(UFoliageInstancedStaticMeshComponent::StaticClass(), true, FTransform{}, false));
-			FoliageInstance->SetupAttachment(GetOwner()->GetRootComponent());
+			FoliageInstance->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 			FoliageInstance->SetStaticMesh(Instance.FoliageType->GetStaticMesh());
 			RemoveInstanceIndex.Add(FoliageInstance, {});
 		}
@@ -76,7 +76,7 @@ void UGenerateFoliageComponent::UpdateFoliageInstances()
 			{
 				Index = FoliageInstance->AddInstance(NewTransform, true);
 				nInstanceCount++;
-				UE_LOG(LogTemp, Warning, TEXT("Add Foliage Instance Total Count:%d"), nInstanceCount);
+				//UE_LOG(LogTemp, Warning, TEXT("Add Foliage Instance Total Count:%d"), nInstanceCount);
 			}
 			else
 			{
