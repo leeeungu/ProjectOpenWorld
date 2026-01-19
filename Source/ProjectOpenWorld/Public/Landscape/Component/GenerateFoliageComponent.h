@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -47,7 +47,7 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		float RandomSeed{ };
 		TMap<TObjectPtr< UFoliageInstancedStaticMeshComponent>, TSet<int32>> NewInstanceIndex{}; // FoliageID, Instance Indices
 		bool bSectionNew{};
-		bool bSectionDelete = false;
+		bool bAllReadyNew = false;
 	};
 	struct FFoliageData
 	{
@@ -71,7 +71,11 @@ protected:
 	int32 UpdateTickCount = 10;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	FIntPoint SectionRange{ 20,40};
-	TMap<TObjectPtr< UFoliageInstancedStaticMeshComponent>, TArray<int32>> RemoveInstanceIndex{}; // FoliageID, Instance Indices
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
+	float FoliageSeed = 100;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
+	bool bRandomSeed{};
+	TMap<TObjectPtr< UFoliageInstancedStaticMeshComponent>, TSet<int32>> RemoveInstanceIndex{}; // FoliageID, Instance Indices
 
 	TArray< FFoliageData>  arInstancesTranform{};
 
@@ -79,10 +83,11 @@ protected:
 	TArray<FIntPoint> DeleteArray{};
 
 	int nSectionIndex{};
-	int CurrentUpdateTick = 0;
+	//int CurrentUpdateTick = 0;
 	int InstanceIndex{};
 	bool bFoliageUpdated = false;
 	bool EditorModeGenerate = false;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int nInstanceCount{};
 public:	
 	UGenerateFoliageComponent();

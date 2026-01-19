@@ -1,4 +1,4 @@
-﻿#include "Landscape/Component/GeneratorSectionComponent.h"
+#include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Math/UnrealMathUtility.h"
@@ -275,7 +275,7 @@ void FAsyncWorldGenerater::DoWork()
 
 	}
 	WorldGenerator->nDeleteSectionCount = WorldGenerator->UpdateSectionArray.Num() - DelSectionSet.Num();
-	UE_LOG(LogTemp, Warning, TEXT("Delete Section Count:%d %d %d "), WorldGenerator->UpdateSectionArray.Num(), WorldGenerator->nDeleteSectionCount, DelSectionSet.Num());
+//	UE_LOG(LogTemp, Warning, TEXT("Delete Section Count:%d %d %d "), WorldGenerator->UpdateSectionArray.Num(), WorldGenerator->nDeleteSectionCount, DelSectionSet.Num());
 
 	
 

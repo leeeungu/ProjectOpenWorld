@@ -6,6 +6,8 @@ UGenerateGrassComponent::UGenerateGrassComponent() : UGenerateWorldComponent{}
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	GrassInstances.Init(nullptr, 5);
+
+	// UHierarchicalInstancedStaticMeshComponent에서  ULandscapeGrassType사용하여  풀 만들기
 }
 
 void UGenerateGrassComponent::BeginPlay()
