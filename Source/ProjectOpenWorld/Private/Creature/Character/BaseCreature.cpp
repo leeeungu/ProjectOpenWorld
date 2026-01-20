@@ -42,6 +42,11 @@ bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 	return false;
 }
 
+bool ABaseCreature::CommandPause_Implementation(bool bPause)
+{
+	return false;
+}
+
 UPalCommandComponent* ABaseCreature::GetCommandComponent() const
 { 
 	return CommandComponent;

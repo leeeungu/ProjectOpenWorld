@@ -19,4 +19,6 @@ class PROJECTOPENWORLD_API IPalCommandInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool ReceiveCommand(FPalCommand Command);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool CommandPause(bool bPause);
 };

@@ -1,4 +1,4 @@
-﻿#include "Building/BaseBuilding.h"
+#include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
@@ -17,6 +17,8 @@ ABaseBuilding::ABaseBuilding()
 	buildingMeshComponent->SetMobility(EComponentMobility::Static);
 	//buildingMeshComponent->SetCanEverAffectNavigation(false);
 	buildingMeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	buildingMeshComponent->SetGenerateOverlapEvents(true);
+
 	
 	buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
 	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
@@ -78,13 +80,15 @@ bool ABaseBuilding::IsCommandFinished_Implementation()
 
 void ABaseBuilding::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	UpdateModifier();
+	if (buildingProgressComponent->IsBuildingEnd())
+		UpdateModifier();
 }
 
 void ABaseBuilding::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
 	NoCollision();
-	buildingProgressComponent->StopAll();
+	if (!buildingProgressComponent->IsBuildingEnd())
+		buildingProgressComponent->StopAll();
 }
 
 void ABaseBuilding::UpdateModifier()

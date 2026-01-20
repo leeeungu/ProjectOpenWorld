@@ -1,4 +1,4 @@
-﻿#include "Item/Actor/ItemActor.h"
+#include "Item/Actor/ItemActor.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -23,6 +23,8 @@ AItemActor::AItemActor()
 	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
 	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
+	ItemSkeletalMesh->SetGenerateOverlapEvents(true);
 	ItemSkeletalMesh->SetLinearDamping(5.f);
 	ItemSkeletalMesh->SetAngularDamping(5.f);
 
@@ -155,14 +157,16 @@ ETransportState AItemActor::GetTransportState_Implementation()
 
 void AItemActor::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	UE_LOG(LogTemp, Error, TEXT("AItemActor::NewGenerateWorldEvent TODO"));
+	//UE_LOG(LogTemp, Error, TEXT("AItemActor::NewGenerateWorldEvent TODO"));
 	ItemSkeletalMesh->SetSimulatePhysics(true);
+
 }
 
 void AItemActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	UE_LOG(LogTemp, Error, TEXT("AItemActor::DelGenerateWorldEvent TODO"));
+	//UE_LOG(LogTemp, Error, TEXT("AItemActor::DelGenerateWorldEvent TODO"));
 	ItemSkeletalMesh->SetSimulatePhysics(false);
+	ItemSkeletalMesh->BodyInstance.ClearForces();
 }
 
 UPrimitiveComponent* AItemActor::GetItemCollision() const

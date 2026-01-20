@@ -50,7 +50,10 @@ void UPalCommandComponent::BeginPlay()
 bool UPalCommandComponent::PopCommand()
 {
 	if (CurrentCommand != &DummyCommand)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : Current Command Not Finished"), *GetOwner()->GetName());
 		return false;
+	}
 
 	if (QueueCommand.Dequeue(CurrentCommand) == false)
 	{
@@ -58,18 +61,27 @@ bool UPalCommandComponent::PopCommand()
 		ResetCommand(*CurrentCommand);
 		ResetCurrentCommand();	
 		LastCommand = nullptr;
-		//UE_LOG(LogTemp, Log, TEXT("%s : Command None"), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Log, TEXT("%s : Command None"), *GetOwner()->GetName());
 		return false;
 	}
 	if (IsValidCommand() == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : Command Invalid"), *GetOwner()->GetName());
 		return false;
+	}
 
 	const FPalCommand* Current = GetCurrentCommand_C();
 	uint8 idx = (uint8)Current->CommandKind;
 	if (!CommandExecutors.IsValidIndex(idx) || !CommandExecutors[idx].IsValidIndex(Current->SubCommandType))
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : Command Executor Not Found"), *GetOwner()->GetName());
 		return false;
+	}
 	if (CurrentExcute == CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get())
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s : Same Command Executor Running"), *GetOwner()->GetName());
 		return false;
+	}
 
 	CurrentExcute = CommandExecutors[(uint8)Current->CommandKind][Current->SubCommandType].Get();
 	if (CurrentExcute)
@@ -86,6 +98,7 @@ bool UPalCommandComponent::PopCommand()
 			return true;
 		}
 	}
+	UE_LOG(LogTemp, Error, TEXT("%s : Command Executor is null"), *GetOwner()->GetName());
 	return false;
 }
 
@@ -96,13 +109,13 @@ bool UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
 	{
 		if (NewCommand == *LastCommand)
 		{
-			//UE_LOG(LogTemp, Log, TEXT("%s : Duple Command"), *GetOwner()->GetName());
+			UE_LOG(LogTemp, Log, TEXT("%s : Duple Command"), *GetOwner()->GetName());
 			return true;
 		}
 	}
 	if (QueueEmpty.Dequeue(pEmpthy) == false)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("%s : Command Full"), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Log, TEXT("%s : Command Full"), *GetOwner()->GetName());
 		PopCommand();
 		return false;
 	}
@@ -171,6 +184,8 @@ void UPalCommandComponent::FinishCommand()
 		QueueEmpty.Enqueue(CurrentCommand);
 		ResetCurrentCommand();
 		OnFinishedCurrentCommand();
+		if (CurrentCommand != &DummyCommand)
+			UE_LOG(LogTemp, Error, TEXT("%s : Current Command Not Reset After Finish"), *GetOwner()->GetName());
 		if (OnCommandFinished.IsBound())
 		{
 			OnCommandFinished.Broadcast(GetOwner(), command);
@@ -197,6 +212,7 @@ void UPalCommandComponent::ResetCommandQue()
 		CurrentExcute->ResetStarted();
 	}
 	ResetCurrentCommand();
+	UE_LOG(LogTemp, Log, TEXT("%s : Command Queue Reset"), *GetOwner()->GetName());
 }
 
 void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)

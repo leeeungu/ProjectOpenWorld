@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -47,9 +47,7 @@ protected:
 #endif
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
-	int PlayerSectionIndexX{};
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
-	int PlayerSectionIndexY{};
+	FIntPoint PlayerSectionIndex{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	bool GeneratorBusy = false;

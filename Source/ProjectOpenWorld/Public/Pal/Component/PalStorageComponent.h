@@ -65,4 +65,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PalStore")
 	void DeSpawnPal(AActor* TargetPal);
 
+	void ShowAllSpawnedPals();
+	void HideAllSpawnedPals();
 };

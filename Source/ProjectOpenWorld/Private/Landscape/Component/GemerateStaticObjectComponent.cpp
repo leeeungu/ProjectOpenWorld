@@ -1,4 +1,4 @@
-﻿#include "Landscape/Component/GemerateStaticObjectComponent.h"
+#include "Landscape/Component/GemerateStaticObjectComponent.h"
 #include "Landscape/Actor/WorldGenerator.h"
 #include "GameBase/Interface/GenerateWorldInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -35,11 +35,14 @@ void UGemerateStaticObjectComponent::NewGenerateWorld(const FGenerateSectionData
 	{
 		for (TScriptInterface<IGenerateWorldInterface> Actor : *ActorSet)
 		{
-			if (Actor)
+			if (Actor && Actor.GetObject())
 			{
-				Cast<AActor>(Actor.GetObject())->SetActorTickEnabled(true);
-				Cast<AActor>(Actor.GetObject())->SetActorHiddenInGame(false);
-				Actor->DelGenerateWorldEvent(SectionData);
+				if (Cast<AActor>(Actor.GetObject()))
+				{
+					Cast<AActor>(Actor.GetObject())->SetActorTickEnabled(true);
+					Cast<AActor>(Actor.GetObject())->SetActorHiddenInGame(false);
+				}
+				Actor->NewGenerateWorldEvent(SectionData);
 			}
 		}
 	}
@@ -50,10 +53,13 @@ void UGemerateStaticObjectComponent::DelGenerateWorld(const FGenerateSectionData
 	{
 		for (TScriptInterface<IGenerateWorldInterface> Actor : *ActorSet)
 		{
-			if (Actor)
+			if (Actor && Actor.GetObject())
 			{
-				Cast<AActor>(Actor.GetObject())->SetActorTickEnabled(false);
-				Cast<AActor>(Actor.GetObject())->SetActorHiddenInGame(true);
+				if (Cast<AActor>(Actor.GetObject()))
+				{
+					Cast<AActor>(Actor.GetObject())->SetActorTickEnabled(false);
+					Cast<AActor>(Actor.GetObject())->SetActorHiddenInGame(true);
+				}
 				Actor->DelGenerateWorldEvent(SectionData);
 			}
 		}
@@ -63,7 +69,7 @@ void UGemerateStaticObjectComponent::CommandActorSpawned(AActor* SpawnActor)
 {
 	if (GeneratorSectionComponent)
 	{
-		if (Cast<IGenerateWorldInterface>(SpawnActor))
+		if (Cast<IGenerateWorldInterface>(SpawnActor) || SpawnActor->Implements<UGenerateWorldInterface>())
 		{
 			FIntPoint SectionID = GeneratorSectionComponent->GetSectionIndex(SpawnActor->GetActorLocation());
 			TSet<TScriptInterface<IGenerateWorldInterface>>& ActorSet = SectionStaticObjectMap.FindOrAdd(SectionID);
@@ -71,6 +77,7 @@ void UGemerateStaticObjectComponent::CommandActorSpawned(AActor* SpawnActor)
 		}
 		else if (SpawnActor)
 		{
+			if (Cast<IGenerateWorldInterface>(SpawnActor))
 			UE_LOG(LogTemp, Warning, TEXT("Spawn Actor Not  Implement  IGenerateWorldInterface (cpp Only) class : %s name : %s"), *SpawnActor->StaticClass()->GetName(), *SpawnActor->GetName());
 		}
 	}

@@ -1,4 +1,4 @@
-﻿#include "Landscape/Component/GeneratorSectionComponent.h"
+#include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Math/UnrealMathUtility.h"
@@ -42,12 +42,11 @@ void UGeneratorSectionComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 				{
 					SubSystem->GetLevelViewportCameraInfo(CameraLocation, CameraRotation);
 				}
-				FIntPoint PlayerSectionIndex = GetSectionIndex(CameraLocation);
+				FIntPoint NewPlayerSectionIndex = GetSectionIndex(CameraLocation);
 				if (!GeneratorBusy && !TileDataReady)
 				{
 					UpdateSectionArray.Reserve(100);
-					PlayerSectionIndexX = PlayerSectionIndex.X;
-					PlayerSectionIndexY = PlayerSectionIndex.Y;
+					PlayerSectionIndex = NewPlayerSectionIndex;
 					SectionMap.Empty();
 					FAsyncWorldGenerater Generator(this);
 					Generator.DoWork();
@@ -71,9 +70,7 @@ void UGeneratorSectionComponent::BeginPlay()
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->GetRootComponent()->TransformUpdated.AddUObject(this, &UGeneratorSectionComponent::OnUpdatePlayerLocation);
-		FIntPoint PlayerSectionIndex = GetSectionIndex(GetPlayerLocation());
-		PlayerSectionIndexX = PlayerSectionIndex.X;
-		PlayerSectionIndexY = PlayerSectionIndex.Y;
+		PlayerSectionIndex = GetSectionIndex(GetPlayerLocation());
 		GenerateTerrainAsync();
 	}
 }
@@ -82,13 +79,12 @@ void UGeneratorSectionComponent::OnUpdatePlayerLocation(USceneComponent* Updated
 {
 	if (!GeneratorBusy && !TileDataReady)
 	{
-		FIntPoint PlayerSectionIndex = GetSectionIndex(UpdatedComponent->GetComponentLocation());
-		if (PlayerSectionIndex.X == PlayerSectionIndexX && PlayerSectionIndex.Y == PlayerSectionIndexY)
+		FIntPoint NewPlayerSectionIndex = GetSectionIndex(UpdatedComponent->GetComponentLocation());
+		if (NewPlayerSectionIndex.X == PlayerSectionIndex.X && NewPlayerSectionIndex.Y == PlayerSectionIndex.Y)
 		{
 			return;
 		}
-		PlayerSectionIndexX = PlayerSectionIndex.X;
-		PlayerSectionIndexY = PlayerSectionIndex.Y;
+		PlayerSectionIndex = NewPlayerSectionIndex;
 		GenerateTerrainAsync();
 	}
 	else
@@ -181,13 +177,13 @@ void UGeneratorSectionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		}
 		else if (bDelayUpdate)
 		{
-			FIntPoint PlayerSectionIndex = GetSectionIndex(GetPlayerLocation());
-			if (PlayerSectionIndex.X == PlayerSectionIndexX && PlayerSectionIndex.Y == PlayerSectionIndexY)
+			FIntPoint NewPlayerSectionIndex = GetSectionIndex(GetPlayerLocation());
+			if (PlayerSectionIndex.X == NewPlayerSectionIndex.X && PlayerSectionIndex.Y == NewPlayerSectionIndex.Y)
 			{
 				return;
 			}
-			PlayerSectionIndexX = PlayerSectionIndex.X;
-			PlayerSectionIndexY = PlayerSectionIndex.Y;
+
+			PlayerSectionIndex = NewPlayerSectionIndex;
 			GenerateTerrainAsync();
 		}
 	}
@@ -208,7 +204,7 @@ void UGeneratorSectionComponent::GenerateTerrainAsync()
 {
 	GeneratorBusy = true;
 	bDelayUpdate = false;
-	UE_LOG(LogTemp, Warning, TEXT("Generate SectionChange"));
+	UE_LOG(LogTemp, Warning, TEXT("UGeneratorSectionComponent::GenerateTerrainAsync Player SectionChange"));
 	SetComponentTickEnabled(false);
 	bBackUpdate = false;
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
@@ -301,8 +297,7 @@ void FAsyncWorldGenerater::DoWork()
 
 void FAsyncWorldGenerater::InitGenerater()
 {
-	PlayerSectionIndex.X = WorldGenerator->PlayerSectionIndexX;
-	PlayerSectionIndex.Y = WorldGenerator->PlayerSectionIndexY;
+	PlayerSectionIndex = WorldGenerator->PlayerSectionIndex;
 }
 
 void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const int inSectionIndexY)

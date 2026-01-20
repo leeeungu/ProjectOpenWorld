@@ -1,4 +1,4 @@
-﻿#include "Resource/Actor/ResourceActor.h"
+#include "Resource/Actor/ResourceActor.h"
 #include "Item/Actor/ItemActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
@@ -14,6 +14,8 @@ AResourceActor::AResourceActor()
 	{
 		ResourceMesh->SetStaticMesh(MeshObj.Object);
 	}
+	ResourceMesh->SetCollisionProfileName(TEXT("BlockAll"));
+	ResourceMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
 	//Script/Engine.StaticMesh'/Game/Pal/Model/Prop/MapMesh/Mesh/SK_Rock_A.SK_Rock_A'
 	
 }

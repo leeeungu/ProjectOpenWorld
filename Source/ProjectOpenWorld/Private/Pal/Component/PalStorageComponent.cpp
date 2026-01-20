@@ -1,4 +1,6 @@
 #include "Pal/Component/PalStorageComponent.h"
+#include "Creature/Character/BaseCreature.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UPalStorageComponent::UPalStorageComponent()
 {
@@ -63,4 +65,39 @@ void UPalStorageComponent::DeSpawnPal(AActor* TargetPal)
 		Data->bSpawned = false;
 	}
 	SpawnedPal.Remove(TargetPal);
+}
+
+void UPalStorageComponent::ShowAllSpawnedPals()
+{
+	for (auto& Pal : SpawnedPal)
+	{
+		if (Pal.Key)
+		{
+			Pal.Key->SetActorHiddenInGame(false);
+			Pal.Key->UpdateComponentVisibility();
+			ACharacter* pCharacter = Cast<ACharacter>(Pal.Key);
+			if (pCharacter)
+			{
+				pCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			}
+		}
+	}
+}
+
+void UPalStorageComponent::HideAllSpawnedPals()
+{
+	for (auto& Pal : SpawnedPal)
+	{
+		if (Pal.Key)
+		{
+			Pal.Key->SetActorHiddenInGame(true);
+			ABaseCreature * pCharacter = Cast<ABaseCreature>(Pal.Key);
+			if (pCharacter)
+			{
+				pCharacter->SetActionStarted(false);
+				pCharacter->StopAnimMontage();
+				pCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+			}
+		}
+	}
 }

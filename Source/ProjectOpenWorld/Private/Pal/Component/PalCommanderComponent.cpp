@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/PalCommanderComponent.h"
+#include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Interface/CommanderManageable.h"
 #include "Pal/Component/PalCommandComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -15,12 +15,30 @@ void UPalCommanderComponent::BeginPlay()
 	ArrayIter = pals.begin();
 }
 
+void UPalCommanderComponent::UpdateWorkQueue()
+{
+	if (!WorkQueue.IsEmpty())
+		return;
+	QueSize = 0;
+	for (AActor* WorkActor : RegisteredWorks)
+	{
+		if (WorkActor && WorkActor->Implements<UCommanderManageable>())
+		{
+			if (!ICommanderManageable::Execute_IsCommandFinished(WorkActor))
+			{
+				WorkQueue.Enqueue(WorkActor);
+				QueSize++;
+			}
+		}
+	}
+}
+
 void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (TargetWorkActor && TargetWorkActor.Get())
 	{
-		if (ICommanderManageable::Execute_IsCommandFinished(TargetWorkActor.Get()))
+		if (ICommanderManageable::Execute_IsCommandFinished(TargetWorkActor.Get()) || RegisteredWorks.Find(TargetWorkActor) == nullptr)
 		{
 			WorkQueue.Dequeue(TargetWorkActor);
 			TargetWorkActor = nullptr;
@@ -35,9 +53,9 @@ void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 					if (Temp && !Temp->GetCommandComponent()->IsValidCommand())
 					{
 						NotWork++;
+						break;
 					}
 				}
-				UE_LOG(LogTemp, Warning, TEXT(" UPalCommanderComponent::TickComponent %d %d"), QueSize, NotWork);
 				WorkQueue.Dequeue(TargetWorkActor);
 				TargetWorkActor = nullptr;
 				QueSize--;
@@ -55,7 +73,22 @@ void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 	else
 	{
-		WorkQueue.Peek(TargetWorkActor);
+		if (!WorkQueue.Peek(TargetWorkActor))
+		{
+			UpdateWorkQueue();
+		}
+	}
+}
+
+void UPalCommanderComponent::StopAllPal()
+{
+	for (const TObjectPtr<ABaseCreature>& Temp : pals)
+	{
+		if (Temp)
+		{
+			Temp->GetCommandComponent()->ResetCommandQue();
+			//IPalCommandInterface::Execute_ReceiveCommand(Temp.Get(), FPalCommand{ EPalCommandKind::Stop });
+		}
 	}
 }
 
@@ -81,8 +114,17 @@ void UPalCommanderComponent::RegisterWork(AActor* WorkActor)
 {
 	if (!WorkActor || !WorkActor->Implements< UCommanderManageable>())
 		return;
-	WorkQueue.Enqueue(WorkActor);
-	QueSize++;
+	if (!ICommanderManageable::Execute_IsCommandFinished(WorkActor))
+	{
+		WorkQueue.Enqueue(WorkActor);
+		QueSize++;
+	}
+	RegisteredWorks.Add(WorkActor);
+}
+
+void UPalCommanderComponent::UnRegisterWork(AActor* WorkActor)
+{
+	RegisteredWorks.Remove(WorkActor);
 }
 
 bool UPalCommanderComponent::WorkAllPal(const FPalCommand& Command)

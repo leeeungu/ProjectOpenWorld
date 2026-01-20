@@ -1,4 +1,4 @@
-ï»¿#include "Pal/Actor/PalBaseCamp.h"
+#include "Pal/Actor/PalBaseCamp.h"
 #include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -11,7 +11,7 @@
 
 APalBaseCamp::APalBaseCamp()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
@@ -23,7 +23,12 @@ APalBaseCamp::APalBaseCamp()
 	CampBounds = CreateDefaultSubobject <USphereComponent >(TEXT("CampBound"));
 	CampBounds->SetupAttachment(RootComponent);
 	CampBounds->SetSphereRadius(1200.0f);
-	
+	CampBounds->OnComponentBeginOverlap.Clear();
+	CampBounds->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel3);
+	CampBounds->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	CampBounds->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CampBounds->SetGenerateOverlapEvents(true);
+
 	NavInvoker = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavInvoker"));
 }
 #if WITH_EDITOR
@@ -36,16 +41,18 @@ void APalBaseCamp::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 void APalBaseCamp::BeginPlay()
 {
 	Super::BeginPlay();
-	FOnActorSpawned::FDelegate del{};
-	del.BindUObject(this, &APalBaseCamp::CommandActorSpawned);
-	if (GetWorld())
-		GetWorld()->AddOnActorSpawnedHandler(del);
+
+	CampBounds->OnComponentBeginOverlap.AddUniqueDynamic(this, &APalBaseCamp::OnCampBeginOverlap);
+	CampBounds->OnComponentEndOverlap.AddUniqueDynamic(this, &APalBaseCamp::OnCampEndOverlap);
+	//FOnActorSpawned::FDelegate del{};
+	//del.BindUObject(this, &APalBaseCamp::CommandActorSpawned);
+	//if (GetWorld())
+	//	GetWorld()->AddOnActorSpawnedHandler(del);
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> arQuery{};
 	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-	arQuery.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(GetOwner());
@@ -54,21 +61,24 @@ void APalBaseCamp::BeginPlay()
 		GetWorld(),
 		GetActorLocation(), GetActorLocation(), CampBounds->GetScaledSphereRadius(), arQuery,
 		false, IgnoreActors, EDrawDebugTrace::Type::None, arHitted, true);
-
 	for(FHitResult& hit : arHitted)
 	{
-		CommandActorSpawned(hit.GetActor());
+		PalCommander->RegisterWork(hit.GetActor());
 	}
 }
 
-void APalBaseCamp::CommandActorSpawned(AActor* NewActor)
+void APalBaseCamp::OnCampBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!NewActor || !PalCommander)
+	if (!OtherActor || !PalCommander)
 		return;
-	if (FVector::DistSquared(NewActor->GetActorLocation(), GetActorLocation()) <= CampBounds->GetScaledSphereRadius() * CampBounds->GetScaledSphereRadius())
-	{
-		PalCommander->RegisterWork(NewActor);
-	}
+	PalCommander->RegisterWork(OtherActor);
+}
+
+void APalBaseCamp::OnCampEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (!OtherActor || !PalCommander)
+		return;
+	PalCommander->UnRegisterWork(OtherActor);
 }
 
 void APalBaseCamp::Tick(float DeltaTime)
@@ -110,10 +120,15 @@ void APalBaseCamp::PalDead(AActor* DeadPal)
 
 void APalBaseCamp::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL START"));
+	PalStore->ShowAllSpawnedPals();
+	PalCommander->SetComponentTickEnabled(true);
+	//UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL START"));
 }
 
 void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL STOP, COOMMAND NOT RESETì´ì–´ì•¼ í•˜ë‚˜?"));
+	PalCommander->SetComponentTickEnabled(false);
+	PalCommander->StopAllPal();
+	PalStore->HideAllSpawnedPals();
+	//UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL STOP, COOMMAND NOT RESETÀÌ¾î¾ß ÇÏ³ª?"));
 }

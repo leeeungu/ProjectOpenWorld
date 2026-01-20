@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -15,6 +15,8 @@ protected:
 	std::set<TObjectPtr<ABaseCreature>> pals{};
 	TQueue< TObjectPtr<AActor>> WorkQueue{};
 
+	TSet< TObjectPtr<AActor>> RegisteredWorks{};
+
 	UPROPERTY()
 	TObjectPtr<AActor> TargetWorkActor{};
 
@@ -26,14 +28,19 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void UpdateWorkQueue();
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Commander")
+	void StopAllPal();
 	void StorePal(AActor* NewPal);
 	void RemovePal(AActor* targetPal);
 
 	UFUNCTION(BlueprintCallable, Category = "Commander")
 	void RegisterWork(AActor* WorkActor);
+	UFUNCTION(BlueprintCallable, Category = "Commander")
+	void UnRegisterWork(AActor* WorkActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Commander")
 	bool WorkAllPal(const FPalCommand& Command);

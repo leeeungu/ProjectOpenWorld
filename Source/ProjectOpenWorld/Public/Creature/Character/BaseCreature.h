@@ -53,6 +53,8 @@ public:
 public:
 	ABaseCreature();
 	virtual bool ReceiveCommand_Implementation(FPalCommand Command) override;
+	virtual bool CommandPause_Implementation(bool bPause) override;
+
 
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	bool GetActionStarted() const { return bActionStarted; }
