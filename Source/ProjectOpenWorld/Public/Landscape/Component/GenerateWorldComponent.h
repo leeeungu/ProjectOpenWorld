@@ -5,6 +5,7 @@
 #include "Landscape/Component/GeneratorSectionComponent.h"
 #include "GenerateWorldComponent.generated.h"
 
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) ,Abstract)
 class PROJECTOPENWORLD_API UGenerateWorldComponent : public UActorComponent
 {
@@ -19,9 +20,9 @@ protected:
 	UFUNCTION()
 	virtual void StartGenerateWorld(bool bEditor = false) {};
 	UFUNCTION()
-	virtual void NewGenerateWorld(FIntPoint SectionID,  const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) {}
+	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) {}
 	UFUNCTION()
-	virtual void DelGenerateWorld(FIntPoint SectionID,  const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) {}
+	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) {}
 	UFUNCTION()
 	virtual void FinishGenerateWorld() {};
 

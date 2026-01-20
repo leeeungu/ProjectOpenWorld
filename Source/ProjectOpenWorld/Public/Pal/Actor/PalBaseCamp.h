@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameBase/Interface/GenerateWorldInterface.h"
 #include "PalBaseCamp.generated.h"
 
 class UPalStorageComponent;
@@ -12,7 +13,7 @@ class USphereComponent;
 class UNavigationInvokerComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API APalBaseCamp : public AActor
+class PROJECTOPENWORLD_API APalBaseCamp : public AActor, public IGenerateWorldInterface
 {
 	GENERATED_BODY()
 protected:
@@ -55,4 +56,8 @@ public:
 
 	UFUNCTION()
 	void PalDead(AActor* DeadPal);
+
+	// GenerateWorldInterface
+	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
+	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 };

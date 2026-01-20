@@ -135,4 +135,14 @@ void AResourceActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 	IResourceInterface::Execute_StopResource(pOther, this);
 }
 
+void AResourceActor::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UE_LOG(LogTemp, Error, TEXT("AResourceActor::NewGenerateWorldEvent TODO"));
+}
+
+void AResourceActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UE_LOG(LogTemp, Error, TEXT("AResourceActor::DelGenerateWorldEvent TODO"));
+}
+
 

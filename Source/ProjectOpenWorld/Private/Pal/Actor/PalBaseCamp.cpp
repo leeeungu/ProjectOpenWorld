@@ -1,4 +1,4 @@
-#include "Pal/Actor/PalBaseCamp.h"
+﻿#include "Pal/Actor/PalBaseCamp.h"
 #include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -106,4 +106,14 @@ void APalBaseCamp::PalDead(AActor* DeadPal)
 {
 	PalCommander->RemovePal(DeadPal);
 	PalStore->DeSpawnPal(DeadPal);
+}
+
+void APalBaseCamp::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL START"));
+}
+
+void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL STOP, COOMMAND NOT RESET이어야 하나?"));
 }

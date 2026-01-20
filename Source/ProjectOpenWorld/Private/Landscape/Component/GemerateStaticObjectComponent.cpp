@@ -1,5 +1,7 @@
-#include "Landscape/Component/GemerateStaticObjectComponent.h"
+﻿#include "Landscape/Component/GemerateStaticObjectComponent.h"
 #include "Landscape/Actor/WorldGenerator.h"
+#include "GameBase/Interface/GenerateWorldInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 UGemerateStaticObjectComponent::UGemerateStaticObjectComponent()
 {
@@ -17,32 +19,42 @@ void UGemerateStaticObjectComponent::BeginPlay()
 	{
 		GetWorld()->AddOnActorSpawnedHandler(del);
 	}
-	//GetWorld()->GetLevel()->Actors GetActorCount
-}
-void UGemerateStaticObjectComponent::NewGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents)
-{
-	if (TSet<TObjectPtr<AActor>>* ActorSet = SectionStaticObjectMap.Find(SectionID))
+	TArray<AActor*> Array{};
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), Array);
+	for (AActor* Actor : Array)
 	{
-		for (TObjectPtr<AActor> Actor : *ActorSet)
+		if (Cast<IGenerateWorldInterface>(Actor))
+		{
+			CommandActorSpawned(Actor);
+		}
+	}
+}
+void UGemerateStaticObjectComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
+{
+	if (TSet<TScriptInterface<IGenerateWorldInterface>>* ActorSet = SectionStaticObjectMap.Find(SectionData.SectionID))
+	{
+		for (TScriptInterface<IGenerateWorldInterface> Actor : *ActorSet)
 		{
 			if (Actor)
 			{
-				Actor->SetActorTickEnabled(true);
-				Actor->SetActorHiddenInGame(false);
+				Cast<AActor>(Actor.GetObject())->SetActorTickEnabled(true);
+				Cast<AActor>(Actor.GetObject())->SetActorHiddenInGame(false);
+				Actor->DelGenerateWorldEvent(SectionData);
 			}
 		}
 	}
 }
-void UGemerateStaticObjectComponent::DelGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents)
+void UGemerateStaticObjectComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (TSet<TObjectPtr<AActor>>* ActorSet = SectionStaticObjectMap.Find(SectionID))
+	if (TSet<TScriptInterface<IGenerateWorldInterface>>* ActorSet = SectionStaticObjectMap.Find(SectionData.SectionID))
 	{
-		for (TObjectPtr<AActor> Actor : *ActorSet)
+		for (TScriptInterface<IGenerateWorldInterface> Actor : *ActorSet)
 		{
 			if (Actor)
 			{
-				Actor->SetActorTickEnabled(false);
-				Actor->SetActorHiddenInGame(true);
+				Cast<AActor>(Actor.GetObject())->SetActorTickEnabled(false);
+				Cast<AActor>(Actor.GetObject())->SetActorHiddenInGame(true);
+				Actor->DelGenerateWorldEvent(SectionData);
 			}
 		}
 	}
@@ -51,9 +63,16 @@ void UGemerateStaticObjectComponent::CommandActorSpawned(AActor* SpawnActor)
 {
 	if (GeneratorSectionComponent)
 	{
-		FIntPoint SectionID = GeneratorSectionComponent->GetSectionIndex(SpawnActor->GetActorLocation());
-		TSet<TObjectPtr<AActor>>& ActorSet = SectionStaticObjectMap.FindOrAdd(SectionID);
-		ActorSet.Add(SpawnActor);
+		if (Cast<IGenerateWorldInterface>(SpawnActor))
+		{
+			FIntPoint SectionID = GeneratorSectionComponent->GetSectionIndex(SpawnActor->GetActorLocation());
+			TSet<TScriptInterface<IGenerateWorldInterface>>& ActorSet = SectionStaticObjectMap.FindOrAdd(SectionID);
+			ActorSet.Add(SpawnActor);
+		}
+		else if (SpawnActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Spawn Actor Not  Implement  IGenerateWorldInterface (cpp Only) class : %s name : %s"), *SpawnActor->StaticClass()->GetName(), *SpawnActor->GetName());
+		}
 	}
 }
 //

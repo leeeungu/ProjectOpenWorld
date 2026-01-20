@@ -1,4 +1,4 @@
-#include "Building/Component/BuildingProgress.h"
+﻿#include "Building/Component/BuildingProgress.h"
 #include "Building/BaseBuilding.h"
 
 UBuildingProgress::UBuildingProgress()

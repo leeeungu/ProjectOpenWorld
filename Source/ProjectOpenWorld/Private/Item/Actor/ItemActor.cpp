@@ -52,7 +52,7 @@ void AItemActor::BeginPlay()
 	Super::BeginPlay();
 
 	//ItemSkeletalMesh->SetLinearDamping(5.f);
-	ItemSkeletalMesh->SetAngularDamping(5.f);
+	ItemSkeletalMesh->SetAngularDamping(8.f);
 	if (ItemWidget && ToolTipWidget)
 		ItemWidget->SetWidget(ToolTipWidget.Get());
 }
@@ -150,6 +150,19 @@ void AItemActor::OnTransportUnRegister_Implementation(AActor* Other)
 ETransportState AItemActor::GetTransportState_Implementation()
 {
 	return TransportState;
+}
+
+
+void AItemActor::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UE_LOG(LogTemp, Error, TEXT("AItemActor::NewGenerateWorldEvent TODO"));
+	ItemSkeletalMesh->SetSimulatePhysics(true);
+}
+
+void AItemActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UE_LOG(LogTemp, Error, TEXT("AItemActor::DelGenerateWorldEvent TODO"));
+	ItemSkeletalMesh->SetSimulatePhysics(false);
 }
 
 UPrimitiveComponent* AItemActor::GetItemCollision() const

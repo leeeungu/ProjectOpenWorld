@@ -1,4 +1,4 @@
-#include "Landscape/Component/GenerateGrassComponent.h"
+ï»¿#include "Landscape/Component/GenerateGrassComponent.h"
 #include "GrassInstancedStaticMeshComponent.h"
 #include "LandscapeGrassType.h"
 
@@ -7,7 +7,7 @@ UGenerateGrassComponent::UGenerateGrassComponent() : UGenerateWorldComponent{}
 	PrimaryComponentTick.bCanEverTick = true;
 	GrassInstances.Init(nullptr, 5);
 
-	// UHierarchicalInstancedStaticMeshComponent¿¡¼­  ULandscapeGrassType»ç¿ëÇÏ¿©  Ç® ¸¸µé±â
+	// UHierarchicalInstancedStaticMeshComponentì—ì„œ  ULandscapeGrassTypeì‚¬ìš©í•˜ì—¬  í’€ ë§Œë“¤ê¸°
 }
 
 void UGenerateGrassComponent::BeginPlay()
@@ -30,3 +30,10 @@ void UGenerateGrassComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UGenerateGrassComponent::NewGenerateWorld(const FGenerateSectionData& SectionData )
+{
+}
+
+void UGenerateGrassComponent::DelGenerateWorld(const FGenerateSectionData& SectionData )
+{
+}

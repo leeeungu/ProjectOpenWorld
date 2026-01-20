@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Pal/Interface/CommanderManageable.h"
 #include "Interaction/InteractionInterface.h"
+#include "GameBase/Interface/GenerateWorldInterface.h"
 #include "ResourceActor.generated.h"
 
 class AItemActor;
@@ -13,7 +14,7 @@ class AItemActor;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExtractEnd);
 
 UCLASS()
-class PROJECTOPENWORLD_API AResourceActor : public AActor, public ICommanderManageable , public IInteractionInterface
+class PROJECTOPENWORLD_API AResourceActor : public AActor, public ICommanderManageable, public IInteractionInterface, public IGenerateWorldInterface
 {
 	GENERATED_BODY()
 protected:
@@ -62,5 +63,9 @@ public:
 	virtual void OnInteraction_Implementation(ACharacter* pOther) override;
 	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override;
 	virtual void OnInteractionCanceled_Implementation(ACharacter* pOther) override;
+
+	// GenerateWorldInterface
+	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
+	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 
 };

@@ -42,11 +42,11 @@ void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
 	}
 }
 
-void UGenerateTerrainComponent::NewGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents)
+void UGenerateTerrainComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
 {
 	if (!GenerateTerrain)
 		return;
-	if (!SectionIDToMeshIndex.Find(SectionID))
+	if (!SectionIDToMeshIndex.Find(SectionData.SectionID))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("UGenerateTerrainComponent New Mesh SectionID:(%d,%d)"), SectionID.X, SectionID.Y);
 		int32 CurrentMeshIndex = SectionIndex;
@@ -57,25 +57,25 @@ void UGenerateTerrainComponent::NewGenerateWorld(FIntPoint SectionID, const TArr
 		}
 		else
 			SectionIndex++;
-		GenerateTerrain->CreateMeshSection(CurrentMeshIndex, Vertices, Triangles, Normals, UVs, TArray<FColor>(), Tangents, true);
+		GenerateTerrain->CreateMeshSection(CurrentMeshIndex, *SectionData.Vertices, *SectionData.Triangles, *SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
 		UpdateSectionIndex.Add(CurrentMeshIndex);
 		if (TerrainMaterial)
 		{
 			GenerateTerrain->SetMaterial(CurrentMeshIndex, TerrainMaterial);
 		}
-		SectionIDToMeshIndex.Add(SectionID, CurrentMeshIndex);
+		SectionIDToMeshIndex.Add(SectionData.SectionID, CurrentMeshIndex);
 	}
 }
 
-void UGenerateTerrainComponent::DelGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents)
+void UGenerateTerrainComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (int32* DelIndex = SectionIDToMeshIndex.Find(SectionID))
+	if (int32* DelIndex = SectionIDToMeshIndex.Find(SectionData.SectionID))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("UGenerateTerrainComponent Del Mesh SectionID:(%d,%d)"), SectionID.X, SectionID.Y);
 		EmptySectionIndex.Add(*DelIndex);
 		GenerateTerrain->SetMeshSectionVisible(*DelIndex, false);
 		GenerateTerrain->ClearMeshSection(*DelIndex);
-		SectionIDToMeshIndex.Remove(SectionID);
+		SectionIDToMeshIndex.Remove(SectionData.SectionID);
 	}
 }
 

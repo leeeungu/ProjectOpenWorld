@@ -1,4 +1,4 @@
-#include "Building/BaseBuilding.h"
+﻿#include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
@@ -74,6 +74,17 @@ bool ABaseBuilding::IsCommandFinished_Implementation()
 	if (!buildingProgressComponent)
 		return true;
 	return buildingProgressComponent->IsBuildingEnd();
+}
+
+void ABaseBuilding::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	UpdateModifier();
+}
+
+void ABaseBuilding::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
+{
+	NoCollision();
+	buildingProgressComponent->StopAll();
 }
 
 void ABaseBuilding::UpdateModifier()

@@ -1,8 +1,9 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Pal/Interface/CommanderManageable.h"
+#include "GameBase/Interface/GenerateWorldInterface.h"
 #include "BaseBuilding.generated.h"
 
 class UStaticMesh;
@@ -14,12 +15,12 @@ class UNavModifierComponent;
 class UBuildingActionWidgetComponent;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
-class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManageable
+class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManageable, public IGenerateWorldInterface
 {
 	GENERATED_BODY()
 protected:
 
-	// «ÿ¥Á ±‚¥…¿ª π≠æÓº≠ √≥∏Æ∏È ¡¡¿ªµÌ?
+	// Ìï¥Îãπ Í∏∞Îä•ÏùÑ Î¨∂Ïñ¥ÏÑú Ï≤òÎ¶¨Î©¥ Ï¢ãÏùÑÎìØ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture", BlueprintGetter = "GetBuildingMeshComponent")
 	TObjectPtr < UStaticMeshComponent> buildingMeshComponent{};
 
@@ -45,6 +46,10 @@ public:
 	virtual uint8 GetSubCommandType_Implementation() override;
 	virtual FPalCommand GetCommand_Implementation() override;
 	virtual bool IsCommandFinished_Implementation() override;
+
+	// GenerateWorldInterface
+	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
+	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 
 	void UpdateModifier();
 	void NoCollision();

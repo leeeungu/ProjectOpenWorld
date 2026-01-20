@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -37,6 +37,7 @@ public:
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComponent
 {
+	friend class FAsyncFoliageGenerater;
 	struct FSectionData
 	{
 		FSectionData()
@@ -49,13 +50,22 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		bool bSectionNew{};
 		bool bAllReadyNew = false;
 	};
-	struct FFoliageData
+
+	struct FoliageUpdateData
 	{
-		FTransform InstanceTransform{};
-		int32 FoliageID{};
+		TObjectPtr<UFoliageInstancedStaticMeshComponent> FoliageComponent{};
+		FTransform NewTransform{};
 		FIntPoint SectionID{};
 		int32 InstanceIndex{};
+		int32 FoliageID{};
 	};
+	struct FoliageAddData
+	{
+		FIntPoint SectionID{};
+		FVector StartPos{};
+		FVector EndPos{};
+	};
+
 	GENERATED_BODY()
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
@@ -76,36 +86,55 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	bool bRandomSeed{};
 	TMap<TObjectPtr< UFoliageInstancedStaticMeshComponent>, TSet<int32>> RemoveInstanceIndex{}; // FoliageID, Instance Indices
-
-	TArray< FFoliageData>  arInstancesTranform{};
-
+	TArray< FoliageUpdateData> UpdateData{};
+	TArray< FoliageUpdateData> UpdateBackData{};
 	TMap <FIntPoint, FSectionData> SectionIDToFoliageTypeToInstanceIndex{};
 	TArray<FIntPoint> DeleteArray{};
+	TArray<FoliageAddData> AddArray{};
 
 	int nSectionIndex{};
 	//int CurrentUpdateTick = 0;
-	int InstanceIndex{};
 	bool bFoliageUpdated = false;
 	bool EditorModeGenerate = false;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int nInstanceCount{};
+	bool bGeneratingFoliage = true;
+	bool UpdateBuffer{};
 public:	
 	UGenerateFoliageComponent();
 
 protected:
 	virtual void BeginPlay() override;
 
-	void UpdateFoliageInstances();
-	void ClearFoliageInstances();
-	void AddFoliageInstance(FIntPoint SectionID, FVector StartPos, FVector  EndPos);
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void StartGenerateWorld(bool bEditor = false) override;
-	virtual void NewGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) override;
-	virtual void DelGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) override;
+	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) override;
+	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) override;
+	//virtual void NewGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) override;
+	//virtual void DelGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) override;
 	virtual void FinishGenerateWorld() override;
 
 public:
 	virtual void Initialize(USceneComponent* ParentComponent) override;
+};
+
+class FAsyncFoliageGenerater : public FNonAbandonableTask
+{
+public:
+	FAsyncFoliageGenerater(UGenerateFoliageComponent* InFoliageGenerater)
+	{
+		FoliageGenerater = InFoliageGenerater;
+	}
+
+	FORCEINLINE	TStatId GetStatId() const
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(FAsyncFoliageGenerater, STATGROUP_ThreadPoolAsyncTasks);
+	}
+
+	void DoWork();
+private:
+	UPROPERTY()
+	TObjectPtr<UGenerateFoliageComponent> FoliageGenerater{};
 };

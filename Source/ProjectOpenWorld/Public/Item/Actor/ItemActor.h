@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Interaction/InteractionInterface.h"
 #include "Item/Interface/TransportInterface.h"
+#include "GameBase/Interface/GenerateWorldInterface.h"
 #include "ItemActor.generated.h"
 
 class UItemPrimaryDataAsset;
@@ -12,7 +13,7 @@ class UWidgetComponent;
 class USphereComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface
+class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface, public IGenerateWorldInterface
 {
 	GENERATED_BODY()
 protected:
@@ -62,6 +63,10 @@ public: // IInteractionInterface
 	virtual void OnTransportEnd_Implementation(AActor* Other) override {}
 	virtual void OnTransportCancel_Implementation(AActor* Other) override {}
 	virtual ETransportState GetTransportState_Implementation() override;
+
+	// GenerateWorldInterface
+	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
+	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 
 	FORCEINLINE UPrimitiveComponent* GetItemCollision() const;
 };

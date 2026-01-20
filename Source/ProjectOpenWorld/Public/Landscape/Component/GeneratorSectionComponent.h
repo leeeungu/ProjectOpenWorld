@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "ProceduralMeshComponent.h"
+#include "GameBase/Struct/GenerateSectionData.h"
 #include "GeneratorSectionComponent.generated.h"
 
 class UProceduralMeshComponent;
@@ -15,7 +16,7 @@ class UHierarchicalInstancedStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 class UGenerateWorldComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnSectionTerrainGenerate, FIntPoint, SectionID, const TArray<FVector>&, Vertices, const TArray<FVector2D>&, UVs, const TArray<int32>&, Triangles, const TArray<FVector>&, Normals, const TArray<FProcMeshTangent >&, SumTangents);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSectionTerrainGenerate, const FGenerateSectionData&, SectionData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSectionStartEvent, bool , Editor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSectionEvent);
 
@@ -64,12 +65,14 @@ protected:
 	//TArray<TPair<FIntPoint, int>> SectionIndexArray{};
 	TSet<FIntPoint> SectionMap{};
 	TArray<FIntPoint> UpdateSectionArray{};
+	TArray<FIntPoint> UpdateBackSectionArray{};
 	int nDeleteSectionCount{};
 
 
 	int MaxSection{};
 	int CurrentIndex{};
 	bool bDelayUpdate{};
+	bool bBackUpdate{};
 public:	
 	UGeneratorSectionComponent();
 
@@ -98,6 +101,7 @@ protected:
 	void UpdateTerrain();
 	void EndGenerateTerrain();
 
+	FVector GetSectionSize() const;
 public:	
 	FIntPoint GetSectionIndex(FVector Location) const;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
