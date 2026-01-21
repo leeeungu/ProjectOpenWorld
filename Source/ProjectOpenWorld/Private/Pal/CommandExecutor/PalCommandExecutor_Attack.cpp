@@ -1,4 +1,4 @@
-﻿#include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
@@ -109,6 +109,8 @@ bool UPalCommandExecutor_Attack::CheckCommandValid()
 
 void UPalCommandExecutor_Attack::EndAttack()
 {
+	if (!bStartedAttacking)
+		return;
 	Abort();
 	EndCommand();
 }
