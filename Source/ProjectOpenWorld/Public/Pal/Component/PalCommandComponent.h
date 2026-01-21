@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -12,7 +12,7 @@ struct FAIRequestID;
 namespace EPathFollowingResult { enum Type : int; }
 
 UCLASS()
-class PROJECTOPENWORLD_API UPalCommandComponent : public UActorComponent
+class PROJECTOPENWORLD_API UPalCommandComponent_Pre : public UActorComponent
 {
 	GENERATED_BODY()
 private:
@@ -25,14 +25,15 @@ private:
 	TQueue<FPalCommand*> QueueEmpty{};
 	TQueue<FPalCommand*> QueueCommand{};
 	FPalCommand DummyCommand{};
-	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "True"))
-	FPalCommand CurrentCommandData{};
-	FPalCommand* CurrentCommand{};
 	FPalCommand* LastCommand{};
-	bool (UPalCommandComponent::* PushCommandFunc)(const FPalCommand&);
+	bool (UPalCommandComponent_Pre::* PushCommandFunc)(const FPalCommand&);
 	bool bCommandStarted{};
 protected:
-	// garbage ¹®Á¦·Î stringobj¸¦ »ç¿ë
+	UPROPERTY(VisibleAnywhere, Category = "PalCommand")
+	FPalCommand CurrentCommandData{};
+	FPalCommand* CurrentCommand{};
+protected:
+	// garbage ë¬¸ì œë¡œ stringobjë¥¼ ì‚¬ìš©
 	TArray< TArray<TStrongObjectPtr<UPalCommandExecutorBase>>> CommandExecutors{};
 	UPROPERTY()
 	TObjectPtr<UPalCommandExecutorBase> CurrentExcute{};
@@ -41,30 +42,26 @@ public:
 	FOnCommandEvent OnCommandFinished{};
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PalCommand")
 	FOnCommandEvent OnCommandStarted{};
-public:	
-	UPalCommandComponent();
-private:
+public:
+	UPalCommandComponent_Pre();
+protected:
 	void ResetCommand(FPalCommand& pData);
 	void ResetCurrentCommand();
-protected:
 	virtual void BeginPlay() override;
+	 bool PopCommand();
 
-	template <typename T>
-	void CreateNewExcutor(EPalCommandKind CommandType, uint8 SubType, FName Name = NAME_None);
-	bool PopCommand();
-
-	bool PushCommand_Default(const FPalCommand& NewCommand);
-	bool PushCommand_DequqOld(const FPalCommand& NewCommand);
-	void SetPushCommandFunc(bool (UPalCommandComponent::* Func)(const FPalCommand&));
+	virtual bool PushCommand_Default(const FPalCommand& NewCommand);
+	 bool PushCommand_DequqOld(const FPalCommand& NewCommand);
+	 void SetPushCommandFunc(bool (UPalCommandComponent_Pre::* Func)(const FPalCommand&));
 
 	UFUNCTION()
-	void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
-public:	
+	 void FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
-	inline const FPalCommand* GetCurrentCommand_C() const { return CurrentCommand;  }
-	FPalCommand GetCurrentCommand() const { return *CurrentCommand;  }
+	virtual bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
+	virtual const FPalCommand* GetCurrentCommand_C() const { return CurrentCommand; }
+	virtual FPalCommand GetCurrentCommand() const { return *CurrentCommand; }
 
 	UFUNCTION(BlueprintPure, Category = "PalCommand")
 	FORCEINLINE EPalCommandKind GetCurrentCommandKind() const { return CurrentCommand->CommandKind; }
@@ -76,13 +73,32 @@ public:
 	bool PushCommand(const FPalCommand& NewCommand);
 
 	UFUNCTION(BlueprintCallable, Category = "PalCommand")
-	void FinishCommand(); // == stop
+	virtual void FinishCommand(); // == stop
 
 	UFUNCTION(BlueprintCallable, Category = "PalCommand")
-	void ResetCommandQue();
-	
-	virtual void OnStartCurrentCommand()  {}
-	virtual void OnFinishedCurrentCommand()  {}
+	virtual void ResetCommandQue();
+
+	virtual void OnStartCurrentCommand() {}
+	virtual void OnFinishedCurrentCommand() {}
+};
+
+
+UCLASS()
+class PROJECTOPENWORLD_API UPalCommandComponent : public UPalCommandComponent_Pre
+{
+	GENERATED_BODY()
+protected:
+	virtual bool PushCommand_Default(const FPalCommand& NewCommand) override;
+
+public:
+	virtual bool IsValidCommand() override;
+
+	template <typename T>
+	void CreateNewExcutor(EPalCommandKind CommandType, uint8 SubType, FName Name = NAME_None);
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void FinishCommand() override; // == stop
+	virtual void ResetCommandQue() override;
 };
 
 

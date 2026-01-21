@@ -121,7 +121,7 @@ void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 
 void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (SectionData.Vertices->Num() <= 1 || nInstanceCount >= FoliageMaxCount || !bGeneratingFoliage || EditorModeGenerate)
+	if (SectionData.Vertices->Num() <= 1 || !bGeneratingFoliage || EditorModeGenerate)
 		return;
 	FSectionData* SectionIndex = SectionIndex = SectionIDToFoliageTypeToInstanceIndex.Find(SectionData.SectionID);
 	if (!SectionIndex)

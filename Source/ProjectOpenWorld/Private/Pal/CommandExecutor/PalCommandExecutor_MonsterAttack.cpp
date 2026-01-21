@@ -1,4 +1,4 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
 #include "Creature/Character/BaseMonster.h"
 #include "GameFramework/Controller.h"
 #include "Pal/Component/PalAttackComponent.h"
@@ -35,6 +35,7 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 		////NewAttackData.TargetActor = Command.pTarget.Get();
 		//NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
 		//AttackComponent->SetAttackData(NewAttackData);
+		//OwnerController->SetBBTargetLocation(Command->pTarget->GetActorLocation());
 		AttackComponent->SetAttackTarget(Command.pTarget.Get());
 		//AttackComponent->StartAttack();
 		IsCommandStarted = true;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Pal/CommandExecutor/PalCommandExecutorBase.h"
@@ -22,6 +22,9 @@ protected:
 	ABaseCreature* OwnerPal{};
 	UPROPERTY()
 	UPalAttackComponent* AttackComponent{};
+
+	UPROPERTY()
+	APalAIController* OwnerController{};
 	bool bStartedAttacking{};
 public:
 	virtual void Initialize(UPalCommandComponent* CommandComp) override;

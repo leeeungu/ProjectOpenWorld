@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -85,6 +85,8 @@ public:
 	void StopAttack();
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
+	bool TargetIsInRange() const;
+	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool GetAttacking() const { return bAttacking ; }
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
@@ -99,7 +101,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool IsSetAttackData()const { return bSetAttackData; }
 
-	// IMontageQueueInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
+	// IMontageQueueInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
 	UAnimMontage* GetMontage() const override;
 	void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) override;
 	void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) override;

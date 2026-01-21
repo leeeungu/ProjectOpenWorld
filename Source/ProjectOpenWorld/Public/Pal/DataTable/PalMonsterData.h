@@ -38,6 +38,7 @@ public:
 
 class ABaseMonster;
 
+// Monster World Data
 USTRUCT(BlueprintType)
 struct FPalMonsterData : public FTableRowBase 
 {

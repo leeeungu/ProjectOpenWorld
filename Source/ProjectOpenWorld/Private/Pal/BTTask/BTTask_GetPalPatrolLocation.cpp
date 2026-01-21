@@ -19,7 +19,7 @@ EBTNodeResult::Type UBTTask_GetPalPatrolLocation::ExecuteTask(UBehaviorTreeCompo
 		return EBTNodeResult::Type::Failed;
 	}
 	FVector PatrolLocation = PatrolComp->GetCurrentPatrolPoint();
-	UE_LOG(LogTemp, Warning, TEXT("Patrol Location: %s"), *PatrolLocation.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("Patrol Location: %s"), *PatrolLocation.ToString());
 	OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), PatrolLocation);
 	PatrolComp->UpdatePatrolIndex();
 	return EBTNodeResult::Type::Succeeded;

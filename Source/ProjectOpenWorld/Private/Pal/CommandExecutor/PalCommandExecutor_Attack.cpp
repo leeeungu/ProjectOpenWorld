@@ -1,8 +1,7 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_Attack.h"
 #include "Creature/Character/BaseCreature.h"
-#include "GameFramework/Controller.h"
 #include "Pal/Component/PalAttackComponent.h"
-#include "Navigation/PathFollowingComponent.h"
+#include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalCommandComponent.h"
 
 void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
@@ -14,6 +13,7 @@ void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 	if (OwnerPal)
 	{
 		AttackComponent = OwnerPal->GetAttackComponent();
+		OwnerController = Cast<APalAIController>(OwnerPal->GetController());
 	}
 	if (AttackComponent)
 	{
@@ -28,16 +28,15 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 	{
 		return false;
 	}
-	bStartedAttacking = true;
-	OwnerPal->SetActionStarted(true);
-	if (AttackComponent)
+	if (AttackComponent && OwnerController)
 	{
-		//FPalAttackDataTable NewAttackData{};
-		////NewAttackData.TargetActor = Command.pTarget.Get();
-		//NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
+		bStartedAttacking = true;
+		OwnerPal->SetActionStarted(true);
+		ESubAttackType AttackType = ESubAttackType::Default;
+		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
+		AttackComponent->SetAttackData(AttackType);
 		AttackComponent->SetAttackTarget(Command.pTarget.Get());
-		//AttackComponent->SetAttackData(NewAttackData);
-		//AttackComponent->StartAttack();
+		OwnerController->SetBBTargetLocation(Command.pTarget->GetActorLocation());
 		IsCommandStarted = true;
 		return true;
 	}
@@ -47,6 +46,7 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 
 void UPalCommandExecutor_Attack::Abort()
 {
+	UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: Attack Abort"));
 	if (bStartedAttacking == false)
 		return;
 	bStartedAttacking = false;
@@ -62,14 +62,48 @@ void UPalCommandExecutor_Attack::Abort()
 	{
 		AttackComponent->EndAttack();
 	}
+	if (OwnerController)
+	{
+		OwnerController->ResetMove();
+	}
 }
 
 void UPalCommandExecutor_Attack::WorkCommand()
 {
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: Attack WorkCommand"));
+	if (!AttackComponent->TargetIsInRange())
+	{
+		OwnerController->SetBBTargetLocation(Command->pTarget->GetActorLocation());
+		AttackComponent->SetAttackTarget(Command->pTarget.Get());
+		ESubAttackType AttackType = ESubAttackType::Default;
+		AttackComponent->SetAttackData(AttackType);
+	}
+	else if (!AttackComponent->IsAttacking())
+	{
+		OwnerController->ResetMove();
+		AttackComponent->StartAttack();
+	}
+	if (!AttackComponent->IsSetTarget())
+	{
+		AttackComponent->SetAttackTarget(Command->pTarget.Get());
+	}
+	//UE_LOG(LogTemp, Log, TEXT("%s : Attack WorkCommand"), *OwnerPal->GetName());
 }
 
 bool UPalCommandExecutor_Attack::CheckCommandValid()
 {
+	if (!AttackComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: not self command or no target"));
+		return false;
+	}
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (!Command->pTarget.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: invalid target"));
+		return false;
+	}
 	return true;
 }
 

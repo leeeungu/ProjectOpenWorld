@@ -1,4 +1,4 @@
-#include "Resource/Actor/ResourceActor.h"
+﻿#include "Resource/Actor/ResourceActor.h"
 #include "Item/Actor/ItemActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
@@ -65,6 +65,7 @@ void AResourceActor::SpawnRandomItem()
 				}
 			}
 		}
+		//UE_LOG(LogTemp, Log, TEXT("AResourceActor :: Resource Depleted"));
 		InteractionList.Empty();
 		Destroy();
 	}
@@ -101,7 +102,7 @@ void AResourceActor::UpdateResource(ACharacter* pOther)
 
 void AResourceActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
-	UE_LOG(LogTemp, Log, TEXT("AResourceActor:beginDetected"));
+	//UE_LOG(LogTemp, Log, TEXT("AResourceActor:beginDetected"));
 }
 
 void AResourceActor::OnEndDetected_Implementation(ACharacter* pOther)
@@ -112,7 +113,7 @@ void AResourceActor::OnInteractionStart_Implementation(ACharacter* pOther)
 {
 	if (!pOther || !pOther->Implements<UResourceInterface>())
 		return;
-	UE_LOG(LogTemp, Log, TEXT("AResourceActor:interactionStart"));
+//	UE_LOG(LogTemp, Log, TEXT("AResourceActor:interactionStart"));
 	InteractionList.Add(pOther);
 	IResourceInterface::Execute_StartResource(pOther, this);
 }

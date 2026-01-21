@@ -54,11 +54,12 @@ FVector UPalPatrolComponent::GetCurrentPatrolPoint() const
 	{
 		FNavLocation NavLocation{};
 		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-		if (NavSys && NavSys->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), PatrolDataPtr->RandomRadius, NavLocation))
+		while (NavSys && NavSys->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), PatrolDataPtr->RandomRadius, NavLocation) && NavLocation.Location.Z <= 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Random Patrol Location: %s"), *NavLocation.Location.ToString());
-			return NavLocation.Location;
+			//DrawDebugBox(GetWorld(), NavLocation.Location, FVector(25.0f), FColor::Green, false, 2.0f);
+			//UE_LOG(LogTemp, Warning, TEXT("Random Patrol Location: %s"), *NavLocation.Location.ToString());
 		}
+			return NavLocation.Location;
 	}
 	else if (PatrolDataPtr && PatrolDataPtr->PatrolPoint.IsValidIndex(CurrentPatrolIndex))
 	{

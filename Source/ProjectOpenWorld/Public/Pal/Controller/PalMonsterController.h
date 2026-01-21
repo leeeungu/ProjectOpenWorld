@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Pal/Controller/PalAIController.h"
@@ -10,15 +10,8 @@ UCLASS()
 class PROJECTOPENWORLD_API APalMonsterController : public APalAIController
 {
 	GENERATED_BODY()
-protected:
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UBehaviorTree> MonsterBTree{};
 public:
 	APalMonsterController();
-
-protected:
-	virtual void BeginPlay() override;
-
 public:
 	virtual FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId(2); }
 };

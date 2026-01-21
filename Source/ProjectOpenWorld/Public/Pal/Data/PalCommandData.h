@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "PalCommandData.generated.h"
@@ -81,8 +81,9 @@ public:
 			pInstigatorActor == rhs.pInstigatorActor &&
 			pTarget == rhs.pTarget &&
 			TargetLocation == rhs.TargetLocation &&
+			TargetValue == rhs.TargetValue &&
 			SubCommandType == rhs.SubCommandType && 
-			TargetValue == rhs.TargetValue)
+			true)
 			return true;
 		return false;
 	}

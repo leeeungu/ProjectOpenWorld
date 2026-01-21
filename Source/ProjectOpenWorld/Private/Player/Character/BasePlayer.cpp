@@ -173,6 +173,7 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 	APawn* pOther = Cast < APawn>(Other.GetObject());
 	if (pOther  && FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) == ETeamAttitude::Friendly)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Friendly Fire Disabled"));
 		return false;
 	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());

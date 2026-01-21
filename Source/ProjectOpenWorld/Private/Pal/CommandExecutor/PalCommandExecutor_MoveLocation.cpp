@@ -1,8 +1,7 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
 #include "GameFramework/Character.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalCommandComponent.h"
-#include "Navigation/PathFollowingComponent.h"
 
 void UPalCommandExecutor_MoveLocation::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -19,14 +18,7 @@ bool UPalCommandExecutor_MoveLocation::StartCommand(const FPalCommand& Command)
 {
 	if (OwnerController)
 	{
-		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
-		if (OwnerController->MoveToLocation(Command.TargetLocation, Command.TargetValue) != EPathFollowingRequestResult::Type::RequestSuccessful)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MoveLocation::Can Find Path"));
-			//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
-			EndCommand();
-			return false;
-		}
+		OwnerController->SetBBTargetLocation(Command.TargetLocation);
 		return true;
 	}
 	IsCommandStarted = true;
@@ -37,13 +29,13 @@ void UPalCommandExecutor_MoveLocation::Abort()
 {
 	if (OwnerController)
 	{
-		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
-		OwnerController->StopMovement();
+		OwnerController->ResetMove();
 	}
 }
 
 void UPalCommandExecutor_MoveLocation::WorkCommand()
 {
+	
 	EndCommand();
 }
 bool UPalCommandExecutor_MoveLocation::CheckCommandValid()
@@ -58,17 +50,3 @@ bool UPalCommandExecutor_MoveLocation::CheckCommandValid()
 	}
 	return true;
 }
-//void UPalCommandExecutor_MoveLocation::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-//{
-//	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-//	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Move || Command->SubCommandType != (uint8)ESubMoveType::Location)
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("Executor_MoveLocation :: not slef command"));
-//		return;
-//	}
-//	if (OwnerController)
-//	{
-//		OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_MoveLocation::FinishMove);
-//		EndCommand();
-//	}
-//}

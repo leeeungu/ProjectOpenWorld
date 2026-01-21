@@ -1,11 +1,11 @@
-#include "Pal/Component/PalMonsterCommandComponent.h"
+﻿#include "Pal/Component/PalMonsterCommandComponent.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveLocation.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MoveActor.h"
 #include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
 
 void UPalMonsterCommandComponent::BeginPlay()
 {
-	UPalCommandComponent::BeginPlay();
+	Super::BeginPlay();
 	CommandExecutors.Init(TArray<TStrongObjectPtr< UPalCommandExecutorBase>>{}, (uint8)EPalCommandKind::Max_PalCommandKind);
 	CommandExecutors[(uint8)EPalCommandKind::Move].Init(nullptr, (uint8)ESubMoveType::Max_MoveType);
 	CommandExecutors[(uint8)EPalCommandKind::Attack].Init(nullptr, (uint8)ESubAttackType::Max_AttackType);

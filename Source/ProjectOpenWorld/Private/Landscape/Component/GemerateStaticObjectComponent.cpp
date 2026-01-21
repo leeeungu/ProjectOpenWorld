@@ -1,4 +1,4 @@
-#include "Landscape/Component/GemerateStaticObjectComponent.h"
+﻿#include "Landscape/Component/GemerateStaticObjectComponent.h"
 #include "Landscape/Actor/WorldGenerator.h"
 #include "GameBase/Interface/GenerateWorldInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -75,10 +75,9 @@ void UGemerateStaticObjectComponent::CommandActorSpawned(AActor* SpawnActor)
 			TSet<TScriptInterface<IGenerateWorldInterface>>& ActorSet = SectionStaticObjectMap.FindOrAdd(SectionID);
 			ActorSet.Add(SpawnActor);
 		}
-		else if (SpawnActor)
+		else 
 		{
-			if (Cast<IGenerateWorldInterface>(SpawnActor))
-			UE_LOG(LogTemp, Warning, TEXT("Spawn Actor Not  Implement  IGenerateWorldInterface (cpp Only) class : %s name : %s"), *SpawnActor->StaticClass()->GetName(), *SpawnActor->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("Spawn Actor Not  Implement  IGenerateWorldInterface (cpp Only) class : %s name : %s"), *SpawnActor->StaticClass()->GetName(), *SpawnActor->GetName());
 		}
 	}
 }

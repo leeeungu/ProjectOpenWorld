@@ -1,5 +1,4 @@
-#include "Pal/Controller/PalMonsterController.h"
-#include "BehaviorTree/BehaviorTree.h" 
+﻿#include "Pal/Controller/PalMonsterController.h"
 
 APalMonsterController::APalMonsterController()
 {
@@ -7,13 +6,6 @@ APalMonsterController::APalMonsterController()
 	ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(TEXT("/Game/Pal/Model/Global/AI/Monster/BT_PalMonster.BT_PalMonster"));
 	if (BT.Succeeded())
 	{
-		MonsterBTree = BT.Object;
+		BTree = BT.Object;
 	}
-}
-
-void APalMonsterController::BeginPlay()
-{
-	APalAIController::BeginPlay();
-	if (MonsterBTree)
-		RunBehaviorTree(MonsterBTree);
 }

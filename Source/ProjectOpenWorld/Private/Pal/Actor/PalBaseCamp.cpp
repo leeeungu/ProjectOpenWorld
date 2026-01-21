@@ -1,4 +1,4 @@
-#include "Pal/Actor/PalBaseCamp.h"
+О╩©#include "Pal/Actor/PalBaseCamp.h"
 #include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -69,6 +69,7 @@ void APalBaseCamp::BeginPlay()
 
 void APalBaseCamp::OnCampBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("BaseCamp Begin Overlap %s"), *OtherActor->GetName());
 	if (!OtherActor || !PalCommander)
 		return;
 	PalCommander->RegisterWork(OtherActor);
@@ -76,6 +77,7 @@ void APalBaseCamp::OnCampBeginOverlap(UPrimitiveComponent* OverlappedComp, AActo
 
 void APalBaseCamp::OnCampEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	UE_LOG(LogTemp, Warning, TEXT("BaseCamp End Overlap %s"), *OtherActor->GetName());
 	if (!OtherActor || !PalCommander)
 		return;
 	PalCommander->UnRegisterWork(OtherActor);
@@ -130,5 +132,5 @@ void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData
 	PalCommander->SetComponentTickEnabled(false);
 	PalCommander->StopAllPal();
 	PalStore->HideAllSpawnedPals();
-	//UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL STOP, COOMMAND NOT RESETюл╬Н╬ъ гоЁ╙?"));
+	//UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL STOP, COOMMAND NOT RESETЛ²╢Л√╢Л∙╪ М∙≤К┌≤?"));
 }

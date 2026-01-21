@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -13,6 +13,7 @@ class PROJECTOPENWORLD_API UPalCommanderComponent : public UActorComponent
 	GENERATED_BODY()
 protected:
 	std::set<TObjectPtr<ABaseCreature>> pals{};
+	
 	TQueue< TObjectPtr<AActor>> WorkQueue{};
 
 	TSet< TObjectPtr<AActor>> RegisteredWorks{};

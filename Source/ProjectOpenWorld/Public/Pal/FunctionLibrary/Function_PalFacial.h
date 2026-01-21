@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -25,7 +25,7 @@ enum class EPalFacialMouthType : uint8
 	Default,
 	Smile,
 	Shock,
-
+	Anger
 };
 
 

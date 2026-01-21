@@ -1,4 +1,4 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
 #include "Building/BaseBuilding.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Creature/Character/BaseCreature.h"
@@ -30,30 +30,10 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 		EndBuilding();
 		return false;
 	}
-	//UE_LOG(ArchitectureCommand, Warning, TEXT("StartCommand %s"), *OwnerPal->GetFName().ToString());
 	if (OwnerController)
 	{
-		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
-
-		//TargetBuilding->GetBuildingProgress()->ActiveBuildingNav();
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Target, 600.f);
-		if (PathResult == EPathFollowingRequestResult::Type::Failed)
-		{
-			//UE_LOG(ArchitectureCommand, Error, TEXT("StartCommand::Can Find Path %s ") , *TargetBuilding->GetFullName());
-			EndBuilding();
-			//TargetBuilding->GetBuildingProgress()->DeActiveBuildingNav();
-			return false;
-		}
-		if (PathResult == EPathFollowingRequestResult::AlreadyAtGoal)
-		{
-			if (OwnerCommandComp->IsValidCommand() &&
-				Command.CommandKind == EPalCommandKind::Work && Command.SubCommandType == (uint8)ESubWorkType::Architecture)
-			{
-				TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
-			}
-		}
-		bActionStart = true;
+		OwnerController->SetBBTargetLocation(Target);
 		IsCommandStarted = true;
 		return true;
 	}
@@ -74,14 +54,17 @@ void UPalCommandExecutor_Architecture::Abort()
 	}
 	if (OwnerController)
 	{
-		OwnerController->StopMovement();
-		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Architecture::FinishMove);
+		OwnerController->ResetMove();
 	}
 }
 
 void UPalCommandExecutor_Architecture::WorkCommand()
 {
-	TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
+	if (!bActionStart)
+	{
+		bActionStart = true;
+		TargetBuilding->GetBuildingProgress()->StartBuilding(OwnerPal);
+	}
 }
 
 bool UPalCommandExecutor_Architecture::CheckCommandValid()
@@ -93,10 +76,12 @@ bool UPalCommandExecutor_Architecture::CheckCommandValid()
 	if (!OwnerCommandComp->IsValidCommand() || Command->CommandKind != EPalCommandKind::Work ||
 		Command->SubCommandType != (uint8)ESubWorkType::Architecture || !Command->pTarget.IsValid())
 	{
+		UE_LOG(LogTemp, Error, TEXT("UPalCommandExecutor_Architecture :: CheckCommandValid"));
 		return false;
 	}
 	if (!TargetBuilding || TargetBuilding->GetBuildingProgress()->IsBuildingEnd())// || Result != EPathFollowingResult::Type::Success)
 	{
+		UE_LOG(LogTemp, Error, TEXT("UPalCommandExecutor_Architecture :: Can't build"));
 		return false;
 	}
 	return true;

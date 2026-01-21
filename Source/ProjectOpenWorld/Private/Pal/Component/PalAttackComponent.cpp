@@ -1,4 +1,4 @@
-#include "Pal/Component/PalAttackComponent.h"
+﻿#include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "GameBase/BaseCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -98,7 +98,11 @@ void UPalAttackComponent::StartAttack()
 		EndAttack();
 		return;
 	}
-
+	if (bAttacking)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: already Attacking "), *GetOwner()->GetName());
+		return;
+	}
 	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 	if (Anim)
 	{
@@ -141,6 +145,20 @@ void UPalAttackComponent::StopAttack()
 	OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.01f);
 }
 
+bool UPalAttackComponent::TargetIsInRange() const
+{
+	if (TargetActor && OwnerCharacter)
+	{
+		const float Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f , AttackDistance : %f"), *GetOwner()->GetName(), Distance, AttackData.AttackDistance* AttackData.AttackDistance);
+		if (Distance <= AttackData.AttackDistance * AttackData.AttackDistance)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 UAnimMontage* UPalAttackComponent::GetMontage() const
 {
 	UAnimMontage* NextMontage = nullptr;
@@ -165,6 +183,7 @@ void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAni
 	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
 	{
 		BaseAnim->SetMontageQueueInterface(nullptr);
+		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: MontageBlendingEvent End Attack "), *GetOwner()->GetName());
 		ResetAttackData();
 		return;
 	}

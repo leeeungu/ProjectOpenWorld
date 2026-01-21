@@ -1,7 +1,6 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_Mining.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_Mining.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
-#include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
 #include "Interaction/Component/InteractionComponent.h"	
 
@@ -23,11 +22,10 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 	if (!OwnerPal || !OwnerController || !Command.pTarget.IsValid())
 		return false;
 
-	if (OwnerController)
+	if (OwnerController && InteractionComp)
 	{
-		bStartedMining = true;
 		//OwnerController->ReceiveMoveCompleted.AddUniqueDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
-		EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 150.f);
+		/*EPathFollowingRequestResult::Type PathResult = OwnerController->MoveToLocation(Command.pTarget->GetActorLocation(), 150.f);
 		if (PathResult == EPathFollowingRequestResult::Type::Failed)
 		{
 			if (Command.pTarget.IsValid())
@@ -41,10 +39,16 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 			OwnerPal->SetActionStarted(true);
 			InteractionComp->SetInteractionTarget(Command.pTarget.Get());
 			InteractionComp->OnInteractionStart();
-		}
+		}*/
+
+		//InteractionComp->SetInteractionTarget(Command.pTarget.Get());
+		//UE_LOG(LogTemp, Error, TEXT("Mining :: Start Move To Target %s Change  APalAIController::SetBBTargetLocation"), *OwnerPal->GetName());
+		bStartedMining = true;
+		OwnerController->SetBBTargetLocation(Command.pTarget->GetActorLocation());
+		IsCommandStarted = true;
+		return true;
 	}
-	IsCommandStarted = true;
-	return true;
+	return false;
 }
 
 void UPalCommandExecutor_Mining::Abort()
@@ -61,17 +65,20 @@ void UPalCommandExecutor_Mining::Abort()
 	}
 	if (OwnerController)
 	{
-		OwnerController->StopMovement();
+		OwnerController->ResetMove();
 		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
 	}
 }
 
 void UPalCommandExecutor_Mining::WorkCommand()
 {
-	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	OwnerPal->SetActionStarted(true);
-	InteractionComp->SetInteractionTarget(Command->pTarget.Get());
-	InteractionComp->OnInteractionStart();
+	if (!InteractionComp->IsInteracting())
+	{
+		const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+		OwnerPal->SetActionStarted(true);
+		InteractionComp->SetInteractionTarget(Command->pTarget.Get());
+		InteractionComp->OnInteractionStart();
+	}
 }
 
 bool UPalCommandExecutor_Mining::CheckCommandValid()

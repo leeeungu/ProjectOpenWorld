@@ -1,4 +1,4 @@
-#include "Pal/Controller/PalAIController.h"
+ï»¿#include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
@@ -6,12 +6,22 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
+
 
 APalAIController::APalAIController() : AAIController{}
 {
 	//GetPathFollowingComponent()->block
 	//OnMoveCompleted.AddDynamic(this, &APalAIController::OnMoveCompletedHandler);
 }
+
+void APalAIController::BeginPlay()
+{
+	Super::BeginPlay();
+	if (BTree)
+		RunBehaviorTree(BTree);
+}
+
 
 bool APalAIController::FindLandscapeBelow(FVector StartLocation, FVector EndLocation, FVector& Result)
 {
@@ -49,7 +59,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 {
 	if (!TargetActor)
 		return EPathFollowingRequestResult::Failed;
-	// ¿Ö ÀÌµ¿¿¡ ¿ÀÂ÷°¡ »ý±æ±î
+	// ì™œ ì´ë™ì— ì˜¤ì°¨ê°€ ìƒê¸¸ê¹Œ
 	//FVector Location = TargetActor->GetActorLocation();
 	////Location.Z = GetPawn()->GetActorLocation().Z;
 
@@ -119,4 +129,29 @@ EPathFollowingRequestResult::Type APalAIController::MoveToLocation(FVector Targe
 bool APalAIController::GetMoveResult() const
 {
 	return  Resut != EPathFollowingRequestResult::Failed;
+}
+
+void APalAIController::SetBBTargetActor(AActor* TargetActor)
+{
+	bIsMove = true;
+	if (!GetBlackboardComponent())
+		return;
+	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), TargetActor);
+}
+
+void APalAIController::SetBBTargetLocation(FVector TargetLocation)
+{
+	bIsMove = true;
+	if (!GetBlackboardComponent())
+		return;
+	GetBlackboardComponent()->SetValueAsVector(GetBBTargetLocationName(), TargetLocation);
+}
+
+void APalAIController::ResetMove()
+{
+	bIsMove = false; 
+	StopMovement();
+	if (!GetBlackboardComponent())
+		return;
+	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 }

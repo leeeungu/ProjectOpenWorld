@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,7 +20,7 @@ class PROJECTOPENWORLD_API UBuildingProgress : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	// «ÿ¥Á ±‚¥…¿ª π≠æÓº≠ √≥∏Æ∏È ¡¡¿ªµÌ?
+	// Ìï¥Îãπ Í∏∞Îä•ÏùÑ Î¨∂Ïñ¥ÏÑú Ï≤òÎ¶¨Î©¥ Ï¢ãÏùÑÎìØ?
 	TSoftObjectPtr<UStaticMeshComponent> buildingMeshComponent{};
 	TSoftObjectPtr < UMaterial> buildingMakingMat{};
 	TArray<TSoftObjectPtr <UMaterialInstanceDynamic>> buildingMaking{};
@@ -32,7 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	float buildSpeed = 1.0f;
 	bool isBuilding = false;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TSet< TWeakObjectPtr<UObject>> InstigatorList{};
 
 public:

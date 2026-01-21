@@ -16,8 +16,8 @@ class PROJECTOPENWORLD_API ICreatureAttackInterface
 	GENERATED_BODY()
 public:
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
-	float GetAttackDamage() const;
+	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
+	//float GetAttackDamage() const;
 	//void ActionStart(ECreatureActionType ActionType, UObject* TargetObject);
 	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CreatureAction")
 	//void ActionEnd();

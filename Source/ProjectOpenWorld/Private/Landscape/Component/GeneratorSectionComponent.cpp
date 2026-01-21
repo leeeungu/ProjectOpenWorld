@@ -1,4 +1,4 @@
-#include "Landscape/Component/GeneratorSectionComponent.h"
+﻿#include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Math/UnrealMathUtility.h"
@@ -177,12 +177,13 @@ void UGeneratorSectionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		}
 		else if (bDelayUpdate)
 		{
+			bDelayUpdate = false;
+			SetComponentTickEnabled(false);
 			FIntPoint NewPlayerSectionIndex = GetSectionIndex(GetPlayerLocation());
 			if (PlayerSectionIndex.X == NewPlayerSectionIndex.X && PlayerSectionIndex.Y == NewPlayerSectionIndex.Y)
 			{
 				return;
 			}
-
 			PlayerSectionIndex = NewPlayerSectionIndex;
 			GenerateTerrainAsync();
 		}
