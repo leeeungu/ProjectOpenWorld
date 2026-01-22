@@ -70,15 +70,18 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	TObjectPtr<UDataTable> FoliageDataTable{};
-	//UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
+	TArray<FFoliageDataTable> TestFoliageTypes{};
 	TArray<FFoliageDataTable*> FoliageTypes{};
 	//UPROPERTY(VisibleAnywhere, Category = "Landscape Settings")
 	UPROPERTY()
 	TMap< TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr< UFoliageInstancedStaticMeshComponent>> FoliageTypeToInstanceIndex{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	int32 FoliageMaxCount = 10000;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
+	float FoliageComponentCount = 10;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
-	int32 UpdateTickCount = 10;
+	int32 UpdateTickCount = 10;	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	FIntPoint SectionRange{ 20,40};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")

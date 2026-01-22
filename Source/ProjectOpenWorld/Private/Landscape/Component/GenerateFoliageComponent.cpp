@@ -7,28 +7,18 @@ UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{
 	PrimaryComponentTick.bCanEverTick = true;
 
 	UpdateData.Reserve(50000);
-	//if (FoliageDataTable && RemoveInstanceIndex.IsEmpty())
-	//{
-	//	FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
-	//	for (int i = 0; i < FoliageTypes.Num(); i++)
-	//	{
-	//		FFoliageDataTable* Data = FoliageTypes[i];
-	//		for (const FFoliageInstanceData& Instance : Data->InstanceData)
-	//		{
-	//			TObjectPtr<UFoliageInstancedStaticMeshComponent>& FoliageInstance = FoliageTypeToInstanceIndex.FindOrAdd(Instance.FoliageType, nullptr);
-	//			if (!FoliageInstance || !FoliageInstance.Get())
-	//			{
-	//				//FoliageInstance =
-	//					//Cast<UFoliageInstancedStaticMeshComponent>(GetOwner()->AddComponentByClass(UFoliageInstancedStaticMeshComponent::StaticClass(), true, FTransform{}, false));
-	//				//FoliageInstance->(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-	//				FoliageInstance->SetStaticMesh(Instance.FoliageType->GetStaticMesh());
-	//				//if (Instance.FoliageType->BodyInstance.GetCollisionProfileName() == no)
-	//				FoliageInstance->SetCollisionProfileName(Instance.FoliageType->BodyInstance.GetCollisionProfileName());
-	//				RemoveInstanceIndex.Add(FoliageInstance, {});
-	//			}
-	//		}
-	//	}
-	//}
+	if (FoliageDataTable && RemoveInstanceIndex.IsEmpty())
+	{
+		FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
+		for (int i = 0; i < FoliageTypes.Num(); i++)
+		{
+			TestFoliageTypes.Add(*FoliageTypes[i]);
+			//for (const FFoliageInstanceData& Instance : Data->InstanceData)
+			//{
+			//	
+			//}
+		}
+	}
 }
 
 void UGenerateFoliageComponent::BeginPlay()
@@ -83,7 +73,7 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 					FVector Location = Data.NewTransform.GetLocation();
 					FHitResult HitResult;
 					if (GetWorld()->LineTraceSingleByChannel(
-						OUT HitResult,
+						OUT HitResult,	
 						FVector(Location.X, Location.Y, Location.Z - 12000.0f),
 						FVector(Location.X, Location.Y, Location.Z + 12000.0f),
 						ECollisionChannel::ECC_Visibility,

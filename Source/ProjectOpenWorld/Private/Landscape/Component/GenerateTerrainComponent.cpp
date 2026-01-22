@@ -5,8 +5,8 @@
 UGenerateTerrainComponent::UGenerateTerrainComponent() : Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	GenerateTerrainArray.Empty(false);
-	EmpthyMeshComponent.Empty(false);
+	GenerateTerrainArray.Empty(true);
+	EmpthyMeshComponent.Empty(true);
 	GenerateTerrainArray.Reserve(TerrainComponentSize);
 	EmpthyMeshComponent.Reserve(TerrainComponentSize);
 	for (int i = 0; i < TerrainComponentSize; i++)
@@ -27,7 +27,8 @@ void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 	{
 		for (UProceduralMeshComponent* GenerateTerrain : GenerateTerrainArray)
 		{
-			GenerateTerrain->SetMaterial(0, TerrainMaterial);
+			if (GenerateTerrain)
+				GenerateTerrain->SetMaterial(0, TerrainMaterial);
 		}
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -62,6 +63,9 @@ void UGenerateTerrainComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 	{
 		GenerateTerrain = EmpthyMeshComponent.Last();
 		EmpthyMeshComponent.Pop();
+		if (!GenerateTerrain)
+			return;
+
 		//UE_LOG(LogTemp, Warning, TEXT("UGenerateTerrainComponent New Mesh SectionID:(%d,%d)"), SectionID.X, SectionID.Y);
 		GenerateTerrain->CreateMeshSection(0, *SectionData.Vertices, *SectionData.Triangles, *SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
 		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);

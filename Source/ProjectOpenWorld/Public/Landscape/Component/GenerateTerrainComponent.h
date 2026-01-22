@@ -20,8 +20,8 @@ protected:
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	//TObjectPtr<UProceduralMeshComponent> GenerateTerrain{};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "36", ClampMax = "200"))
-	int32 TerrainComponentSize{ 1000 };
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
+	int32 TerrainComponentSize{ 36 };
 	UPROPERTY()
 	TArray<TObjectPtr<UProceduralMeshComponent>> GenerateTerrainArray{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
