@@ -44,7 +44,7 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 		//InteractionComp->SetInteractionTarget(Command.pTarget.Get());
 		//UE_LOG(LogTemp, Error, TEXT("Mining :: Start Move To Target %s Change  APalAIController::SetBBTargetLocation"), *OwnerPal->GetName());
 		bStartedMining = true;
-		OwnerController->SetBBTargetLocation(Command.pTarget->GetActorLocation());
+		OwnerController->SetBBTargetActor(Command.pTarget.Get());
 		IsCommandStarted = true;
 		return true;
 	}

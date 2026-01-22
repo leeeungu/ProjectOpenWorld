@@ -20,23 +20,22 @@ void UPalCommanderComponent::UpdateWorkQueue()
 	if (!WorkQueue.IsEmpty())
 		return;
 	QueSize = 0;
-	for (AActor* WorkActor : RegisteredWorks)
+	for (TWeakObjectPtr<AActor> WorkActor : RegisteredWorks)
 	{
-		if (WorkActor && WorkActor->Implements<UCommanderManageable>())
+		if (WorkActor.IsValid() && WorkActor->Implements<UCommanderManageable>())
 		{
-			if (!ICommanderManageable::Execute_IsCommandFinished(WorkActor))
+			if (!ICommanderManageable::Execute_IsCommandFinished(WorkActor.Get()))
 			{
 				WorkQueue.Enqueue(WorkActor);
 				QueSize++;
 			}
-		
 		}
 	}
 }
 void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (TargetWorkActor && TargetWorkActor.Get())
+	if (TargetWorkActor.IsValid() && TargetWorkActor.Get())
 	{
 		if (ICommanderManageable::Execute_IsCommandFinished(TargetWorkActor.Get()))
 		{

@@ -60,6 +60,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual bool IsValidCommand() { return CurrentCommand != &DummyCommand; }
+
+	// Cant nullptr
 	virtual const FPalCommand* GetCurrentCommand_C() const { return CurrentCommand; }
 	virtual FPalCommand GetCurrentCommand() const { return *CurrentCommand; }
 

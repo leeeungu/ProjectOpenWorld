@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -64,6 +64,7 @@ protected:
 	TSet<FIntPoint> SectionMap{};
 	TArray<FIntPoint> UpdateSectionArray{};
 	TArray<FIntPoint> UpdateBackSectionArray{};
+	TArray<FIntPoint> DeleteBackSectionArray{};
 	int nDeleteSectionCount{};
 
 
@@ -102,6 +103,7 @@ protected:
 	FVector GetSectionSize() const;
 public:	
 	FIntPoint GetSectionIndex(FVector Location) const;
+	int GetSectionCounts() const;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	void BindGenerteComponent(UGenerateWorldComponent* InGenerateWorldComponent);

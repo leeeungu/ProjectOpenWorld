@@ -126,11 +126,12 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 				{
 					UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 					FNavLocation SpawnLocation{};
-					if (SpawnLocation.Location.Z <= 0)
+					while (SpawnLocation.Location.Z <= 0)
 					{
-					NavSys->GetRandomReachablePointInRadius( GetActorLocation(), SpawnerData->SpawnerData->StaticRadius, SpawnLocation);
+						NavSys->GetRandomReachablePointInRadius( GetActorLocation(), SpawnerData->SpawnerData->StaticRadius, SpawnLocation);
 					}
 					FRotator SpawnRotation = GetActorRotation();
+					SpawnLocation.Location.Z += 300.0f;
 					FActorSpawnParameters SpawnParams{};
 					ABaseMonster* SpawnedMonster = GetWorld()->SpawnActor<ABaseMonster>(MonsterData->MonsterData->MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
 					if (SpawnedMonster)

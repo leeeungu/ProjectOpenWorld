@@ -149,7 +149,7 @@ bool UPalAttackComponent::TargetIsInRange() const
 {
 	if (TargetActor && OwnerCharacter)
 	{
-		const float Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
+		const double Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f , AttackDistance : %f"), *GetOwner()->GetName(), Distance, AttackData.AttackDistance* AttackData.AttackDistance);
 		if (Distance <= AttackData.AttackDistance * AttackData.AttackDistance)
 		{
@@ -184,7 +184,7 @@ void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAni
 	{
 		BaseAnim->SetMontageQueueInterface(nullptr);
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: MontageBlendingEvent End Attack "), *GetOwner()->GetName());
-		ResetAttackData();
+		EndAttack();
 		return;
 	}
 	BaseAnim->PlayMontageQueue();

@@ -5,7 +5,30 @@
 UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{}
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
 	UpdateData.Reserve(50000);
+	//if (FoliageDataTable && RemoveInstanceIndex.IsEmpty())
+	//{
+	//	FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
+	//	for (int i = 0; i < FoliageTypes.Num(); i++)
+	//	{
+	//		FFoliageDataTable* Data = FoliageTypes[i];
+	//		for (const FFoliageInstanceData& Instance : Data->InstanceData)
+	//		{
+	//			TObjectPtr<UFoliageInstancedStaticMeshComponent>& FoliageInstance = FoliageTypeToInstanceIndex.FindOrAdd(Instance.FoliageType, nullptr);
+	//			if (!FoliageInstance || !FoliageInstance.Get())
+	//			{
+	//				//FoliageInstance =
+	//					//Cast<UFoliageInstancedStaticMeshComponent>(GetOwner()->AddComponentByClass(UFoliageInstancedStaticMeshComponent::StaticClass(), true, FTransform{}, false));
+	//				//FoliageInstance->(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+	//				FoliageInstance->SetStaticMesh(Instance.FoliageType->GetStaticMesh());
+	//				//if (Instance.FoliageType->BodyInstance.GetCollisionProfileName() == no)
+	//				FoliageInstance->SetCollisionProfileName(Instance.FoliageType->BodyInstance.GetCollisionProfileName());
+	//				RemoveInstanceIndex.Add(FoliageInstance, {});
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 void UGenerateFoliageComponent::BeginPlay()
@@ -13,7 +36,7 @@ void UGenerateFoliageComponent::BeginPlay()
 	Super::BeginPlay();
 	nSectionIndex = 0;
 	SectionIDToFoliageTypeToInstanceIndex.Empty();
-	if (FoliageDataTable)
+	if (FoliageDataTable && RemoveInstanceIndex.IsEmpty())
 	{
 		FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
 		for (int i = 0; i < FoliageTypes.Num(); i++)

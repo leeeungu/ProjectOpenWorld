@@ -5,7 +5,19 @@
 UGenerateTerrainComponent::UGenerateTerrainComponent() : Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	GenerateTerrain = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GenerateTerrain"));
+	GenerateTerrainArray.Empty(false);
+	EmpthyMeshComponent.Empty(false);
+	GenerateTerrainArray.Reserve(TerrainComponentSize);
+	EmpthyMeshComponent.Reserve(TerrainComponentSize);
+	for (int i = 0; i < TerrainComponentSize; i++)
+	{
+		UProceduralMeshComponent* Mehs = CreateDefaultSubobject<UProceduralMeshComponent>(FName(*FString::Printf(TEXT("ProceduralMeshComponent_%d"), i)));
+		//Cast< UProceduralMeshComponent>(GetOwner()->AddComponentByClass(UProceduralMeshComponent::StaticClass(), true, FTransform{}, false));
+		//Mehs->SetupAttachment(GetOwner()->GetRootComponent());
+		GenerateTerrainArray.Add(Mehs);
+		EmpthyMeshComponent.Add(Mehs);
+	}
+	//GenerateTerrain =
 }
 
 void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -13,13 +25,9 @@ void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	if(PropertyName == GET_MEMBER_NAME_CHECKED(UGenerateTerrainComponent, TerrainMaterial))
 	{
-		if(GenerateTerrain)
+		for (UProceduralMeshComponent* GenerateTerrain : GenerateTerrainArray)
 		{
-			int32 SectionCount = GenerateTerrain->GetNumSections();
-			for (int32 i = 0; i < SectionCount; ++i)
-			{
-				GenerateTerrain->SetMaterial(i, TerrainMaterial);
-			}
+			GenerateTerrain->SetMaterial(0, TerrainMaterial);
 		}
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -28,6 +36,8 @@ void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 void UGenerateTerrainComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
 }
 
 void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
@@ -35,53 +45,49 @@ void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
 	if (bEditor)
 	{
 		SectionIDToMeshIndex.Empty();
-		EmptySectionIndex.Empty();
-		UpdateSectionIndex.Empty();
-		SectionIndex = 0;
-		GenerateTerrain->ClearAllMeshSections();
+
+		EmpthyMeshComponent.Empty(false);
+		EmpthyMeshComponent.Reserve(TerrainComponentSize);
+		for (UProceduralMeshComponent* GenerateTerrain : GenerateTerrainArray)
+		{
+			EmpthyMeshComponent.Add(GenerateTerrain);
+		}
 	}
 }
 
 void UGenerateTerrainComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (!GenerateTerrain)
-		return;
-	if (!SectionIDToMeshIndex.Find(SectionData.SectionID))
+	TObjectPtr<UProceduralMeshComponent>& GenerateTerrain = SectionIDToMeshIndex.FindOrAdd(SectionData.SectionID, nullptr);
+	if (!GenerateTerrain && !EmpthyMeshComponent.IsEmpty())
 	{
+		GenerateTerrain = EmpthyMeshComponent.Last();
+		EmpthyMeshComponent.Pop();
 		//UE_LOG(LogTemp, Warning, TEXT("UGenerateTerrainComponent New Mesh SectionID:(%d,%d)"), SectionID.X, SectionID.Y);
-		int32 CurrentMeshIndex = SectionIndex;
-		if (!EmptySectionIndex.IsEmpty())
-		{
-			CurrentMeshIndex = EmptySectionIndex.Last();
-			EmptySectionIndex.Pop();
-		}
-		else
-			SectionIndex++;
-		GenerateTerrain->CreateMeshSection(CurrentMeshIndex, *SectionData.Vertices, *SectionData.Triangles, *SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
-		UpdateSectionIndex.Add(CurrentMeshIndex);
+		GenerateTerrain->CreateMeshSection(0, *SectionData.Vertices, *SectionData.Triangles, *SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
+		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
 		if (TerrainMaterial)
 		{
-			GenerateTerrain->SetMaterial(CurrentMeshIndex, TerrainMaterial);
+			GenerateTerrain->SetMaterial(0, TerrainMaterial);
 		}
-		SectionIDToMeshIndex.Add(SectionData.SectionID, CurrentMeshIndex);
 	}
 }
 
 void UGenerateTerrainComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (int32* DelIndex = SectionIDToMeshIndex.Find(SectionData.SectionID))
+	if (TObjectPtr<UProceduralMeshComponent>* GenerateTerrain = SectionIDToMeshIndex.Find(SectionData.SectionID))
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("UGenerateTerrainComponent Del Mesh SectionID:(%d,%d)"), SectionID.X, SectionID.Y);
-		EmptySectionIndex.Add(*DelIndex);
-		GenerateTerrain->SetMeshSectionVisible(*DelIndex, false);
-		GenerateTerrain->ClearMeshSection(*DelIndex);
+		if (*GenerateTerrain)
+		{
+			(*GenerateTerrain)->ClearAllMeshSections();
+			EmpthyMeshComponent.Push(*GenerateTerrain);
+		}
 		SectionIDToMeshIndex.Remove(SectionData.SectionID);
 	}
 }
 
 void UGenerateTerrainComponent::FinishGenerateWorld()
 {
-	if (GenerateTerrain)
+	/*if (GenerateTerrain)
 	{
 		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
 		for (int32 SectionID : UpdateSectionIndex)
@@ -89,14 +95,17 @@ void UGenerateTerrainComponent::FinishGenerateWorld()
 			GenerateTerrain->SetMeshSectionVisible(SectionID, true);
 		}
 		UpdateSectionIndex.Empty();
-	}
+	}*/
 }
 
 void UGenerateTerrainComponent::Initialize(USceneComponent* ParentComponent)
 {
 	if (ParentComponent)
 	{
-		GenerateTerrain->SetupAttachment(ParentComponent);
+		for (UProceduralMeshComponent* GenerateTerrain : GenerateTerrainArray)
+		{
+			GenerateTerrain->SetupAttachment(ParentComponent);
+		}
 	}
 }
 

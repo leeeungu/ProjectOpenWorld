@@ -119,11 +119,7 @@ void UGeneratorSectionComponent::UpdateTerrain()
 				SumNormals.Find(SectionID),
 				SumTangents.Find(SectionID) });
 
-			SumVertices.Remove(SectionID);
-			SumUVs.Remove(SectionID);
-			SumTriangles.Remove(SectionID);
-			SumNormals.Remove(SectionID);
-			SumTangents.Remove(SectionID);
+			DeleteBackSectionArray.Add(SectionID);
 		}
 		else if (CurrentIndex < nDeleteSectionCount)
 		{
@@ -156,6 +152,11 @@ void UGeneratorSectionComponent::EndGenerateTerrain()
 FVector UGeneratorSectionComponent::GetSectionSize() const
 {
 	return FVector(CellSize * SectionRadiusCount * SectionRadiusCount, CellSize * SectionRadiusCount * SectionRadiusCount, 10.0f);
+}
+
+int UGeneratorSectionComponent::GetSectionCounts() const
+{
+	return SectionRadiusCount* SectionRadiusCount;
 }
 
 void UGeneratorSectionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -238,6 +239,16 @@ void FAsyncWorldGenerater::DoWork()
 
 	TSet<FIntPoint> DelSectionSet = WorldGenerator->SectionMap;
 	WorldGenerator->UpdateBackSectionArray.Empty();
+
+	for (FIntPoint& SectionID : WorldGenerator->DeleteBackSectionArray)
+	{
+	WorldGenerator->SumVertices.Remove(SectionID);
+	WorldGenerator->SumUVs.Remove(SectionID);
+	WorldGenerator->SumTriangles.Remove(SectionID);
+	WorldGenerator->SumNormals.Remove(SectionID);
+	WorldGenerator->SumTangents.Remove(SectionID);
+	}
+	WorldGenerator->DeleteBackSectionArray.Empty(false);
 
 	for (int i = -WorldGenerator->SectionRadiusCount; i < WorldGenerator->SectionRadiusCount; i++)
 	{

@@ -1,7 +1,7 @@
 ﻿#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
 #include "Creature/Character/BaseMonster.h"
-#include "GameFramework/Controller.h"
 #include "Pal/Component/PalAttackComponent.h"
+#include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
 
@@ -14,6 +14,7 @@ void UPalCommandExecutor_MonsterAttack::Initialize(UPalCommandComponent* Command
 	if (OwnerPal)
 	{
 		AttackComponent = OwnerPal->GetAttackComponent();
+		OwnerController = Cast<APalAIController>(OwnerPal->GetController());
 	}
 	if (AttackComponent)
 	{
@@ -28,16 +29,13 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 	{
 		return false;
 	}
-	bStartedAttacking = true;
 	if (AttackComponent)
 	{
-		//FPalAttackDataTable NewAttackData{};
-		////NewAttackData.TargetActor = Command.pTarget.Get();
-		//NewAttackData.AttackSlot = (ESubAttackType)Command.SubCommandType;
-		//AttackComponent->SetAttackData(NewAttackData);
-		//OwnerController->SetBBTargetLocation(Command->pTarget->GetActorLocation());
+		bStartedAttacking = true;
+		ESubAttackType AttackType = ESubAttackType::Default;
+		AttackComponent->SetAttackData(AttackType);
 		AttackComponent->SetAttackTarget(Command.pTarget.Get());
-		//AttackComponent->StartAttack();
+		OwnerController->SetBBTargetActor(Command.pTarget.Get());
 		IsCommandStarted = true;
 		return true;
 	}
@@ -47,34 +45,89 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 
 void UPalCommandExecutor_MonsterAttack::Abort()
 {
+	if (bStartedAttacking == false)
+		return;
 	bStartedAttacking = false;
 	if (OwnerPal)
 	{
-		if (AttackComponent)
+		if (OwnerPal->GetController())
 		{
-			AttackComponent->EndAttack();
+			OwnerPal->GetController()->StopMovement();
 		}
 	}
-	if (OwnerPal->GetController())
+	if (AttackComponent)
 	{
-		OwnerPal->GetController()->StopMovement();
+		AttackComponent->EndAttack();
+	}
+	if (OwnerController)
+	{
+		OwnerController->ResetMove();
 	}
 }
-
-void UPalCommandExecutor_MonsterAttack::EndAttack()
-{
-	if (bStartedAttacking == false)
-		return;
-	Abort();
-	EndCommand();
-}
-
 
 void UPalCommandExecutor_MonsterAttack::WorkCommand()
 {
+	const FPalCommand& Command = *OwnerCommandComp->GetCurrentCommand_C();
+	bool IsInRange = AttackComponent->TargetIsInRange();
+	if (IsInRange && !AttackComponent->IsAttacking() && AttackComponent->IsSetTarget() && Command.pTarget.IsValid())
+	{
+		AttackComponent->StartAttack();
+		return;
+	}
+	if (AttackComponent->IsAttacking())
+		return;
+	bStartedAttacking = true;
+	IsCommandStarted = true;
+
+	if (!AttackComponent->IsSetTarget() || !IsInRange)
+	{
+		AttackComponent->SetAttackTarget(Command.pTarget.Get());
+		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+	}
+	if (!AttackComponent->IsSetAttackData())
+	{
+		ESubAttackType AttackType = ESubAttackType::Default;
+		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
+		AttackComponent->SetAttackData(AttackType);
+	}
 }
 
 bool UPalCommandExecutor_MonsterAttack::CheckCommandValid()
 {
+	if (!AttackComponent)
+	{
+		return false;
+	}
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (!Command->pTarget.IsValid())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: invalid target"));
+		return false;
+	}
+	if (Command->pTarget->Implements<UAttackInterface>() && IAttackInterface::Execute_IsDead(Command->pTarget.Get()))
+	{
+		return false;
+	}
 	return true;
+}
+
+void UPalCommandExecutor_MonsterAttack::EndAttack()
+{
+	if (!bStartedAttacking)
+		return;
+
+	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	if (Command->pTarget.IsValid())
+	{
+		bStartedAttacking = true;
+		ESubAttackType AttackType = ESubAttackType::Default;
+		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
+		AttackComponent->SetAttackData(AttackType);
+		AttackComponent->SetAttackTarget(Command->pTarget.Get());
+		OwnerController->SetBBTargetActor(Command->pTarget.Get());
+		IsCommandStarted = true;
+		return;
+	}
+	Abort();
+	EndCommand();
 }

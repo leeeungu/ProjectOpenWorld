@@ -18,15 +18,17 @@ protected:
 	// radius ^2 을 계속 업데이트 했는데 foliage할 때 너무 단점이 커서
 	// 갱신 삭제만 으로 로직 변경 그 과정에서 더블 스왑은 오히려 복잡성만 증가 시킴
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
-	TObjectPtr<UProceduralMeshComponent> GenerateTerrain{};
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	//TObjectPtr<UProceduralMeshComponent> GenerateTerrain{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "36", ClampMax = "200"))
+	int32 TerrainComponentSize{ 1000 };
+	UPROPERTY()
+	TArray<TObjectPtr<UProceduralMeshComponent>> GenerateTerrainArray{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr< UMaterialInterface> TerrainMaterial{};
 
-	TMap<FIntPoint, int32> SectionIDToMeshIndex{};
-	TArray<int32> EmptySectionIndex{};
-	TArray<int32> UpdateSectionIndex{};
-	int SectionIndex = 0;
+	TMap<FIntPoint, TObjectPtr<UProceduralMeshComponent>> SectionIDToMeshIndex{};
+	TArray<TObjectPtr<UProceduralMeshComponent>> EmpthyMeshComponent{};
 public:	
 	UGenerateTerrainComponent();
 #if WITH_EDITOR

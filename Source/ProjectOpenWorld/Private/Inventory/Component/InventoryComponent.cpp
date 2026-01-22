@@ -23,7 +23,8 @@ bool UInventoryComponent::AddItem(FName ItemID, int ItemCount)
 	if (maxInventoryWeight  && *maxInventoryWeight - ItemWeights < totalInventoryWeight)
 		return false;
 	totalInventoryWeight += ItemWeights;
-	PlayerCharacter->UpdateWeight(totalInventoryWeight);
+	if (PlayerCharacter)
+		PlayerCharacter->UpdateWeight(totalInventoryWeight);
 	if (FInventorySlot* Slot = inventoryArray.FindByKey(FInventorySlot(ItemID)))
 	{
 		Slot->ItemID = ItemID;
@@ -82,7 +83,8 @@ bool UInventoryComponent::RemoveItem(FName RemoveItemID, int RemoveItemCount)
 				Slot.ItemCount -= RemainingCount;
 				Slot.ItemTotalWeights -= ItemWeights;
 				totalInventoryWeight -= ItemWeights;
-				PlayerCharacter->UpdateWeight(totalInventoryWeight);
+				if (PlayerCharacter)
+					PlayerCharacter->UpdateWeight(totalInventoryWeight);
 				if (Slot.ItemCount <= 0)
 				{
 					Slot.ItemID = NAME_None;
@@ -131,7 +133,8 @@ bool UInventoryComponent::DeleteItem(int Row, int Col)
 		if (!ItemDataStruct)
 			return false;
 		totalInventoryWeight -= SlotData->ItemTotalWeights;
-		PlayerCharacter->UpdateWeight(totalInventoryWeight);
+		if (PlayerCharacter)
+			PlayerCharacter->UpdateWeight(totalInventoryWeight);
 		SlotData->ItemID = NAME_None;
 		SlotData->ItemCount = 0;
 		SlotData->ItemTotalWeights = 0;

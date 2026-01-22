@@ -88,6 +88,8 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	{
 		//pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 		AttackComponent->SetAttackTarget(pOther);
+		AttackComponent->SetAttackData(ESubAttackType::Default);
+		AttackComponent->StartAttack();
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 		//CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}

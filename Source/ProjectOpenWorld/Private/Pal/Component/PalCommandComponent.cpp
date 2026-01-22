@@ -294,8 +294,16 @@ void UPalCommandComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 void UPalCommandComponent::FinishCommand()
 {
 	FPalCommand command = CurrentCommandData;
-	OnFinishedCurrentCommand();
+	if (CurrentExcute)
+	{
+		CurrentExcute->Abort();
+	}
+	if (CurrentExcute)
+	{
+	CurrentExcute->ResetStarted();
+	}
 	CurrentCommandData.Reset();
+	OnFinishedCurrentCommand();
 	if (OnCommandFinished.IsBound())
 	{
 		OnCommandFinished.Broadcast(GetOwner(), command);
@@ -304,5 +312,5 @@ void UPalCommandComponent::FinishCommand()
 
 void UPalCommandComponent::ResetCommandQue()
 {
-	CurrentCommandData.Reset();
+	UPalCommandComponent::FinishCommand();
 }

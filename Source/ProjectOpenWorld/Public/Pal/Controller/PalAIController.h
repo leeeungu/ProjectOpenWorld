@@ -5,6 +5,8 @@
 #include "BehaviorTree/BehaviorTree.h" 
 #include "PalAIController.generated.h"
 
+class ABaseCharacter;
+
 UCLASS()
 class PROJECTOPENWORLD_API APalAIController : public AAIController
 {
@@ -16,14 +18,17 @@ protected:
 	TObjectPtr<UBehaviorTree> BTree{};
 
 	bool bIsMove{};
+
+	UPROPERTY()
+	TObjectPtr < ABaseCharacter> OwnerPal{};
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 private:
 	EPathFollowingRequestResult::Type Resut{};
 
 protected:
 	bool FindLandscapeBelow(FVector StartLocation, FVector EndLocation, FVector& Result);
-
 public:
 	APalAIController();
 
@@ -35,11 +40,15 @@ public:
 
 	void SetBBTargetActor(AActor* TargetActor);
 	void SetBBTargetLocation(FVector TargetLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
 	void ResetMove();
 	
 	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
 	bool IsMoving() const { return bIsMove; }
 
-	FORCEINLINE static FName GetBBTargetLocationName() { return FName("TargetLocation"); }
-	FORCEINLINE static FName GetBBTargetActorName() { return FName("TargetActor"); }
+	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
+	FORCEINLINE FName GetBBTargetLocationName()  const{ return FName("TargetLocation"); }
+	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
+	FORCEINLINE FName GetBBTargetActorName()  const{ return FName("TargetActor"); }
 };

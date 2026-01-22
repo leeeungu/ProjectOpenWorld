@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameBase/BaseCharacter.h"
 
 
 APalAIController::APalAIController() : AAIController{}
@@ -54,6 +55,11 @@ bool APalAIController::FindLandscapeBelow(FVector StartLocation, FVector EndLoca
 		}
 	}
 	return false;
+}
+void APalAIController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	OwnerPal = Cast<ABaseCharacter>(InPawn);
 }
 EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetActor, float fAcceptanceRadius)
 {
@@ -136,7 +142,9 @@ void APalAIController::SetBBTargetActor(AActor* TargetActor)
 	bIsMove = true;
 	if (!GetBlackboardComponent())
 		return;
-	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), TargetActor);
+	if (OwnerPal)
+		OwnerPal->UseControllerDesiredRotation();
+	GetBlackboardComponent()->SetValueAsObject(GetBBTargetActorName(), TargetActor);
 }
 
 void APalAIController::SetBBTargetLocation(FVector TargetLocation)
@@ -144,14 +152,19 @@ void APalAIController::SetBBTargetLocation(FVector TargetLocation)
 	bIsMove = true;
 	if (!GetBlackboardComponent())
 		return;
+	if (OwnerPal)
+		OwnerPal->UseOrientRotationToMovement();
+	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 	GetBlackboardComponent()->SetValueAsVector(GetBBTargetLocationName(), TargetLocation);
 }
 
 void APalAIController::ResetMove()
 {
 	bIsMove = false; 
-	StopMovement();
+	//StopMovement();
 	if (!GetBlackboardComponent())
 		return;
+	if (OwnerPal)
+		OwnerPal->UseOrientRotationToMovement();
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 }

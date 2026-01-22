@@ -1,4 +1,4 @@
-#include "GameBase/BaseCharacter.h"
+﻿#include "GameBase/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimMetaData.h"
 
@@ -29,4 +29,16 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	//UAnimationAsset* Asset{};
 	//Asset->FindMetaDataByClass<UAnimMetaData>();
 
+}
+
+void ABaseCharacter::UseControllerDesiredRotation()
+{
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
+void ABaseCharacter::UseOrientRotationToMovement()
+{
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }

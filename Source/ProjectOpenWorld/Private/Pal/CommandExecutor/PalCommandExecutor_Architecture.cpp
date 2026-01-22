@@ -32,6 +32,7 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	}
 	if (OwnerController)
 	{
+		
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
 		OwnerController->SetBBTargetLocation(Target);
 		IsCommandStarted = true;

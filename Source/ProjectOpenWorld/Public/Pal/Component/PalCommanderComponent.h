@@ -14,12 +14,12 @@ class PROJECTOPENWORLD_API UPalCommanderComponent : public UActorComponent
 protected:
 	std::set<TObjectPtr<ABaseCreature>> pals{};
 	
-	TQueue< TObjectPtr<AActor>> WorkQueue{};
+	TQueue< TWeakObjectPtr<AActor>> WorkQueue{};
 
-	TSet< TObjectPtr<AActor>> RegisteredWorks{};
+	TSet< TWeakObjectPtr<AActor>> RegisteredWorks{};
 
 	UPROPERTY()
-	TObjectPtr<AActor> TargetWorkActor{};
+	TWeakObjectPtr<AActor> TargetWorkActor{};
 
 	std::set<TObjectPtr<ABaseCreature>>::iterator ArrayIter{};
 	int QueSize{};
