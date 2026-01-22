@@ -1,4 +1,4 @@
-﻿#include "Landscape/Component/GeneratorSectionComponent.h"
+#include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Math/UnrealMathUtility.h"
@@ -204,6 +204,8 @@ void UGeneratorSectionComponent::BindGenerteComponent(UGenerateWorldComponent* I
 
 void UGeneratorSectionComponent::GenerateTerrainAsync()
 {
+	if (GeneratorBusy || TileDataReady)
+		return;
 	GeneratorBusy = true;
 	bDelayUpdate = false;
 	UE_LOG(LogTemp, Warning, TEXT("UGeneratorSectionComponent::GenerateTerrainAsync Player SectionChange"));

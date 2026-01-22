@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -78,7 +78,7 @@ protected:
 	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyComponentArray{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
 	float FoliageComponentCount = 800;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
 	int32 UpdateComponentTickCount = 10;	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	FIntPoint FoliageDataCreateRange{ 20,40};
@@ -100,8 +100,8 @@ protected:
 	int32 nUpdateTickIndex{};
 	bool EditorModeGenerate{};
 	bool bUpdateBackData{};
-	bool bGeneratingFoliage = true;
-
+	bool bGeneratingFoliage{};
+	FIntPoint PlayerLastSectionID{ INT32_MIN, INT32_MIN };
 public:	
 	UGenerateFoliageComponent();
 
