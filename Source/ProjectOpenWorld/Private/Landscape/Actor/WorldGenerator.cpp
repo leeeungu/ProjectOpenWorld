@@ -1,4 +1,4 @@
-#include "Landscape/Actor/WorldGenerator.h"
+﻿#include "Landscape/Actor/WorldGenerator.h"
 #include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateTerrainComponent.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"
@@ -10,9 +10,11 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	
 	SectionGenerator = CreateDefaultSubobject<UGeneratorSectionComponent>(TEXT("SectionGenerator"));
+
 	TerrainGenerator = CreateDefaultSubobject<UGenerateTerrainComponent>(TEXT("TerrainGenerator"));
 	SectionGenerator->BindGenerteComponent(TerrainGenerator);
 	TerrainGenerator->Initialize(RootComponent);
+
 	FoliageGenerator = CreateDefaultSubobject<UGenerateFoliageComponent>(TEXT("FoliageGenerator"));
 	SectionGenerator->BindGenerteComponent(FoliageGenerator);
 	FoliageGenerator->Initialize(RootComponent);

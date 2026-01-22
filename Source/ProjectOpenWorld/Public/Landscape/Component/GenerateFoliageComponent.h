@@ -46,19 +46,20 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		}
 		int32 SectionIndex{};
 		float RandomSeed{ };
-		TMap<TObjectPtr< UFoliageInstancedStaticMeshComponent>, TSet<int32>> NewInstanceIndex{}; // FoliageID, Instance Indices
-		bool bSectionNew{};
-		bool bAllReadyNew = false;
+		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr< UFoliageInstancedStaticMeshComponent>> MeshComponent{}; // FoliageID, Instance Indices
+		bool bAlreadyGenerate{ false };
 	};
 
 	struct FoliageUpdateData
 	{
-		TObjectPtr<UFoliageInstancedStaticMeshComponent> FoliageComponent{};
-		FTransform NewTransform{};
 		FIntPoint SectionID{};
-		int32 InstanceIndex{};
-		int32 FoliageID{};
+		int32  InstanceIndex{};
+		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
+		TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComponent{};
+		TArray<FTransform>  FoliageData{};
+		bool bTickGenerate{ false };
 	};
+
 	struct FoliageAddData
 	{
 		FIntPoint SectionID{};
@@ -70,42 +71,41 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	TObjectPtr<UDataTable> FoliageDataTable{};
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
-	TArray<FFoliageDataTable> TestFoliageTypes{};
 	TArray<FFoliageDataTable*> FoliageTypes{};
-	//UPROPERTY(VisibleAnywhere, Category = "Landscape Settings")
-	UPROPERTY()
-	TMap< TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr< UFoliageInstancedStaticMeshComponent>> FoliageTypeToInstanceIndex{};
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
-	int32 FoliageMaxCount = 10000;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
-	float FoliageComponentCount = 10;
+	UPROPERTY(VisibleDefaultsOnly)
+	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageComponentArray{};
+
+	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyComponentArray{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
+	float FoliageComponentCount = 800;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
-	int32 UpdateTickCount = 10;	
+	int32 UpdateComponentTickCount = 10;	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
-	FIntPoint SectionRange{ 20,40};
+	FIntPoint FoliageDataCreateRange{ 20,40};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	float FoliageSeed = 100;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	bool bRandomSeed{};
-	TMap<TObjectPtr< UFoliageInstancedStaticMeshComponent>, TSet<int32>> RemoveInstanceIndex{}; // FoliageID, Instance Indices
-	TArray< FoliageUpdateData> UpdateData{};
-	TArray< FoliageUpdateData> UpdateBackData{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
+	int nInstanceCount{};
+
+	TArray<FoliageUpdateData> UpdateData{};
+	TMap<TObjectPtr<UFoliageInstancedStaticMeshComponent>, FoliageUpdateData> UpdateBackData{};
 	TMap <FIntPoint, FSectionData> SectionIDToFoliageTypeToInstanceIndex{};
+
 	TArray<FIntPoint> DeleteArray{};
 	TArray<FoliageAddData> AddArray{};
 
-	int nSectionIndex{};
-	//int CurrentUpdateTick = 0;
-	bool bFoliageUpdated = false;
-	bool EditorModeGenerate = false;
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
-	int nInstanceCount{};
+	int32 nSectionIndex{};
+	int32 nUpdateTickIndex{};
+	bool EditorModeGenerate{};
+	bool bUpdateBackData{};
 	bool bGeneratingFoliage = true;
-	bool UpdateBuffer{};
+
 public:	
 	UGenerateFoliageComponent();
 
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 protected:
 	virtual void BeginPlay() override;
 
@@ -115,8 +115,6 @@ public:
 	virtual void StartGenerateWorld(bool bEditor = false) override;
 	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) override;
 	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) override;
-	//virtual void NewGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) override;
-	//virtual void DelGenerateWorld(FIntPoint SectionID, const TArray<FVector>& Vertices, const TArray<FVector2D>& UVs, const TArray<int32>& Triangles, const TArray<FVector>& Normals, const TArray<FProcMeshTangent>& Tangents) override;
 	virtual void FinishGenerateWorld() override;
 
 public:
