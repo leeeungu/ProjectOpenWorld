@@ -54,23 +54,8 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		int32 SectionIndex{};
 		float RandomSeed{ };
 		bool bAlreadyGenerate{ };
-<<<<<<< Updated upstream
-	};
-
-
-	struct FoliageStaticMeshData
-	{
-		TObjectPtr<UFoliageInstancedStaticMeshComponent> FoliageMeshComponent{};
-		// 백에서 array 삽입, 삭제
-		TMap<FIntPoint, TArray<FTransform>> FoliageInstanceTransfomArray{}; // lay 전 data
-		// 백에서 관리된 맵에서 가져옴
-		TArray<FTransform> FoliageInstanceTransfomArray{};
-		// 메인 tick에서 갱신
-		int nTickIndex{};
-=======
 		int StaticMeshDataIndex{ -1 };
 		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageInstanceData{};
->>>>>>> Stashed changes
 	};
 
 	struct FoliageUpdateData
@@ -78,10 +63,7 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		FIntPoint SectionID{};
 		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
 		TArray<FTransform>  FoliageData{};
-<<<<<<< Updated upstream
-=======
 		bool bRemove{ false };
->>>>>>> Stashed changes
 	};
 
 	struct FoliageAddData
@@ -96,26 +78,17 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	TObjectPtr<UDataTable> FoliageDataTable{};
 	TArray<FFoliageDataTable*> FoliageTypes{};
-<<<<<<< Updated upstream
-	UPROPERTY(VisibleDefaultsOnly)
-	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageComponentArray{};
-	int32 ComponentIndex{};
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
-	int32 FoliageComponentCount = 30;
-=======
 	int32 ComponentIndex{};
 
 	UPROPERTY(VisibleDefaultsOnly)
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
-	int32 FoliageComponentCount = 600;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
+	int32 FoliageComponentCount = 200;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
 	int32 FoliageCount = 200;
 
->>>>>>> Stashed changes
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5000"))
 	int32 UpdateComponentTickCount = 10;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
@@ -127,10 +100,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int nInstanceCount{};
 
-<<<<<<< Updated upstream
-	TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, FoliageStaticMeshData> FoliageComponentMap{};
-=======
->>>>>>> Stashed changes
 	TMap <FIntPoint, FoliageSectionData> FoliageSectionDataMap{};
 	TArray<FoliageUpdateData> UpdateData{};
 
@@ -143,13 +112,8 @@ protected:
 	bool EditorModeGenerate{};
 	bool bUpdateBackData{};
 	bool bGeneratingFoliage{};
-<<<<<<< Updated upstream
-	bool bDelayUpdate{ false };
-public:	
-=======
 	bool bDelayUpdate{ };
 public:
->>>>>>> Stashed changes
 	UGenerateFoliageComponent();
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
