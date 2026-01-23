@@ -1,5 +1,5 @@
 ﻿#include "Inventory/Interface/InventorySlotInterface.h"
-#include "Item/DataAsset/ItemPrimaryDataAsset.h"
+//#include "Item/DataAsset/ItemPrimaryDataAsset.h"
 
 FInventorySlot::FInventorySlot(FName NewItemID)
 	: ItemCount{} ,ItemTotalWeights{}

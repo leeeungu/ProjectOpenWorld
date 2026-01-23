@@ -4,7 +4,7 @@
 #include "UObject/Interface.h"
 #include "InventorySlotInterface.generated.h"
 
-class UItemPrimaryDataAsset;
+//class UItemPrimaryDataAsset;
 
 USTRUCT(BlueprintType)
 struct FInventorySlot

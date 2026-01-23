@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -30,39 +30,114 @@ struct FFoliageDataTable : public FTableRowBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
 	TArray<FFoliageInstanceData> InstanceData{};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
-	FFloatInterval HeightRange{ 0.0f, 30000.0f };
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComponent
 {
 	friend class FAsyncFoliageGenerater;
-	struct FSectionData
+
+	struct FoliageSectionData
 	{
-		FSectionData()
+		FoliageSectionData(int32 SectionID = -1, float Random = 0.0f)
 		{
-			SectionIndex = -1;
+			SectionIndex = SectionID;
+			RandomSeed = Random;
 		}
+		
+		bool bAlreadyGenerate{ false };
+
+	private:
 		int32 SectionIndex{};
 		float RandomSeed{ };
-		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr< UFoliageInstancedStaticMeshComponent>> MeshComponent{}; // FoliageID, Instance Indices
-		bool bAlreadyGenerate{ false };
-	};
 
+		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, int32> StaticMeshMap{};
+		TArray<TObjectPtr< UFoliageInstancedStaticMeshComponent>> MeshComponent{};
+	public:
+		void Clear_Async()
+		{
+			bAlreadyGenerate = false;
+			StaticMeshMap.Empty();
+			MeshComponent.Empty();
+		}
+		bool GetAlreadyGenerate() const
+		{
+			return bAlreadyGenerate;
+		}
+
+		bool ContainsFoliageMesh(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh)
+		{
+			return StaticMeshMap.Contains(FoliageMesh);
+		}
+
+		void SetFoliageMeshData(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp)
+		{
+			bAlreadyGenerate = true;
+			if (!StaticMeshMap.Contains(FoliageMesh))
+			{
+				int32 NewIndex = MeshComponent.Add(MeshComp);
+				NewIndex = MeshComponent.Num() - 1;
+				StaticMeshMap.Add(FoliageMesh, NewIndex);
+			}
+		}
+		bool GetFoliageMeshData(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent>& OutMeshComp) const
+		{
+			if (const int32* FoundIndex = StaticMeshMap.Find(FoliageMesh))
+			{
+				OutMeshComp = MeshComponent[*FoundIndex];
+				return true;
+			}
+			return false;
+		}
+		TArray<TObjectPtr< UFoliageInstancedStaticMeshComponent>> GetAllFoliageMeshComponent_Async() const
+		{
+			return MeshComponent;
+		}
+
+		TArray<TObjectPtr< UFoliageType_InstancedStaticMesh>> GetAllFoliageMeshType_Async() const
+		{
+			TArray<TObjectPtr< UFoliageType_InstancedStaticMesh>> FoliageMeshArray{};
+			StaticMeshMap.GetKeys(FoliageMeshArray);
+			return FoliageMeshArray;
+		}
+
+		float GetRandomSeed_Async() const
+		{
+			return RandomSeed;
+		}
+	};
+	
 	struct FoliageUpdateData
 	{
 		FIntPoint SectionID{};
-		int32  InstanceIndex{};
 		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
 		TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComponent{};
 		TArray<FTransform>  FoliageData{};
-		bool bTickGenerate{ false };
+		bool bAdd{};
+		void Rset()
+		{
+			SectionID = FIntPoint{ INT32_MIN, INT32_MIN };
+			FoliageMesh = nullptr;
+			MeshComponent = nullptr;
+			FoliageData.Empty();
+			bAdd = false;
+		}
+		FoliageUpdateData& operator=(const FoliageUpdateData& Other)
+		{
+			if (this != &Other)
+			{
+				SectionID = Other.SectionID;
+				FoliageMesh = Other.FoliageMesh;
+				MeshComponent = Other.MeshComponent;
+				FoliageData = Other.FoliageData;
+				bAdd = Other.bAdd;
+			}
+			return *this;
+		}
 	};
 
 	struct FoliageAddData
 	{
-		FIntPoint SectionID{};
 		FVector StartPos{};
 		FVector EndPos{};
 	};
@@ -75,10 +150,13 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly)
 	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageComponentArray{};
 
-	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyComponentArray{};
+	TQueue<TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyComponentArray{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
-	float FoliageComponentCount = 800;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
+	int32 FoliageComponentCount = 800;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
+	int32 EmptyComponentCount{};
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5000"))
 	int32 UpdateComponentTickCount = 10;	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	FIntPoint FoliageDataCreateRange{ 20,40};
@@ -89,18 +167,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int nInstanceCount{};
 
+	TMap<FIntPoint, TMap<TObjectPtr<UFoliageInstancedStaticMeshComponent>, FoliageUpdateData>> UpdateBackData{};
 	TArray<FoliageUpdateData> UpdateData{};
-	TMap<TObjectPtr<UFoliageInstancedStaticMeshComponent>, FoliageUpdateData> UpdateBackData{};
-	TMap <FIntPoint, FSectionData> SectionIDToFoliageTypeToInstanceIndex{};
 
-	TArray<FIntPoint> DeleteArray{};
-	TArray<FoliageAddData> AddArray{};
+	TMap <FIntPoint, FoliageSectionData> SectionIDToFoliageTypeToInstanceIndex{};
+	TSet<FIntPoint> DeleteArray{};
+	TMap<FIntPoint, FoliageAddData> AddMap{};
 
 	int32 nSectionIndex{};
 	int32 nUpdateTickIndex{};
 	bool EditorModeGenerate{};
 	bool bUpdateBackData{};
 	bool bGeneratingFoliage{};
+	bool bDelayUpdate{ false };
 	FIntPoint PlayerLastSectionID{ INT32_MIN, INT32_MIN };
 public:	
 	UGenerateFoliageComponent();
@@ -108,6 +187,7 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 protected:
 	virtual void BeginPlay() override;
+	void SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp);
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -127,6 +207,7 @@ public:
 	FAsyncFoliageGenerater(UGenerateFoliageComponent* InFoliageGenerater)
 	{
 		FoliageGenerater = InFoliageGenerater;
+		Initialize();
 	}
 
 	FORCEINLINE	TStatId GetStatId() const
@@ -136,6 +217,10 @@ public:
 
 	void DoWork();
 private:
+	void Initialize();
 	UPROPERTY()
 	TObjectPtr<UGenerateFoliageComponent> FoliageGenerater{};
+
+	TSet<FIntPoint> DeleteArray{};
+	TMap<FIntPoint, UGenerateFoliageComponent::FoliageAddData> AddMap{};
 };

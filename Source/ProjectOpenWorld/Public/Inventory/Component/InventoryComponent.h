@@ -5,7 +5,7 @@
 #include "Inventory/Interface/InventorySlotInterface.h"
 #include "InventoryComponent.generated.h"
 
-class UItemPrimaryDataAsset;
+//class UItemPrimaryDataAsset;
 class ABasePlayer;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
