@@ -1,19 +1,19 @@
-ï»¿#include "Landscape/Component/GenerateFoliageComponent.h"
+#include "Landscape/Component/GenerateFoliageComponent.h"
 #include "FoliageType_InstancedStaticMesh.h"
 #include "FoliageInstancedStaticMeshComponent.h"
 
 UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{}
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	FoliageComponentArray.Empty(false);
-	FoliageComponentArray.Reserve(FoliageComponentCount);
+	FoliageMeshData.Empty(true);
+	FoliageMeshData.Reserve(FoliageComponentCount);
 	for (int i = 0; i < FoliageComponentCount; i++)
 	{
-		UFoliageInstancedStaticMeshComponent* FoliageCompoent = CreateDefaultSubobject<UFoliageInstancedStaticMeshComponent>(FName(*FString::Printf(TEXT("FoliageInstancedStaticMeshComponent_%d"), i)));
+		UFoliageInstancedStaticMeshComponent* FoliageCompoent =
+			CreateDefaultSubobject<UFoliageInstancedStaticMeshComponent>(FName(*FString::Printf(TEXT("FoliageInstancedStaticMeshComponent_%d"), i)));
 		if (FoliageCompoent)
 		{
-			FoliageComponentArray.Add(FoliageCompoent);
-			EmpthyComponentArray.Enqueue(FoliageCompoent);
+			FoliageMeshData.Add(FoliageCompoent);
 		}
 	}
 }
@@ -29,6 +29,7 @@ void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 			FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
 		}
 	}
+	FoliageCount = FoliageMeshData.Num();
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
@@ -43,17 +44,18 @@ void UGenerateFoliageComponent::BeginPlay()
 		FoliageTypes.Empty(false);
 		FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
 	}
-	nSectionIndex = 0;
-	for (int i = 0; i < FoliageComponentCount; i++)
+
+	bDelayUpdate = false;
+	EmpthyFoliageMeshData.Empty(false);
+	for (int i = 0; i < FoliageMeshData.Num(); i++)
 	{
-		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageComponentArray[i];
+		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
 		if (FoliageCompoent)
 		{
-			EmpthyComponentArray.Enqueue(FoliageCompoent);
 			FoliageCompoent->ClearInstances();
+			EmpthyFoliageMeshData.Add(FoliageCompoent);
 		}
 	}
-	SectionIDToFoliageTypeToInstanceIndex.Empty();
 }
 
 void UGenerateFoliageComponent::SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComp)
@@ -97,24 +99,6 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (bUpdateBackData)
 		{
 			bGeneratingFoliage = false;
-			for (FIntPoint& SectionID : DeleteArray)
-			{
-				if (FoliageSectionData* pFoliageTypeToInstanceIndex = SectionIDToFoliageTypeToInstanceIndex.Find(SectionID))
-				{
-					for (TObjectPtr< UFoliageInstancedStaticMeshComponent>& MeshComp : pFoliageTypeToInstanceIndex->GetAllFoliageMeshComponent_Async())
-					{
-						if (MeshComp)
-						{
-							nInstanceCount -= MeshComp->GetNumInstances();
-							EmpthyComponentArray.Enqueue(MeshComp);
-							MeshComp->ClearInstances();
-							EmptyComponentCount++;
-						}
-					}
-					pFoliageTypeToInstanceIndex->Clear_Async();
-				}
-			}
-			DeleteArray.Empty(false);
 		}
 	}
 	else
@@ -122,65 +106,76 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (bUpdateBackData)
 		{
 			int Max = UpdateComponentTickCount;
-			while (!UpdateData.IsEmpty() && Max > 0)
+			while (!UpdateData.IsEmpty() && Max > 0 && !EmpthyFoliageMeshData.IsEmpty())
 			{
 				Max--;
 				FoliageUpdateData& Data = UpdateData.Last();
-				if (Data.bAdd)
+				FoliageSectionData* SectionData = &FoliageSectionDataMap.FindOrAdd(Data.SectionID);
+				if (SectionData)
 				{
-					Data.bAdd = false;
-					DeleteArray.Remove(Data.SectionID);
-					SetFoliageMeshComponent(Data.FoliageMesh, Data.MeshComponent);
-					//UE_LOG(LogTemp, Warning, TEXT("Start Generate Foliage SectionID %d,%d %s"), Data.SectionID.X, Data.SectionID.Y,* Data.MeshComponent->GetName());
-					nUpdateTickIndex = 0;
-				}
-				if (Data.MeshComponent && Data.FoliageData.IsValidIndex(nUpdateTickIndex))
-				{
-					FTransform NewTransform = Data.FoliageData[nUpdateTickIndex];
-					FVector Location = NewTransform.GetLocation();
-					FHitResult HitResult;
-					if (GetWorld()->LineTraceSingleByChannel(
-						OUT HitResult,
-						FVector(Location.X, Location.Y, Location.Z - 12000.0f),
-						FVector(Location.X, Location.Y, Location.Z + 12000.0f),
-						ECollisionChannel::ECC_Visibility,
-						FCollisionQueryParams::DefaultQueryParam
-					))
+					if (Data.bRemove)
 					{
-						Location.Z += HitResult.ImpactPoint.Z;
-						float SlopeAngle = FMath::RadiansToDegrees(FVector::DotProduct(-FVector::UpVector, HitResult.ImpactNormal));
-						if (Data.FoliageMesh->AlignToNormal)
+
+						if (SectionData)
 						{
-							NewTransform.SetRotation(FQuat(FVector::ForwardVector.Rotation()));
+							for (auto& Instance : SectionData->FoliageInstanceData)
+							{
+								Instance.Value->ClearInstances();
+								Instance.Value->SetStaticMesh(nullptr);
+								EmpthyFoliageMeshData.Push(Instance.Value);
+							}
+							SectionData->FoliageInstanceData.Empty(false);
 						}
-						//UE_LOG(LogTemp, Warning, TEXT("SlopeAngle : %f %f, %f"), Location.Z, Data.FoliageMesh->ZOffset.Min, Data.FoliageMesh->ZOffset.Max);
-						if (Data.FoliageMesh->Height.Contains(Location.Z))
-						{
-							NewTransform.SetLocation(Location);
-							Data.MeshComponent->AddInstance(NewTransform, true);
-							nInstanceCount++;
-						}
+						nUpdateTickIndex = Data.FoliageData.Num() + 1;
 					}
-					nUpdateTickIndex++;
+					else
+					{
+						//FoliageStaticMeshData* StaticMesh = FoliageComponentMap.Find(Data.FoliageMesh))
+						FTransform NewTransform = Data.FoliageData[nUpdateTickIndex];
+						FVector Location = NewTransform.GetLocation();
+						FHitResult HitResult;
+						if (GetWorld()->LineTraceSingleByChannel(
+							OUT HitResult,
+							FVector(Location.X, Location.Y, Location.Z - 12000.0f),
+							FVector(Location.X, Location.Y, Location.Z + 12000.0f),
+							ECollisionChannel::ECC_Visibility,
+							FCollisionQueryParams::DefaultQueryParam
+						))
+						{
+							Location.Z += HitResult.ImpactPoint.Z;
+							float SlopeAngle = FMath::RadiansToDegrees(FVector::DotProduct(-FVector::UpVector, HitResult.ImpactNormal));
+							if (Data.FoliageMesh->AlignToNormal)
+							{
+								NewTransform.SetRotation(FQuat(FVector::ForwardVector.Rotation()));
+							}
+							NewTransform.SetLocation(Location);
+							//UE_LOG(LogTemp, Warning, TEXT("SlopeAngle : %f %f, %f"), Location.Z, Data.FoliageMesh->ZOffset.Min, Data.FoliageMesh->ZOffset.Max);
+							if (Data.FoliageMesh->Height.Contains(Location.Z))
+							{
+								TObjectPtr<UFoliageInstancedStaticMeshComponent>& MeshComponent = SectionData->FoliageInstanceData.FindOrAdd(Data.FoliageMesh, nullptr);
+								if (!MeshComponent)
+								{
+									MeshComponent = EmpthyFoliageMeshData.Last();
+									EmpthyFoliageMeshData.Pop();
+									SetFoliageMeshComponent(Data.FoliageMesh, MeshComponent);
+								}
+								MeshComponent->AddInstance(NewTransform, true);
+								nInstanceCount++;
+							}
+						}
+						nUpdateTickIndex++;
+					}
 				}
 
 				if (!Data.FoliageData.IsValidIndex(nUpdateTickIndex))
 				{
-					if (Data.MeshComponent)
-					{
-						//UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage SectionID %d,%d %s with %d Instances"),
-						//	Data.SectionID.X, Data.SectionID.Y, *Data.MeshComponent->GetName(), Data.MeshComponent->GetNumInstances());
-						if (UpdateBackData.Find(Data.SectionID))
-						{
-							UpdateBackData.Find(Data.SectionID)->Remove(Data.MeshComponent);
-						}
-					}
+					nUpdateTickIndex = 0;
 					UpdateData.Pop();
 				}
 			}
 			if (UpdateData.IsEmpty())
 			{
-			
+
 				UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage SectionID "));
 				bUpdateBackData = false;
 			}
@@ -192,7 +187,7 @@ void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 {
 	Super::StartGenerateWorld(bEditor);
 	EditorModeGenerate = bEditor;
-	if (EditorModeGenerate)
+	/*if (EditorModeGenerate)
 	{
 		nSectionIndex = 0;
 		for (int i = 0; i < FoliageComponentCount; i++)
@@ -205,7 +200,7 @@ void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 			}
 		}
 		SectionIDToFoliageTypeToInstanceIndex.Empty();
-	}
+	}*/
 }
 
 void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
@@ -213,43 +208,39 @@ void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 	if (SectionData.Vertices->Num() <= 1 || EditorModeGenerate)
 		return;
 
-	FoliageSectionData* FoliageSectionData = SectionIDToFoliageTypeToInstanceIndex.Find(SectionData.SectionID);
+	FoliageSectionData* FoliageSectionData = FoliageSectionDataMap.Find(SectionData.SectionID);
 	if (!FoliageSectionData)
 	{
-		float RandomSeed = FoliageSeed * nSectionIndex;
+		float RandomSeed = FoliageSeed * nSectionCount;
 		if (bRandomSeed)
 		{
 			FMath::RandInit(FDateTime::Now().GetMillisecond());
 			RandomSeed = FMath::Rand();
 		}
-		FoliageSectionData = &SectionIDToFoliageTypeToInstanceIndex.Add(SectionData.SectionID, { nSectionIndex , RandomSeed });
-		nSectionIndex++;
+		FoliageSectionData = &FoliageSectionDataMap.Add(SectionData.SectionID);
+		FoliageSectionData->RandomSeed = RandomSeed;
+		FoliageSectionData->SectionIndex = nSectionCount;
+		nSectionCount++;
 	}
 
 	FoliageAddData& AddData = AddMap.FindOrAdd(SectionData.SectionID);
 	AddData.StartPos = *SectionData.Vertices->begin();
 	AddData.EndPos = SectionData.Vertices->Last();
-	DeleteArray.Remove(SectionData.SectionID);
 }
 
 void UGenerateFoliageComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (EditorModeGenerate )
+	if (EditorModeGenerate)
 		return;
+	FoliageAddData& AddData = AddMap.FindOrAdd(SectionData.SectionID);
+	AddData.bRemove = true;
 
-	FoliageSectionData* FoliageSectionData = SectionIDToFoliageTypeToInstanceIndex.Find(SectionData.SectionID);
-	if (FoliageSectionData)// && FoliageSectionData->GetAlreadyGenerate())
-	{
-		DeleteArray.Add(SectionData.SectionID);
-		AddMap.Remove(SectionData.SectionID);
-		//UE_LOG(LogTemp, Warning, TEXT("Del Generate Foliage SectionID %d,%d"), SectionData.SectionID.X, SectionData.SectionID.Y);
-	}
 }
 
 void UGenerateFoliageComponent::FinishGenerateWorld()
 {
 	Super::FinishGenerateWorld();
-	bDelayUpdate  = true;
+	bDelayUpdate = true;
 }
 
 void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
@@ -257,7 +248,7 @@ void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
 	Super::Initialize(ParentComponent);
 	for (int i = 0; i < FoliageComponentCount; i++)
 	{
-		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageComponentArray[i];
+		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
 		if (FoliageCompoent)
 		{
 			FoliageCompoent->SetupAttachment(ParentComponent);
@@ -282,34 +273,8 @@ void FAsyncFoliageGenerater::DoWork()
 	if (FoliageTypes.Num() <= 0)
 		return;
 
-	TMap<FIntPoint, FoliageSectionData>& SectionIDToFoliageTypeToInstanceIndex = FoliageGenerater->SectionIDToFoliageTypeToInstanceIndex;
-	TQueue<TObjectPtr<UFoliageInstancedStaticMeshComponent>>& EmpthyComponentArray = FoliageGenerater->EmpthyComponentArray;
-	TMap<FIntPoint, TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, FoliageUpdateData>> UpdateBySectionID{};
-	{
-		//for (FIntPoint& SectionID : DeleteArray)
-		//{
-		//	TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, FoliageUpdateData>& UpdateData = UpdateBySectionID.FindOrAdd(SectionID);
-		//	if (FoliageSectionData* pFoliageTypeToInstanceIndex = SectionIDToFoliageTypeToInstanceIndex.Find(SectionID))
-		//	{
-		//		TArray<TObjectPtr< UFoliageType_InstancedStaticMesh>> FoliageMeshArray = pFoliageTypeToInstanceIndex->GetAllFoliageMeshType_Async();
-		//		for (TObjectPtr< UFoliageType_InstancedStaticMesh>& Mesh : FoliageMeshArray)
-		//		{
-		//			FoliageUpdateData& FoliageUpdateData = UpdateData.FindOrAdd(Mesh); // .bClear = true;
-		//			FoliageUpdateData.SectionID = SectionID;
-		//			FoliageUpdateData.bClear = true;
-		//			FoliageUpdateData.FoliageMesh = Mesh;
-		//			if (!EmpthyComponentArray.IsEmpty() && !FoliageUpdateData.MeshComponent)
-		//			{
-		//				FoliageUpdateData.MeshComponent = EmpthyComponentArray.Last();
-		//				EmpthyComponentArray.Pop();
-		//			}
-		//		}
-		//		EmpthyComponentArray.Append(pFoliageTypeToInstanceIndex->GetAllFoliageMeshComponent_Async());
-		//		pFoliageTypeToInstanceIndex->Clear_Async();
-		//	}
-		//}
-		//DeleteArray.Empty(false);
-	}
+	TMap<FIntPoint, FoliageSectionData>& FoliageSectionDataMap = FoliageGenerater->FoliageSectionDataMap;
+	TMap<FIntPoint, TMap< TObjectPtr<UFoliageType_InstancedStaticMesh>, FoliageUpdateData>> UpdateSectionMeshData{};
 	{
 		TArray<FIntPoint> KeyArray{};
 		AddMap.GenerateKeyArray(KeyArray);
@@ -318,45 +283,30 @@ void FAsyncFoliageGenerater::DoWork()
 			FIntPoint SectionID = KeyArray.Last();
 			FoliageAddData& AddData = *AddMap.Find(SectionID);
 			KeyArray.Pop(false);
-			if (FoliageSectionData* SectionData = SectionIDToFoliageTypeToInstanceIndex.Find(SectionID))
+			// »ö¼Ç Data
+			if (const FoliageSectionData* SectionData = FoliageSectionDataMap.Find(SectionID))
 			{
-				FMath::RandInit(SectionData->GetRandomSeed_Async());
+				FMath::RandInit(SectionData->RandomSeed);
 				int Rand = FMath::RandRange(FoliageGenerater->FoliageDataCreateRange.X, FoliageGenerater->FoliageDataCreateRange.Y);
 				FVector StartPos = AddData.StartPos;
 				FVector EndPos = AddData.EndPos;
-
+				// FFoliageDataTable  ¹üÀ§ ³» ÀÎ½ºÅÏ½º Á¶ÇÕ ·£´ý »ý¼º
 				for (int CurrentRnadIndex = 0; CurrentRnadIndex < Rand; CurrentRnadIndex++)
 				{
 					int32 CurrentInstanceIndex = FMath::Rand() % FoliageTypes.Num();
 					const FFoliageDataTable* FoliageDataTableStruct = FoliageTypes[CurrentInstanceIndex];
 					const TArray<FFoliageInstanceData>& FoliageInstanceArray = FoliageDataTableStruct->InstanceData;
 					FVector RandPos{ FMath::RandRange(StartPos.X, EndPos.X), FMath::RandRange(StartPos.Y, EndPos.Y),  0 };
-
-
+					// »ö¼Ç ³»ÀÇ ·£´ý À§Ä¡ ¼±ÅÃ
 					for (int InstanceIndex = 0; InstanceIndex < FoliageInstanceArray.Num(); InstanceIndex++)
 					{
 						// Data
 						const TObjectPtr<UFoliageType_InstancedStaticMesh>& FoliageType = FoliageInstanceArray[InstanceIndex].FoliageType;
-						FoliageUpdateData& UpdateData = UpdateBySectionID.FindOrAdd(SectionID).FindOrAdd(FoliageType);
 						const FVector& InstanceOffset = FoliageInstanceArray[InstanceIndex].InstanceOffset;
-						TObjectPtr< UFoliageInstancedStaticMeshComponent> TargetFoliageComponent{};
-						if (!SectionData->GetFoliageMeshData(FoliageType, TargetFoliageComponent) && !EmpthyComponentArray.IsEmpty())
-						{
-							EmpthyComponentArray.Dequeue(TargetFoliageComponent);
-							FoliageGenerater->EmptyComponentCount--;
-						}
-						if (!TargetFoliageComponent)
-							continue;
-						if (SectionData->ContainsFoliageMesh(FoliageType) == false)
-							SectionData->SetFoliageMeshData(FoliageType, TargetFoliageComponent);
+						FoliageUpdateData& UpdateData = UpdateSectionMeshData.FindOrAdd(SectionID).FindOrAdd(FoliageType);
 						UpdateData.SectionID = SectionID;
-						UpdateData.MeshComponent = TargetFoliageComponent;
-						if (UpdateData.bAdd == false)
-						{
-							UpdateData.bAdd = true;
-							UpdateData.FoliageMesh = FoliageType;
-							//UpdateData.FoliageData.Empty();
-						}
+						UpdateData.FoliageMesh = FoliageType;
+						UpdateData.bRemove = AddData.bRemove;
 
 						// Generate Random Transform
 						FTransform NewTransform{};
@@ -369,8 +319,8 @@ void FAsyncFoliageGenerater::DoWork()
 						FVector Location = NewTransform.GetLocation();
 						Location += InstanceOffset;
 
-						// ìƒ‰ì…˜ ë°–ìœ¼ë¡œ ë‚˜ê°€ë©´ ì§€í˜•ì€ ì—†ëŠ”ë° instanceëŠ” ìƒê¸°ê²Œ ë˜ë‹ˆ ì œê±°
-						// clamp í•˜ë©´ ë‚®ì€ í™•ë¥ ë¡œ ì„¹ì…˜ ê²½ê³„ì— instanceê°€ ëª¨ì—¬ì„œ ìƒê¸¸ìˆ˜ë„ ìžˆìŒ
+						// »ö¼Ç ¹ÛÀ¸·Î ³ª°¡¸é ÁöÇüÀº ¾ø´Âµ¥ instance´Â »ý±â°Ô µÇ´Ï Á¦°Å
+						// clamp ÇÏ¸é ³·Àº È®·ü·Î ¼½¼Ç °æ°è¿¡ instance°¡ ¸ð¿©¼­ »ý±æ¼öµµ ÀÖÀ½
 						FBox SectionBox{ StartPos, EndPos };
 						bool bInSection = SectionBox.IsInsideOrOnXY(Location);
 						Location.Z += FMath::RandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max);
@@ -387,23 +337,12 @@ void FAsyncFoliageGenerater::DoWork()
 		AddMap.Empty();
 	}
 
-	for (auto& UpdateMap : UpdateBySectionID)
+	for (auto& UpdateMap : UpdateSectionMeshData)
 	{
 		for (auto& UpdateData : UpdateMap.Value)
 		{
 			FoliageUpdateData& NewUpdateData = UpdateData.Value;
-			FoliageUpdateData& Data = FoliageGenerater->UpdateBackData.FindOrAdd(UpdateMap.Key).FindOrAdd(UpdateData.Value.MeshComponent);
-			Data.Rset();
-			Data = NewUpdateData;
-
-		}
-	}
-	FoliageGenerater->UpdateData.Empty(false);
-	for (auto& UpdateMap : UpdateBySectionID)
-	{
-		for (auto& UpdateData : UpdateMap.Value)
-		{
-			FoliageGenerater->UpdateData.Add(UpdateData.Value);
+			FoliageGenerater->UpdateData.Add(NewUpdateData);
 		}
 	}
 

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -32,10 +32,18 @@ public:
 	TArray<FFoliageInstanceData> InstanceData{};
 };
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComponent
 {
 	friend class FAsyncFoliageGenerater;
+
+
+	/*struct FoliageStaticMeshData
+	{
+
+	 FoliageMeshComponent{};
+		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
+	};*/
 
 	struct FoliageSectionData
 	{
@@ -46,6 +54,7 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		int32 SectionIndex{};
 		float RandomSeed{ };
 		bool bAlreadyGenerate{ };
+<<<<<<< Updated upstream
 	};
 
 
@@ -58,19 +67,28 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		TArray<FTransform> FoliageInstanceTransfomArray{};
 		// 메인 tick에서 갱신
 		int nTickIndex{};
+=======
+		int StaticMeshDataIndex{ -1 };
+		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageInstanceData{};
+>>>>>>> Stashed changes
 	};
-	
+
 	struct FoliageUpdateData
 	{
 		FIntPoint SectionID{};
 		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
 		TArray<FTransform>  FoliageData{};
+<<<<<<< Updated upstream
+=======
+		bool bRemove{ false };
+>>>>>>> Stashed changes
 	};
 
 	struct FoliageAddData
 	{
 		FVector StartPos{};
 		FVector EndPos{};
+		bool bRemove{ false };
 	};
 
 	GENERATED_BODY()
@@ -78,16 +96,30 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	TObjectPtr<UDataTable> FoliageDataTable{};
 	TArray<FFoliageDataTable*> FoliageTypes{};
+<<<<<<< Updated upstream
 	UPROPERTY(VisibleDefaultsOnly)
 	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageComponentArray{};
 	int32 ComponentIndex{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "100"))
 	int32 FoliageComponentCount = 30;
+=======
+	int32 ComponentIndex{};
+
+	UPROPERTY(VisibleDefaultsOnly)
+	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
+	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
+	int32 FoliageComponentCount = 600;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
+	int32 FoliageCount = 200;
+
+>>>>>>> Stashed changes
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5000"))
-	int32 UpdateComponentTickCount = 10;	
+	int32 UpdateComponentTickCount = 10;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
-	FIntPoint FoliageDataCreateRange{ 20,40};
+	FIntPoint FoliageDataCreateRange{ 20,40 };
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	float FoliageSeed = 100;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
@@ -95,7 +127,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int nInstanceCount{};
 
+<<<<<<< Updated upstream
 	TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, FoliageStaticMeshData> FoliageComponentMap{};
+=======
+>>>>>>> Stashed changes
 	TMap <FIntPoint, FoliageSectionData> FoliageSectionDataMap{};
 	TArray<FoliageUpdateData> UpdateData{};
 
@@ -108,8 +143,13 @@ protected:
 	bool EditorModeGenerate{};
 	bool bUpdateBackData{};
 	bool bGeneratingFoliage{};
+<<<<<<< Updated upstream
 	bool bDelayUpdate{ false };
 public:	
+=======
+	bool bDelayUpdate{ };
+public:
+>>>>>>> Stashed changes
 	UGenerateFoliageComponent();
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -117,7 +157,7 @@ protected:
 	virtual void BeginPlay() override;
 	void SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp);
 
-public:	
+public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void StartGenerateWorld(bool bEditor = false) override;
