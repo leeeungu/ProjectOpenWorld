@@ -12,23 +12,29 @@ class PROJECTOPENWORLD_API UGenerateWorldComponent : public UActorComponent
 	GENERATED_BODY()
 	friend UGeneratorSectionComponent;
 
+	bool bStartGenerate{ false };
 protected:
 	//virtual void BeginPlay() override;
 	UPROPERTY()
 	TObjectPtr <UGeneratorSectionComponent> GeneratorSectionComponent{};
 
 	UFUNCTION()
-	virtual void StartGenerateWorld(bool bEditor = false) {};
+	virtual void StartGenerateWorld(bool bEditor = false) { bStartGenerate = true; };
 	UFUNCTION()
 	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) {}
 	UFUNCTION()
 	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) {}
 	UFUNCTION()
-	virtual void FinishGenerateWorld() {};
+	virtual void FinishGenerateWorld() { bStartGenerate = false; };
 
 	void SetGeneratorSectionComponent(UGeneratorSectionComponent* GeneratorComponent) { 
 		GeneratorSectionComponent = GeneratorComponent; 
 	}
+private:
+	void StartGenerate() { bStartGenerate = true; }
+	void EndGenerate() { bStartGenerate = false; }
+protected:
+	bool IsGenerating() const { return bStartGenerate; }
 public:	
 	virtual void Initialize(USceneComponent* ParentComponent) {};
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

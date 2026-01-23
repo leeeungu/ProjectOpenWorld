@@ -7,7 +7,6 @@
 #include "GameBase/Interface/GenerateWorldInterface.h"
 #include "ItemActor.generated.h"
 
-class UItemPrimaryDataAsset;
 class USkeletalMeshComponent;
 class UWidgetComponent;
 class USphereComponent;

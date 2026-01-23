@@ -30,41 +30,47 @@ struct FFoliageDataTable : public FTableRowBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
 	TArray<FFoliageInstanceData> InstanceData{};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
-	FFloatInterval HeightRange{ 0.0f, 30000.0f };
 };
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComponent
 {
 	friend class FAsyncFoliageGenerater;
-	struct FSectionData
+
+
+	/*struct FoliageStaticMeshData
 	{
-		FSectionData()
+
+	 FoliageMeshComponent{};
+		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
+	};*/
+
+	struct FoliageSectionData
+	{
+		FoliageSectionData()
 		{
 			SectionIndex = -1;
 		}
 		int32 SectionIndex{};
 		float RandomSeed{ };
-		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr< UFoliageInstancedStaticMeshComponent>> MeshComponent{}; // FoliageID, Instance Indices
-		bool bAlreadyGenerate{ false };
+		bool bAlreadyGenerate{ };
+		int StaticMeshDataIndex{ -1 };
+		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageInstanceData{};
 	};
 
 	struct FoliageUpdateData
 	{
 		FIntPoint SectionID{};
-		int32  InstanceIndex{};
 		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
-		TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComponent{};
 		TArray<FTransform>  FoliageData{};
-		bool bTickGenerate{ false };
+		bool bRemove{ false };
 	};
 
 	struct FoliageAddData
 	{
-		FIntPoint SectionID{};
 		FVector StartPos{};
 		FVector EndPos{};
+		bool bRemove{ false };
 	};
 
 	GENERATED_BODY()
@@ -72,16 +78,21 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	TObjectPtr<UDataTable> FoliageDataTable{};
 	TArray<FFoliageDataTable*> FoliageTypes{};
-	UPROPERTY(VisibleDefaultsOnly)
-	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageComponentArray{};
+	int32 ComponentIndex{};
 
-	TArray<TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyComponentArray{};
+	UPROPERTY(VisibleDefaultsOnly)
+	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
+	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
-	float FoliageComponentCount = 800;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
-	int32 UpdateComponentTickCount = 10;	
+	int32 FoliageComponentCount = 520;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
+	int32 FoliageCount = 200;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5000"))
+	int32 UpdateComponentTickCount = 10;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
-	FIntPoint FoliageDataCreateRange{ 20,40};
+	FIntPoint FoliageDataCreateRange{ 20,40 };
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
 	float FoliageSeed = 100;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings")
@@ -89,27 +100,28 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int nInstanceCount{};
 
+	TMap <FIntPoint, FoliageSectionData> FoliageSectionDataMap{};
 	TArray<FoliageUpdateData> UpdateData{};
-	TMap<TObjectPtr<UFoliageInstancedStaticMeshComponent>, FoliageUpdateData> UpdateBackData{};
-	TMap <FIntPoint, FSectionData> SectionIDToFoliageTypeToInstanceIndex{};
 
-	TArray<FIntPoint> DeleteArray{};
-	TArray<FoliageAddData> AddArray{};
+	TSet<FIntPoint> DeleteArray{};
+	TMap<FIntPoint, FoliageAddData> AddMap{};
+	FIntPoint PlayerLastSectionID{ INT32_MIN, INT32_MIN };
 
-	int32 nSectionIndex{};
+	int32 nSectionCount{};
 	int32 nUpdateTickIndex{};
 	bool EditorModeGenerate{};
 	bool bUpdateBackData{};
 	bool bGeneratingFoliage{};
-	FIntPoint PlayerLastSectionID{ INT32_MIN, INT32_MIN };
-public:	
+	bool bDelayUpdate{ };
+public:
 	UGenerateFoliageComponent();
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 protected:
 	virtual void BeginPlay() override;
+	void SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp);
 
-public:	
+public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void StartGenerateWorld(bool bEditor = false) override;
@@ -127,6 +139,7 @@ public:
 	FAsyncFoliageGenerater(UGenerateFoliageComponent* InFoliageGenerater)
 	{
 		FoliageGenerater = InFoliageGenerater;
+		Initialize();
 	}
 
 	FORCEINLINE	TStatId GetStatId() const
@@ -136,6 +149,10 @@ public:
 
 	void DoWork();
 private:
+	void Initialize();
 	UPROPERTY()
 	TObjectPtr<UGenerateFoliageComponent> FoliageGenerater{};
+
+	TSet<FIntPoint> DeleteArray{};
+	TMap<FIntPoint, UGenerateFoliageComponent::FoliageAddData> AddMap{};
 };
