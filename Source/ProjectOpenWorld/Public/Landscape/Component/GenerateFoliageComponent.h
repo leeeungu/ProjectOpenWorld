@@ -84,8 +84,8 @@ protected:
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
-	int32 FoliageComponentCount = 200;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
+	int32 FoliageComponentCount = 520;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
 	int32 FoliageCount = 200;
 

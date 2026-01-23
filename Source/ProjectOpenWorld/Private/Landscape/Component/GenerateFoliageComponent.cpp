@@ -16,6 +16,7 @@ UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{
 			FoliageMeshData.Add(FoliageCompoent);
 		}
 	}
+	FoliageCount = FoliageMeshData.Num();
 }
 
 void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
