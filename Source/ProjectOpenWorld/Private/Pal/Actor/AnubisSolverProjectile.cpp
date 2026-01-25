@@ -46,9 +46,6 @@ void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* Ov
 			if (AnubisBoss->GetPatternComponent()->IsPatternActive(Index))
 			{
 				AnubisBoss->GetPatternComponent()->UpdatePatternCondition(Index);
-				//if (!AnubisBoss->GetPatternComponent()->IsPatternActive(Index))
-				//{
-				//}
 			}
 		}
 		else if(ABasePlayer* Player = Cast<ABasePlayer>(OtherActor))
@@ -57,7 +54,6 @@ void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* Ov
 			UInteractionComponent* InteractionComp = TargetPlayer->GetInteractionComponent();
 			if (!InteractionComp)
 				return;
-			//UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Begin Overlap with Player"));
 			InteractionComp->SetInteractionTarget(this);
 			bProjectileActive = true;
 	
@@ -147,6 +143,7 @@ void AAnubisSolverProjectile::OnInteractionStartEvent_Implementation(ACharacter*
 
 void AAnubisSolverProjectile::OnInteractionEndEvent_Implementation(ACharacter* TargetMonster)
 {
-	Destroy();
+	Mesh->SetVisibility(false);
+	//Destroy();
 }
 

@@ -2,23 +2,24 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "GameBase/Interface/MontageQueueInterface.h"
 #include "BaseAnimInstance.generated.h"
 
 class UCharacterMovementComponent;
 class UAnimLoopObject;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMontageEvent);
+
 UCLASS()
 class PROJECTOPENWORLD_API UBaseAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-private:
-	TScriptInterface<IMontageQueueInterface> MontageQueue{};
+protected:
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "MontageManager")
+	TArray<TObjectPtr<UAnimMontage>> MontageArray{};
 	UPROPERTY()
 	TObjectPtr < UAnimMontage> CurrentMontage{};
 	UPROPERTY()
 	TObjectPtr < UAnimLoopObject> LoopObject{};
-protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
 	TObjectPtr<UCharacterMovementComponent> MovementComponent{};
@@ -26,17 +27,35 @@ protected:
 	bool IsFalling{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAnim")
 	float MoveSpeed{};
-private:
-	UFUNCTION()
-	void OnMontageStartedFunc(UAnimMontage* Montage);
-	UFUNCTION()
-	void OnMontageBlendingOutFunc(UAnimMontage* Montage, bool bInterrupted);
 
+	int CurrentMontageIndex{};
+	bool bIsPlayingMontage{};
 public:
-	bool IsLoop() const;
+	UPROPERTY(BlueprintAssignable, Category = "MontageManager")
+	FOnMontageEvent OnMontageQueueEnd;
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-	void SetMontageQueueInterface(TScriptInterface<IMontageQueueInterface> Interface);
-	void PlayMontageQueue();
-	bool MontageIsPlay(UAnimMontage* Montage);
+
+private:
+	UFUNCTION()
+	void OnMontageStartedEvent(UAnimMontage* Montage);
+	UFUNCTION()
+	void OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bInterrupted);
+
+	bool CanPlayMontage();
+	void OnMontageEnd();
+
+	void PlayMontage();
+	bool IsLoop() const;
+public:
+	UFUNCTION(BlueprintCallable, Category = "MontageManager")
+	void ChangeMontageArray(const TArray<UAnimMontage*>& NewMontageArray);
+
+	UFUNCTION(BlueprintCallable, Category = "MontageManager")
+	bool PlayMontageQueue();
+	UFUNCTION(BlueprintCallable, Category = "MontageManager")
+	void StopMontageQueue();
+
+	UFUNCTION(BlueprintPure, Category = "MontageManager")
+	bool IsPlayingMontage() const { return bIsPlayingMontage; }
 };

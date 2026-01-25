@@ -1,4 +1,4 @@
-ï»¿#include "Pal/Controller/PalAIController.h"
+#include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
@@ -65,7 +65,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 {
 	if (!TargetActor)
 		return EPathFollowingRequestResult::Failed;
-	// ì™œ ì´ë™ì— ì˜¤ì°¨ê°€ ìƒê¸¸ê¹Œ
+	// ¿Ö ÀÌµ¿¿¡ ¿ÀÂ÷°¡ »ý±æ±î
 	//FVector Location = TargetActor->GetActorLocation();
 	////Location.Z = GetPawn()->GetActorLocation().Z;
 
@@ -144,6 +144,7 @@ void APalAIController::SetBBTargetActor(AActor* TargetActor)
 		return;
 	if (OwnerPal)
 		OwnerPal->UseControllerDesiredRotation();
+	OwnerPal->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetActorName(), TargetActor);
 }
 
@@ -154,6 +155,7 @@ void APalAIController::SetBBTargetLocation(FVector TargetLocation)
 		return;
 	if (OwnerPal)
 		OwnerPal->UseOrientRotationToMovement();
+	OwnerPal->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 	GetBlackboardComponent()->SetValueAsVector(GetBBTargetLocationName(), TargetLocation);
 }

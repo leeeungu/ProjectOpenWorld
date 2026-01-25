@@ -52,13 +52,17 @@ void ACameraSceneActor::OnInteractionStartEvent_Implementation(ACharacter* Targe
 	{
 		CustomTargetComp = Player->GetMesh();
 	}
+	else if (TargetType == ETargetType::TargetActor && TargetActor)
+	{
+		CustomTargetComp = TargetActor->GetRootComponent();
+	}
 	if (Player && Controller)
 	{
 		PreviousViewTarget = Controller->GetViewTarget();
 
 		// 이 액터로 뷰 전환 (블렌드)
 		Controller->SetViewTargetWithBlend(this, FadeInTime, EViewTargetBlendFunction::VTBlend_EaseIn);
-
+		Controller->DisableInput(Controller);
 		// 카메라 컴포넌트 위치를 플레이어 위치로 맞춰 시작 (원하면 스플라인 시작점으로 설정)
 		FVector playerLocation = Player->GetActorLocation();
 		if (CameraComp)

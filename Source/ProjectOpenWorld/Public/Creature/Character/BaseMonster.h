@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -11,15 +11,21 @@ class UPalCommandComponent;
 class UPalAttackComponent;
 class UPalMonsterInteractionComponent;
 struct FPalMonsterLevelData;
+class UWidgetComponent;
+
 UCLASS()
 class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface, public ICommanderManageable
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FName MonsterName{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	int Level{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Hp{};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
+	float MaxHp{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	float Attack{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
@@ -33,8 +39,11 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr <UWidgetComponent> HpWidgetComponent{};	
 	bool bActionStarted{};
-
+protected:
+	virtual void BeginPlay() override;
 public:
 	ABaseMonster();
 
@@ -60,6 +69,10 @@ public:
 	void SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData);
 
 public:
+	int GetMonsterLevel() const { return Level; }
+	float GetCurrentHp() const { return Hp; }
+	float GetMaxHp() const { return MaxHp; }
+	FName GetMonsterName() const { return MonsterName; }
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;

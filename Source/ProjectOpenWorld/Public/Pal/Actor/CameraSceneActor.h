@@ -14,7 +14,8 @@ enum class ETargetType : uint8
 {
 	Player,
 	Custom,
-	Monster
+	Monster,
+	TargetActor
 };
 // ACameraRig_Rail ÀÌ¶û °°À½
 UCLASS()
@@ -36,6 +37,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr< AActor>  PreviousViewTarget{};
+	UPROPERTY(EditAnywhere)
+	TObjectPtr <AActor> TargetActor{};
 	
 	int32 SplinePointIndex{ 0 };
 	bool bIsCameraMoving{ false };

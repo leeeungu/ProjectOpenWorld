@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/PalAttackComponent.h"
+#include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "GameBase/BaseCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -7,6 +7,7 @@
 #include "Animation/AnimInstance.h"
 #include "Engine/DataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
+//#include "GameBase/Component/CharacterMontageComponent.h"
 
 UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 {
@@ -22,6 +23,16 @@ void UPalAttackComponent::BeginPlay()
 	if (OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
 		Controller = Cast< APalAIController>(OwnerCharacter->GetController());
+		//MontageComponent = OwnerCharacter->GetMontageComponent();
+		//if (MontageComponent)
+		//{
+		//	MontageComponent->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
+		//}
+		UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
+		if (Anim)
+		{
+			Anim->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
+		}
 	}
 	if (!Controller)
 	{
@@ -106,7 +117,7 @@ void UPalAttackComponent::StartAttack()
 	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 	if (Anim)
 	{
-		Anim->SetMontageQueueInterface(this);
+		Anim->ChangeMontageArray(AttackData.AttackData);
 		Anim->PlayMontageQueue();
 	}
 	bAttacking = true;
@@ -123,6 +134,10 @@ void UPalAttackComponent::StartAttack()
 
 void  UPalAttackComponent::EndAttack()
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack Called "), *GetOwner()->GetName());
+	if (!bAttacking)
+		return;
+
 	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack "), *GetOwner()->GetName());
 	SetComponentTickEnabled(false);
 	ResetAttackData();
@@ -141,8 +156,15 @@ void  UPalAttackComponent::EndAttack()
 
 void UPalAttackComponent::StopAttack()
 {
+	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
+	if(Anim)
+	{
+		Anim->StopMontageQueue();
+	}
+	EndAttack();
+	//OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.01f);
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: StopAttack Called "), *GetOwner()->GetName());
 	ResetAttackData();
-	OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.01f);
 }
 
 bool UPalAttackComponent::TargetIsInRange() const
@@ -150,7 +172,7 @@ bool UPalAttackComponent::TargetIsInRange() const
 	if (TargetActor && OwnerCharacter)
 	{
 		const double Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f , AttackDistance : %f"), *GetOwner()->GetName(), Distance, AttackData.AttackDistance* AttackData.AttackDistance);
+		//UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f , AttackDistance : %f"), *GetOwner()->GetName(), Distance, AttackData.AttackDistance* AttackData.AttackDistance);
 		if (Distance <= AttackData.AttackDistance * AttackData.AttackDistance)
 		{
 			return true;
@@ -158,34 +180,34 @@ bool UPalAttackComponent::TargetIsInRange() const
 	}
 	return false;
 }
-
-UAnimMontage* UPalAttackComponent::GetMontage() const
-{
-	UAnimMontage* NextMontage = nullptr;
-	if (AttackData.AttackData.IsValidIndex(AttackIndex) && bSetAttackData)
-	{
-		NextMontage = AttackData.AttackData[AttackIndex];
-	}
-	return NextMontage;
-}
-
-void UPalAttackComponent::MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("MontageStartEvent"));
-}
-
-void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted)
-{
-	if (!Montage || !BaseAnim)
-		return;
-	if (!BaseAnim->IsLoop())
-		AttackIndex++;
-	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
-	{
-		BaseAnim->SetMontageQueueInterface(nullptr);
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: MontageBlendingEvent End Attack "), *GetOwner()->GetName());
-		EndAttack();
-		return;
-	}
-	BaseAnim->PlayMontageQueue();
-}
+//
+//UAnimMontage* UPalAttackComponent::GetMontage() const
+//{
+//	UAnimMontage* NextMontage = nullptr;
+//	if (AttackData.AttackData.IsValidIndex(AttackIndex) && bSetAttackData)
+//	{
+//		NextMontage = AttackData.AttackData[AttackIndex];
+//	}
+//	return NextMontage;
+//}
+//
+//void UPalAttackComponent::MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage)
+//{
+//	//UE_LOG(LogTemp, Warning, TEXT("MontageStartEvent"));
+//}
+//
+//void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted)
+//{
+//	/*if (!Montage || !BaseAnim)
+//		return;
+//	if (!BaseAnim->IsLoop())
+//		AttackIndex++;
+//	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
+//	{
+//		BaseAnim->SetMontageQueueInterface(nullptr);
+//		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: MontageBlendingEvent End Attack "), *GetOwner()->GetName());
+//		EndAttack();
+//		return;
+//	}
+//	BaseAnim->PlayMontageQueue();*/
+//}

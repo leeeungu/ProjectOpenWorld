@@ -1,12 +1,12 @@
-﻿#include "GameBase/BaseCharacter.h"
+#include "GameBase/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimMetaData.h"
+#include "GameBase/Component/CharacterMontageComponent.h"
 
 
-ABaseCharacter::ABaseCharacter()
+ABaseCharacter::ABaseCharacter() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 void ABaseCharacter::BeginPlay()

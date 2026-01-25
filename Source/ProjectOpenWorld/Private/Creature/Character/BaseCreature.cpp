@@ -29,6 +29,7 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 	AttackComponent  = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
 	InteractionComponent = CreateDefaultSubobject<UPalInteractionComponent>(TEXT("InteractionComponent"));
 
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	Hp = 300.0f;
 	Attack = 10.0f;
 }

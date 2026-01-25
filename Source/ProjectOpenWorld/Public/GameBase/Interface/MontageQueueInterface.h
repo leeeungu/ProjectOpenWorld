@@ -18,7 +18,7 @@ class PROJECTOPENWORLD_API IMontageQueueInterface
 {
 	GENERATED_BODY()
 public:
-	virtual UAnimMontage* GetMontage() const { return nullptr; }
-	virtual void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) {}
-	virtual void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) {}
+	//virtual UAnimMontage* GetMontage() const { return nullptr; }
+	//virtual void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) {}
+	//virtual void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) {}
 };

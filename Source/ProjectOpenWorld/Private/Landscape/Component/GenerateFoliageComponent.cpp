@@ -13,6 +13,7 @@ UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{
 			CreateDefaultSubobject<UFoliageInstancedStaticMeshComponent>(FName(*FString::Printf(TEXT("FoliageInstancedStaticMeshComponent_%d"), i)));
 		if (FoliageCompoent)
 		{
+			FoliageCompoent->ComponentTags.Add(FName("Landscape"));
 			FoliageMeshData.Add(FoliageCompoent);
 		}
 	}
@@ -141,7 +142,7 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 							FVector(Location.X, Location.Y, Location.Z + 12000.0f),
 							ECollisionChannel::ECC_Visibility,
 							FCollisionQueryParams::DefaultQueryParam
-						))
+						)) // && HitResult.GetComponent() && HitResult.GetComponent()->ComponentHasTag(TEXT("Landscape")))
 						{
 							Location.Z += HitResult.ImpactPoint.Z;
 							float SlopeAngle = FMath::RadiansToDegrees(FVector::DotProduct(-FVector::UpVector, HitResult.ImpactNormal));

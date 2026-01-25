@@ -1,4 +1,4 @@
-﻿#include "Creature/Character/BaseMonster.h"
+#include "Creature/Character/BaseMonster.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
@@ -9,6 +9,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Pal/Component/PalMonsterInteractionComponent.h"
 #include "Pal/DataTable/PalMonsterData.h"
+#include "Components/WidgetComponent.h"
+#include "Pal/Widget/PalHpWidget_MonsterDefault.h"
+
+
 
 ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
@@ -17,8 +21,39 @@ ABaseMonster::ABaseMonster() :
 	CommandComponent = CreateDefaultSubobject<UPalMonsterCommandComponent>(TEXT("PalCommand"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
 	MonsterInteractionComponent = CreateDefaultSubobject<UPalMonsterInteractionComponent>(TEXT("MonsterInteractionComponent"));
+	HpWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpWidgetComponent"));
+	//Script/UMGEditor.WidgetBlueprint'/Game/Pal/Widget/WBP_PalMonsterHP.WBP_PalMonsterHP'
+	static ConstructorHelpers::FClassFinder<UPalHpWidget_MonsterDefault> HpWidgetClass(TEXT("/Game/Pal/Widget/WBP_PalMonsterHP"));
+	if (HpWidgetClass.Succeeded())
+	{
+		HpWidgetComponent->SetWidgetClass(HpWidgetClass.Class);
+		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
+		if (HpWidget)
+		{
+			HpWidget->InitializeHPWidget(this);
+		}
+	}
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
+	HpWidgetComponent->SetTickMode(ETickMode::Enabled);
+	HpWidgetComponent->SetupAttachment(GetRootComponent());
+	HpWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	MonsterName = TEXT("Monster");
+	Level = 1;
 	Hp = 100;
 	Attack = 10.0f;
+}
+
+void ABaseMonster::BeginPlay()
+{
+	ABaseCharacter::BeginPlay();
+	if (HpWidgetComponent)
+	{
+		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
+		if (HpWidget)
+		{
+			HpWidget->InitializeHPWidget(this);
+		}
+	}
 }
 
 bool ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
@@ -47,6 +82,7 @@ void ABaseMonster::PossessedBy(AController* NewController)
 	{
 		newTeam->SetGenericTeamId(FGenericTeamId(2));
 	}*/
+
 }
 
 void ABaseMonster::SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData)
@@ -84,14 +120,16 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	{
 		CommandComponent->ResetCommandQue();
 	}
+		UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack Target Set"));
 	if (AttackComponent && !AttackComponent->IsSetTarget())
 	{
+
 		//pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
-		AttackComponent->SetAttackTarget(pOther);
+	/*	AttackComponent->SetAttackTarget(pOther);
 		AttackComponent->SetAttackData(ESubAttackType::Default);
-		AttackComponent->StartAttack();
+		AttackComponent->StartAttack();*/
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
-		//CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
+		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
 	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: DamagedCharacter Hp : %f"), Hp);
 	if (OnDamagedDelegate.IsBound())

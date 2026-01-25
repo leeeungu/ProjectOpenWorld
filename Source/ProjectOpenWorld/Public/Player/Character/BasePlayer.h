@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -23,6 +23,16 @@ class UNavigationInvokerComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
 UENUM(BlueprintType)
+enum class EPlayerState : uint8
+{
+	Travel UMETA(DisplayName = "Default"),
+	Climb,
+	Battle,
+	TopDown,
+	EnumMax UMETA(Hidden)
+};
+
+UENUM(BlueprintType)
 enum class EStatusType : uint8
 {
 	None UMETA(Hidden),
@@ -40,11 +50,14 @@ enum class EStatusType : uint8
 	EnumMax UMETA(Hidden)
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChange, EPlayerState , PrePlayerState);
+
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface, public IAttackInterface
 	, public IPlayerInputInterface, public IPlayerInputSettingInterface
 {
 	GENERATED_BODY()
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> CameraBoom{};
 
@@ -103,18 +116,24 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitec
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ClimbMontage{};
-	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
 
+	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPlayerState CurrentPlayerState{};
 	UPROPERTY()
 	TObjectPtr< UBuildingModeWidget> BuildingWidget{};
 
 	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
 
-	bool TopDownMode{};
+	//bool TopDownMode{};
 public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
 	FOnDamageedDelegate OnDamagedDelegate{};
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PlayerState")
+	FOnPlayerStateChange OnStateChangeDelegate{};
+	bool TopDownMode{};
 public:
 	ABasePlayer();
 
@@ -126,7 +145,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
 	void StartClimb();
 	UFUNCTION(BlueprintPure, Category = "PlayerMode")
-	bool IsTopDownMode() const { return TopDownMode; }
+	bool IsTopDownMode() const { return CurrentPlayerState == EPlayerState::TopDown; }
 
 	UFUNCTION(BlueprintCallable )
 	void StartTravel();
@@ -156,6 +175,7 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
 public:
+	FORCEINLINE EPlayerState GetPlayerState() const { return CurrentPlayerState; }  //
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE  USpringArmComponent* const  GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
@@ -174,6 +194,9 @@ public:
 	void SetStatus(EStatusType StatusType, float Value);
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
 	bool GetStatus(EStatusType StatusType, float& Result) const;
+	UFUNCTION(BlueprintCallable, Category = "PlayerState")
+	void ChangePlayerState(EPlayerState NewState);
+
 
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;

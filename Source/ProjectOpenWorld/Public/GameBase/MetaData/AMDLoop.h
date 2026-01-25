@@ -7,6 +7,7 @@
 
 class UAnimLoopObject;
 
+// Must adde Only One per Animation
 UCLASS(Abstract)
 class PROJECTOPENWORLD_API UAMDLoop : public UAnimMetaData
 {

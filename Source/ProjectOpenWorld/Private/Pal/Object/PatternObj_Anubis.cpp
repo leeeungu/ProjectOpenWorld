@@ -24,7 +24,7 @@ void UPatternObj_Anubis01::StartPattern()
 	if (bError)
 		return;
 
-	OwnerCharacter->GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	OwnerCharacter->UseOrientRotationToMovement();
 	PatternMoveDirection = FMath::VRand().GetSafeNormal2D();
 	if (TargetPlayer)
 	{
@@ -71,7 +71,7 @@ void UPatternObj_Anubis01::EndPattern()
 {
 	if (!OwnerCharacter || !TargetPlayer)
 		return;
-	OwnerCharacter->GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	OwnerCharacter->UseControllerDesiredRotation();
 	bIsPatternActive = false;
 	if (TargetPlayer)
 	{

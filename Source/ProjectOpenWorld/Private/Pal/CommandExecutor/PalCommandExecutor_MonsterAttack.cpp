@@ -1,4 +1,4 @@
-﻿#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
 #include "Creature/Character/BaseMonster.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
@@ -29,6 +29,7 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 	{
 		return false;
 	}
+	UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: StartCommand"));
 	if (AttackComponent)
 	{
 		bStartedAttacking = true;

@@ -329,6 +329,7 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 	TArray<FProcMeshTangent> Tangents{};
 	FVector Vertex{};
 	FVector2D UV{};
+	bool bBossSection = inSectionIndexX == 0 && inSectionIndexY == 0;
 
 	// verices and uvs
 	for (int32 iVY = -1; iVY <= yVertexCount; iVY++)
@@ -339,6 +340,11 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 			Vertex.X = iVX * CellSize + Offset.X;
 			Vertex.Y = iVY * CellSize + Offset.Y;
 			Vertex.Z = GetHeight(Vertex.X, Vertex.Y);
+			if (bBossSection && iVY >=1 && iVY <= yVertexCount-2 &&
+				iVX >= 1 && iVX <= xVertexCount - 2)
+			{
+				Vertex.Z = 800.f;
+			}
 			Vertices.Add(Vertex);
 			//DrawDebugBox(GetWorld(), Vertex, FVector(10, 10, 10), FColor::Red, true, 1);
 

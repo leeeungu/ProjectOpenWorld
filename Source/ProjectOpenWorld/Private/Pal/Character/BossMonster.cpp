@@ -1,7 +1,31 @@
 #include "Pal/Character/BossMonster.h"
 #include "Pal/Component/PalPatternComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Pal/Widget/PalHpWidget.h"
 
-ABossMonster::ABossMonster()
+void ABossMonster::BeginPlay()
+{
+	Super::BeginPlay();
+	if (HpWidgetComponent)
+	{
+		HpWidgetClass = HpWidgetComponent->GetWidgetClass();
+		if (HpWidgetClass)
+		{
+			HpWidget = CreateWidget<UUserWidget>(GetWorld(), HpWidgetClass);
+			if (HpWidget)
+			{
+				HpWidget->AddToViewport();
+			}
+			if(UPalHpWidget* HpWidgetCast = Cast<UPalHpWidget>(HpWidget))
+			{
+				HpWidgetCast->InitializeHPWidget(this);
+			}
+		}
+		HpWidgetComponent->DestroyComponent();
+	}
+}
+
+ABossMonster::ABossMonster() : Super()
 {
 	PatternComponent = CreateDefaultSubobject<UPalPatternComponent>(TEXT("PatternComponent"));
 }

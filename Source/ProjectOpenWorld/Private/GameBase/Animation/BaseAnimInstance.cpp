@@ -4,37 +4,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameBase/MetaData/AMD_MontageChangeEvent.h"
 
-void UBaseAnimInstance::OnMontageStartedFunc(UAnimMontage* Montage)
-{
-	if (MontageQueue && MontageQueue.GetObject())
-	{
-		MontageQueue->MontageStartEvent(this, Montage);
-	}
-}
-
-void UBaseAnimInstance::OnMontageBlendingOutFunc(UAnimMontage* Montage, bool bInterrupted)
-{
-	if (MontageQueue && MontageQueue.GetObject())
-	{
-		//Montage->GetAssetUserDataOfClass<>();
-		if (LoopObject)
-		{
-			LoopObject->UpdateBlendOut();
-			if (!IsLoop())
-			{
-				LoopObject->EndLoop();
-				LoopObject = nullptr;
-			}
-		}
-		MontageQueue->MontageBlendingEvent(this, Montage, bInterrupted);
-	}
-}
-
 void UBaseAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-	OnMontageStarted.AddDynamic(this, &UBaseAnimInstance::OnMontageStartedFunc);
-	OnMontageBlendingOut.AddDynamic(this, &UBaseAnimInstance::OnMontageBlendingOutFunc);
+	OnMontageStarted.AddDynamic(this, &UBaseAnimInstance::OnMontageStartedEvent);
+	OnMontageBlendingOut.AddDynamic(this, &UBaseAnimInstance::OnMontageBlendingOutEvent);
 	if (ACharacter* Owner = Cast<ACharacter>(TryGetPawnOwner()))
 	{
 		MovementComponent = Owner->GetCharacterMovement();
@@ -62,61 +36,141 @@ void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
-void UBaseAnimInstance::SetMontageQueueInterface(TScriptInterface<IMontageQueueInterface> Interface)
+void UBaseAnimInstance::OnMontageStartedEvent(UAnimMontage* Montage)
 {
-	MontageQueue = Interface;
 }
 
-void UBaseAnimInstance::PlayMontageQueue()
+
+void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (MontageQueue && MontageQueue.GetObject())
+	if (!bIsPlayingMontage)
+		return;
+	bool bWasLooping = false;
+	if (LoopObject)
 	{
-		UAnimMontage* NextMontage = MontageQueue->GetMontage();
+		LoopObject->UpdateBlendOut();
+		bWasLooping = IsLoop();
+		if (!bWasLooping)
 		{
-			Montage_Play(NextMontage);
-			if (CurrentMontage != NextMontage)
+			LoopObject->EndLoop();
+			LoopObject = nullptr;
+		}
+	}
+	if (!bWasLooping)
+	{
+		CurrentMontageIndex++;
+	}
+	if (CanPlayMontage())
+	{
+		if (CurrentMontage && !bWasLooping)
+		{
+			const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
+			for (UAnimMetaData* Data : MetaData)
 			{
-				if (CurrentMontage)
+				if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
 				{
-					const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
-					for (UAnimMetaData* Data : MetaData)
-					{
-						if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
-						{
-							ChangeEvent->EndEvent(this);
-						}
-					}
+					ChangeEvent->EndEvent(this);
 				}
-				if (NextMontage)
-				{
-					const TArray<UAnimMetaData*>& MetaData = NextMontage->GetMetaData();
-					LoopObject = nullptr;
-					for (UAnimMetaData* Data : MetaData)
-					{
-						if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
-						{
-							ChangeEvent->StartEvent(this);
-						}
-						if (UAMDLoop* LoopData = Cast<UAMDLoop>(Data))
-						{
-							LoopObject = LoopData->CreateInstanceObject(GetWorld());
-							if (LoopObject)
-								LoopObject->Initialize(this, LoopData);
-						}
-					}
-				}
-				CurrentMontage = NextMontage;
+			}
+		}
+		PlayMontage();
+		return;
+	}
+	OnMontageEnd();
+}
+
+void UBaseAnimInstance::ChangeMontageArray(const TArray<UAnimMontage*>& NewMontageArray)
+{
+	if (bIsPlayingMontage)
+		return;
+	MontageArray = NewMontageArray;
+}
+
+bool UBaseAnimInstance::PlayMontageQueue()
+{
+	if (MontageArray.IsEmpty() || bIsPlayingMontage)
+		return false;
+	bIsPlayingMontage = true;
+	CurrentMontageIndex = 0;
+	CurrentMontage = nullptr;
+	LoopObject = nullptr;
+	PlayMontage();
+	return true;
+}
+
+void UBaseAnimInstance::StopMontageQueue()
+{
+	OnMontageEnd();
+	Montage_Stop(0.01f);
+}
+
+bool UBaseAnimInstance::CanPlayMontage()
+{
+	return MontageArray.IsValidIndex(CurrentMontageIndex);
+}
+
+void UBaseAnimInstance::OnMontageEnd()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd "), *GetName());
+	if (CurrentMontage)
+	{
+		const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
+		for (UAnimMetaData* Data : MetaData)
+		{
+			if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
+			{
+				ChangeEvent->EndEvent(this);
 			}
 		}
 	}
+	bIsPlayingMontage = false;
+	CurrentMontageIndex = 0;
+	CurrentMontage = nullptr;
+	LoopObject = nullptr;
+	if (OnMontageQueueEnd.IsBound())
+	{
+		OnMontageQueueEnd.Broadcast();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd Montage Queue End "), *GetName());
 }
 
-bool UBaseAnimInstance::MontageIsPlay(UAnimMontage* Montage)
+void UBaseAnimInstance::PlayMontage()
 {
-	return CurrentMontage == Montage;
+	UAnimMontage* NextMontage{};
+	if (MontageArray.IsValidIndex(CurrentMontageIndex))
+		NextMontage = MontageArray[CurrentMontageIndex];
+	if (NextMontage)
+	{
+		Montage_Play(NextMontage);
+		if (CurrentMontage != NextMontage)
+		{
+			CurrentMontage = NextMontage;
+			const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
+			LoopObject = nullptr;
+			for (UAnimMetaData* Data : MetaData)
+			{
+			//	UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: PlayerNextMontage Found MetaData : %s "), *GetOwner()->GetName(), *Data->GetName());
+				if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
+				{
+					ChangeEvent->StartEvent(this);
+				}
+				if (UAMDLoop* LoopData = Cast<UAMDLoop>(Data))
+				{
+					LoopObject = LoopData->CreateInstanceObject(GetWorld());
+					if (LoopObject)
+						LoopObject->Initialize(this, LoopData);
+				}
+			}
+		}
+	}
+	else
+	{
+		OnMontageEnd();
+		//UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: PlayerNextMontage NextMontage is nullptr "), *GetOwner()->GetName());
+	}
 }
 
-bool UBaseAnimInstance::IsLoop() const 
+bool UBaseAnimInstance::IsLoop() const
 {
 	if (!LoopObject)
 		return false;

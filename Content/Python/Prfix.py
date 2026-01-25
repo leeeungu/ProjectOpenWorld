@@ -3,11 +3,11 @@ import unreal
 # ==========================================================
 #  수정하고 싶은 폴더 경로 + 제거할 PREFIX 입력
 # ==========================================================
-
-ANIM_DIR = "/Game/Pal/Model/Monster/FlowerDinosaur/Animation"   # ← 원하는 경로
-REMOVE_PREFIX = "" # ← 지우고 싶던 prefix
+#/Script/Engine.AnimSequence'/Game/Player/Character/Animation/Frank_RPG_GreatSword_Combo01_All.Frank_RPG_GreatSword_Combo01_All'
+ANIM_DIR = "/Game/Player/Character/Animation"   # ← 원하는 경로
+REMOVE_PREFIX = "Player_Anim_SK_Player_Female_" # ← 지우고 싶던 prefix
 #FlowerDinosaur_Anim_Armature_AS_FlowerDinosaur_Carrying
-PREFIX  = "AS_"
+PREFIX  = ""
 
 # ==========================================================
 #  유틸

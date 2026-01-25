@@ -1,4 +1,4 @@
-Ôªø#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -33,7 +33,7 @@ public:
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PROJECTOPENWORLD_API UPalAttackComponent : public UActorComponent, public IMontageQueueInterface
+class PROJECTOPENWORLD_API UPalAttackComponent : public UActorComponent //, public IMontageQueueInterface
 {
 	GENERATED_BODY()
 protected:
@@ -49,7 +49,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
 	TObjectPtr<UDataTable> AttackDataAsset{};
-
 	int AttackIndex{};
 	UPROPERTY(VisibleAnywhere, Category = "PalAttackData")
 	bool bSetTargetData{};
@@ -101,8 +100,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool IsSetAttackData()const { return bSetAttackData; }
 
-	// IMontageQueueInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
-	UAnimMontage* GetMontage() const override;
-	void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) override;
-	void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) override;
+	//// IMontageQueueInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
+	//UAnimMontage* GetMontage() const override;
+	//void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) override;
+	//void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) override;
 };

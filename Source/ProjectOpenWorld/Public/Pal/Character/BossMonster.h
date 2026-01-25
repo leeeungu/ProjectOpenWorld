@@ -20,6 +20,12 @@ protected:
 	float StunDuration{};
 
 	float CurStunTime{};
+	TSubclassOf<UUserWidget> HpWidgetClass{};
+	TObjectPtr< UUserWidget> HpWidget{};
+
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	ABossMonster();
 

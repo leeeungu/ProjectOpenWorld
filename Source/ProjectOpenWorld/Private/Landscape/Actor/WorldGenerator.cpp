@@ -1,4 +1,4 @@
-﻿#include "Landscape/Actor/WorldGenerator.h"
+#include "Landscape/Actor/WorldGenerator.h"
 #include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateTerrainComponent.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"
@@ -22,7 +22,7 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	StaticObjectGenerator = CreateDefaultSubobject<UGemerateStaticObjectComponent>(TEXT("StaticObjectGenerator"));
 	SectionGenerator->BindGenerteComponent(StaticObjectGenerator);
 	StaticObjectGenerator->Initialize(RootComponent);
-
+	Tags.Add(FName("Ladnscape"));
 	////SectionGenerator->OnGenerateStart.AddDynamic(this, &AWorldGenerator::SetGeneratorMesh);
 	//SectionGenerator->OnUpdateSection.AddUniqueDynamic(TerrainGenerator, &UGenerateTerrainComponent::UpdateMesh);
 	//SectionGenerator->OnGenerateFinished.AddUniqueDynamic(TerrainGenerator, &UGenerateTerrainComponent::SetCurrentMesh);

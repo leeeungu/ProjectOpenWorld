@@ -1,4 +1,4 @@
-Ôªø#include "Player/Character/BasePlayer.h"
+#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -80,26 +80,14 @@ void ABasePlayer::Tick(float DeltaTime)
 
 void ABasePlayer::SetTopDownMode(bool bTopDown)
 {
-	TopDownMode = bTopDown;
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (PlayerController)
+	if (bTopDown)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
-		PlayerController->SetShowMouseCursor(TopDownMode);
-	
+		ChangePlayerState(EPlayerState::TopDown);
 	}
-	if (TopDownMode)
+	else
 	{
-		EnableInput(PlayerController);
-		BuildAssistComponent->EndBuilding();
-		//InteractionComponent->OnInteractionCompleted();
+		ChangePlayerState(EPlayerState::Travel);
 	}
-	UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
-	if (InteractionComp)
-	{
-		InteractionComp->SetCanAiming(!TopDownMode);
-	}
-	//UE_LOG(LogTemp, Log, TEXT("TopDownMode : %d"), TopDownMode);
 }
 
 void ABasePlayer::StartClimb()
@@ -148,6 +136,94 @@ bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 		return true;
 	}
 	return false;
+}
+
+void ABasePlayer::ChangePlayerState(EPlayerState NewState)
+{
+	if (NewState == CurrentPlayerState)
+		return;
+	EPlayerState PrevState = CurrentPlayerState;
+	switch (PrevState)
+	{
+	case EPlayerState::Travel:
+	{
+		break;
+	}
+	case EPlayerState::Climb:
+		break;
+	case EPlayerState::Battle:
+		break;
+	case EPlayerState::TopDown:
+	{
+		TopDownMode = false;
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		if (PlayerController)
+		{
+			PlayerController->SetShowMouseCursor(false);
+		}
+		UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
+		if (InteractionComp)
+		{
+			InteractionComp->SetCanAiming(true);
+		}
+		break;
+	}
+	case EPlayerState::EnumMax:
+		break;
+	default:
+		break;
+	}
+	CurrentPlayerState = NewState;
+	if (OnStateChangeDelegate.IsBound())
+	{
+		OnStateChangeDelegate.Broadcast(PrevState);
+	}
+	switch (CurrentPlayerState)
+	{
+	case EPlayerState::Travel:
+	{
+		UE_LOG(LogBasePlayer, Log, TEXT("Travel Mode"));
+		if (PlayerAnimationComponent->StartTravel())
+			PlayerMoveFunc = &ABasePlayer::MoveTravel;
+		UseOrientRotationToMovement();
+		break;
+	}
+	case EPlayerState::Climb:
+	{
+		if (PlayerAnimationComponent->StartClimb())
+			PlayerMoveFunc = &ABasePlayer::MoveClimb;
+		break;
+	}
+	case EPlayerState::Battle:
+		UE_LOG(LogBasePlayer, Log, TEXT("Battle Mode"));
+		UseControllerDesiredRotation();
+		break;
+	case EPlayerState::TopDown:
+	{
+		TopDownMode = true;
+		UseOrientRotationToMovement();
+		UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
+		if (InteractionComp)
+		{
+			InteractionComp->SetCanAiming(false);
+		}
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		if (PlayerController)
+		{
+			//UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
+			PlayerController->SetShowMouseCursor(true);
+
+		}
+		UE_LOG(LogBasePlayer, Log, TEXT("TopDown Mode"));
+		//EnableInput(PlayerController);
+		BuildAssistComponent->EndBuilding();
+		break;
+	}
+	case EPlayerState::EnumMax:
+		break;
+	default:
+		break;
+	}
 }
 
 float ABasePlayer::GetAttackValue_Implementation() const
@@ -282,9 +358,9 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::WASD:
 		break;
 	case EInputKeyType::SpaceBar:
-		if (TopDownMode)
+		if (CurrentPlayerState == EPlayerState::TopDown)
 			break;
-		if (!PlayerAnimationComponent || !PlayerAnimationComponent->StartClimb())
+		//if (!PlayerAnimationComponent || !PlayerAnimationComponent->StartClimb())
 		{
 			Jump();
 		}
@@ -302,13 +378,13 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::KeyC:
 		break;
 	case EInputKeyType::MouseR:
-		if (BuildAssistComponent && !TopDownMode && InteractionComponent && !InteractionComponent->IsInteracting())
+		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
 		}
 		break;
 	case EInputKeyType::MouseL:
-		if (BuildAssistComponent && !TopDownMode && InteractionComponent && !InteractionComponent->IsInteracting())
+		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
 			BuildAssistComponent->EndBuilding();
@@ -329,7 +405,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	switch (KeyType)
 	{
 	case EInputKeyType::WASD:
-		if (PlayerMoveFunc && !TopDownMode)
+		if (PlayerMoveFunc && CurrentPlayerState != EPlayerState::TopDown)
 		{
 			(this->*PlayerMoveFunc)(Value);
 		}
@@ -337,7 +413,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::SpaceBar:
 		break;
 	case EInputKeyType::MouseAxis:
-		if (!TopDownMode)
+		if (CurrentPlayerState != EPlayerState::TopDown)
 		{
 			FVector2D LookAxisVector = Value.Get<FVector2D>();
 			if (Controller != nullptr)
@@ -365,14 +441,14 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseR:
 		break;
 	case EInputKeyType::MouseL:
-		if (TopDownMode)
+		if (CurrentPlayerState == EPlayerState::TopDown)
 		{
-			// ÌôîÎ©¥ÏóêÏÑú ÏßÄÎ©¥ÏúºÎ°ú ÏúÑÏπòÎ•º pick ÌïòÍ≥† Ïù¥Îèô Î∞©Ìñ• Í≥ÑÏÇ∞
+			// »≠∏Èø°º≠ ¡ˆ∏È¿∏∑Œ ¿ßƒ°∏¶ pick «œ∞Ì ¿Ãµø πÊ«‚ ∞ËªÍ
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
 			{
 				float MouseX = 0.f, MouseY = 0.f;
-				// ÎßàÏö∞Ïä§ Ï¢åÌëú ÏñªÍ∏∞
+				// ∏∂øÏΩ∫ ¡¬«• æÚ±‚
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
@@ -401,7 +477,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 							AddMovementInput(ForwardDirection, 6);
 
 #if ENABLE_DRAW_DEBUG
-							// ÎîîÎ≤ÑÍ∑∏ ÏãúÍ∞ÅÌôî (ÏóêÎîîÌÑ∞/Í∞úÎ∞úÏö©)
+							// µπˆ±◊ Ω√∞¢»≠ (ø°µ≈Õ/∞≥πﬂøÎ)
 							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif
@@ -422,7 +498,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	}
 		break;
 	case EInputKeyType::KeyB:
-		if (BuildingWidget && !TopDownMode)
+		if (BuildingWidget && CurrentPlayerState != EPlayerState::TopDown)
 		{
 			BuildingWidget->ToggleWidget();
 		}
@@ -446,7 +522,10 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 		}
 		break;
 	case EInputKeyType::SpaceBar:
-		StopJumping();
+		if (CurrentPlayerState != EPlayerState::TopDown)
+		{
+			StopJumping();
+		}
 		break;
 	case EInputKeyType::MouseAxis:
 		break;
