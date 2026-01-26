@@ -1,8 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
-#include "GameBase/Interface/AttackInterface.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Interface/PalCommandInterface.h"
 #include "Resource/Interface/ResourceInterface.h"
@@ -18,7 +17,7 @@ class IGenericTeamAgentInterface;
 class UInteractionComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, public IAttackInterface, 
+class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, 
 	public IPalCommandInterface,
 	public IResourceInterface, public IArchitectureInterface
 {

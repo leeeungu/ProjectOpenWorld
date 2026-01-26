@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -6,7 +6,6 @@
 #include "Building/Interface/ArchitectureInterface.h"
 #include "Resource/Interface/ResourceInterface.h"
 #include "Player/Interface/PlayerInputInterface.h"
-#include "GameBase/Interface/AttackInterface.h"
 #include "BasePlayer.generated.h"
 
 class USpringArmComponent;
@@ -19,6 +18,7 @@ class UBuildingAssistComponent;
 class UPlayerAnimationComponent;
 class UBuildingModeWidget;
 class UNavigationInvokerComponent;
+class UPlayerAttackComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -50,71 +50,41 @@ enum class EStatusType : uint8
 	EnumMax UMETA(Hidden)
 };
 
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChange, EPlayerState , PrePlayerState);
 
 UCLASS()
-class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface, public IAttackInterface
+class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface
 	, public IPlayerInputInterface, public IPlayerInputSettingInterface
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<USpringArmComponent> CameraBoom{};
 
 	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr< UCameraComponent> FollowCamera{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building)
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr < UPlayerAnimationComponent>	PlayerAnimationComponent{};
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<UNavigationInvokerComponent> NavigationInvokerComp{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr < UInputMappingContext> DefaultMappingContext{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr < UDataTable> InputDataTable{};
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction{};
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction{};
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* InteractionAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* EscAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* KeyCAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MouseRAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MouseLAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MouseWheelAction{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* BuildModeAction{};
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
 	TObjectPtr<UInteractionComponent> InteractionComponent{};
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
 	TArray<float> StatusArray{};
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
 	UAnimMontage* ClimbMontage{};
 
 	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
@@ -123,8 +93,10 @@ protected:
 	UPROPERTY()
 	TObjectPtr< UBuildingModeWidget> BuildingWidget{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AttackMontage")
+	TObjectPtr< UPlayerAttackComponent> PlayerAttackComponent{};
+	
 	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
-
 	//bool TopDownMode{};
 public:
 
@@ -134,6 +106,7 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PlayerState")
 	FOnPlayerStateChange OnStateChangeDelegate{};
 	bool TopDownMode{};
+	bool KnockBackAttack{};
 public:
 	ABasePlayer();
 
@@ -166,7 +139,10 @@ public:
 
 	virtual void SetInputInterface(EInputKeyType KeyType, TScriptInterface<IPlayerInputInterface> InputInterface) override;
 	virtual void ResetDeaflut(EInputKeyType KeyType) override;
+
 protected:
+	UFUNCTION()
+	void KnockBackReset();
 	///** Called for movement input */
 	void MoveClimb(const FInputActionValue& Value);
 	void MoveTravel(const FInputActionValue& Value);
@@ -175,6 +151,7 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
 public:
+	FORCEINLINE UPlayerAttackComponent* const GetPlayerAttackComponent() const { return PlayerAttackComponent; }
 	FORCEINLINE EPlayerState GetPlayerState() const { return CurrentPlayerState; }  //
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE  USpringArmComponent* const  GetCameraBoom() const { return CameraBoom; }
@@ -203,7 +180,8 @@ public:
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 	virtual bool IsDead_Implementation() const override;
-
+	virtual bool KnockBackAttack_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+	virtual bool HitReaction_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 
 	virtual float GetArchitectSpeed_Implementation() const override;
 	virtual void StartArchitect_Implementation(ABaseBuilding* Building) override;

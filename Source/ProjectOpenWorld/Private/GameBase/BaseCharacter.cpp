@@ -1,4 +1,4 @@
-#include "GameBase/BaseCharacter.h"
+﻿#include "GameBase/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimMetaData.h"
 #include "GameBase/Component/CharacterMontageComponent.h"
@@ -41,4 +41,10 @@ void ABaseCharacter::UseOrientRotationToMovement()
 {
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+bool ABaseCharacter::LaunchAttack_Implementation(const TScriptInterface<IAttackInterface>& Other, FVector LaunchVelocity, bool bXYOverride, bool bZOverride)
+{
+	LaunchCharacter(LaunchVelocity, bXYOverride, bZOverride);
+	return true;
 }

@@ -1,4 +1,4 @@
-#include "Creature/Character/BaseCreature.h"
+﻿#include "Creature/Character/BaseCreature.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalAllyCommandComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -45,6 +45,11 @@ bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 
 bool ABaseCreature::CommandPause_Implementation(bool bPause)
 {
+	if (CommandComponent)
+	{
+		CommandComponent->FinishCommand();
+		return true;
+	}
 	return false;
 }
 

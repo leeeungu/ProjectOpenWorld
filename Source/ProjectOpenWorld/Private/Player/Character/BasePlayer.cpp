@@ -1,4 +1,4 @@
-#include "Player/Character/BasePlayer.h"
+Ôªø#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -17,6 +17,7 @@
 #include "Building/Widget/BuildingModeWidget.h"
 #include "GenericTeamAgentInterface.h"
 #include "NavigationInvokerComponent.h"
+#include "Player/Component/PlayerAttackComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -71,6 +72,14 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	}
 
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
+
+	PlayerAttackComponent = CreateDefaultSubobject<UPlayerAttackComponent>(TEXT("PlayerAttackComponent"));
+	///Script/Engine.DataTable'/Game/Player/Input/DataTable/DT_PlayerInput.DT_PlayerInput'
+	ConstructorHelpers::FObjectFinder<UDataTable> InputDataTableObj(TEXT("/Game/Player/Input/DataTable/DT_PlayerInput.DT_PlayerInput"));
+	if (InputDataTableObj.Succeeded())
+	{
+		InputDataTable = InputDataTableObj.Object;
+	}
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -267,27 +276,40 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 	if (Hp <= 0.f)
 	{
 		Hp = 0.0f;
-		/*if (GetMesh())
-		{
-			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-			GetMesh()->SetSimulatePhysics(true);
-			if (pOther)
-			{
-				GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
-			}
-		}
-		GetMesh()->bPauseAnims = true;
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		FTimerHandle handle{};
+		PlayerAttackComponent->StopAttack();
+		PlayerAttackComponent->Attack(EPlayerAttackType::Dead);
+		DisableInput(Cast<APlayerController>(GetController()));
 		bDead = true;
-		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);*/
 	}
 	return true;
 }
 
 bool ABasePlayer::IsDead_Implementation() const
 {
-	return false;
+	return bDead;
+}
+
+bool ABasePlayer::KnockBackAttack_Implementation(const TScriptInterface<IAttackInterface>& Other)
+{
+	if (!KnockBackAttack && !bDead)
+	{
+		PlayerAttackComponent->StopAttack();
+		PlayerAttackComponent->OnPlayerAttackEnd.AddUniqueDynamic(this, &ABasePlayer::KnockBackReset);
+		PlayerAttackComponent->Attack(EPlayerAttackType::KnockBack);
+		KnockBackAttack = true;
+	}
+	return KnockBackAttack;
+}
+
+bool ABasePlayer::HitReaction_Implementation(const TScriptInterface<IAttackInterface>& Other)
+{
+	if (PlayerAttackComponent->IsHitted() || bDead)
+		return false;
+	PlayerAttackComponent->StopAttack();
+	EPlayerAttackType Hits[3] = { EPlayerAttackType::Hit01, EPlayerAttackType::Hit02, EPlayerAttackType::Hit03 };
+	int32 RandIndex = FMath::Rand32() % 1;
+	PlayerAttackComponent->Attack(Hits[RandIndex]);
+	return true;
 }
 
 float ABasePlayer::GetArchitectSpeed_Implementation() const
@@ -361,6 +383,7 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		if (CurrentPlayerState == EPlayerState::TopDown)
 			break;
 		//if (!PlayerAnimationComponent || !PlayerAnimationComponent->StartClimb())
+		if(!PlayerAttackComponent->IsAttacking())
 		{
 			Jump();
 		}
@@ -443,12 +466,12 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState == EPlayerState::TopDown)
 		{
-			// »≠∏Èø°º≠ ¡ˆ∏È¿∏∑Œ ¿ßƒ°∏¶ pick «œ∞Ì ¿Ãµø πÊ«‚ ∞ËªÍ
+			// ÌôîÎ©¥ÏóêÏÑú ÏßÄÎ©¥ÏúºÎ°ú ÏúÑÏπòÎ•º pick ÌïòÍ≥† Ïù¥Îèô Î∞©Ìñ• Í≥ÑÏÇ∞
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
 			{
 				float MouseX = 0.f, MouseY = 0.f;
-				// ∏∂øÏΩ∫ ¡¬«• æÚ±‚
+				// ÎßàÏö∞Ïä§ Ï¢åÌëú ÏñªÍ∏∞
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
@@ -477,7 +500,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 							AddMovementInput(ForwardDirection, 6);
 
 #if ENABLE_DRAW_DEBUG
-							// µπˆ±◊ Ω√∞¢»≠ (ø°µ≈Õ/∞≥πﬂøÎ)
+							// ÎîîÎ≤ÑÍ∑∏ ÏãúÍ∞ÅÌôî (ÏóêÎîîÌÑ∞/Í∞úÎ∞úÏö©)
 							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif
@@ -555,6 +578,23 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 		break;
 	case EInputKeyType::KeyB:
 		break;
+	case EInputKeyType::Key1:
+	case EInputKeyType::Key2:
+	case EInputKeyType::Key3:
+	{
+		if (PlayerAttackComponent)
+		{
+			int32 SkillIndex = (int32)KeyType - (int32)EInputKeyType::Key1 + (int32)EPlayerAttackType::Skill01;
+			PlayerAttackComponent->Attack((EPlayerAttackType)(SkillIndex));
+		}
+		break;
+	}
+	case EInputKeyType::KeyE:
+	{
+
+		break;
+	}
+	break;
 	default:
 		break;
 	}
@@ -571,6 +611,12 @@ void ABasePlayer::ResetDeaflut(EInputKeyType KeyType)
 		InputInterface = this;
 }
 
+void ABasePlayer::KnockBackReset()
+{
+	KnockBackAttack = false;
+	PlayerAttackComponent->OnPlayerAttackEnd.RemoveDynamic(this, &ABasePlayer::RetAttackValue);
+}
+
 void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
@@ -584,30 +630,21 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		UInputAction* ArrActions[] = 
-		{ 
-			MoveAction, LookAction, JumpAction, 
-			InteractionAction, EscAction, KeyCAction, 
-			MouseRAction, MouseLAction, MouseWheelAction,
-			BuildModeAction
-		};
-		EInputKeyType ArrKeyTypes[] = 
-		{ 
-			EInputKeyType::WASD, EInputKeyType::MouseAxis, EInputKeyType::SpaceBar,
-			EInputKeyType::KeyF, EInputKeyType::Esc, EInputKeyType::KeyC,
-			EInputKeyType::MouseR, EInputKeyType::MouseL, EInputKeyType::MouseWheel,
-			EInputKeyType::KeyB
-		};
-		int32 ArrCount = 10;
+		TArray<FPlayerInputData*> ArrActions{};
+		if (InputDataTable)
+		{
+			InputDataTable->GetAllRows(TEXT(""), ArrActions);
+		}
+		int32 ArrCount = ArrActions.Num();;
 		for (int32 i = 0; i < ArrCount; ++i)
 		{
-			if (ArrActions[i])
+			if (FPlayerInputData*  InputActionData =  ArrActions[i])
 			{
-				EnhancedInputComponent->BindAction(ArrActions[i], ETriggerEvent::Started, this, &ABasePlayer::OnStartEvent, ArrKeyTypes[i]);
-				EnhancedInputComponent->BindAction(ArrActions[i], ETriggerEvent::Triggered, this, &ABasePlayer::OnTriggerEvent, ArrKeyTypes[i]);
-				EnhancedInputComponent->BindAction(ArrActions[i], ETriggerEvent::Completed, this, &ABasePlayer::OnCompleteEvent, ArrKeyTypes[i]);
+				EnhancedInputComponent->BindAction(InputActionData->InputAction, ETriggerEvent::Started, this, &ABasePlayer::OnStartEvent, InputActionData->InputKeyType);
+				EnhancedInputComponent->BindAction(InputActionData->InputAction, ETriggerEvent::Triggered, this, &ABasePlayer::OnTriggerEvent, InputActionData->InputKeyType);
+				EnhancedInputComponent->BindAction(InputActionData->InputAction, ETriggerEvent::Completed, this, &ABasePlayer::OnCompleteEvent, InputActionData->InputKeyType);
+				ResetDeaflut(InputActionData->InputKeyType);
 			}
-			ResetDeaflut(ArrKeyTypes[i]);
 		}
 	}
 	else

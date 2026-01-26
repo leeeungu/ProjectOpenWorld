@@ -1,8 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
-#include "GameBase/Interface/AttackInterface.h"
 #include "Pal/Interface/CommanderManageable.h"
 #include "Pal/Interface/PalCommandInterface.h"
 #include "BaseMonster.generated.h"
@@ -14,7 +13,7 @@ struct FPalMonsterLevelData;
 class UWidgetComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IAttackInterface, public IPalCommandInterface, public ICommanderManageable
+class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IPalCommandInterface, public ICommanderManageable
 {
 	GENERATED_BODY()
 protected:

@@ -1,4 +1,4 @@
-#include "GameBase/Notify/AnimNotifyState_MoveDirection.h"
+﻿#include "GameBase/Notify/AnimNotifyState_MoveDirection.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
 
@@ -29,10 +29,18 @@ void UAnimNotifyState_MoveDirection::NotifyTick(USkeletalMeshComponent* MeshComp
 		{
 			Direction = MoveDirection.GetSafeNormal2D();
 		}
+	
 		if (!bIsWorldSpace)
 		{
 			Direction = MeshComp->GetOwner()->GetActorRotation().RotateVector(Direction);
 		}
+#if WITH_EDITOR	
+		if (!MeshComp->GetWorld()->HasBegunPlay())
+		{
+			Direction = FRotator(0,90,0).Quaternion() * MoveDirection.GetSafeNormal();
+		}
+#endif
+		
 		FVector DeltaLocation = Direction * MoveSpeed * FrameDeltaTime;
 		MeshComp->GetOwner()->AddActorWorldOffset(DeltaLocation, false);
 	}

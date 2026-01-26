@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -102,3 +102,17 @@ protected:
 	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
 	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const override;
 };
+
+UCLASS()
+class PROJECTOPENWORLD_API UAttackObject_HitReact : public UAttackObject
+{
+	GENERATED_BODY()
+protected:
+	
+	UPROPERTY(EditInstanceOnly, Category = "AttackEvent")
+	FDebugData DebugData{};
+
+	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
+	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const override {};
+};
+

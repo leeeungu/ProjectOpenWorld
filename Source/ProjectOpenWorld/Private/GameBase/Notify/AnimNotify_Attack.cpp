@@ -1,4 +1,4 @@
-#include "GameBase/Notify/AnimNotify_Attack.h"
+﻿#include "GameBase/Notify/AnimNotify_Attack.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h"
@@ -117,11 +117,14 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		}
 	}
 #if WITH_EDITOR	
-	for (UAttackObject* AttackObject : AttackEventObject)
+	if (!MeshComp->GetWorld()->HasBegunPlay())
 	{
-		if (AttackObject)
+		for (UAttackObject* AttackObject : AttackEventObject)
 		{
-			AttackObject->ExecuteDebugAttackEvent(MeshComp, NewLocation, AttackRadius);
+			if (AttackObject)
+			{
+				AttackObject->ExecuteDebugAttackEvent(MeshComp, NewLocation, AttackRadius);
+			}
 		}
 	}
 #endif

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
@@ -19,7 +19,26 @@ enum class EInputKeyType : uint8
 	MouseL      UMETA(DisplayName = "MouseL"),
 	MouseWheel  UMETA(DisplayName = "MouseWheel"),
 	KeyB   UMETA(DisplayName = "KeyB"),
+	Key1	,
+	Key2	,
+	Key3	,
+	KeyE	,
 };
+
+class UInputAction;
+
+USTRUCT(BlueprintType)
+struct FPlayerInputData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerInputData")
+	TObjectPtr<UInputAction> InputAction{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerInputData")
+	EInputKeyType InputKeyType{ EInputKeyType::None };
+
+};
+
 
 UINTERFACE(MinimalAPI)
 class UPlayerInputInterface : public UInterface

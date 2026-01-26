@@ -1,4 +1,4 @@
-#include "GameBase/Object/AttackObject.h"
+Ôªø#include "GameBase/Object/AttackObject.h"
 #include "GameFramework/Character.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -11,6 +11,15 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 	AActor* AttackTarget = HitData.GetActor();
 	if (AttackTarget)
 	{
+		ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+		if (!CauserCharacter)
+			return;
+		TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
+		TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+		if (OtherAttack && IAttackInterface::Execute_KnockBackAttack(HitData.GetActor(), AttackInterface))
+		{
+			return;
+		}
 		FVector Direction = KnockBackDirection;
 		Direction.Normalize();
 		if (!bIsWorldDirection && CauserMesh)
@@ -19,14 +28,8 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 		}
 		FVector LaunchVelocity = Direction * KnockBackForce;
 		UPrimitiveComponent* TargetRootComponent = Cast<UPrimitiveComponent>(AttackTarget->GetRootComponent());
-		if (TargetRootComponent && TargetRootComponent->IsSimulatingPhysics())
-		{
-			TargetRootComponent->AddImpulse(LaunchVelocity, NAME_None, true);
-		}
-		else if (ACharacter* TargetCharacter = Cast<ACharacter>(AttackTarget))
-		{
-			TargetCharacter->LaunchCharacter(LaunchVelocity, true, true);
-		}
+
+		IAttackInterface::Execute_LaunchAttack(HitData.GetActor(), AttackInterface, LaunchVelocity, true,  true);
 	}
 }
 
@@ -69,18 +72,18 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
-		// ∞≈∏Æ ∞ËªÍ
+		// Í±∞Î¶¨ Í≥ÑÏÇ∞
 		float Distance = FVector::Dist(TargetCharacter->GetActorLocation(), NewLocation);
 
 		if (AttackRadius > 0)
 		{
-			// ∞≈∏Æ ∫Ò¿≤ ∞ËªÍ (Distance / AttackRadius¿« ¡¶∞ˆ)
+			// Í±∞Î¶¨ ÎπÑÏú® Í≥ÑÏÇ∞ (Distance / AttackRadiusÏùò Ï†úÍ≥±)
 			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
 
-			// ∞≈∏Æ∫∞ »˚ ∞ËªÍ (∫Ò¿≤¿ª π›øµ)
+			// Í±∞Î¶¨Î≥Ñ Ìûò Í≥ÑÏÇ∞ (ÎπÑÏú®ÏùÑ Î∞òÏòÅ)
 			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 
-			// »˚ ∫§≈Õ ∞ËªÍ
+			// Ìûò Î≤°ÌÑ∞ Í≥ÑÏÇ∞
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
 			//LaunchDirection.X *= 3;
 			//LaunchDirection.Y *= 3;
@@ -88,8 +91,13 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
 			UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Ratio: %f, ForceMultiplier: %f, ImpulseForce: %s"), Distance, Ratio, ForceMultiplier, *ImpulseForce.ToString());
-			// »˚ ¿˚øÎ
-			TargetCharacter->LaunchCharacter(ImpulseForce, true, true);
+			// Ìûò Ï†ÅÏö©
+			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
+			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+			if (OtherAttack)
+			{
+				IAttackInterface::Execute_LaunchAttack(HitData.GetActor(), AttackInterface, ImpulseForce, true, true);
+			}
 		}
 		else
 		{
@@ -129,4 +137,17 @@ void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, 
 	if (!CauserMesh || !CauserMesh->GetWorld())
 		return;
 	DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, HitRadius, 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+}
+
+void UAttackObject_HitReact::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+{
+	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+	if (!CauserCharacter)
+		return;
+	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
+	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+	if (OtherAttack)
+	{
+		IAttackInterface::Execute_HitReaction(HitData.GetActor(), AttackInterface);
+	}
 }

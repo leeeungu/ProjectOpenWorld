@@ -1,11 +1,10 @@
-#include "Pal/Widget/PalHpWidget_MonsterDefault.h"
+﻿#include "Pal/Widget/PalHpWidget_MonsterDefault.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Creature/Character/BaseMonster.h"
 
 void UPalHpWidget_MonsterDefault::OnDamageEvent(AActor* Other, float Damage)
 {
-	UE_LOG(LogTemp, Log, TEXT("UPalHpWidget_MonsterDefault::OnDamageEvent :: Damage Received: %f"), Damage);
 	if (OwnerMonster->GetMaxHp() > 0)
 	{
 		HpProgressBar->SetPercent(OwnerMonster->GetCurrentHp() / OwnerMonster->GetMaxHp());
