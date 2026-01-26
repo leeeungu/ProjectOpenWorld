@@ -27,7 +27,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
 	FVector SocketOffset{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
+	FVector EndOffset{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
 	float AttackRadius = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
+	bool bSweepAttack = false;
 
 	//UPROPERTY(Category = Section, Instanced, EditAnywhere)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Instanced)

@@ -1,4 +1,4 @@
-ï»¿#include "Player/Character/BasePlayer.h"
+#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -18,6 +18,7 @@
 #include "GenericTeamAgentInterface.h"
 #include "NavigationInvokerComponent.h"
 #include "Player/Component/PlayerAttackComponent.h"
+#include "Blueprint/UserWidget.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -80,6 +81,13 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	{
 		InputDataTable = InputDataTableObj.Object;
 	}
+	///Script/UMGEditor.WidgetBlueprint'/Game/Widget/WBP_GameOver.WBP_GameOver'
+	ConstructorHelpers::FClassFinder<UUserWidget> OverWidgetClass(TEXT("/Game/Widget/WBP_GameOver.WBP_GameOver_C"));
+	if (OverWidgetClass.Succeeded())
+	{
+		GameOverWidgetClass = OverWidgetClass.Class;
+		
+	}
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -95,7 +103,7 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 	}
 	else
 	{
-		ChangePlayerState(EPlayerState::Travel);
+		ChangePlayerState(EPlayerState::Battle);
 	}
 }
 
@@ -127,6 +135,11 @@ void ABasePlayer::UpdateWeight(float InventoryWeight)
 void ABasePlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		GameOverWidget = CreateWidget<UUserWidget>(PlayerController, GameOverWidgetClass);
+	}
 }
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
@@ -280,6 +293,12 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 		PlayerAttackComponent->Attack(EPlayerAttackType::Dead);
 		DisableInput(Cast<APlayerController>(GetController()));
 		bDead = true;
+		if(GameOverWidget)
+			GameOverWidget->AddToViewport();
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameOverWidget is null"));
+		}
 	}
 	return true;
 }
@@ -466,12 +485,12 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState == EPlayerState::TopDown)
 		{
-			// í™”ë©´ì—ì„œ ì§€ë©´ìœ¼ë¡œ ìœ„ì¹˜ë¥¼ pick í•˜ê³  ì´ë™ ë°©í–¥ ê³„ì‚°
+			// È­¸é¿¡¼­ Áö¸éÀ¸·Î À§Ä¡¸¦ pick ÇÏ°í ÀÌµ¿ ¹æÇâ °è»ê
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
 			{
 				float MouseX = 0.f, MouseY = 0.f;
-				// ë§ˆìš°ìŠ¤ ì¢Œí‘œ ì–»ê¸°
+				// ¸¶¿ì½º ÁÂÇ¥ ¾ò±â
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
@@ -500,7 +519,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 							AddMovementInput(ForwardDirection, 6);
 
 #if ENABLE_DRAW_DEBUG
-							// ë””ë²„ê·¸ ì‹œê°í™” (ì—ë””í„°/ê°œë°œìš©)
+							// µğ¹ö±× ½Ã°¢È­ (¿¡µğÅÍ/°³¹ß¿ë)
 							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif
@@ -609,6 +628,19 @@ void ABasePlayer::ResetDeaflut(EInputKeyType KeyType)
 {
 	TScriptInterface<IPlayerInputInterface>& InputInterface = InputMapping.FindOrAdd(KeyType);
 		InputInterface = this;
+}
+
+void ABasePlayer::Restart()
+{
+	Super::Restart();
+	if (bDead)
+	{
+		bDead = false;
+		SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
+		if (PlayerAttackComponent)
+			PlayerAttackComponent->StopAttack();
+		EnableInput(Cast<APlayerController>(GetController()));
+	}
 }
 
 void ABasePlayer::KnockBackReset()

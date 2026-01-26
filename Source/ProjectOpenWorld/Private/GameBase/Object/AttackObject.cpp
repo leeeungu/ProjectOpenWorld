@@ -1,4 +1,4 @@
-Ôªø#include "GameBase/Object/AttackObject.h"
+#include "GameBase/Object/AttackObject.h"
 #include "GameFramework/Character.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -72,18 +72,18 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
-		// Í±∞Î¶¨ Í≥ÑÏÇ∞
+		// ∞≈∏Æ ∞ËªÍ
 		float Distance = FVector::Dist(TargetCharacter->GetActorLocation(), NewLocation);
 
 		if (AttackRadius > 0)
 		{
-			// Í±∞Î¶¨ ÎπÑÏú® Í≥ÑÏÇ∞ (Distance / AttackRadiusÏùò Ï†úÍ≥±)
+			// ∞≈∏Æ ∫Ò¿≤ ∞ËªÍ (Distance / AttackRadius¿« ¡¶∞ˆ)
 			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
 
-			// Í±∞Î¶¨Î≥Ñ Ìûò Í≥ÑÏÇ∞ (ÎπÑÏú®ÏùÑ Î∞òÏòÅ)
+			// ∞≈∏Æ∫∞ »˚ ∞ËªÍ (∫Ò¿≤¿ª π›øµ)
 			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 
-			// Ìûò Î≤°ÌÑ∞ Í≥ÑÏÇ∞
+			// »˚ ∫§≈Õ ∞ËªÍ
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
 			//LaunchDirection.X *= 3;
 			//LaunchDirection.Y *= 3;
@@ -91,7 +91,7 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
 			UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Ratio: %f, ForceMultiplier: %f, ImpulseForce: %s"), Distance, Ratio, ForceMultiplier, *ImpulseForce.ToString());
-			// Ìûò Ï†ÅÏö©
+			// »˚ ¿˚øÎ
 			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
 			if (OtherAttack)
@@ -134,9 +134,9 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 
 void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
 {
-	if (!CauserMesh || !CauserMesh->GetWorld())
-		return;
-	DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, HitRadius, 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+	//if (!CauserMesh || !CauserMesh->GetWorld())
+	//	return;
+	//DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, HitRadius, 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
 }
 
 void UAttackObject_HitReact::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const

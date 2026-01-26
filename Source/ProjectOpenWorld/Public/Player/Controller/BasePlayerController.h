@@ -16,6 +16,7 @@ protected:
 	TObjectPtr<UInventoryComponent> InventoryComponent{};
 public:
 	ABasePlayerController();
+	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }

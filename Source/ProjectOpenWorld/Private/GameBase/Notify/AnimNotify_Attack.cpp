@@ -1,4 +1,4 @@
-﻿#include "GameBase/Notify/AnimNotify_Attack.h"
+#include "GameBase/Notify/AnimNotify_Attack.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h"
@@ -75,6 +75,9 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 
 	FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 	UWorld* pWorld = MeshComp->GetWorld();
+	FVector EndLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * EndOffset;
+	if (!bSweepAttack)
+		EndLocation = NewLocation;
 	if (MeshComp->GetOwner() && pWorld)
 	{
 		APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
@@ -84,7 +87,7 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		FCollisionQueryParams Param{};
 		Param.AddIgnoredActor(MeshComp->GetOwner());
 		FCollisionResponseParams ResponseParam{};
-		if (pWorld->SweepMultiByChannel(arResult, NewLocation, NewLocation, FQuat::Identity, ECollisionChannel::ECC_Pawn,
+		if (pWorld->SweepMultiByChannel(arResult, NewLocation, EndLocation, FQuat::Identity, ECollisionChannel::ECC_Pawn,
 			Collision, Param))
 		{
 			TSet< APawn*> Attacked{};
@@ -94,12 +97,6 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 				APawn* Pawn = Cast< APawn>(Hit.GetActor());
 				if (!Pawn || Pawn == OwnerPawn)
 					continue;
-#if WITH_EDITOR	
-				//UE_LOG(LogTemp, Warning, TEXT("Hit Pawn : %s"), *Pawn->GetName());
-				//UE_LOG(LogTemp, Warning, TEXT("Owner Pawn : %s"), *OwnerPawn->GetName());
-				//UE_LOG(LogTemp, Warning, TEXT("%d %d"), (uint8)Cast<IGenericTeamAgentInterface>(Pawn->GetController())->GetGenericTeamId(),
-				// (uint8)Cast<IGenericTeamAgentInterface>(OwnerPawn->GetController())->GetGenericTeamId());
-#endif
 				if (FGenericTeamId::GetAttitude(Pawn->GetController(), OwnerPawn->GetController()) != ETeamAttitude::Hostile)
 					continue;
 				Attacked.FindOrAdd(Pawn, &bReadldyIn);

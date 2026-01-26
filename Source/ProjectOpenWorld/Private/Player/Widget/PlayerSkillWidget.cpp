@@ -1,7 +1,8 @@
-ï»¿#include "Player/Widget/PlayerSkillWidget.h"
+#include "Player/Widget/PlayerSkillWidget.h"
 #include "Player/Character/BasePlayer.h"
 #include "Player/Component/PlayerAttackComponent.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "Animation/WidgetAnimation.h"
 
 float UPlayerSkillWidget::GetAnimationPlayRate() const
@@ -15,6 +16,24 @@ float UPlayerSkillWidget::GetAnimationPlayRate() const
 		}
 	}
 	return 0.0f;
+}
+
+void UPlayerSkillWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	if (SkillImage && SkillImageTexture)
+	{
+		SkillImage->SetBrushFromTexture(SkillImageTexture);
+	}
+}
+
+void UPlayerSkillWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	if (SkillImage && SkillImageTexture)
+	{
+		SkillImage->SetBrushFromTexture(SkillImageTexture);
+	}
 }
 
 void UPlayerSkillWidget::NativeOnInitialized()
@@ -53,7 +72,7 @@ void UPlayerSkillWidget::OnMontagePlay(EPlayerAttackType InAttackType)
 	if (InAttackType == SkillType && CoolDownAnimation && PlayRate > 0.f)
 	{
 		RemainTime = PlayerAttackComponent->GetMontageCoolTime(SkillType);
-		// ì†Œìˆ˜ ì²«ì§¸ê¹Œì§€
+		// ¼Ò¼ö Ã¹Â°±îÁö
 		if (CoolTimeTextBlock)
 		{
 			CoolTimeTextBlock->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

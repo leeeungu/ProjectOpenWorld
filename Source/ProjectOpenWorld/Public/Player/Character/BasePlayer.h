@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -97,6 +97,10 @@ protected:
 	TObjectPtr< UPlayerAttackComponent> PlayerAttackComponent{};
 	
 	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
+
+	TSubclassOf<UUserWidget> GameOverWidgetClass{};
+	UPROPERTY()
+	TObjectPtr<UUserWidget> GameOverWidget{};
 	//bool TopDownMode{};
 public:
 
@@ -136,10 +140,10 @@ public:
 	virtual void StartEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
 	virtual void TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
 	virtual void CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
-
 	virtual void SetInputInterface(EInputKeyType KeyType, TScriptInterface<IPlayerInputInterface> InputInterface) override;
 	virtual void ResetDeaflut(EInputKeyType KeyType) override;
 
+	virtual void Restart() override;
 protected:
 	UFUNCTION()
 	void KnockBackReset();
