@@ -1,4 +1,4 @@
-#include "GameBase/Animation/BaseAnimInstance.h"
+﻿#include "GameBase/Animation/BaseAnimInstance.h"
 #include "GameBase/MetaData/AMDLoop.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -111,7 +111,7 @@ bool UBaseAnimInstance::CanPlayMontage()
 
 void UBaseAnimInstance::OnMontageEnd()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd "), *GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd "), *GetName());
 	if (CurrentMontage)
 	{
 		const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();

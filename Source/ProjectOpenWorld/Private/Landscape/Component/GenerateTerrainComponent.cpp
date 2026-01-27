@@ -12,12 +12,9 @@ UGenerateTerrainComponent::UGenerateTerrainComponent() : Super()
 	for (int i = 0; i < TerrainComponentSize; i++)
 	{
 		UProceduralMeshComponent* Mehs = CreateDefaultSubobject<UProceduralMeshComponent>(FName(*FString::Printf(TEXT("ProceduralMeshComponent_%d"), i)));
-		//Cast< UProceduralMeshComponent>(GetOwner()->AddComponentByClass(UProceduralMeshComponent::StaticClass(), true, FTransform{}, false));
-		//Mehs->SetupAttachment(GetOwner()->GetRootComponent());
 		GenerateTerrainArray.Add(Mehs);
 		EmpthyMeshComponent.Add(Mehs);
 	}
-	//GenerateTerrain =
 }
 
 void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -37,8 +34,6 @@ void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 void UGenerateTerrainComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 }
 
 void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
@@ -52,6 +47,7 @@ void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
 		for (UProceduralMeshComponent* GenerateTerrain : GenerateTerrainArray)
 		{
 			EmpthyMeshComponent.Add(GenerateTerrain);
+			GenerateTerrain->ClearAllMeshSections();
 		}
 	}
 }
@@ -66,8 +62,9 @@ void UGenerateTerrainComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 		if (!GenerateTerrain)
 			return;
 
-		//UE_LOG(LogTemp, Warning, TEXT("UGenerateTerrainComponent New Mesh SectionID:(%d,%d)"), SectionID.X, SectionID.Y);
-		GenerateTerrain->CreateMeshSection(0, *SectionData.Vertices, *SectionData.Triangles, *SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
+		// 빈 UProceduralMeshComponent가 있으면 하나의 Section만 생성 및 NavOctree  갱신
+		GenerateTerrain->CreateMeshSection(0, *SectionData.Vertices, *SectionData.Triangles,
+			*SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
 		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
 		if (TerrainMaterial)
 		{
@@ -80,6 +77,7 @@ void UGenerateTerrainComponent::DelGenerateWorld(const FGenerateSectionData& Sec
 {
 	if (TObjectPtr<UProceduralMeshComponent>* GenerateTerrain = SectionIDToMeshIndex.Find(SectionData.SectionID))
 	{
+		// 해당 섹션이 있다면 메쉬 섹션 삭제 및 큐에 컴포넌트 반납
 		if (*GenerateTerrain)
 		{
 			(*GenerateTerrain)->ClearAllMeshSections();

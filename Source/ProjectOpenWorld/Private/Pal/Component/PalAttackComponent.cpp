@@ -1,4 +1,4 @@
-#include "Pal/Component/PalAttackComponent.h"
+﻿#include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "GameBase/BaseCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -14,7 +14,6 @@ UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 	PrimaryComponentTick.bCanEverTick = false;
 	//AttackData.AttackDistance = 50.0f;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
-	SetComponentTickEnabled(false);
 }
 
 void UPalAttackComponent::BeginPlay()
@@ -23,15 +22,10 @@ void UPalAttackComponent::BeginPlay()
 	if (OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
 		Controller = Cast< APalAIController>(OwnerCharacter->GetController());
-		//MontageComponent = OwnerCharacter->GetMontageComponent();
-		//if (MontageComponent)
-		//{
-		//	MontageComponent->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
-		//}
 		UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 		if (Anim)
 		{
-			Anim->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
+			Anim->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttackMontage);
 		}
 	}
 	if (!Controller)
@@ -48,6 +42,19 @@ void UPalAttackComponent::TargetIsDead(AActor* Actor)
 
 void UPalAttackComponent::ResetAttackData()
 {
+	
+	bSetAttackData = false;
+	bAttacking = false;
+	AttackIndex = 0;
+}
+
+void UPalAttackComponent::EndAttackMontage()
+{
+	/*if (TargetActor)
+	{
+		Controller->SetBBTargetActor(TargetActor);
+	}*/
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttackMontage Called "), *GetOwner()->GetName());
 	bSetAttackData = false;
 	bAttacking = false;
 	AttackIndex = 0;
@@ -55,14 +62,14 @@ void UPalAttackComponent::ResetAttackData()
 
 void UPalAttackComponent::SetAttackTarget(AActor* Actor)
 {
-	TargetActor = Actor;
-	if (!TargetActor || TargetActor->IsPendingKillPending() || bAttacking)
+	if (!Actor || Actor->IsPendingKillPending() || bAttacking)
 		return;
-	if (!TargetActor->Implements<UAttackInterface>())
+	if (!Actor->Implements<UAttackInterface>())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetActor has not interface"), *TargetActor.Get()->GetName());
 		return;
 	}
+	TargetActor = Actor;
 	TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bSetTargetData = true;
 }
@@ -114,6 +121,10 @@ void UPalAttackComponent::StartAttack()
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: already Attacking "), *GetOwner()->GetName());
 		return;
 	}
+	if (IAttackInterface::Execute_IsDead(TargetActor))
+	{
+		return;
+	}
 	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 	if (Anim)
 	{
@@ -129,17 +140,13 @@ void UPalAttackComponent::StartAttack()
 	{
 		OnPalAttackStart.Broadcast();
 	}
-	SetComponentTickEnabled(true);
 }
 
 void  UPalAttackComponent::EndAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack Called "), *GetOwner()->GetName());
 	if (!bAttacking)
 		return;
 
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack "), *GetOwner()->GetName());
-	SetComponentTickEnabled(false);
 	ResetAttackData();
 	bSetTargetData= false;
 	Controller->SetFocus(nullptr);
@@ -151,6 +158,7 @@ void  UPalAttackComponent::EndAttack()
 	{
 		OnPalAttackEnd.Broadcast();
 	}
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack Finished "), *GetOwner()->GetName());
 	TargetActor = nullptr;
 }
 

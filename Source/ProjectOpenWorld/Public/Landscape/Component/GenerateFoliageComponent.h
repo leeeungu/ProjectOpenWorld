@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -55,7 +55,7 @@ class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComp
 		float RandomSeed{ };
 		bool bAlreadyGenerate{ };
 		int StaticMeshDataIndex{ -1 };
-		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageInstanceData{};
+		TMap<TObjectPtr<UFoliageType_InstancedStaticMesh>, TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageInstanceMap{};
 	};
 
 	struct FoliageUpdateData

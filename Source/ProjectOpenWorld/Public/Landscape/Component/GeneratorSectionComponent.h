@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -44,6 +44,8 @@ protected:
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	bool bPropertyChaned = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	bool bSectionDebugLine{};
 #endif
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")

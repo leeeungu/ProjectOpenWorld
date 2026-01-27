@@ -1,4 +1,4 @@
-#include "Pal/Controller/PalAIController.h"
+ï»¿#include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
@@ -65,7 +65,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 {
 	if (!TargetActor)
 		return EPathFollowingRequestResult::Failed;
-	// ¿Ö ÀÌµ¿¿¡ ¿ÀÂ÷°¡ »ý±æ±î
+	// ì™œ ì´ë™ì— ì˜¤ì°¨ê°€ ìƒê¸¸ê¹Œ
 	//FVector Location = TargetActor->GetActorLocation();
 	////Location.Z = GetPawn()->GetActorLocation().Z;
 
@@ -137,7 +137,7 @@ bool APalAIController::GetMoveResult() const
 	return  Resut != EPathFollowingRequestResult::Failed;
 }
 
-void APalAIController::SetBBTargetActor(AActor* TargetActor)
+void APalAIController::SetBBTargetActor(AActor* TargetActor, float fAcceptanceRadius)
 {
 	bIsMove = true;
 	if (!GetBlackboardComponent())
@@ -146,9 +146,10 @@ void APalAIController::SetBBTargetActor(AActor* TargetActor)
 		OwnerPal->UseControllerDesiredRotation();
 	OwnerPal->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetActorName(), TargetActor);
+	AcceptanceRadius = fAcceptanceRadius;
 }
 
-void APalAIController::SetBBTargetLocation(FVector TargetLocation)
+void APalAIController::SetBBTargetLocation(FVector TargetLocation, float fAcceptanceRadius)
 {
 	bIsMove = true;
 	if (!GetBlackboardComponent())
@@ -158,6 +159,7 @@ void APalAIController::SetBBTargetLocation(FVector TargetLocation)
 	OwnerPal->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 	GetBlackboardComponent()->SetValueAsVector(GetBBTargetLocationName(), TargetLocation);
+	AcceptanceRadius = fAcceptanceRadius;
 }
 
 void APalAIController::ResetMove()
@@ -170,3 +172,22 @@ void APalAIController::ResetMove()
 		OwnerPal->UseOrientRotationToMovement();
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 }
+
+AActor* APalAIController::GetBBTargetActor() const
+{
+	if (!GetBlackboardComponent())
+		return nullptr;
+	if (UObject* Obj = GetBlackboardComponent()->GetValueAsObject(GetBBTargetActorName()))
+	{
+		return Cast<AActor>(Obj);
+	}
+	return nullptr;
+}
+
+FVector APalAIController::GetBBTargetLocation() const
+{
+	if (!GetBlackboardComponent())
+		return  FVector();
+	return  GetBlackboardComponent()->GetValueAsVector(GetBBTargetLocationName());
+}
+

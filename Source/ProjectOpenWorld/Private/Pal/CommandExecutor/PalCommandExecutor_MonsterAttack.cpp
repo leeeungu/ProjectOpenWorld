@@ -1,4 +1,4 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_MonsterAttack.h"
 #include "Creature/Character/BaseMonster.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
@@ -30,13 +30,9 @@ bool UPalCommandExecutor_MonsterAttack::StartCommand(const FPalCommand& Command)
 		return false;
 	}
 	UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: StartCommand"));
-	if (AttackComponent)
+	if (AttackComponent->GetTargetActor())
 	{
 		bStartedAttacking = true;
-		ESubAttackType AttackType = ESubAttackType::Default;
-		AttackComponent->SetAttackData(AttackType);
-		AttackComponent->SetAttackTarget(Command.pTarget.Get());
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
 		IsCommandStarted = true;
 		return true;
 	}
@@ -49,17 +45,6 @@ void UPalCommandExecutor_MonsterAttack::Abort()
 	if (bStartedAttacking == false)
 		return;
 	bStartedAttacking = false;
-	if (OwnerPal)
-	{
-		if (OwnerPal->GetController())
-		{
-			OwnerPal->GetController()->StopMovement();
-		}
-	}
-	if (AttackComponent)
-	{
-		AttackComponent->EndAttack();
-	}
 	if (OwnerController)
 	{
 		OwnerController->ResetMove();
@@ -68,44 +53,25 @@ void UPalCommandExecutor_MonsterAttack::Abort()
 
 void UPalCommandExecutor_MonsterAttack::WorkCommand()
 {
+	UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: WorkCommand"));
 	const FPalCommand& Command = *OwnerCommandComp->GetCurrentCommand_C();
 	bool IsInRange = AttackComponent->TargetIsInRange();
-	if (IsInRange && !AttackComponent->IsAttacking() && AttackComponent->IsSetTarget() && Command.pTarget.IsValid())
-	{
-		AttackComponent->StartAttack();
-		return;
-	}
-	if (AttackComponent->IsAttacking())
-		return;
 	bStartedAttacking = true;
 	IsCommandStarted = true;
-
-	if (!AttackComponent->IsSetTarget() || !IsInRange)
+	if (AttackComponent->IsSetTarget() || !IsInRange)
 	{
-		AttackComponent->SetAttackTarget(Command.pTarget.Get());
 		OwnerController->SetBBTargetActor(Command.pTarget.Get());
-	}
-	if (!AttackComponent->IsSetAttackData())
-	{
-		ESubAttackType AttackType = ESubAttackType::Default;
-		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
-		AttackComponent->SetAttackData(AttackType);
 	}
 }
 
 bool UPalCommandExecutor_MonsterAttack::CheckCommandValid()
 {
-	if (!AttackComponent)
-	{
-		return false;
-	}
-	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (!Command->pTarget.IsValid())
+	if (!AttackComponent->GetTargetActor())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Executor_Attack :: invalid target"));
 		return false;
 	}
-	if (Command->pTarget->Implements<UAttackInterface>() && IAttackInterface::Execute_IsDead(Command->pTarget.Get()))
+	if (IAttackInterface::Execute_IsDead(AttackComponent->GetTargetActor()))
 	{
 		return false;
 	}
@@ -117,18 +83,18 @@ void UPalCommandExecutor_MonsterAttack::EndAttack()
 	if (!bStartedAttacking)
 		return;
 
-	const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
-	if (Command->pTarget.IsValid())
-	{
-		bStartedAttacking = true;
-		ESubAttackType AttackType = ESubAttackType::Default;
-		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
-		AttackComponent->SetAttackData(AttackType);
-		AttackComponent->SetAttackTarget(Command->pTarget.Get());
-		OwnerController->SetBBTargetActor(Command->pTarget.Get());
-		IsCommandStarted = true;
-		return;
-	}
+	//const FPalCommand* Command = OwnerCommandComp->GetCurrentCommand_C();
+	//if (Command->pTarget.IsValid())
+	//{
+	//	bStartedAttacking = true;
+	//	ESubAttackType AttackType = ESubAttackType::Default;
+	//	//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
+	//	AttackComponent->SetAttackData(AttackType);
+	//	AttackComponent->SetAttackTarget(Command->pTarget.Get());
+	//	OwnerController->SetBBTargetActor(Command->pTarget.Get());
+	//	IsCommandStarted = true;
+	//	return;
+	//}
 	Abort();
 	EndCommand();
 }

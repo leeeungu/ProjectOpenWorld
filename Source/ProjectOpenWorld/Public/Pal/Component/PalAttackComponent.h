@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -40,6 +40,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PalAttackData")
 	FPalAttackDataTable AttackData{};
 
+	TArray< FPalAttackDataTable*> AllAttackDataArray{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	TObjectPtr<AActor> TargetActor{};
 	UPROPERTY()
@@ -69,6 +70,8 @@ protected:
 	UFUNCTION()
 	void TargetIsDead(AActor* Actor);
 	void ResetAttackData();
+	UFUNCTION()
+	void EndAttackMontage();
 public:	
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -100,7 +103,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool IsSetAttackData()const { return bSetAttackData; }
 
-	//// IMontageQueueInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
+	//// IMontageQueueInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
 	//UAnimMontage* GetMontage() const override;
 	//void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) override;
 	//void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) override;

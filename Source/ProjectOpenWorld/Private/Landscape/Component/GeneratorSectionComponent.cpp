@@ -1,4 +1,4 @@
-#include "Landscape/Component/GeneratorSectionComponent.h"
+﻿#include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Math/UnrealMathUtility.h"
@@ -35,6 +35,7 @@ void UGeneratorSectionComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 		{
 			if (bPropertyChaned)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("UGeneratorSectionComponent Property Changed - Regenerate Terrain"));
 				FVector CameraLocation = GetOwner()->GetActorLocation();
 				FRotator CameraRotation{};
 				UUnrealEditorSubsystem* SubSystem = GEditor->GetEditorSubsystem<UUnrealEditorSubsystem>();
@@ -58,6 +59,25 @@ void UGeneratorSectionComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 				}
 				bPropertyChaned = false;
 			}
+		}
+
+		if (bSectionDebugLine && !SectionMap.IsEmpty())
+		{
+			FVector SectionSize = GetSectionSize();
+			for (const auto& SectionID : SectionMap)
+			{
+				TArray<FVector>* Vertex = SumVertices.Find(SectionID);
+				if (Vertex && !Vertex->IsEmpty())
+				{
+					FVector SectionCenter = (Vertex->Last() + *Vertex->begin()) * 0.5f;
+					SectionCenter.Z = 8000.0f;
+					DrawDebugBox(GetWorld(), SectionCenter, SectionSize * 0.5f, FColor::Green, true, -1, 0, 10000.0f);
+				}
+			}
+		}
+		else
+		{
+			FlushPersistentDebugLines(GetWorld());
 		}
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -151,7 +171,7 @@ void UGeneratorSectionComponent::EndGenerateTerrain()
 
 FVector UGeneratorSectionComponent::GetSectionSize() const
 {
-	return FVector(CellSize * SectionRadiusCount * SectionRadiusCount, CellSize * SectionRadiusCount * SectionRadiusCount, 10.0f);
+	return FVector((xVertexCount - 1), (yVertexCount - 1), 1.0f) * CellSize;
 }
 
 int UGeneratorSectionComponent::GetSectionCounts() const
@@ -244,14 +264,15 @@ void FAsyncWorldGenerater::DoWork()
 
 	for (FIntPoint& SectionID : WorldGenerator->DeleteBackSectionArray)
 	{
-	WorldGenerator->SumVertices.Remove(SectionID);
-	WorldGenerator->SumUVs.Remove(SectionID);
-	WorldGenerator->SumTriangles.Remove(SectionID);
-	WorldGenerator->SumNormals.Remove(SectionID);
-	WorldGenerator->SumTangents.Remove(SectionID);
+		WorldGenerator->SumVertices.Remove(SectionID);
+		WorldGenerator->SumUVs.Remove(SectionID);
+		WorldGenerator->SumTriangles.Remove(SectionID);
+		WorldGenerator->SumNormals.Remove(SectionID);
+		WorldGenerator->SumTangents.Remove(SectionID);
 	}
 	WorldGenerator->DeleteBackSectionArray.Empty(false);
 
+	// Player 기준 범위 내의 Section 검색
 	for (int i = -WorldGenerator->SectionRadiusCount; i < WorldGenerator->SectionRadiusCount; i++)
 	{
 		for (int k = -WorldGenerator->SectionRadiusCount; k < WorldGenerator->SectionRadiusCount; k++)
@@ -267,6 +288,7 @@ void FAsyncWorldGenerater::DoWork()
 		}
 	}
 
+	// 추가된 섹션 거리 기준 정렬
 	FIntPoint Temp = PlayerSectionIndex;
 	WorldGenerator->UpdateBackSectionArray.Sort
 	(
@@ -282,17 +304,14 @@ void FAsyncWorldGenerater::DoWork()
 				return DistA > DistB;
 
 			if (AdX == BdX)
-			{
-				{
-					return AdY > BdY;
-				}
-			}
+				return AdY > BdY;
 			if (AdY == BdY)
 				return AdX > BdX;
 			return AdY > BdY;
 		}
 	);
 
+	// 삭제된 섹션 추가
 	int nIndex = WorldGenerator->UpdateBackSectionArray.Num();
 	for (const FIntPoint& point : DelSectionSet)
 	{
@@ -340,7 +359,7 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 			Vertex.X = iVX * CellSize + Offset.X;
 			Vertex.Y = iVY * CellSize + Offset.Y;
 			Vertex.Z = GetHeight(Vertex.X, Vertex.Y);
-			if (bBossSection && iVY >=1 && iVY <= yVertexCount-2 &&
+			if (bBossSection && iVY >= 1 && iVY <= yVertexCount - 2 &&
 				iVX >= 1 && iVX <= xVertexCount - 2)
 			{
 				Vertex.Z = 800.f;
@@ -421,6 +440,7 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 		WorldGenerator->SumTangents.Add(SectionIndexKey, SubTangents);
 	}
 }
+
 float FAsyncWorldGenerater::GetHeight(float inX, float inY) const
 {
 	if (!WorldGenerator)

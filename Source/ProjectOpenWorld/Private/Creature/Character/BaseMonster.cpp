@@ -1,4 +1,4 @@
-#include "Creature/Character/BaseMonster.h"
+﻿#include "Creature/Character/BaseMonster.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
@@ -11,6 +11,7 @@
 #include "Pal/DataTable/PalMonsterData.h"
 #include "Components/WidgetComponent.h"
 #include "Pal/Widget/PalHpWidget_MonsterDefault.h"
+#include "Pal/Controller/PalAIController.h"
 
 
 
@@ -116,19 +117,25 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	if (Hp < Damage)
 		Damage = Hp;
 	Hp -= Damage;
-	if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
-	{
-		CommandComponent->ResetCommandQue();
-	}
+
 		UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack Target Set"));
+		APalAIController* AIController = Cast<APalAIController>(GetController());
+		if (AIController)
+		{
+			AIController->SetBBTargetActor(pOther);
+		}
 	if (AttackComponent && !AttackComponent->IsSetTarget())
 	{
-
+		AttackComponent->SetAttackTarget(pOther);
 		//pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	/*	AttackComponent->SetAttackTarget(pOther);
 		AttackComponent->SetAttackData(ESubAttackType::Default);
 		AttackComponent->StartAttack();*/
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
+	}
+	if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	{
+		CommandComponent->ResetCommandQue();
 		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
 	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: DamagedCharacter Hp : %f"), Hp);

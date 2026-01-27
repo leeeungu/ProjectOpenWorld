@@ -21,6 +21,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr < ABaseCharacter> OwnerPal{};
+	float AcceptanceRadius{};
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
@@ -38,14 +39,27 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
 	bool GetMoveResult() const;
 
-	void SetBBTargetActor(AActor* TargetActor);
-	void SetBBTargetLocation(FVector TargetLocation);
+	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
+	void SetBBTargetActor(AActor* TargetActor, float fAcceptanceRadius = 200.0f);
+	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
+	void SetBBTargetLocation(FVector TargetLocation, float fAcceptanceRadius = 200.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
 	void ResetMove();
 	
 	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
 	bool IsMoving() const { return bIsMove; }
+
+	/*UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
+	bool MoveToActor();
+	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
+	bool MoveToLocation();*/
+	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
+	float GetAcceptanceRadius() const { return AcceptanceRadius; }
+	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
+	AActor* GetBBTargetActor() const;
+	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
+	FVector GetBBTargetLocation() const;
 
 	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
 	FORCEINLINE FName GetBBTargetLocationName()  const{ return FName("TargetLocation"); }
