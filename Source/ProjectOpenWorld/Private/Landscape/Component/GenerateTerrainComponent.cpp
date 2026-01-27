@@ -89,15 +89,6 @@ void UGenerateTerrainComponent::DelGenerateWorld(const FGenerateSectionData& Sec
 
 void UGenerateTerrainComponent::FinishGenerateWorld()
 {
-	/*if (GenerateTerrain)
-	{
-		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
-		for (int32 SectionID : UpdateSectionIndex)
-		{
-			GenerateTerrain->SetMeshSectionVisible(SectionID, true);
-		}
-		UpdateSectionIndex.Empty();
-	}*/
 }
 
 void UGenerateTerrainComponent::Initialize(USceneComponent* ParentComponent)

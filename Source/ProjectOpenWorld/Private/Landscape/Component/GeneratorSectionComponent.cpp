@@ -113,15 +113,18 @@ void UGeneratorSectionComponent::OnUpdatePlayerLocation(USceneComponent* Updated
 		bDelayUpdate = true;
 	}
 }
+
 void UGeneratorSectionComponent::StartGenerateTerrain(bool bEditor)
 {
 	GeneratorBusy = false;
+	// 백스레드에서 계산된 섹션 데이터를 메인스레드에서 업데이트 대기 스택에 복사
 	UpdateSectionArray.Append(UpdateBackSectionArray);
 	bBackUpdate = false;
 	MaxSection = UpdateSectionArray.Num();
 	CurrentIndex = MaxSection - 1;
 	OnGenerateStart.Broadcast(bEditor);
 }
+
 void UGeneratorSectionComponent::UpdateTerrain()
 {
 	int nCount = SectionUpdateTickCount;
@@ -131,6 +134,7 @@ void UGeneratorSectionComponent::UpdateTerrain()
 		CurrentIndex = UpdateSectionArray.Num() - 1;
 		if (nDeleteSectionCount <= CurrentIndex)
 		{
+			// 세션 삭제
 			SectionMap.Remove(SectionID);
 			OnDeleteSection.Broadcast({ SectionID, 
 				SumVertices.Find(SectionID),
@@ -143,7 +147,7 @@ void UGeneratorSectionComponent::UpdateTerrain()
 		}
 		else if (CurrentIndex < nDeleteSectionCount)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("New Section X:%d Y:%d"), SectionID.X, SectionID.Y);
+			// 세션 추가
 			SectionMap.Add(SectionID);
 			OnNewSection.Broadcast({ SectionID, 
 				SumVertices.Find(SectionID),

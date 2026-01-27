@@ -113,6 +113,7 @@ protected:
 	bool bUpdateBackData{};
 	bool bGeneratingFoliage{};
 	bool bDelayUpdate{ };
+	float Time{};
 public:
 	UGenerateFoliageComponent();
 
@@ -120,7 +121,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	void SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp);
-
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

@@ -70,21 +70,23 @@ void UGenerateFoliageComponent::SetFoliageMeshComponent(TObjectPtr<UFoliageType_
 		MeshComp->SetCullDistances(FoliageMesh->CullDistance.Min, FoliageMesh->CullDistance.Max);
 		MeshComp->SetCollisionProfileName(FoliageMesh->BodyInstance.GetCollisionProfileName());
 		MeshComp->SetVisibleInRayTracing(FoliageMesh->bVisibleInRayTracing);
-	}
+	}	
 }
 
 void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Time += DeltaTime;
 	if (!IsGenerating() && bDelayUpdate)
 	{
+		// Section 갱신과 폴리지 데이터 구성을 분리
 		if (!bGeneratingFoliage && !bUpdateBackData && !EditorModeGenerate)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %f "), Time);
 			bDelayUpdate = false;
 			PlayerLastSectionID = GeneratorSectionComponent->GetPlayerSection();
 			bGeneratingFoliage = false;
 			bUpdateBackData = false;
-			//UpdateBuffer = false;
 			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
 				{
 					FAsyncTask< FAsyncFoliageGenerater>* WorldGenTask = new FAsyncTask< FAsyncFoliageGenerater>(this);
@@ -114,9 +116,9 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 				FoliageSectionData* SectionData = &FoliageSectionDataMap.FindOrAdd(Data.SectionID);
 				if (SectionData)
 				{
+					// Section 제거 처리
 					if (Data.bRemove)
 					{
-
 						if (SectionData)
 						{
 							for (auto& Instance : SectionData->FoliageInstanceMap)
@@ -131,6 +133,7 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 					}
 					else
 					{
+						// 생성 일시 설치 가능한 인스턴스 추가
 						FTransform NewTransform = Data.FoliageData[nUpdateTickIndex];
 						FVector Location = NewTransform.GetLocation();
 						FHitResult HitResult;
@@ -143,15 +146,18 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 						)) 
 						{
 							Location.Z += HitResult.ImpactPoint.Z;
-							float SlopeAngle = FMath::RadiansToDegrees(FVector::DotProduct(-FVector::UpVector, HitResult.ImpactNormal));
+							float SlopeAngle = FMath::RadiansToDegrees(
+								FVector::DotProduct(-FVector::UpVector, HitResult.ImpactNormal));
 							if (Data.FoliageMesh->AlignToNormal)
 							{
 								NewTransform.SetRotation(FQuat(FVector::ForwardVector.Rotation()));
 							}
 							NewTransform.SetLocation(Location);
+							// 높이 및 경사도 체크
 							if (Data.FoliageMesh->Height.Contains(Location.Z))
 							{
-								TObjectPtr<UFoliageInstancedStaticMeshComponent>& MeshComponent = SectionData->FoliageInstanceMap.FindOrAdd(Data.FoliageMesh, nullptr);
+								TObjectPtr<UFoliageInstancedStaticMeshComponent>& MeshComponent =
+									SectionData->FoliageInstanceMap.FindOrAdd(Data.FoliageMesh, nullptr);
 								if (!MeshComponent)
 								{
 									MeshComponent = EmpthyFoliageMeshData.Last();
@@ -166,15 +172,18 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 					}
 				}
 
+				// 섹션 내 폴리지 데이터 업데이트 완료
 				if (!Data.FoliageData.IsValidIndex(nUpdateTickIndex))
 				{
 					nUpdateTickIndex = 0;
 					UpdateData.Pop();
 				}
 			}
+
+			// 섹션 별로 전체 섹션 업데이트 완료
 			if (UpdateData.IsEmpty())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage SectionID "));
+				UE_LOG(LogTemp, Warning, TEXT("Finish Update Foliage %f"), Time);
 				bUpdateBackData = false;
 			}
 		}
@@ -185,20 +194,8 @@ void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 {
 	Super::StartGenerateWorld(bEditor);
 	EditorModeGenerate = bEditor;
-	/*if (EditorModeGenerate)
-	{
-		nSectionIndex = 0;
-		for (int i = 0; i < FoliageComponentCount; i++)
-		{
-			UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageComponentArray[i];
-			if (FoliageCompoent)
-			{
-				FoliageCompoent->ClearInstances();
-				EmpthyComponentArray.Enqueue(FoliageCompoent);
-			}
-		}
-		SectionIDToFoliageTypeToInstanceIndex.Empty();
-	}*/
+	Time = 0.0f;
+	UE_LOG(LogTemp, Warning, TEXT("Start Generate Foliage %f "), Time);
 }
 
 void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
@@ -239,6 +236,7 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 {
 	Super::FinishGenerateWorld();
 	bDelayUpdate = true;
+	UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage "));
 }
 
 void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
@@ -256,10 +254,8 @@ void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
 
 void FAsyncFoliageGenerater::Initialize()
 {
-	//DeleteArray = FoliageGenerater->DeleteArray;
 	AddMap = FoliageGenerater->AddMap;
 	FoliageGenerater->AddMap.Empty(false);
-	//FoliageGenerater->DeleteArray.Empty(false);
 }
 
 void FAsyncFoliageGenerater::DoWork()

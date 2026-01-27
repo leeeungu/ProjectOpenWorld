@@ -37,5 +37,4 @@ protected:
 	bool IsGenerating() const { return bStartGenerate; }
 public:	
 	virtual void Initialize(USceneComponent* ParentComponent) {};
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };
