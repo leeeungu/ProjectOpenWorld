@@ -190,3 +190,19 @@ bool ABaseMonster::IsCommandFinished_Implementation()
 	return IsPendingKillPending();
 }
 
+void ABaseMonster::OnDetectBeginEvent_Implementation(ABasePlayer* Player)
+{
+	if (HpWidgetComponent)
+	{
+		HpWidgetComponent->SetVisibility(true);
+	}
+}
+
+void ABaseMonster::OnDetectEndEvent_Implementation(ABasePlayer* Player)
+{
+	if (HpWidgetComponent)
+	{
+		HpWidgetComponent->SetVisibility(false);
+	}
+}
+

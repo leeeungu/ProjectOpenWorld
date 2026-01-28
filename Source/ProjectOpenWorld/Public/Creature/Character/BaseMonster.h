@@ -4,6 +4,7 @@
 #include "GameBase/BaseCharacter.h"
 #include "Pal/Interface/CommanderManageable.h"
 #include "Pal/Interface/PalCommandInterface.h"
+#include "Player/Interface/PlayerDetectInterface.h"
 #include "BaseMonster.generated.h"
 
 class UPalCommandComponent;
@@ -11,9 +12,10 @@ class UPalAttackComponent;
 class UPalMonsterInteractionComponent;
 struct FPalMonsterLevelData;
 class UWidgetComponent;
+class ABasePlayer;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter , public IPalCommandInterface, public ICommanderManageable
+class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalCommandInterface, public ICommanderManageable, public IPlayerDetectInterface
 {
 	GENERATED_BODY()
 protected:
@@ -84,4 +86,9 @@ public:
 	virtual uint8 GetSubCommandType_Implementation() override;
 	virtual FPalCommand GetCommand_Implementation() override;
 	virtual bool IsCommandFinished_Implementation() override;
+
+	// IPlayerDetectInterface
+	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override;
+	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override;
+
 };

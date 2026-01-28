@@ -6,6 +6,7 @@
 #include "Pal/Interface/PalCommandInterface.h"
 #include "Resource/Interface/ResourceInterface.h"
 #include "Building/Interface/ArchitectureInterface.h"
+#include "Player/Interface/PlayerDetectInterface.h"
 #include "BaseCreature.generated.h"
 
 struct FAIRequestID;
@@ -15,11 +16,12 @@ class UStaticMeshComponent;
 class UPalAttackComponent;
 class IGenericTeamAgentInterface;
 class UInteractionComponent;
+class ABasePlayer;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter, 
 	public IPalCommandInterface,
-	public IResourceInterface, public IArchitectureInterface
+	public IResourceInterface, public IArchitectureInterface, public IPlayerDetectInterface
 {
 	GENERATED_BODY()
 protected:
@@ -76,6 +78,10 @@ public:
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 	virtual bool IsDead_Implementation() const override;
+
+	// IPlayerDetectInterface
+	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override;
+	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override;
 
 
 	FORCEINLINE UInteractionComponent* GetInteractionComponent() const { return InteractionComponent; }

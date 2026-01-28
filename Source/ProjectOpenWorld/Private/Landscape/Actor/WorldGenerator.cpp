@@ -6,7 +6,7 @@
 
 AWorldGenerator::AWorldGenerator() : AActor{}
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	
 	SectionGenerator = CreateDefaultSubobject<UGeneratorSectionComponent>(TEXT("SectionGenerator"));
@@ -23,28 +23,9 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	SectionGenerator->BindGenerteComponent(StaticObjectGenerator);
 	StaticObjectGenerator->Initialize(RootComponent);
 	Tags.Add(FName("Ladnscape"));
-	////SectionGenerator->OnGenerateStart.AddDynamic(this, &AWorldGenerator::SetGeneratorMesh);
-	//SectionGenerator->OnUpdateSection.AddUniqueDynamic(TerrainGenerator, &UGenerateTerrainComponent::UpdateMesh);
-	//SectionGenerator->OnGenerateFinished.AddUniqueDynamic(TerrainGenerator, &UGenerateTerrainComponent::SetCurrentMesh);
-
-	//GenerateTerrain->SetVisibility(false);
-	//GenerateTerrain->SetActive(false);
-	//GenerateTerrain->SetComponentTickEnabled(false);
-	//SetGeneratorMesh();
-	//UInstancedStaticMeshComponent* FoligeMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("FoligeMesh"));
-	//FoligeMesh->SetupAttachment(RootComponent);
-	//FoligeMesh->AddInstance(FTransform());
-	//FoligeMesh->instance
-		//FoligeMesh->ClearInstances();
 }
 
 void AWorldGenerator::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-
-//void AWorldGenerator::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//}

@@ -73,38 +73,29 @@ void UGenerateFoliageComponent::SetFoliageMeshComponent(TObjectPtr<UFoliageType_
 	}	
 }
 
-void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGenerateFoliageComponent::GenerateFoliageAsync()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	Time += DeltaTime;
-	if (!IsGenerating() && bDelayUpdate)
+	if (!bGeneratingFoliage && !bUpdateBackData && !EditorModeGenerate)
 	{
-		// Section 갱신과 폴리지 데이터 구성을 분리
-		if (!bGeneratingFoliage && !bUpdateBackData && !EditorModeGenerate)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %f "), Time);
-			bDelayUpdate = false;
-			PlayerLastSectionID = GeneratorSectionComponent->GetPlayerSection();
-			bGeneratingFoliage = false;
-			bUpdateBackData = false;
-			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
-				{
-					FAsyncTask< FAsyncFoliageGenerater>* WorldGenTask = new FAsyncTask< FAsyncFoliageGenerater>(this);
-					WorldGenTask->StartBackgroundTask();
-					WorldGenTask->EnsureCompletion();
-					delete WorldGenTask;
-				}
-			);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %f "), Time);
+		bDelayUpdate = false;
+		PlayerLastSectionID = GeneratorSectionComponent->GetPlayerSection();
+		bGeneratingFoliage = false;
+		bUpdateBackData = false;
+		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
+			{
+				FAsyncTask< FAsyncFoliageGenerater>* WorldGenTask = new FAsyncTask< FAsyncFoliageGenerater>(this);
+				WorldGenTask->StartBackgroundTask();
+				WorldGenTask->EnsureCompletion();
+				delete WorldGenTask;
+			}
+		);
 	}
-	if (bGeneratingFoliage)
-	{
-		if (bUpdateBackData)
-		{
-			bGeneratingFoliage = false;
-		}
-	}
-	else
+}
+
+void UGenerateFoliageComponent::UpdateGenerateFoliage()
+{
+	if (!bGeneratingFoliage)
 	{
 		if (bUpdateBackData)
 		{
@@ -129,6 +120,7 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 							}
 							SectionData->FoliageInstanceMap.Empty(false);
 						}
+						FoliageSectionDataMap.Remove(Data.SectionID);
 						nUpdateTickIndex = Data.FoliageData.Num() + 1;
 					}
 					else
@@ -143,7 +135,7 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 							FVector(Location.X, Location.Y, Location.Z + 12000.0f),
 							ECollisionChannel::ECC_Visibility,
 							FCollisionQueryParams::DefaultQueryParam
-						)) 
+						))
 						{
 							Location.Z += HitResult.ImpactPoint.Z;
 							float SlopeAngle = FMath::RadiansToDegrees(
@@ -190,6 +182,30 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	}
 }
 
+void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Time += DeltaTime;
+	if (!IsGenerating() && bDelayUpdate)
+	{
+		GenerateFoliageAsync();
+	}
+	if (bGeneratingFoliage)
+	{
+		if (bUpdateBackData)
+		{
+			bGeneratingFoliage = false;
+		}
+	}
+	else
+	{
+		if (bUpdateBackData)
+		{
+			UpdateGenerateFoliage();
+		}
+	}
+}
+
 void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 {
 	Super::StartGenerateWorld(bEditor);
@@ -200,13 +216,16 @@ void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 
 void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (SectionData.Vertices->Num() <= 1 || EditorModeGenerate)
+	if (SectionData.Vertices->Num() <= 1)
 		return;
 
 	FoliageSectionData* FoliageSectionData = FoliageSectionDataMap.Find(SectionData.SectionID);
 	if (!FoliageSectionData)
 	{
-		float RandomSeed = FoliageSeed * nSectionCount;
+		// 새로 추가된 색션의 Data 생성
+		FVector2D SectionID = SectionData.SectionID;
+		int SectionIndex = static_cast<int>(FMath::PerlinNoise2D(SectionID * 0.1)* 100000);
+		float RandomSeed = FoliageSeed * SectionIndex;
 		if (bRandomSeed)
 		{
 			FMath::RandInit(FDateTime::Now().GetMillisecond());
@@ -214,8 +233,7 @@ void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 		}
 		FoliageSectionData = &FoliageSectionDataMap.Add(SectionData.SectionID);
 		FoliageSectionData->RandomSeed = RandomSeed;
-		FoliageSectionData->SectionIndex = nSectionCount;
-		nSectionCount++;
+		FoliageSectionData->SectionIndex = SectionIndex;
 	}
 
 	FoliageAddData& AddData = AddMap.FindOrAdd(SectionData.SectionID);
@@ -225,11 +243,8 @@ void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 
 void UGenerateFoliageComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (EditorModeGenerate)
-		return;
 	FoliageAddData& AddData = AddMap.FindOrAdd(SectionData.SectionID);
 	AddData.bRemove = true;
-
 }
 
 void UGenerateFoliageComponent::FinishGenerateWorld()
@@ -237,6 +252,25 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 	Super::FinishGenerateWorld();
 	bDelayUpdate = true;
 	UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage "));
+	if (EditorModeGenerate)
+	{
+		if (FoliageDataTable)
+		{
+			DeleteArray.Empty(false);
+			UpdateData.Empty(false);
+			FoliageTypes.Empty(false);
+			FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
+		}
+		bDelayUpdate = false;
+		PlayerLastSectionID = GeneratorSectionComponent->GetPlayerSection();
+		bGeneratingFoliage = false;
+		bUpdateBackData = false;
+		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %d"), AddMap.Num());
+		FAsyncFoliageGenerater WorldGenTask(this);
+		WorldGenTask.DoWork();
+		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %d %d"), UpdateData.Num(), AddMap.Num());
+			UpdateGenerateFoliage();
+	}
 }
 
 void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)

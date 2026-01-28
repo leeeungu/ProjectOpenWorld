@@ -121,6 +121,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	void SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp);
+
+	void GenerateFoliageAsync();
+	void UpdateGenerateFoliage();
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

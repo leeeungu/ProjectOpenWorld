@@ -1,4 +1,4 @@
-#include "Player/Character/BasePlayer.h"
+ï»¿#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -18,7 +18,7 @@
 #include "GenericTeamAgentInterface.h"
 #include "NavigationInvokerComponent.h"
 #include "Player/Component/PlayerAttackComponent.h"
-#include "Blueprint/UserWidget.h"
+#include "Player/Component/PlayerDetectCollision.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -88,6 +88,9 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 		GameOverWidgetClass = OverWidgetClass.Class;
 		
 	}
+
+	PlayerDetectCollision = CreateDefaultSubobject<UPlayerDetectCollision>(TEXT("PlayerDetectCollision"));
+	PlayerDetectCollision->SetupAttachment(RootComponent);
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -485,12 +488,12 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState == EPlayerState::TopDown)
 		{
-			// È­¸é¿¡¼­ Áö¸éÀ¸·Î À§Ä¡¸¦ pick ÇÏ°í ÀÌµ¿ ¹æÇâ °è»ê
+			// í™”ë©´ì—ì„œ ì§€ë©´ìœ¼ë¡œ ìœ„ì¹˜ë¥¼ pick í•˜ê³  ì´ë™ ë°©í–¥ ê³„ì‚°
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
 			{
 				float MouseX = 0.f, MouseY = 0.f;
-				// ¸¶¿ì½º ÁÂÇ¥ ¾ò±â
+				// ë§ˆìš°ìŠ¤ ì¢Œí‘œ ì–»ê¸°
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
@@ -519,7 +522,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 							AddMovementInput(ForwardDirection, 6);
 
 #if ENABLE_DRAW_DEBUG
-							// µğ¹ö±× ½Ã°¢È­ (¿¡µğÅÍ/°³¹ß¿ë)
+							// ë””ë²„ê·¸ ì‹œê°í™” (ì—ë””í„°/ê°œë°œìš©)
 							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif

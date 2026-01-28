@@ -149,7 +149,6 @@ void UBaseAnimInstance::PlayMontage()
 			LoopObject = nullptr;
 			for (UAnimMetaData* Data : MetaData)
 			{
-			//	UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: PlayerNextMontage Found MetaData : %s "), *GetOwner()->GetName(), *Data->GetName());
 				if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
 				{
 					ChangeEvent->StartEvent(this);
@@ -166,7 +165,6 @@ void UBaseAnimInstance::PlayMontage()
 	else
 	{
 		OnMontageEnd();
-		//UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: PlayerNextMontage NextMontage is nullptr "), *GetOwner()->GetName());
 	}
 }
 

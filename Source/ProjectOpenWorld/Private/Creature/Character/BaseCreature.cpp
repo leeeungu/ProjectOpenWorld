@@ -129,6 +129,15 @@ bool ABaseCreature::IsDead_Implementation() const
 	return bDead;
 }
 
+void ABaseCreature::OnDetectBeginEvent_Implementation(ABasePlayer* Player)
+{
+
+}
+
+void ABaseCreature::OnDetectEndEvent_Implementation(ABasePlayer* Player)
+{
+}
+
 
 float ABaseCreature::GetArchitectSpeed_Implementation() const
 {

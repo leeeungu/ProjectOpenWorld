@@ -1,4 +1,4 @@
-#include "GameBase/Object/AttackObject.h"
+ï»¿#include "GameBase/Object/AttackObject.h"
 #include "GameFramework/Character.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -8,6 +8,7 @@
 
 void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
+	// Characterë¥¼ ë„‰ë°± ì‹œí‚¤ëŠ” í•¨ìˆ˜
 	AActor* AttackTarget = HitData.GetActor();
 	if (AttackTarget)
 	{
@@ -50,6 +51,7 @@ void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* 
 
 void UAttackObject_PlayerStun::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
+
 	if (ACharacter* TargetCharacter = Cast<ACharacter>(HitData.GetActor()))
 	{
 		TargetCharacter->DisableInput(nullptr);
@@ -72,18 +74,18 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
-		// °Å¸® °è»ê
+		// ê±°ë¦¬ ê³„ì‚°
 		float Distance = FVector::Dist(TargetCharacter->GetActorLocation(), NewLocation);
 
 		if (AttackRadius > 0)
 		{
-			// °Å¸® ºñÀ² °è»ê (Distance / AttackRadiusÀÇ Á¦°ö)
+			// ê±°ë¦¬ ë¹„ìœ¨ ê³„ì‚° (Distance / AttackRadiusì˜ ì œê³±)
 			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
 
-			// °Å¸®º° Èû °è»ê (ºñÀ²À» ¹İ¿µ)
+			// ê±°ë¦¬ë³„ í˜ ê³„ì‚° (ë¹„ìœ¨ì„ ë°˜ì˜)
 			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 
-			// Èû º¤ÅÍ °è»ê
+			// í˜ ë²¡í„° ê³„ì‚°
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
 			//LaunchDirection.X *= 3;
 			//LaunchDirection.Y *= 3;
@@ -91,7 +93,7 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
 			UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Ratio: %f, ForceMultiplier: %f, ImpulseForce: %s"), Distance, Ratio, ForceMultiplier, *ImpulseForce.ToString());
-			// Èû Àû¿ë
+			// í˜ ì ìš©
 			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
 			if (OtherAttack)
@@ -121,6 +123,7 @@ void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh,
 
 void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
+	// Characterì— ìŠ¤í„´ì„ ì£¼ëŠ” í•¨ìˆ˜
 	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
 	if (!CauserCharacter)
 		return;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Creature/Character/BaseMonster.h"
@@ -44,5 +44,11 @@ public:
 
 
 	virtual void Tick(float DeltaTime) override;
+
+
+	// IPlayerDetectInterface
+	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override;
+	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override;
+
 
 };

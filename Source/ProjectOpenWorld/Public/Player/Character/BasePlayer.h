@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -19,6 +19,7 @@ class UPlayerAnimationComponent;
 class UBuildingModeWidget;
 class UNavigationInvokerComponent;
 class UPlayerAttackComponent;
+class UPlayerDetectCollision;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -95,12 +96,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AttackMontage")
 	TObjectPtr< UPlayerAttackComponent> PlayerAttackComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AttackMontage")
+	TObjectPtr< UPlayerDetectCollision> PlayerDetectCollision{};
 	
 	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
 
 	TSubclassOf<UUserWidget> GameOverWidgetClass{};
 	UPROPERTY()
 	TObjectPtr<UUserWidget> GameOverWidget{};
+
+
 	//bool TopDownMode{};
 public:
 

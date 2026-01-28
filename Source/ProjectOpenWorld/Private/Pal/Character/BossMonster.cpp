@@ -1,4 +1,4 @@
-#include "Pal/Character/BossMonster.h"
+﻿#include "Pal/Character/BossMonster.h"
 #include "Pal/Component/PalPatternComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Pal/Widget/PalHpWidget.h"
@@ -12,10 +12,6 @@ void ABossMonster::BeginPlay()
 		if (HpWidgetClass)
 		{
 			HpWidget = CreateWidget<UUserWidget>(GetWorld(), HpWidgetClass);
-			if (HpWidget)
-			{
-				HpWidget->AddToViewport();
-			}
 			if(UPalHpWidget* HpWidgetCast = Cast<UPalHpWidget>(HpWidget))
 			{
 				HpWidgetCast->InitializeHPWidget(this);
@@ -55,4 +51,16 @@ void ABossMonster::Tick(float DeltaTime)
 			CurStunTime = 0.f;
 		}
 	}
+}
+
+void ABossMonster::OnDetectBeginEvent_Implementation(ABasePlayer* Player)
+{
+	if(HpWidget)
+		HpWidget->AddToViewport();
+}
+
+void ABossMonster::OnDetectEndEvent_Implementation(ABasePlayer* Player)
+{
+	if(HpWidget)
+		HpWidget->RemoveFromParent();
 }
