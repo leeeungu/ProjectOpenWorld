@@ -8,10 +8,12 @@ UCLASS()
 class PROJECTOPENWORLD_API UPalWorkComponent_Mining : public UPalWorkComponent
 {
 	GENERATED_BODY()
+private:
+	bool bIsWorking{};
 	
 public:
 	UPalWorkComponent_Mining();
-	virtual void WorkStart(AActor* Target) override;
-	virtual void WorkEnd(AActor* Target) override;
+	virtual void WorkStart(const FPalCommand& Command) override;
+	virtual void WorkEnd(const FPalCommand& Command) override;
 	virtual void WorkCancel() override;
 };

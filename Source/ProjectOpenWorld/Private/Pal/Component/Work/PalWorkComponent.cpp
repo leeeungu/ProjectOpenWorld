@@ -1,6 +1,4 @@
 ﻿#include "Pal/Component/Work/PalWorkComponent.h"
-#include "Creature/Character/BaseCreature.h"
-#include "Pal/Controller/PalAIController.h"
 #include "Resource/Interface/ResourceInterface.h"
 
 

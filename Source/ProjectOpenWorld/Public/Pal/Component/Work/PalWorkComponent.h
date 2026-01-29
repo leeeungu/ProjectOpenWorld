@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Creature/Character/BaseCreature.h"
+#include "Pal/Controller/PalAIController.h"
+#include "Pal/Data/PalCommandData.h"
 #include "PalWorkComponent.generated.h"
-
-class ABaseCreature;
-class APalAIController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWorkCompleteSignature, AActor*, Target);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWorkCancel, AActor*, Target);
@@ -15,6 +15,8 @@ class PROJECTOPENWORLD_API UPalWorkComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
+	EPalCommandKind PalCommand{};
+	uint8 PalSubCommand{};
 	UPROPERTY()
 	TObjectPtr<ABaseCreature> OwnerPal{};
 	UPROPERTY()
@@ -27,8 +29,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void WorkStart(AActor* Target) PURE_VIRTUAL(UPalWorkComponent::WorkStart, );
-	virtual void WorkEnd(AActor* Target) PURE_VIRTUAL(UPalWorkComponent::WorkEnd, );
+	virtual void WorkStart(const FPalCommand& Command) PURE_VIRTUAL(UPalWorkComponent::WorkStart, );
+	virtual void WorkEnd(const FPalCommand& Command) PURE_VIRTUAL(UPalWorkComponent::WorkEnd, );
 	virtual void WorkCancel() PURE_VIRTUAL(UPalWorkComponent::WorkCancel, );
 
 	UPROPERTY(BlueprintAssignable, Category = "Work")
