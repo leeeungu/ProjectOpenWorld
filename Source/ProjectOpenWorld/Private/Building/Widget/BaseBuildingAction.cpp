@@ -1,9 +1,9 @@
-#include "Building/Widget/BaseBuildingAction.h"
+﻿#include "Building/Widget/BaseBuildingAction.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
 UBaseBuildingAction::UBaseBuildingAction(const FObjectInitializer& ObjectInitializer) 
-	:UUserWidget(ObjectInitializer)
+	:Super(ObjectInitializer)
 {
 
 }

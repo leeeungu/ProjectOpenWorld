@@ -1,4 +1,4 @@
-#include "Building/BaseBuilding.h"
+﻿#include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
@@ -8,7 +8,7 @@
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "NavigationSystem.h"
 
-ABaseBuilding::ABaseBuilding()
+ABaseBuilding::ABaseBuilding() :Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	//mobility(EComponentMobility::Static);
@@ -101,7 +101,7 @@ void ABaseBuilding::UpdateModifier()
 	buildingMeshComponent->SetMobility(EComponentMobility::Static);
 	buildingMeshComponent->SetCanEverAffectNavigation(true);
 	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	if (Nav)
+	if (Nav && buildingMeshComponent->GetStaticMesh())
 		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
@@ -112,7 +112,7 @@ void ABaseBuilding::NoCollision()
 	BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
 	buildingMeshComponent->SetCanEverAffectNavigation(false);
 	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	if (Nav)
+	if (Nav && buildingMeshComponent->GetStaticMesh())
 		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());

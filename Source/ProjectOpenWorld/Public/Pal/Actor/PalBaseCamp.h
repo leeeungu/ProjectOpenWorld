@@ -1,8 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GameBase/Interface/GenerateWorldInterface.h"
+#include "Building/Actor/BuildingActor.h"
 #include "PalBaseCamp.generated.h"
 
 class UPalStorageComponent;
@@ -13,7 +13,7 @@ class USphereComponent;
 class UNavigationInvokerComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API APalBaseCamp : public AActor, public IGenerateWorldInterface
+class PROJECTOPENWORLD_API APalBaseCamp : public ABuildingActor
 {
 	GENERATED_BODY()
 protected:

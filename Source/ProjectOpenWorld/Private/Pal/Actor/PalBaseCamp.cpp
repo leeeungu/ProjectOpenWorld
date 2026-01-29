@@ -9,7 +9,7 @@
 #include "Creature/Character/BaseMonster.h"
 #include "NavigationInvokerComponent.h"
 
-APalBaseCamp::APalBaseCamp()
+APalBaseCamp::APalBaseCamp() : Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
 

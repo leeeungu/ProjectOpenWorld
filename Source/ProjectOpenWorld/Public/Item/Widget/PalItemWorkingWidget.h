@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "Building/Widget/BaseBuildingAction.h"
 #include "PalItemWorkingWidget.generated.h"
 
 class UUniformGridPanel;
@@ -9,7 +9,7 @@ class UPalItemRecipeWidget;
 class UPalItemRecipeSlot;
 	
 UCLASS()
-class PROJECTOPENWORLD_API UPalItemWorkingWidget : public UUserWidget
+class PROJECTOPENWORLD_API UPalItemWorkingWidget : public UBaseBuildingAction
 {
 	GENERATED_BODY()
 protected:

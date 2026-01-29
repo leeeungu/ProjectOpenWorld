@@ -23,7 +23,7 @@ class PROJECTOPENWORLD_API UGenerateTerrainComponent : public UGenerateWorldComp
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
 	int32 TerrainComponentSize{ 36 };
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleInstanceOnly)
 	TArray<TObjectPtr<UProceduralMeshComponent>> GenerateTerrainArray{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr< UMaterialInterface> TerrainMaterial{};
