@@ -24,6 +24,8 @@ private:
 		UPROPERTY()
 		TMap<FName, const T*> ItemDataMap{}; // Key: Editor_RowNameHash
 		T Dummy{};
+		TMap<int64, const T*> ItemDataHashMap{}; // Key: Editor_RowNameHash
+		
 	};
 	static UItemDataSubsystem* SingletonInstance;
 protected:
