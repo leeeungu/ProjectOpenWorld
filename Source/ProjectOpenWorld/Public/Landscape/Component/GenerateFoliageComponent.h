@@ -80,7 +80,7 @@ protected:
 	TArray<FFoliageDataTable*> FoliageTypes{};
 	int32 ComponentIndex{};
 
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleDefaultsOnly)
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
 

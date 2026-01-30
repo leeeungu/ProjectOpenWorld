@@ -1,6 +1,6 @@
 ﻿#include "Creature/Character/BaseCreature.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "Pal/Component/PalAllyCommandComponent.h"
+#include "Pal/Component/PalCommandComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Pal/Controller/PalAIController.h"
@@ -25,7 +25,7 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 		ArchitectureMeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
 		ArchitectureMeshComponent->SetVisibility(false);
 	}
-	CommandComponent = CreateDefaultSubobject<UPalAllyCommandComponent>(TEXT("AllyCommand"));
+	PalCommand = CreateDefaultSubobject<UPalCommandComponent>(TEXT("PalCommandComponent"));
 	AttackComponent  = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
 	InteractionComponent = CreateDefaultSubobject<UPalInteractionComponent>(TEXT("InteractionComponent"));
 
@@ -36,18 +36,18 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 
 bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
 {
-	if (CommandComponent)
+	if (PalCommand)
 	{
-		return CommandComponent->PushCommand(Command);
+		return PalCommand->PushCommand(Command);
 	}
 	return false;
 }
 
 bool ABaseCreature::CommandPause_Implementation(bool bPause)
 {
-	if (CommandComponent)
+	if (PalCommand)
 	{
-		CommandComponent->FinishCommand();
+		PalCommand->FinishCommand();
 		return true;
 	}
 	return false;
@@ -55,7 +55,7 @@ bool ABaseCreature::CommandPause_Implementation(bool bPause)
 
 UPalCommandComponent* ABaseCreature::GetCommandComponent() const
 { 
-	return CommandComponent;
+	return PalCommand;
 }
 
 float ABaseCreature::GetDefaultSpeed()

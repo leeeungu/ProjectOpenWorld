@@ -21,10 +21,10 @@ protected:
 	TObjectPtr<UPalStorageComponent> PalStore{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UPalCommanderComponent> PalCommander{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<USceneComponent> Root{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> CampMesh{};
+	//UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	//TObjectPtr<USceneComponent> Root{};
+	//UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	//TObjectPtr<UStaticMeshComponent> CampMesh{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < USphereComponent> CampBounds{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)

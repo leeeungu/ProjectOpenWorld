@@ -1,4 +1,4 @@
-#include "Pal/Solider/SpawnSolider.h"
+ï»¿#include "Pal/Solider/SpawnSolider.h"
 #include "Components/SplineComponent.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
@@ -20,7 +20,7 @@ void ASpawnSolider::BeginPlay()
 	if (SoliderClass)
 	{
 		SpawnOffset = FVector::ZeroVector;
-		// double Å¸ÀÔÀ» float Å¸ÀÔÀ¸·Î º¯È¯ÇÏ¿© Àü´Ş
+		// double íƒ€ì…ì„ float íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì „ë‹¬
 		float CapsuleRadius = static_cast<float>(SpawnOffset.X);
 		float CapsuleHalfHeight = static_cast<float>(SpawnOffset.Y);
 		SoliderClass->GetDefaultObject<ACharacter>()->GetCapsuleComponent()->GetScaledCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
@@ -30,6 +30,13 @@ void ASpawnSolider::BeginPlay()
 	FVector endLocation = SplineComp->GetLocationAtSplinePoint(SplineComp->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World);
 	SpawnCount = FMath::CeilToInt(FVector::Distance(SpawnLocation, endLocation) / SpawnOffset.X);
 	arSolider.Reserve(SpawnCount);
+	for (uint8 i = 0; i < SpawnCount; ++i)
+	{
+		arSolider.Push(SpawnSolider());
+		arSolider[i]->SetActorTickEnabled(false);
+		arSolider[i]->SetActorHiddenInGame(true);
+		arSolider[i]->SetActorEnableCollision(false);
+	}
 }
 
 ACharacter* ASpawnSolider::SpawnSolider()
@@ -53,11 +60,12 @@ void ASpawnSolider::Tick(float DeltaTime)
 
 void ASpawnSolider::OnInteractionEvent_Implementation(ACharacter* TargetMonster)
 {
-	if (arSolider.Num() > 0)
-		return;
+	UE_LOG(LogTemp, Warning, TEXT("ASpawnSolider::OnInteractionEvent_Implementation Spawn Solider Count : %d"), SpawnCount);
 	for (uint8 i = 0; i < SpawnCount; ++i)
 	{
-		arSolider.Push(SpawnSolider());
+		arSolider[i]->SetActorTickEnabled(true);
+		arSolider[i]->SetActorHiddenInGame(false);
+		arSolider[i]->SetActorEnableCollision(true);
 	}
 }
 

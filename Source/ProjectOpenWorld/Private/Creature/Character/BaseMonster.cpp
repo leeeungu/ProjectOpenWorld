@@ -3,11 +3,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalMonsterController.h"
-#include "Pal/Component/PalMonsterCommandComponent.h"
+#include "Pal/Component/PalMonsterInteractionComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Pal/Component/PalMonsterInteractionComponent.h"
+#include "Pal/Component/PalCommandComponent.h"
 #include "Pal/DataTable/PalMonsterData.h"
 #include "Components/WidgetComponent.h"
 #include "Pal/Widget/PalHpWidget_MonsterDefault.h"
@@ -19,7 +19,7 @@ ABaseMonster::ABaseMonster() :
 	ABaseCharacter{}
 {
 	AIControllerClass = APalMonsterController::StaticClass();
-	CommandComponent = CreateDefaultSubobject<UPalMonsterCommandComponent>(TEXT("PalCommand"));
+	PalCommand = CreateDefaultSubobject<UPalCommandComponent>(TEXT("PalCommandComponent"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
 	MonsterInteractionComponent = CreateDefaultSubobject<UPalMonsterInteractionComponent>(TEXT("MonsterInteractionComponent"));
 	HpWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpWidgetComponent"));
@@ -38,6 +38,7 @@ ABaseMonster::ABaseMonster() :
 	HpWidgetComponent->SetTickMode(ETickMode::Enabled);
 	HpWidgetComponent->SetupAttachment(GetRootComponent());
 	HpWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	HpWidgetComponent->SetVisibility(false);
 	MonsterName = TEXT("Monster");
 	Level = 1;
 	Hp = 100;
@@ -59,9 +60,9 @@ void ABaseMonster::BeginPlay()
 
 bool ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
 {
-	if (CommandComponent)
+	if (PalCommand)
 	{
-		return CommandComponent->PushCommand(Command);
+		return PalCommand->PushCommand(Command);
 	}
 	return false;
 }
@@ -133,9 +134,9 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		AttackComponent->StartAttack();*/
 		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 	}
-	if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	if (PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
-		CommandComponent->ResetCommandQue();
+		PalCommand->ResetCommandQue();
 		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
 	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: DamagedCharacter Hp : %f"), Hp);

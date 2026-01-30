@@ -32,6 +32,11 @@ void UPalCommanderComponent::UpdateWorkQueue()
 		}
 	}
 }
+void UPalCommanderComponent::WorkEndEvent(AActor* WorkActor, FPalCommand WorkCommand)
+{
+
+}
+
 void UPalCommanderComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -112,7 +117,7 @@ void UPalCommanderComponent::RemovePal(AActor* targetPal)
 
 void UPalCommanderComponent::RegisterWork(AActor* WorkActor)
 {
-	if (!WorkActor || !WorkActor->Implements< UCommanderManageable>())
+	if (!WorkActor || !WorkActor->Implements< UCommanderManageable>() || WorkActor == GetOwner())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s : Cannot Register Work , Not Implement ICommanderManageable"), *GetOwner()->GetName());
 		return;

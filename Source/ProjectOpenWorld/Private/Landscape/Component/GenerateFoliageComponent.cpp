@@ -254,7 +254,7 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 	UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage "));
 	if (EditorModeGenerate)
 	{
-		if (FoliageDataTable)
+		/*if (FoliageDataTable)
 		{
 			DeleteArray.Empty(false);
 			UpdateData.Empty(false);
@@ -269,7 +269,7 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 		FAsyncFoliageGenerater WorldGenTask(this);
 		WorldGenTask.DoWork();
 		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %d %d"), UpdateData.Num(), AddMap.Num());
-			UpdateGenerateFoliage();
+			UpdateGenerateFoliage();*/
 	}
 }
 

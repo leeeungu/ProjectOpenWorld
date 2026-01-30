@@ -55,9 +55,19 @@ void UPalAttackComponent::EndAttackMontage()
 		Controller->SetBBTargetActor(TargetActor);
 	}*/
 	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttackMontage Called "), *GetOwner()->GetName());
-	bSetAttackData = false;
-	bAttacking = false;
-	AttackIndex = 0;
+	ResetAttackData();
+}
+
+void UPalAttackComponent::ResetAttack()
+{
+	if (TargetActor)
+	{
+		TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
+	}
+	TargetActor = nullptr;
+	AttackData.AttackData.Empty();
+	AttackData.AttackSlot = ESubAttackType::None_AttackType;
+	ResetAttackData();
 }
 
 void UPalAttackComponent::SetAttackTarget(AActor* Actor)

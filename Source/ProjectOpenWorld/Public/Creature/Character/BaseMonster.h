@@ -33,7 +33,7 @@ protected:
 	float Defend{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr < UPalCommandComponent> CommandComponent{};
+	TObjectPtr < UPalCommandComponent> PalCommand{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
@@ -53,7 +53,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
-	FORCEINLINE UPalCommandComponent* GetCommandComponent() const { return CommandComponent; }
+	FORCEINLINE UPalCommandComponent* GetCommandComponent() const { return PalCommand; }
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE UPalMonsterInteractionComponent* GetMonsterInteractionComponent() const { return MonsterInteractionComponent; }
 

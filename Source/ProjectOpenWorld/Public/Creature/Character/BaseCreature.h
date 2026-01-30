@@ -28,7 +28,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> ArchitectureMeshComponent{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr < UPalCommandComponent> CommandComponent{};
+	TObjectPtr < UPalCommandComponent> PalCommand{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Pal/Component/PalCommandComponent.h"
@@ -9,14 +9,17 @@ UCLASS()
 class PROJECTOPENWORLD_API UPalMonsterCommandComponent : public UPalCommandComponent
 {
 	GENERATED_BODY()
-private:
-public:
-	UPalMonsterCommandComponent() = default;
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	virtual void OnStartCurrentCommand() override {}
-	virtual void OnFinishedCurrentCommand() override {}
 };
-
+//{
+//	GENERATED_BODY()
+//private:
+//public:
+//	UPalMonsterCommandComponent() = default;
+//protected:
+//	virtual void BeginPlay() override;
+//
+//public:
+//	virtual void OnStartCurrentCommand() override {}
+//	virtual void OnFinishedCurrentCommand() override {}
+//};
+//

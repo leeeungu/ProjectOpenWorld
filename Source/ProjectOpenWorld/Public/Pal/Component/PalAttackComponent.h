@@ -73,6 +73,7 @@ protected:
 	UFUNCTION()
 	void EndAttackMontage();
 public:	
+	void ResetAttack();
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")

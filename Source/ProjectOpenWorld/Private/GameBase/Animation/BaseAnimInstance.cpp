@@ -7,8 +7,8 @@
 void UBaseAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-	OnMontageStarted.AddDynamic(this, &UBaseAnimInstance::OnMontageStartedEvent);
-	OnMontageBlendingOut.AddDynamic(this, &UBaseAnimInstance::OnMontageBlendingOutEvent);
+	OnMontageStarted.AddUniqueDynamic(this, &UBaseAnimInstance::OnMontageStartedEvent);
+	OnMontageBlendingOut.AddUniqueDynamic(this, &UBaseAnimInstance::OnMontageBlendingOutEvent);
 	if (ACharacter* Owner = Cast<ACharacter>(TryGetPawnOwner()))
 	{
 		MovementComponent = Owner->GetCharacterMovement();

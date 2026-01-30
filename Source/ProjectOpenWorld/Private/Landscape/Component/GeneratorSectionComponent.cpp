@@ -363,11 +363,11 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 			Vertex.X = iVX * CellSize + Offset.X;
 			Vertex.Y = iVY * CellSize + Offset.Y;
 			Vertex.Z = GetHeight(Vertex.X, Vertex.Y);
-			if (bBossSection && iVY >= 1 && iVY <= yVertexCount - 2 &&
+			/*if (bBossSection && iVY >= 1 && iVY <= yVertexCount - 2 &&
 				iVX >= 1 && iVX <= xVertexCount - 2)
 			{
 				Vertex.Z = 800.f;
-			}
+			}*/
 			Vertices.Add(Vertex);
 			//DrawDebugBox(GetWorld(), Vertex, FVector(10, 10, 10), FColor::Red, true, 1);
 

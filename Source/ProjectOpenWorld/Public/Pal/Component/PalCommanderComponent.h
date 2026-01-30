@@ -15,6 +15,7 @@ protected:
 	std::set<TObjectPtr<ABaseCreature>> pals{};
 	
 	TQueue< TWeakObjectPtr<AActor>> WorkQueue{};
+	TQueue< TWeakObjectPtr<ABaseCreature>> TargetActorQueue{};
 
 	TSet< TWeakObjectPtr<AActor>> RegisteredWorks{};
 
@@ -30,6 +31,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	void UpdateWorkQueue();
+
+	void WorkEndEvent(AActor* WorkActor, FPalCommand WorkCommand);
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

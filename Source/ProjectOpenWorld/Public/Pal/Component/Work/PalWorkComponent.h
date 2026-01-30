@@ -21,7 +21,8 @@ protected:
 	TObjectPtr<ABaseCreature> OwnerPal{};
 	UPROPERTY()
 	TObjectPtr<APalAIController> OwnerController{};
-
+	bool bIsWorking{};
+	bool bIsArrive{};
 public:	
 	UPalWorkComponent();
 
@@ -29,8 +30,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UFUNCTION()
+	bool IsArrive() const { return bIsArrive; }
+	UFUNCTION()
+	virtual bool CanWork() { return !bIsWorking; }
+	UFUNCTION()
 	virtual void WorkStart(const FPalCommand& Command) PURE_VIRTUAL(UPalWorkComponent::WorkStart, );
+	UFUNCTION()
+	virtual void WorkEvent(const FPalCommand& Command) PURE_VIRTUAL(UPalWorkComponent::WorkEvent, );
+	UFUNCTION()
 	virtual void WorkEnd(const FPalCommand& Command) PURE_VIRTUAL(UPalWorkComponent::WorkEnd, );
+	UFUNCTION()
 	virtual void WorkCancel() PURE_VIRTUAL(UPalWorkComponent::WorkCancel, );
 
 	UPROPERTY(BlueprintAssignable, Category = "Work")

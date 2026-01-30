@@ -23,8 +23,8 @@ UENUM(BlueprintType)
 enum class EPalFacialMouthType : uint8
 {
 	Default,
-	Smile,
 	Shock,
+	Smile,
 	Anger
 };
 

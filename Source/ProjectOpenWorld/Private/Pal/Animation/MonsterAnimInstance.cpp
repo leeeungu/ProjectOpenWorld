@@ -1,4 +1,4 @@
-#include "Pal/Animation/MonsterAnimInstance.h"
+﻿#include "Pal/Animation/MonsterAnimInstance.h"
 #include "Creature/Character/BaseMonster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
@@ -15,9 +15,10 @@ void UMonsterAnimInstance::NativeInitializeAnimation()
 void UMonsterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-	if (!CommandComponent )
-		return;
+	if (OwnerPalCreature && CommandComponent && CommandComponent->GetCurrentCommand_C())
+	{
 	CurrentCommandKind = CommandComponent->GetCurrentCommand_C()->CommandKind;
 	SubCommandType = CommandComponent->GetCurrentCommand_C()->SubCommandType;
+	}
 	//bIsStun = OwnerPalCreature->IsStunned();
 }

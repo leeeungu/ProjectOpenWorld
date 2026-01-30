@@ -1,4 +1,4 @@
-#include "Pal/FunctionLibrary/Function_PalFacial.h"
+﻿#include "Pal/FunctionLibrary/Function_PalFacial.h"
 #include "Components/SkeletalMeshComponent.h"
 
 FVector UFunction_PalFacial::GetEyeOffset(EPalFacialEyeType EyeType)
@@ -16,7 +16,7 @@ FVector UFunction_PalFacial::GetMouthOffset(EPalFacialMouthType MouthType)
 	uint8 Value = static_cast<uint8>(MouthType);
 	FVector Offset(0.0f, 0.0f, 0.0f);
 	Offset.X = (Value / 2) * 0.5f; // Example calculation
-	Offset.Y = (Value % 2) * 0.25F; // Example calculation
+	Offset.Y = (Value % 2) * 0.5F; // Example calculation
 	return Offset;
 }
 

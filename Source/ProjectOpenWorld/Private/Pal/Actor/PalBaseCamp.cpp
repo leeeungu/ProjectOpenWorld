@@ -13,11 +13,11 @@ APalBaseCamp::APalBaseCamp() : Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);
+	//Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	//SetRootComponent(Root);
 	
-	CampMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	CampMesh->SetupAttachment(RootComponent);
+	//CampMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	//CampMesh->SetupAttachment(RootComponent);
 	PalStore = CreateDefaultSubobject<UPalStorageComponent>(TEXT("PalStorage"));
 	PalCommander = CreateDefaultSubobject<UPalCommanderComponent>(TEXT("PalCommander"));
 	CampBounds = CreateDefaultSubobject <USphereComponent >(TEXT("CampBound"));
