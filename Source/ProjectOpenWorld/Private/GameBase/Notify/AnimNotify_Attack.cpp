@@ -36,6 +36,13 @@ FVector UAnimNotify_Attack::GetEndLocation(USkeletalMeshComponent* MeshComp) con
 	return MeshComp->GetSocketLocation(NAME_None);
 }
 
+bool UAnimNotify_Attack::CollisionAttackResult(USkeletalMeshComponent* MeshComp, TArray<FHitResult>& HitResult)
+{
+	return  MeshComp->GetWorld()->SweepMultiByChannel(HitResult, GetStartLocation(MeshComp), GetEndLocation(MeshComp)
+		, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel4,
+		GetAttackCollisionShape(), {});
+}
+
 void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
@@ -50,34 +57,31 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		TArray<FHitResult> arResult{};
 		FCollisionQueryParams Param{};
 		FCollisionResponseParams ResponseParam{};
-		pWorld->SweepMultiByChannel(arResult, NewLocation, EndLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel4,
-			GetAttackCollisionShape(), Param);
+		CollisionAttackResult(MeshComp, arResult);
+		TSet< APawn*> Attacked{};
+		for (const FHitResult& Hit : arResult)
 		{
-			TSet< APawn*> Attacked{};
-			for (const FHitResult& Hit : arResult)
-			{
-				bool bReadldyIn{};
-				APawn* Pawn = Cast< APawn>(Hit.GetActor());
-				if (!Pawn || Pawn == OwnerPawn || !Pawn->Implements<UAttackInterface>())
-					continue;
-				if (FGenericTeamId::GetAttitude(Pawn->GetController(), OwnerPawn->GetController()) != ETeamAttitude::Hostile)
-					continue;
-				Attacked.FindOrAdd(Pawn, &bReadldyIn);
-				if (bReadldyIn)
-					continue;
+			bool bReadldyIn{};
+			APawn* Pawn = Cast< APawn>(Hit.GetActor());
+			if (!Pawn || Pawn == OwnerPawn || !Pawn->Implements<UAttackInterface>())
+				continue;
+			if (FGenericTeamId::GetAttitude(Pawn->GetController(), OwnerPawn->GetController()) != ETeamAttitude::Hostile)
+				continue;
+			Attacked.FindOrAdd(Pawn, &bReadldyIn);
+			if (bReadldyIn)
+				continue;
 
-				for (UAttackObject* AttackObject : AttackEventObject)
+			for (UAttackObject* AttackObject : AttackEventObject)
+			{
+				if (AttackObject)
 				{
-					if (AttackObject)
-					{
-						AttackObject->ExecuteAttackEvent(MeshComp, Hit);
-					}
+					AttackObject->ExecuteAttackEvent(MeshComp, Hit);
 				}
 			}
-			if (arResult.IsEmpty())
-			{
-				UE_LOG(LogTemp, Log, TEXT("UAnimNotify_Attack :: Notify Attacked Count : %d"), Attacked.Num());
-			}
+		}
+		if (arResult.IsEmpty())
+		{
+			UE_LOG(LogTemp, Log, TEXT("UAnimNotify_Attack :: Notify Attacked Count : %d"), Attacked.Num());
 		}
 	}
 	AttackEventObjectDebug(MeshComp);
@@ -86,12 +90,13 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 void UAnimNotify_Attack::AttackEventObjectDebug(USkeletalMeshComponent* MeshComp)
 {
 #if WITH_EDITOR	
-	FVector NewLocation = GetStartLocation(MeshComp);
+	FVector StartLocation = GetStartLocation(MeshComp);
+	FVector EndLocation = GetEndLocation(MeshComp);
 	for (UAttackObject* AttackObject : AttackEventObject)
 	{
 		if (AttackObject)
 		{
-			AttackObject->ExecuteDebugAttackEvent(MeshComp, NewLocation, GetAttackCollisionShape());
+			AttackObject->ExecuteDebugAttackEvent(MeshComp, StartLocation, EndLocation, GetAttackCollisionShape());
 		}
 	}
 #endif

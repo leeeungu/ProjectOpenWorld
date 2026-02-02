@@ -14,3 +14,11 @@ FVector UAnimNotify_SphereAttack::GetEndLocation(USkeletalMeshComponent* MeshCom
 {
 	return  MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * EndOffset;
 }
+//
+//bool UAnimNotify_SphereAttack::CollisionAttackResult(USkeletalMeshComponent* MeshComp, TArray<FHitResult>& HitResult)
+//{
+//	return UKismetSystemLibrary::SphereTraceMultiForObjects(
+//		MeshComp->GetWorld(), GetStartLocation(MeshComp), GetEndLocation(MeshComp), GetAttackCollisionShape().GetSphereRadius(),
+//		{ UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel4) }, false, { MeshComp->GetOwner() }, EDrawDebugTrace::ForDuration, HitResult, true,
+//		FLinearColor::Blue, FLinearColor::Green, 1.0f);
+//}

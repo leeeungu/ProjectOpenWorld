@@ -23,6 +23,7 @@ protected:
 	virtual FCollisionShape GetAttackCollisionShape() const;
 	virtual FVector GetStartLocation(USkeletalMeshComponent* MeshComp) const;
 	virtual FVector GetEndLocation(USkeletalMeshComponent* MeshComp) const;
+	virtual bool CollisionAttackResult(USkeletalMeshComponent* MeshComp, TArray<FHitResult>& HitResult);
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 	void AttackEventObjectDebug(USkeletalMeshComponent* MeshComp);
 };

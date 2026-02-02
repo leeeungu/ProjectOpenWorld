@@ -34,7 +34,7 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 	}
 }
 
-void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
+void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
 	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
@@ -108,7 +108,7 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 	}
 }
 
-void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
+void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
 	if (!CauserMesh || !CauserMesh->GetWorld()) // || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
@@ -137,22 +137,29 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 	}
 }
 
-void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
+void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
 	if (!CauserMesh || !CauserMesh->GetWorld())
 		return;
 	if (CollisionShape.IsSphere())
 	{
-		DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, CollisionShape.GetSphereRadius(), 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+		DrawDebugSphere(CauserMesh->GetWorld(), StartLocation, CollisionShape.GetSphereRadius(), 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+		if(StartLocation != EndLocation)
+			DrawDebugSphere(CauserMesh->GetWorld(), EndLocation, CollisionShape.GetSphereRadius(), 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
 	}
 	else if (CollisionShape.IsBox())
 	{
-		DrawDebugBox(CauserMesh->GetWorld(), AttackLocation, CollisionShape.GetBox(), DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+		DrawDebugBox(CauserMesh->GetWorld(), StartLocation, CollisionShape.GetBox(), DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+		if (StartLocation != EndLocation)
+			DrawDebugBox(CauserMesh->GetWorld(), EndLocation, CollisionShape.GetBox(), DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
 	}
 	else if (CollisionShape.IsCapsule())
 	{
-		DrawDebugCapsule(CauserMesh->GetWorld(), AttackLocation, CollisionShape.GetCapsuleHalfHeight(), CollisionShape.GetCapsuleRadius(),
+		DrawDebugCapsule(CauserMesh->GetWorld(), StartLocation, CollisionShape.GetCapsuleHalfHeight(), CollisionShape.GetCapsuleRadius(),
 			FQuat::Identity, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+		if (StartLocation != EndLocation)
+			DrawDebugCapsule(CauserMesh->GetWorld(), EndLocation, CollisionShape.GetCapsuleHalfHeight(), CollisionShape.GetCapsuleRadius(),
+				FQuat::Identity, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
 	}
 }
 

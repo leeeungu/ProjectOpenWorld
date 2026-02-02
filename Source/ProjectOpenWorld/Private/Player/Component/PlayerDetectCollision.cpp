@@ -1,4 +1,4 @@
-﻿#include "Player/Component/PlayerDetectCollision.h"
+#include "Player/Component/PlayerDetectCollision.h"
 #include "Player/Interface/PlayerDetectInterface.h"
 #include "Player/Character/BasePlayer.h"
 
@@ -13,6 +13,8 @@ UPlayerDetectCollision::UPlayerDetectCollision() : Super()
 
 void UPlayerDetectCollision::OnDetectBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Detect Begin Overlap %s"), *SweepResult.ToString());
+	DrawDebugSphere(GetWorld(), SweepResult.ImpactPoint, 10.0F, 32, FColor::Green, false, 2.0f);
 	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UPlayerDetectInterface::StaticClass()) && OwnerPlayer)
 	{
 		IPlayerDetectInterface::Execute_OnDetectBeginEvent(OtherActor, OwnerPlayer);

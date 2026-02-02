@@ -15,8 +15,17 @@ UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{
 		if (FoliageCompoent)
 		{
 			FoliageCompoent->ComponentTags.Add(FName("Landscape"));
+			FoliageCompoent->SetRenderCustomDepth(false);
+			FoliageCompoent->SetCustomDepthStencilValue(0);
 			FoliageMeshData.Add(FoliageCompoent);
+
 		}
+	}
+	//Script/Engine.DataTable'/Game/Landscape/DT_FoliageData.DT_FoliageData'
+	ConstructorHelpers::FObjectFinder<UDataTable> FoliageDataObj(TEXT("/Game/Landscape/DT_FoliageData.DT_FoliageData"));
+	if (FoliageDataObj.Succeeded())
+	{
+		FoliageDataTable= FoliageDataObj.Object;
 	}
 	FoliageCount = FoliageMeshData.Num();
 }
@@ -47,7 +56,8 @@ void UGenerateFoliageComponent::BeginPlay()
 		FoliageTypes.Empty(false);
 		FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
 	}
-
+	bGeneratingFoliage = false;
+	bUpdateBackData = false;
 	bDelayUpdate = false;
 	EmpthyFoliageMeshData.Empty(false);
 	for (int i = 0; i < FoliageMeshData.Num(); i++)
@@ -59,9 +69,10 @@ void UGenerateFoliageComponent::BeginPlay()
 			EmpthyFoliageMeshData.Add(FoliageCompoent);
 		}
 	}
+	FoliageCount = FoliageMeshData.Num();
 }
 
-void UGenerateFoliageComponent::SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComp)
+void UGenerateFoliageComponent::SetFoliageMeshComponent(const TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComp) const
 {
 	if (FoliageMesh && MeshComp)
 	{
@@ -72,12 +83,15 @@ void UGenerateFoliageComponent::SetFoliageMeshComponent(TObjectPtr<UFoliageType_
 		MeshComp->SetCollisionProfileName(FoliageMesh->BodyInstance.GetCollisionProfileName());
 		MeshComp->GetBodyInstance()->SetResponseToChannels(FoliageMesh->BodyInstance.GetCollisionResponse().GetResponseContainer());
 		MeshComp->SetVisibleInRayTracing(FoliageMesh->bVisibleInRayTracing);
+		MeshComp->SetRenderCustomDepth(FoliageMesh->bRenderCustomDepth);
+		MeshComp->SetCustomDepthStencilWriteMask(FoliageMesh->CustomDepthStencilWriteMask);
+		MeshComp->SetCustomDepthStencilValue(FoliageMesh->CustomDepthStencilValue);
 	}	
 }
 
 void UGenerateFoliageComponent::GenerateFoliageAsync()
 {
-	if (!bGeneratingFoliage && !bUpdateBackData && !EditorModeGenerate)
+	if (!bGeneratingFoliage && !bUpdateBackData )
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %f "), Time);
 		bDelayUpdate = false;
@@ -102,7 +116,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 		if (bUpdateBackData)
 		{
 			int Max = UpdateComponentTickCount;
-			while (!UpdateData.IsEmpty() && Max > 0 && !EmpthyFoliageMeshData.IsEmpty())
+			while (!UpdateData.IsEmpty() && Max > 0)
 			{
 				Max--;
 				FoliageUpdateData& Data = UpdateData.Last();
@@ -112,6 +126,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 					// Section 제거 처리
 					if (Data.bRemove)
 					{
+						UE_LOG(LogTemp, Warning, TEXT("Update Foliage %d"), Data.bRemove);
 						if (SectionData)
 						{
 							for (auto& Instance : SectionData->FoliageInstanceMap)
@@ -125,8 +140,13 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 						FoliageSectionDataMap.Remove(Data.SectionID);
 						nUpdateTickIndex = Data.FoliageData.Num() + 1;
 					}
-					else
+					else 
 					{
+						if (EmpthyFoliageMeshData.IsEmpty())
+						{
+							UpdateData.Empty();
+							break;
+						}
 						// 생성 일시 설치 가능한 인스턴스 추가
 						FTransform NewTransform = Data.FoliageData[nUpdateTickIndex];
 						FVector Location = NewTransform.GetLocation();
@@ -188,10 +208,7 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	Time += DeltaTime;
-	if (!IsGenerating() && bDelayUpdate)
-	{
-		GenerateFoliageAsync();
-	}
+
 	if (bGeneratingFoliage)
 	{
 		if (bUpdateBackData)
@@ -204,6 +221,10 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		if (bUpdateBackData)
 		{
 			UpdateGenerateFoliage();
+		}
+		else if (bDelayUpdate)
+		{
+			GenerateFoliageAsync();
 		}
 	}
 }
@@ -253,26 +274,8 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 {
 	Super::FinishGenerateWorld();
 	bDelayUpdate = true;
-	UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage "));
-	if (EditorModeGenerate)
-	{
-		/*if (FoliageDataTable)
-		{
-			DeleteArray.Empty(false);
-			UpdateData.Empty(false);
-			FoliageTypes.Empty(false);
-			FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
-		}
-		bDelayUpdate = false;
-		PlayerLastSectionID = GeneratorSectionComponent->GetPlayerSection();
-		bGeneratingFoliage = false;
-		bUpdateBackData = false;
-		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %d"), AddMap.Num());
-		FAsyncFoliageGenerater WorldGenTask(this);
-		WorldGenTask.DoWork();
-		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %d %d"), UpdateData.Num(), AddMap.Num());
-			UpdateGenerateFoliage();*/
-	}
+	UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage %d"), AddMap.Num());
+	SetComponentTickEnabled(true);
 }
 
 void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
@@ -337,29 +340,31 @@ void FAsyncFoliageGenerater::DoWork()
 						UpdateData.SectionID = SectionID;
 						UpdateData.FoliageMesh = FoliageType;
 						UpdateData.bRemove = AddData.bRemove;
+						if (!UpdateData.bRemove)
+						{
+							// Generate Random Transform
+							FTransform NewTransform{};
+							NewTransform.SetLocation(RandPos);
+							FRotator Rot{};
+							if (FoliageType->RandomYaw)
+								Rot.Yaw = FMath::RandRange(-360, 360);
+							Rot.Pitch = FMath::RandRange(-FoliageType->RandomPitchAngle, FoliageType->RandomPitchAngle);
+							NewTransform.SetRotation(Rot.Quaternion());
+							FVector Location = NewTransform.GetLocation();
+							Location += InstanceOffset;
 
-						// Generate Random Transform
-						FTransform NewTransform{};
-						NewTransform.SetLocation(RandPos);
-						FRotator Rot{};
-						if (FoliageType->RandomYaw)
-							Rot.Yaw = FMath::RandRange(-360, 360);
-						Rot.Pitch = FMath::RandRange(-FoliageType->RandomPitchAngle, FoliageType->RandomPitchAngle);
-						NewTransform.SetRotation(Rot.Quaternion());
-						FVector Location = NewTransform.GetLocation();
-						Location += InstanceOffset;
+							// 색션 밖으로 나가면 지형은 없는데 instance는 생기게 되니 제거
+							// clamp 하면 낮은 확률로 섹션 경계에 instance가 모여서 생길수도 있음
+							FBox SectionBox{ StartPos, EndPos };
+							bool bInSection = SectionBox.IsInsideOrOnXY(Location);
+							Location.Z += FMath::RandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max);
+							NewTransform.SetLocation(Location);
+							NewTransform.SetScale3D(FVector(FoliageType->GetRandomScale()));
 
-						// 색션 밖으로 나가면 지형은 없는데 instance는 생기게 되니 제거
-						// clamp 하면 낮은 확률로 섹션 경계에 instance가 모여서 생길수도 있음
-						FBox SectionBox{ StartPos, EndPos };
-						bool bInSection = SectionBox.IsInsideOrOnXY(Location);
-						Location.Z += FMath::RandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max);
-						NewTransform.SetLocation(Location);
-						NewTransform.SetScale3D(FVector(FoliageType->GetRandomScale()));
-
-						// New Data
-						if (bInSection)
-							UpdateData.FoliageData.Add(NewTransform);
+							// New Data
+							if (bInSection)
+								UpdateData.FoliageData.Add(NewTransform);
+						}
 					}
 				}
 			}
@@ -375,6 +380,14 @@ void FAsyncFoliageGenerater::DoWork()
 			FoliageGenerater->UpdateData.Add(NewUpdateData);
 		}
 	}
+	FoliageGenerater->UpdateData.StableSort(
+		[](const FoliageUpdateData& A, const FoliageUpdateData& B)
+		{
+			if (A.bRemove)
+				return false;
+			return B.bRemove;
+		}
+	);
 
 	if (FoliageGenerater)
 	{

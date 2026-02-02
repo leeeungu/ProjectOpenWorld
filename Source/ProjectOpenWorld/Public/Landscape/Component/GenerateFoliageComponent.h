@@ -72,13 +72,13 @@ protected:
 	TArray<FFoliageDataTable*> FoliageTypes{};
 	int32 ComponentIndex{};
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
 	int32 FoliageComponentCount = 520;
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "200"))
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
 	int32 FoliageCount = 200;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5000"))
@@ -112,7 +112,7 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 protected:
 	virtual void BeginPlay() override;
-	void SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp);
+	void SetFoliageMeshComponent(const TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp) const ;
 
 	void GenerateFoliageAsync();
 	void UpdateGenerateFoliage();

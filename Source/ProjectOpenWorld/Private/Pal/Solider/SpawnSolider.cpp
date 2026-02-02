@@ -1,4 +1,4 @@
-ï»¿#include "Pal/Solider/SpawnSolider.h"
+#include "Pal/Solider/SpawnSolider.h"
 #include "Components/SplineComponent.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
@@ -20,11 +20,11 @@ void ASpawnSolider::BeginPlay()
 	if (SoliderClass)
 	{
 		SpawnOffset = FVector::ZeroVector;
-		// double íƒ€ì…ì„ float íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì „ë‹¬
+		// double Å¸ÀÔÀ» float Å¸ÀÔÀ¸·Î º¯È¯ÇÏ¿© Àü´Ş
 		float CapsuleRadius = static_cast<float>(SpawnOffset.X);
 		float CapsuleHalfHeight = static_cast<float>(SpawnOffset.Y);
 		SoliderClass->GetDefaultObject<ACharacter>()->GetCapsuleComponent()->GetScaledCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
-		SpawnOffset.Y = SpawnOffset.X = CapsuleRadius * 2.0f;
+		SpawnOffset.Y = SpawnOffset.X = CapsuleRadius * 2.0f +10.f;
 		SpawnOffset.Z = CapsuleHalfHeight * 2.0f;
 	}
 	FVector endLocation = SplineComp->GetLocationAtSplinePoint(SplineComp->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World);

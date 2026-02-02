@@ -66,15 +66,38 @@ void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 		DrawDebugCapsule(GetWorld(), CapsuleCenter, SphylElem.Length * 0.5f, SphylElem.Radius, CapsuleRotation, FColor::Blue, false, 10.0f);
 		for (const FHitResult& Hit : arHitResult)
 		{
-			if (Hit.GetActor() && !Hit.GetActor()->ActorHasTag("Landscape"))
+			if (Hit.GetActor() && !Hit.GetActor()->ActorHasTag("Landscape") && Hit.GetActor() != GetOwner())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("UPalFoliageInstanceComponent::ResetItemSpawnMap : Capsule Hit Actor %s"),
-					*Hit.GetActor()->GetName());
 				bCanAddInstance = false;
 				break;
 			}
 		}
 	}
+	// sphere check
+	for (int32 i = 0; i < AggGeom.GetElementCount(EAggCollisionShape::Sphere) && bCanAddInstance; i++)
+	{
+		FKSphereElem SphereElem = AggGeom.SphereElems[i];
+		FVector SphereCenter = Instance.TransformPosition(SphereElem.Center);
+		GetWorld()->SweepMultiByChannel(
+			arHitResult,
+			SphereCenter,
+			SphereCenter,
+			FQuat::Identity,
+			ECollisionChannel::ECC_Visibility,
+			FCollisionShape::MakeSphere(SphereElem.Radius),
+			FCollisionQueryParams::DefaultQueryParam
+		);
+		DrawDebugSphere(GetWorld(), SphereCenter, SphereElem.Radius, 12, FColor::Red, false, 10.0f);
+		for (const FHitResult& Hit : arHitResult)
+		{
+			if (Hit.GetActor() && !Hit.GetActor()->ActorHasTag("Landscape") && Hit.GetActor() != GetOwner())
+			{
+				bCanAddInstance = false;
+				break;
+			}
+		}
+	}
+
 	if (bCanAddInstance)
 	{
 		AddInstance(Instance, true);
