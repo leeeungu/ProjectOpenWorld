@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -27,15 +27,15 @@ protected:
 
 protected:
 	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const {}
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const {}
+	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const {}
 public:
 	void ExecuteAttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 	{
 		AttackEvent(CauserMesh, HitData);
 	}
-	void ExecuteDebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
+	void ExecuteDebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
 	{
-		DebugAttackEvent(CauserMesh, AttackLocation, HitRadius);
+		DebugAttackEvent(CauserMesh, AttackLocation, CollisionShape);
 	}
 };
 
@@ -55,7 +55,7 @@ protected:
 	FDebugData DebugData{};
 
 	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const override;
+	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const override;
 };
 
 UCLASS()
@@ -87,7 +87,7 @@ protected:
 	FDebugData DebugData{};
 
 	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const override;
+	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const override;
 };
 
 UCLASS()
@@ -100,7 +100,7 @@ protected:
 
 protected:
 	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const override;
+	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const override;
 };
 
 UCLASS()
@@ -113,6 +113,6 @@ protected:
 	FDebugData DebugData{};
 
 	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const override {};
+	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const override {};
 };
 

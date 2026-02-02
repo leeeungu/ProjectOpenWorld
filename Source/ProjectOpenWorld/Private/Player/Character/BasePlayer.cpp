@@ -1,4 +1,4 @@
-ï»¿#include "Player/Character/BasePlayer.h"
+#include "Player/Character/BasePlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -488,12 +488,12 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState == EPlayerState::TopDown)
 		{
-			// í™”ë©´ì—ì„œ ì§€ë©´ìœ¼ë¡œ ìœ„ì¹˜ë¥¼ pick í•˜ê³  ì´ë™ ë°©í–¥ ê³„ì‚°
+			// È­¸é¿¡¼­ Áö¸éÀ¸·Î À§Ä¡¸¦ pick ÇÏ°í ÀÌµ¿ ¹æÇâ °è»ê
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC)
 			{
 				float MouseX = 0.f, MouseY = 0.f;
-				// ë§ˆìš°ìŠ¤ ì¢Œí‘œ ì–»ê¸°
+				// ¸¶¿ì½º ÁÂÇ¥ ¾ò±â
 				if (PC->GetMousePosition(MouseX, MouseY))
 				{
 					FVector WorldOrigin, WorldDir;
@@ -522,7 +522,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 							AddMovementInput(ForwardDirection, 6);
 
 #if ENABLE_DRAW_DEBUG
-							// ë””ë²„ê·¸ ì‹œê°í™” (ì—ë””í„°/ê°œë°œìš©)
+							// µğ¹ö±× ½Ã°¢È­ (¿¡µğÅÍ/°³¹ß¿ë)
 							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
 							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif

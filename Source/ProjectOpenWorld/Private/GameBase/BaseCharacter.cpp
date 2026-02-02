@@ -1,12 +1,15 @@
-﻿#include "GameBase/BaseCharacter.h"
+#include "GameBase/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimMetaData.h"
 #include "GameBase/Component/CharacterMontageComponent.h"
+#include "Components/CapsuleComponent.h"
 
 
 ABaseCharacter::ABaseCharacter() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Overlap);
 }
 
 void ABaseCharacter::BeginPlay()

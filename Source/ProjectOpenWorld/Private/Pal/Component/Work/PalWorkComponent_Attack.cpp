@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/Work/PalWorkComponent_Attack.h"
+#include "Pal/Component/Work/PalWorkComponent_Attack.h"
 #include "Pal/Component/PalAttackComponent.h"
 
 UPalWorkComponent_Attack::UPalWorkComponent_Attack() : Super()
@@ -56,7 +56,7 @@ void UPalWorkComponent_Attack::WorkEnd(const FPalCommand& Command)
 
 void UPalWorkComponent_Attack::WorkCancel()
 {
-	UE_LOG(LogTemp, Log, TEXT("%s : Attack Work Cancel"), *GetOwner()->GetName());
+	//UE_LOG(LogTemp, Log, TEXT("%s : Attack Work Cancel"), *GetOwner()->GetName());
 	if (bIsWorking == false)
 		return;
 	AttackTarget = nullptr;

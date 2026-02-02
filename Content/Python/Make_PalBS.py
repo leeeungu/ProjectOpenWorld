@@ -17,7 +17,7 @@ from typing import Type, TypeVar
 # ------------------------------------------------------------------
 
 # 작업 대상 팔 이름
-PAL_NAME: str = "FlowerDinosaur"  # 필요한 팔 이름으로 수정
+PAL_NAME: str = "PinkCat"  # 필요한 팔 이름으로 수정
 
 # 복사 대상 Global BlendSpace 경로 (ObjectPath 전체)
 TARGET_ASSET_PATH: str = f"{GLOBAL_ANIM_DIR}/BS_MM_Locomotion"

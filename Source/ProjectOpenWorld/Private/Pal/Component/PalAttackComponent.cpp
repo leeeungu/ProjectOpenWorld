@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/PalAttackComponent.h"
+#include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "GameBase/BaseCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -128,7 +128,7 @@ void UPalAttackComponent::StartAttack()
 	}
 	if (bAttacking)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: already Attacking "), *GetOwner()->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: already Attacking "), *GetOwner()->GetName());
 		return;
 	}
 	if (IAttackInterface::Execute_IsDead(TargetActor))

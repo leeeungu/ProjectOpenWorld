@@ -1,4 +1,4 @@
-﻿#include "Landscape/Actor/FoliageEditorActor.h"
+#include "Landscape/Actor/FoliageEditorActor.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"
 #include "FoliageType_InstancedStaticMesh.h"
 #include "FoliageInstancedStaticMeshComponent.h"
@@ -46,6 +46,31 @@ void AFoliageEditorActor::PostEditChangeProperty(FPropertyChangedEvent& Property
 		{
 			ClearFoliageInstance();
 		}
+	}
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AFoliageEditorActor, bAddToDataTable))
+	{
+		if (FoliageDataTable && bAddToDataTable)
+		{
+			FFoliageDataTable NewFoliageDataTable{};
+			for (const auto& Foliage : FoliageComponents)
+			{
+				FFoliageInstanceData NewInstanceData{};
+				NewInstanceData.FoliageType = Foliage.Key;
+				int32 InstanceCount = Foliage.Value->GetInstanceCount();
+				for (int32 Index = 0; Index < InstanceCount; Index++)
+				{
+					FTransform InstanceTransform;
+					Foliage.Value->GetInstanceTransform(Index, InstanceTransform, true);
+					NewInstanceData.InstanceOffset = InstanceTransform.GetLocation();
+					NewFoliageDataTable.InstanceData.Add(NewInstanceData);
+				}
+
+			}
+			FoliageDataTable->AddRow(InstanceRowName, NewFoliageDataTable);
+
+			bAddToDataTable = false;
+		}
+
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }

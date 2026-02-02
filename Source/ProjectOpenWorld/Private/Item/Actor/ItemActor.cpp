@@ -1,4 +1,4 @@
-﻿#include "Item/Actor/ItemActor.h"
+#include "Item/Actor/ItemActor.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -54,7 +54,7 @@ void AItemActor::BeginPlay()
 	Super::BeginPlay();
 
 	//ItemSkeletalMesh->SetLinearDamping(5.f);
-	ItemSkeletalMesh->SetAngularDamping(8.f);
+	ItemSkeletalMesh->SetAngularDamping(10.f);
 	if (ItemWidget && ToolTipWidget)
 		ItemWidget->SetWidget(ToolTipWidget.Get());
 }

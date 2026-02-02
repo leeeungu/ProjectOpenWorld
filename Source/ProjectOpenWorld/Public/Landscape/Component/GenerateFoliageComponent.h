@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -36,14 +36,6 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UGenerateFoliageComponent : public UGenerateWorldComponent
 {
 	friend class FAsyncFoliageGenerater;
-
-
-	/*struct FoliageStaticMeshData
-	{
-
-	 FoliageMeshComponent{};
-		TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh{};
-	};*/
 
 	struct FoliageSectionData
 	{

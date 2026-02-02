@@ -1,4 +1,4 @@
-ï»¿#include "GameBase/Object/AttackObject.h"
+#include "GameBase/Object/AttackObject.h"
 #include "GameFramework/Character.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -8,7 +8,7 @@
 
 void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
-	// Characterë¥¼ ë„‰ë°± ì‹œí‚¤ëŠ” í•¨ìˆ˜
+	// Character¸¦ ³Ë¹é ½ÃÅ°´Â ÇÔ¼ö
 	AActor* AttackTarget = HitData.GetActor();
 	if (AttackTarget)
 	{
@@ -34,7 +34,7 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 	}
 }
 
-void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
+void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
 {
 	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
@@ -74,18 +74,18 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
-		// ê±°ë¦¬ ê³„ì‚°
+		// °Å¸® °è»ê
 		float Distance = FVector::Dist(TargetCharacter->GetActorLocation(), NewLocation);
 
 		if (AttackRadius > 0)
 		{
-			// ê±°ë¦¬ ë¹„ìœ¨ ê³„ì‚° (Distance / AttackRadiusì˜ ì œê³±)
+			// °Å¸® ºñÀ² °è»ê (Distance / AttackRadiusÀÇ Á¦°ö)
 			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
 
-			// ê±°ë¦¬ë³„ í˜ ê³„ì‚° (ë¹„ìœ¨ì„ ë°˜ì˜)
+			// °Å¸®º° Èû °è»ê (ºñÀ²À» ¹İ¿µ)
 			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 
-			// í˜ ë²¡í„° ê³„ì‚°
+			// Èû º¤ÅÍ °è»ê
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
 			//LaunchDirection.X *= 3;
 			//LaunchDirection.Y *= 3;
@@ -93,7 +93,7 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
 			UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Ratio: %f, ForceMultiplier: %f, ImpulseForce: %s"), Distance, Ratio, ForceMultiplier, *ImpulseForce.ToString());
-			// í˜ ì ìš©
+			// Èû Àû¿ë
 			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
 			if (OtherAttack)
@@ -108,10 +108,11 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 	}
 }
 
-void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
+void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
 {
-	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
+	if (!CauserMesh || !CauserMesh->GetWorld()) // || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
+	UE_LOG(LogTemp, Warning, TEXT("UAttackObject_Impulse::DebugAttackEvent"));
 	FVector NewLocation = CauserMesh->GetSocketLocation(SocketName) + CauserMesh->GetComponentRotation().Quaternion() * SocketOffset;
 	DrawDebugSphere(CauserMesh->GetWorld(), NewLocation, AttackRadius, 20, FColor::Purple, false, DebugData.DebugLifeTime, 0, 0.5f);
 
@@ -123,7 +124,7 @@ void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh,
 
 void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
-	// Characterì— ìŠ¤í„´ì„ ì£¼ëŠ” í•¨ìˆ˜
+	// Character¿¡ ½ºÅÏÀ» ÁÖ´Â ÇÔ¼ö
 	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
 	if (!CauserCharacter)
 		return;
@@ -131,15 +132,28 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
 	if (OtherAttack)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UAttackObject_Attack::AttackEvent - DamagedCharacter"));
 		IAttackInterface::Execute_DamagedCharacter(HitData.GetActor(), AttackInterface);
 	}
 }
 
-void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, float HitRadius) const
+void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector AttackLocation, const FCollisionShape& CollisionShape) const
 {
-	//if (!CauserMesh || !CauserMesh->GetWorld())
-	//	return;
-	//DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, HitRadius, 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+	if (!CauserMesh || !CauserMesh->GetWorld())
+		return;
+	if (CollisionShape.IsSphere())
+	{
+		DrawDebugSphere(CauserMesh->GetWorld(), AttackLocation, CollisionShape.GetSphereRadius(), 20, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+	}
+	else if (CollisionShape.IsBox())
+	{
+		DrawDebugBox(CauserMesh->GetWorld(), AttackLocation, CollisionShape.GetBox(), DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+	}
+	else if (CollisionShape.IsCapsule())
+	{
+		DrawDebugCapsule(CauserMesh->GetWorld(), AttackLocation, CollisionShape.GetCapsuleHalfHeight(), CollisionShape.GetCapsuleRadius(),
+			FQuat::Identity, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
+	}
 }
 
 void UAttackObject_HitReact::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
