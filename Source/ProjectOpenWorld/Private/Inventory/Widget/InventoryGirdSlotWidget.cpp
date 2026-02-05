@@ -1,4 +1,4 @@
-﻿#include "Inventory/Widget/InventoryGirdSlotWidget.h"
+#include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Inventory/Widget/InventorySlotWidget.h"
@@ -77,6 +77,14 @@ void UInventoryGirdSlotWidget::NativeConstruct()
 FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	UUserWidget::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && itemPointer)
+	{
+		UInventoryComponent* inventoryComponent = GetOwningPlayer()->GetComponentByClass<UInventoryComponent>();
+		if (inventoryComponent)
+		{
+			inventoryComponent->UseItem(inventoryRow, inventoryCol);
+		}
+	}
 	return FReply::Handled();
 }
 

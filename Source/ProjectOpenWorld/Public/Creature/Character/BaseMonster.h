@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -23,14 +23,6 @@ protected:
 	FName MonsterName{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	int Level{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Hp{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float MaxHp{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Attack{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Defend{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < UPalCommandComponent> PalCommand{};
@@ -71,8 +63,8 @@ public:
 
 public:
 	int GetMonsterLevel() const { return Level; }
-	float GetCurrentHp() const { return Hp; }
-	float GetMaxHp() const { return MaxHp; }
+	float GetCurrentHp() const;
+	float GetMaxHp() const;
 	FName GetMonsterName() const { return MonsterName; }
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

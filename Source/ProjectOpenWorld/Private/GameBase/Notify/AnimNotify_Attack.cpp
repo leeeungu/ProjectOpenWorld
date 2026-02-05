@@ -38,8 +38,8 @@ FVector UAnimNotify_Attack::GetEndLocation(USkeletalMeshComponent* MeshComp) con
 
 bool UAnimNotify_Attack::CollisionAttackResult(USkeletalMeshComponent* MeshComp, TArray<FHitResult>& HitResult)
 {
-	return  MeshComp->GetWorld()->SweepMultiByChannel(HitResult, GetStartLocation(MeshComp), GetEndLocation(MeshComp)
-		, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel4,
+	return  MeshComp->GetWorld()->SweepMultiByObjectType(HitResult, GetStartLocation(MeshComp), GetEndLocation(MeshComp)
+		, FQuat::Identity, ECollisionChannel::ECC_Pawn,
 		GetAttackCollisionShape(), {});
 }
 
@@ -63,14 +63,13 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		{
 			bool bReadldyIn{};
 			APawn* Pawn = Cast< APawn>(Hit.GetActor());
-			if (!Pawn || Pawn == OwnerPawn || !Pawn->Implements<UAttackInterface>())
+			if (!Pawn || Pawn == OwnerPawn || !Pawn->Implements<UAttackInterface>() && !Hit.bBlockingHit)
 				continue;
 			if (FGenericTeamId::GetAttitude(Pawn->GetController(), OwnerPawn->GetController()) != ETeamAttitude::Hostile)
 				continue;
 			Attacked.FindOrAdd(Pawn, &bReadldyIn);
 			if (bReadldyIn)
 				continue;
-
 			for (UAttackObject* AttackObject : AttackEventObject)
 			{
 				if (AttackObject)

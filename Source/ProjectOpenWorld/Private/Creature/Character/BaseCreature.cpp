@@ -1,4 +1,4 @@
-﻿#include "Creature/Character/BaseCreature.h"
+#include "Creature/Character/BaseCreature.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GenericTeamAgentInterface.h"
 #include "Interaction/Component/PalInteractionComponent.h"
+#include "GameBase/Component/StatComponent.h"
 
 void ABaseCreature::BeginPlay()
 {
@@ -30,8 +31,9 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 	InteractionComponent = CreateDefaultSubobject<UPalInteractionComponent>(TEXT("InteractionComponent"));
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
-	Hp = 300.0f;
-	Attack = 10.0f;
+	HPStat->SetCurrentStat(300.0f);
+	HPStat->SetMaxStat(300.0f);
+	AttackStat->SetCurrentStat(10.0f);
 }
 
 bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
@@ -87,9 +89,7 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 		return false;
 	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
-	if (Hp < Damage)
-		Damage = Hp;
-	Hp -= Damage;
+	Damage = HPStat->AddCurrentStat(-Damage);
 	//if (CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	//{
 	//	CommandComponent->ResetCommandQue();
@@ -104,9 +104,8 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
 
-	if (Hp <= 0.f)
+	if (HPStat->GetCurrentStat() <= 0.f)
 	{
-		Hp = 0.0f;
 		if (GetMesh())
 		{
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
@@ -192,15 +191,15 @@ void ABaseCreature::EndResource_Implementation(AResourceActor* ResourceActor)
 
 float ABaseCreature::GetAttackValue_Implementation() const
 {
-	return Attack;
+	return AttackStat->GetCurrentStat();
 }
 
 void ABaseCreature::SetAttackValue_Implementation(float NewValue)
 {
-	Attack = NewValue;
+	AttackStat->SetCurrentStat(NewValue);
 }
 
 void ABaseCreature::RetAttackValue_Implementation()
 {
-	Attack = 1.0f;
+	//Attack = 1.0f;
 }

@@ -1,4 +1,4 @@
-﻿#include "Item/System/ItemDataSubsystem.h"
+#include "Item/System/ItemDataSubsystem.h"
 
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
 
@@ -142,13 +142,22 @@ int32 UItemDataSubsystem::GetPalStaticItemSortIDByName(FName RowName)
 	return 99999;
 }
 
-TSoftClassPtr<AItemActor> UItemDataSubsystem::GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) 
+TSubclassOf<AItemActor> UItemDataSubsystem::GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
 	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result)
-		return Result->VisualBlueprintClassSoft;
-	return TSoftClassPtr<AItemActor>{};
+	if (Result && Result->VisualBlueprintClassSoft)
+		return TSubclassOf<AItemActor>(Result->VisualBlueprintClassSoft);
+	return TSubclassOf<AItemActor>{};
+}
+
+TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName)
+{
+	const FPalStaticItemDataStruct* Result{};
+	GetPalStaticItemDataPtr(RowName, Result);
+	if (Result && Result->VisualBlueprintClassSoft)
+		return TSubclassOf<UBaseItemObject>(Result->VisualBlueprintClassSoft);
+	return TSubclassOf<UBaseItemObject>();
 }
 
 FString UItemDataSubsystem::GetPalItemRecipeProductIdByName(FName RowName) 

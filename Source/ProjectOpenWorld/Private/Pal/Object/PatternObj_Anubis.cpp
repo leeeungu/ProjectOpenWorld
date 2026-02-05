@@ -25,7 +25,7 @@ void UPatternObj_Anubis01::StartPattern()
 	if (bError)
 		return;
 
-
+	OwnerCharacter->StartPatternWidget(PatternSolveCount);
 	OwnerCharacter->UseOrientRotationToMovement();
 	PatternMoveDirection = FMath::VRand().GetSafeNormal2D();
 	if (TargetPlayer)
@@ -66,13 +66,14 @@ void UPatternObj_Anubis01::UpdatePattern(float DeltaTime)
 	}
 	FRotator CurrentRotation = { 0, PatternRotateSpeedYaw * DeltaTime, 0 };
 	if(OwnerCharacter)
-		OwnerCharacter->AddActorWorldRotation(CurrentRotation);
+		OwnerCharacter->GetMesh()->AddRelativeRotation(CurrentRotation);
 }
 
 void UPatternObj_Anubis01::EndPattern()
 {
 	if (!OwnerCharacter || !TargetPlayer)
 		return;
+	OwnerCharacter->EndPatternWidget();
 	OwnerCharacter->UseControllerDesiredRotation();
 	bIsPatternActive = false;
 	if (TargetPlayer)
@@ -91,11 +92,13 @@ void UPatternObj_Anubis01::UpdateCondition()
 		return;
 	--CurrentCount;
 	CurTime = 0.f;
+	OwnerCharacter->UpdatePatternWidget();
 	if (CurrentCount <= 0)
 	{
 		bIsPatternActive = false;
 		if (OwnerCharacter && OwnerCharacter.Get())
 		{
+			OwnerCharacter->GetMesh()->SetRelativeRotation(FRotator(0.f, -90.0f, 0.0f));
 			OwnerCharacter->SetStunned(StunDuration);
 			if (OwnerCharacter && OwnerCharacter.Get())
 			{

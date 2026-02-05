@@ -2,6 +2,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimMetaData.h"
 #include "GameBase/Component/CharacterMontageComponent.h"
+#include "GameBase/Component/StatComponent.h"
 #include "Components/CapsuleComponent.h"
 
 
@@ -10,6 +11,10 @@ ABaseCharacter::ABaseCharacter() : Super()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Overlap);
+
+	HPStat = CreateDefaultSubobject<UStatComponent>(TEXT("HPStat"));
+	AttackStat = CreateDefaultSubobject<UStatComponent>(TEXT("AttackStat"));
+	DefendStat = CreateDefaultSubobject<UStatComponent>(TEXT("DefendStat"));
 }
 
 void ABaseCharacter::BeginPlay()

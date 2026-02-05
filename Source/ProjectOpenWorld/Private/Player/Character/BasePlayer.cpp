@@ -19,6 +19,8 @@
 #include "NavigationInvokerComponent.h"
 #include "Player/Component/PlayerAttackComponent.h"
 #include "Player/Component/PlayerDetectCollision.h"
+#include "Player/Component/PlayerItemComponent.h"
+#include "GameBase/Component/StatComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -91,6 +93,12 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 
 	PlayerDetectCollision = CreateDefaultSubobject<UPlayerDetectCollision>(TEXT("PlayerDetectCollision"));
 	PlayerDetectCollision->SetupAttachment(RootComponent);
+
+	PlayerItemManagerComponent	 = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
+	LevelComponent = CreateDefaultSubobject<UStatComponent>(TEXT("LevelComponent"));
+
+	WeaponMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComponent"));
+	WeaponMeshComponent->SetupAttachment(GetMesh(), TEXT("WeaponR_Sword"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -142,6 +150,18 @@ void ABasePlayer::BeginPlay()
 	if (PlayerController)
 	{
 		GameOverWidget = CreateWidget<UUserWidget>(PlayerController, GameOverWidgetClass);
+	}
+
+	SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
+}
+
+void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
+{
+	if (WeaponMeshComponent)
+	{
+		WeaponMeshComponent->SetSkeletalMesh(NewMesh);
+		WeaponMeshComponent->SetRelativeTransform(FTransform::Identity);
+		WeaponMeshComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
 	}
 }
 
@@ -220,7 +240,7 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		break;
 	}
 	case EPlayerState::Battle:
-		UE_LOG(LogBasePlayer, Log, TEXT("Battle Mode"));
+		//UE_LOG(LogBasePlayer, Log, TEXT("Battle Mode"));
 		UseControllerDesiredRotation();
 		break;
 	case EPlayerState::TopDown:
@@ -239,7 +259,7 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 			PlayerController->SetShowMouseCursor(true);
 
 		}
-		UE_LOG(LogBasePlayer, Log, TEXT("TopDown Mode"));
+		//UE_LOG(LogBasePlayer, Log, TEXT("TopDown Mode"));
 		//EnableInput(PlayerController);
 		BuildAssistComponent->EndBuilding();
 		break;
@@ -269,7 +289,7 @@ void ABasePlayer::RetAttackValue_Implementation()
 
 bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
 {
-	if (!Other || !Other.GetObject())
+	if (!Other || !Other.GetObject() || bDead)
 		return false;
 	APawn* pOther = Cast < APawn>(Other.GetObject());
 	if (pOther  && FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) == ETeamAttitude::Friendly)
@@ -288,7 +308,6 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
-	UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
 	if (Hp <= 0.f)
 	{
 		Hp = 0.0f;
@@ -351,6 +370,8 @@ void ABasePlayer::StopArchitect_Implementation(ABaseBuilding* Building)
 
 void ABasePlayer::EndArchitect_Implementation(ABaseBuilding* Building)
 {
+	if(LevelComponent)
+		LevelComponent->AddCurrentStat(35.0);
 	GetPlayerAnimationComponent()->ResetAnimationState();
 }
 
@@ -595,6 +616,13 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseR:
 		break;
 	case EInputKeyType::MouseL:
+		if (CurrentPlayerState != EPlayerState::Battle)
+		{
+			if (PlayerAttackComponent)
+			{
+				PlayerAttackComponent->Attack(EPlayerAttackType::Default);
+			}
+		}
 		break;
 	case EInputKeyType::MouseWheel:
 		break;
@@ -643,6 +671,14 @@ void ABasePlayer::Restart()
 		if (PlayerAttackComponent)
 			PlayerAttackComponent->StopAttack();
 		EnableInput(Cast<APlayerController>(GetController()));
+		if(CurrentPlayerState == EPlayerState::TopDown)
+		{
+			APlayerController* PlayerController = Cast<APlayerController>(GetController());
+			if (PlayerController)
+			{
+				PlayerController->SetShowMouseCursor(true);
+			}
+		}
 	}
 }
 

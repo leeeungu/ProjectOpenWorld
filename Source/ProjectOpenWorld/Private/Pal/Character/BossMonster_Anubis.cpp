@@ -3,6 +3,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Pal/Component/PalPatternComponent.h"
+#include "Pal/Component/PalAttackComponent.h"
+#include "Pal/Widget/PatternWidget_Anubis.h"
 
 void ABossMonster_Anubis::BeginPlay()
 {
@@ -52,17 +54,40 @@ void ABossMonster_Anubis::OnMovementModeChanged(EMovementMode PrevMovementMode, 
 
 void ABossMonster_Anubis::OnCustomModeDamaged(AActor* Other, float Damaage)
 {
-	PatternComponent->UpdatePatternCondition(0);
+	float HPRadio = GetCurrentHp() / GetMaxHp();
+	if (HPRadio <= 0.5f)
+	{
+		AttackComponent->StopAttack();
+		AttackComponent->SetAttackData(ESubAttackType::Skill01);
+		AttackComponent->SetAttackTarget(Other);
+		AttackComponent->StartAttack();
+		PatternComponent->UpdatePatternCondition(0);
+	}
 }
 
 void ABossMonster_Anubis::StartPatternWidget(int nCount)
 {
 	PatternWidget->SetVisibility(true);
-	//PatternWidget->GetWidget();
+	FVector2D DrawSize = {64.0f, 64.0f};
+	float Count = static_cast<float>(nCount);
+	Count += 1;
+	PatternWidget->AddRelativeLocation(FVector(0.0f, 64.0f * (Count *0.5f), 200.0f));
+	PatternWidget->SetDrawSize(FVector2D(DrawSize.X* nCount, DrawSize.Y));
+	if (UPatternWidget_Anubis* PatternWidgetCast = Cast<UPatternWidget_Anubis>(PatternWidget->GetUserWidgetObject()))
+	{
+		PatternWidgetCast->SetPatternImage(nCount);
+	}
+}
+
+void ABossMonster_Anubis::UpdatePatternWidget()
+{
+	if (UPatternWidget_Anubis* PatternWidgetCast = Cast<UPatternWidget_Anubis>(PatternWidget->GetUserWidgetObject()))
+	{
+		PatternWidgetCast->UpdatePatternImage();
+	}
 }
 
 void ABossMonster_Anubis::EndPatternWidget()
 {
-
 	PatternWidget->SetVisibility(false);
 }

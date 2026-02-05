@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -20,6 +20,7 @@ class UBuildingModeWidget;
 class UNavigationInvokerComponent;
 class UPlayerAttackComponent;
 class UPlayerDetectCollision;
+class UPlayerItemComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -30,6 +31,7 @@ enum class EPlayerState : uint8
 	Climb,
 	Battle,
 	TopDown,
+	Mining,
 	EnumMax UMETA(Hidden)
 };
 
@@ -62,11 +64,16 @@ class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitec
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<USpringArmComponent> CameraBoom{};
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	TObjectPtr <UPlayerItemComponent> PlayerItemManagerComponent{};
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr< UCameraComponent> FollowCamera{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	TObjectPtr <UStatComponent> LevelComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	TObjectPtr <USkeletalMeshComponent> WeaponMeshComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building)
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
@@ -168,10 +175,15 @@ public:
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
+	FORCEINLINE  USkeletalMeshComponent* const GetWeaponMeshComponent() const { return WeaponMeshComponent; }
+	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
 	
+
+	void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName);
+
 	FORCEINLINE  float* GetStatusRef(EStatusType StatusType) {
 		return  StatusArray.IsValidIndex((uint8)StatusType) ? &StatusArray[(uint8)StatusType] : &StatusArray[0];
 	} 

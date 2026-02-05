@@ -1,9 +1,12 @@
-﻿#include "Inventory/Component/InventoryComponent.h"
+#include "Inventory/Component/InventoryComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/Character/BasePlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Item/Object/BaseItemObject.h"
+#include "Player/Component/PlayerItemComponent.h"
+
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -159,6 +162,20 @@ int UInventoryComponent::GetItemCount(FName SearchItemID) const
 		}
 	}
 	return ToTalCount;
+}
+
+void UInventoryComponent::UseItem(int Row, int Col)
+{
+	int Index = Row * inventoryCol + Col;
+	if (!inventoryViewArray.IsValidIndex(Index))
+		return;
+	FInventorySlot* SlotData = inventoryViewArray[Index];
+	if (SlotData->isEmpthySlot)
+		return;
+	TSubclassOf<UBaseItemObject> ItemObjectClass = UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(SlotData->ItemID);
+	//SlotData->ItemID
+	PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass);
+
 }
 
 bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol)

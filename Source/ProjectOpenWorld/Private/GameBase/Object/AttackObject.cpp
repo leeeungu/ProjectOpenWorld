@@ -92,7 +92,6 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 			LaunchDirection.Z = abs(LaunchDirection.Z);
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
-			UE_LOG(LogTemp, Warning, TEXT("Distance: %f, Ratio: %f, ForceMultiplier: %f, ImpulseForce: %s"), Distance, Ratio, ForceMultiplier, *ImpulseForce.ToString());
 			// 힘 적용
 			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
@@ -112,7 +111,6 @@ void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh,
 {
 	if (!CauserMesh || !CauserMesh->GetWorld()) // || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
-	UE_LOG(LogTemp, Warning, TEXT("UAttackObject_Impulse::DebugAttackEvent"));
 	FVector NewLocation = CauserMesh->GetSocketLocation(SocketName) + CauserMesh->GetComponentRotation().Quaternion() * SocketOffset;
 	DrawDebugSphere(CauserMesh->GetWorld(), NewLocation, AttackRadius, 20, FColor::Purple, false, DebugData.DebugLifeTime, 0, 0.5f);
 
@@ -124,7 +122,6 @@ void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh,
 
 void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
-	// Character에 스턴을 주는 함수
 	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
 	if (!CauserCharacter)
 		return;
@@ -132,7 +129,6 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
 	if (OtherAttack)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UAttackObject_Attack::AttackEvent - DamagedCharacter"));
 		IAttackInterface::Execute_DamagedCharacter(HitData.GetActor(), AttackInterface);
 	}
 }

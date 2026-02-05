@@ -27,5 +27,6 @@ public:
 	virtual void OnCustomModeDamaged(AActor* Other, float Damaage);
 
 	void StartPatternWidget(int nCount);
+	void UpdatePatternWidget();
 	void EndPatternWidget();
 };

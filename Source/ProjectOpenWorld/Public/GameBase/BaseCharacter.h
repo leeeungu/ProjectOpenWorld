@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,6 +7,8 @@
 #include "GameBase/Interface/AttackInterface.h"
 #include "BaseCharacter.generated.h"
 
+class UStatComponent;
+
 class UCharacterMontageComponent;
 
 UCLASS()
@@ -14,6 +16,14 @@ class PROJECTOPENWORLD_API ABaseCharacter : public ACharacter, public IAttackInt
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	TObjectPtr< UStatComponent> HPStat{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	TObjectPtr< UStatComponent> AttackStat{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	TObjectPtr< UStatComponent> DefendStat{};
+
+
 	bool bDead{};
 public:
 	// Sets default values for this character's properties
@@ -35,4 +45,11 @@ public:
 
 
 	virtual bool LaunchAttack_Implementation(const TScriptInterface< IAttackInterface>& Other, FVector LaunchVelocity, bool bXYOverride, bool bZOverride);
+
+	UFUNCTION(BlueprintPure, Category = "Status")
+	UStatComponent* GetHPStat() const { return HPStat; }
+	UFUNCTION(BlueprintPure, Category = "Status")
+	UStatComponent* GetAttackStat() const { return AttackStat; }
+	UFUNCTION(BlueprintPure, Category = "Status")
+	UStatComponent* GetDefendStat() const { return DefendStat; }
 };

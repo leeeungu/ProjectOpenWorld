@@ -122,13 +122,12 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 			GetInstanceTransform(InstanceIndices[i], InstanceTransform,  true);
 			int32& Count = ItemSpawnMap.FindOrAdd(InstanceTransform.GetLocation(), ItemSpawnListAssetUserDataPtr->GetMaxSpawnCount());
 			Count--;
-			TSoftClassPtr<AItemActor> SpawnClass = UItemDataSubsystem::GetPalStaticItemVisualBlueprintClassSoftByName(ItemName);
+			TSubclassOf<AItemActor> SpawnClass = UItemDataSubsystem::GetPalStaticItemVisualBlueprintClassSoftByName(ItemName);
 			UE_LOG(LogTemp, Warning, TEXT("UPalFoliageInstanceComponent::SpawnItem : Spawning Item %s at Location %s, Remaining Count %d"),
 				*ItemName.ToString(),
 				*InstanceTransform.GetLocation().ToString(),
 				Count);
-			SpawnClass.LoadSynchronous();
-			if (SpawnClass && SpawnClass.IsValid())
+			if (SpawnClass)
 			{
 				FVector NewLocation = InstanceTransform.GetLocation();
 				NewLocation += FVector(0, 0, 200); // Spawn above ground

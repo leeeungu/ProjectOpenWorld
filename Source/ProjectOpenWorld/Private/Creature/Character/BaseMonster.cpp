@@ -1,4 +1,4 @@
-﻿#include "Creature/Character/BaseMonster.h"
+#include "Creature/Character/BaseMonster.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
@@ -12,6 +12,7 @@
 #include "Components/WidgetComponent.h"
 #include "Pal/Widget/PalHpWidget_MonsterDefault.h"
 #include "Pal/Controller/PalAIController.h"
+#include "GameBase/Component/StatComponent.h"
 
 
 
@@ -41,21 +42,15 @@ ABaseMonster::ABaseMonster() :
 	HpWidgetComponent->SetVisibility(false);
 	MonsterName = TEXT("Monster");
 	Level = 1;
-	Hp = 100;
-	Attack = 10.0f;
+	HPStat->SetCurrentStat(100.f);
+	HPStat->SetMaxStat(100.f);
+	AttackStat->SetCurrentStat(10.f);
 }
 
 void ABaseMonster::BeginPlay()
 {
 	ABaseCharacter::BeginPlay();
-	if (HpWidgetComponent)
-	{
-		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
-		if (HpWidget)
-		{
-			HpWidget->InitializeHPWidget(this);
-		}
-	}
+	
 }
 
 bool ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
@@ -69,12 +64,12 @@ bool ABaseMonster::ReceiveCommand_Implementation(FPalCommand Command)
 
 float ABaseMonster::GetAttackValue_Implementation() const
 {
-	return Attack;
+	return AttackStat->GetCurrentStat();
 }
 
 void ABaseMonster::SetAttackValue_Implementation(float NewValue)
 {
-	Attack = NewValue;
+	AttackStat->SetCurrentStat(NewValue);
 }
 
 void ABaseMonster::PossessedBy(AController* NewController)
@@ -90,19 +85,38 @@ void ABaseMonster::PossessedBy(AController* NewController)
 void ABaseMonster::SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData)
 {
 	Level = lv;
-	Hp = LevelData.MaxHP;
-	Attack = LevelData.AttackPower;
-	Defend = LevelData.Armor;
+	HPStat->SetMaxStat(LevelData.MaxHP);
+	HPStat->SetCurrentStat(LevelData.MaxHP);
+	AttackStat->SetCurrentStat(LevelData.AttackPower);
+	DefendStat->SetCurrentStat(LevelData.Armor);
+	if (HpWidgetComponent)
+	{
+		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
+		if (HpWidget)
+		{
+			HpWidget->InitializeHPWidget(this);
+		}
+	}
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = LevelData.MoveSpeed;
 	}
 }
 
+float ABaseMonster::GetCurrentHp() const
+{
+	return HPStat->GetCurrentStat();
+}
+
+float ABaseMonster::GetMaxHp() const
+{
+	return HPStat->GetMaxStat();
+}
+
 void ABaseMonster::RetAttackValue_Implementation()
 {
-	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: RetAttackValue Not set"));
-	//Attack = 10.0f;
+	//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: RetAttackValue Not set"));
+	////Attack = 10.0f;
 }
 
 bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
@@ -115,39 +129,28 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		return false;
 	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
-	if (Hp < Damage)
-		Damage = Hp;
-	Hp -= Damage;
+	Damage = HPStat->AddCurrentStat(-Damage);
 
-		UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack Target Set"));
-		APalAIController* AIController = Cast<APalAIController>(GetController());
-		if (AIController)
-		{
-			AIController->SetBBTargetActor(pOther);
-		}
+	if (APalAIController* AIController = Cast<APalAIController>(GetController()))
+	{
+		AIController->SetBBTargetActor(pOther);
+	}
 	if (AttackComponent && !AttackComponent->IsSetTarget())
 	{
 		AttackComponent->SetAttackTarget(pOther);
-		//pOther && !CommandComponent->IsValidCommand() && CommandComponent->GetCurrentCommandKind() != EPalCommandKind::Attack)
-	/*	AttackComponent->SetAttackTarget(pOther);
 		AttackComponent->SetAttackData(ESubAttackType::Default);
-		AttackComponent->StartAttack();*/
-		//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 	}
-	if (PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	if (PalCommand && PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		PalCommand->ResetCommandQue();
 		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
-	UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: DamagedCharacter Hp : %f"), Hp);
 	if (OnDamagedDelegate.IsBound())
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
-	//UE_LOG(LogTemp, Log, TEXT("HP : %f"), Hp);
-	if (Hp <= 0.f)
+	if (HPStat->GetCurrentStat() <= 0.f)
 	{
-		Hp = 0.0f;
 		if (GetMesh())
 		{
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
@@ -161,14 +164,14 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FTimerHandle handle{};
 		bDead = true;
-		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f,false, 4.0f);
+		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);
 	}
 	return true;
 }
 
 bool ABaseMonster::IsDead_Implementation() const
 {
-	return Hp <= 0.f;
+	return HPStat->GetCurrentStat() <= 0.f;
 }
 
 EPalCommandKind ABaseMonster::GetCommandKind_Implementation()

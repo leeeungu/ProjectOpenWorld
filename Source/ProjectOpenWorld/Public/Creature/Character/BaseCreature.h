@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -36,15 +36,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
 	TObjectPtr<UInteractionComponent> InteractionComponent{};
 
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Hp{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Attack{};
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
-	float Defend{};	
 	bool bActionStarted{};
-
 protected:
 	virtual void BeginPlay() override;
 public:

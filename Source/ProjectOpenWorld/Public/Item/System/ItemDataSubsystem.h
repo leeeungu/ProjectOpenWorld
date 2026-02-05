@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -10,6 +10,7 @@
 #include "ItemDataSubsystem.generated.h"
 
 class AItemActor;
+class UBaseItemObject;
 
 UCLASS()
 class PROJECTOPENWORLD_API UItemDataSubsystem : public UGameInstanceSubsystem
@@ -91,7 +92,9 @@ public:
 	static int32 GetPalStaticItemSortIDByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	static TSoftClassPtr<AItemActor> GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) ;
+	static TSubclassOf<AItemActor> GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) ;
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static TSubclassOf<UBaseItemObject> GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FString GetPalItemRecipeProductIdByName(FName RowName) ;

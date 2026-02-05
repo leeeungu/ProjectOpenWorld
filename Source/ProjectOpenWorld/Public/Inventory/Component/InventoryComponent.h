@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -51,6 +51,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	int GetItemCount(FName SearchItemID) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UseItem(int Row, int Col);
 
 	//UFUNCTION(BlueprintCallable, Category = "Inventory")
 	//bool SetInevntorySlot(int Row, int Col, FName NewItemID, int ItemCount = 1);

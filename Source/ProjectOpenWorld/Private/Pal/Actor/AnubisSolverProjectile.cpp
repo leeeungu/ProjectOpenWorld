@@ -36,7 +36,6 @@ void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* Ov
 {
 	if (OtherActor && OtherActor != this)
 	{
-
 		ABossMonster* AnubisBoss = Cast<ABossMonster>(OtherActor);
 		if (AnubisBoss && bProjectileActive)
 		{

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -98,7 +98,7 @@ public:
 	FString VisualBlueprintClassName{};
 	//	VisualBlueprintClassSoft
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	TSoftClassPtr<AItemActor> VisualBlueprintClassSoft{};
+	TSubclassOf<UObject> VisualBlueprintClassSoft{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	int64 Editor_RowNameHash{};
 };
