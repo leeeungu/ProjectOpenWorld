@@ -48,6 +48,8 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		if (HitResult.GetActor())
 		{
 			TScriptInterface< IInteractionInterface> Other = TScriptInterface< IInteractionInterface>(HitResult.GetActor());
+			if (!Other)
+				Other = TScriptInterface< IInteractionInterface>(HitResult.GetComponent());
 			if (!CheckSameTarget(Other))
 			{
 				OnDetectEnd(); // 이전 타겟에 대한 감지 종료

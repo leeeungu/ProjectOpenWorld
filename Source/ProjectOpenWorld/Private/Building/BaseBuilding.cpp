@@ -1,4 +1,4 @@
-﻿#include "Building/BaseBuilding.h"
+#include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
@@ -17,8 +17,8 @@ ABaseBuilding::ABaseBuilding() :Super()
 	buildingMeshComponent->SetMobility(EComponentMobility::Static);
 	//buildingMeshComponent->SetCanEverAffectNavigation(false);
 	buildingMeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	buildingMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	buildingMeshComponent->SetGenerateOverlapEvents(true);
-
 	
 	buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
 	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));

@@ -1,12 +1,14 @@
 #include "Pal/Character/BossMonster_Anubis.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Pal/Component/PalPatternComponent.h"
 
 void ABossMonster_Anubis::BeginPlay()
 {
 	Super::BeginPlay();
 	OnDamagedDelegate.AddUniqueDynamic(this, &ABossMonster_Anubis::OnCustomModeDamaged);
+	PatternWidget->SetVisibility(false);
 }
 
 ABossMonster_Anubis::ABossMonster_Anubis() : ABossMonster()
@@ -33,6 +35,9 @@ ABossMonster_Anubis::ABossMonster_Anubis() : ABossMonster()
 	{
 		GetMesh()->SetAnimInstanceClass(AnimBPAsset.Class);
 	}
+
+	PatternWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PatternWidget"));
+	PatternWidget->SetupAttachment(RootComponent);
 }
 
 void ABossMonster_Anubis::Tick(float DeltaTime)
@@ -48,4 +53,16 @@ void ABossMonster_Anubis::OnMovementModeChanged(EMovementMode PrevMovementMode, 
 void ABossMonster_Anubis::OnCustomModeDamaged(AActor* Other, float Damaage)
 {
 	PatternComponent->UpdatePatternCondition(0);
+}
+
+void ABossMonster_Anubis::StartPatternWidget(int nCount)
+{
+	PatternWidget->SetVisibility(true);
+	//PatternWidget->GetWidget();
+}
+
+void ABossMonster_Anubis::EndPatternWidget()
+{
+
+	PatternWidget->SetVisibility(false);
 }

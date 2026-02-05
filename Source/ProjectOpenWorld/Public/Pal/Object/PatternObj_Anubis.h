@@ -4,7 +4,7 @@
 #include "Pal/Object/PatternObj.h"
 #include "PatternObj_Anubis.generated.h"
 
-class ABossMonster;
+class ABossMonster_Anubis;
 class ABasePlayer;
 
 UENUM(BlueprintType)
@@ -36,7 +36,7 @@ protected:
 	int CurrentCount{};
 	float CurTime{};
 protected:
-	TObjectPtr<ABossMonster> OwnerCharacter{};
+	TObjectPtr<ABossMonster_Anubis> OwnerCharacter{};
 	TObjectPtr<ABasePlayer> TargetPlayer{};
 public:
 	UPatternObj_Anubis01() = default;

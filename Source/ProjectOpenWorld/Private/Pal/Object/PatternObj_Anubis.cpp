@@ -5,11 +5,12 @@
 #include "GenericTeamAgentInterface.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Component/PalMonsterInteractionComponent.h"
-#include "Pal/Character/BossMonster.h"
+#include "Pal/Character/BossMonster_Anubis.h"
+
 
 void UPatternObj_Anubis01::InitializePattern(AActor* OwnerActor, AActor* TargetActor)
 {
-	OwnerCharacter = Cast<ABossMonster>(OwnerActor);
+	OwnerCharacter = Cast<ABossMonster_Anubis>(OwnerActor);
 	TargetPlayer = Cast<ABasePlayer>(TargetActor);
 }
 
@@ -23,6 +24,7 @@ void UPatternObj_Anubis01::StartPattern()
 
 	if (bError)
 		return;
+
 
 	OwnerCharacter->UseOrientRotationToMovement();
 	PatternMoveDirection = FMath::VRand().GetSafeNormal2D();

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Creature/Character/BaseMonster.h"
@@ -21,6 +21,7 @@ protected:
 
 	float CurStunTime{};
 	TSubclassOf<UUserWidget> HpWidgetClass{};
+	UPROPERTY()
 	TObjectPtr< UUserWidget> HpWidget{};
 
 protected:

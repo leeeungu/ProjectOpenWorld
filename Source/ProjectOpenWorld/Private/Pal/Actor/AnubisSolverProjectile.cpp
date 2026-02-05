@@ -55,7 +55,6 @@ void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* Ov
 			if (!InteractionComp)
 				return;
 			InteractionComp->SetInteractionTarget(this);
-			bProjectileActive = true;
 	
 		}
 		else if (bProjectileActive)
@@ -93,7 +92,7 @@ void AAnubisSolverProjectile::Tick(float DeltaTime)
 void AAnubisSolverProjectile::OnInteractionStart_Implementation(ACharacter* pOther)
 {
 	APlayerController* PC = Cast<APlayerController>(pOther->GetController());
-	if (!bProjectileActive || !TargetPlayer || !TargetPlayer->IsTopDownMode())
+	if ( !TargetPlayer || !TargetPlayer->IsTopDownMode())
 		return;
 	if (PC)
 	{
@@ -111,6 +110,7 @@ void AAnubisSolverProjectile::OnInteractionStart_Implementation(ACharacter* pOth
 				FHitResult Hit;
 				FCollisionQueryParams Params{};
 				Params.AddIgnoredActor(this);
+				bProjectileActive = true;
 
 				GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params);
 				if (Hit.GetActor())
