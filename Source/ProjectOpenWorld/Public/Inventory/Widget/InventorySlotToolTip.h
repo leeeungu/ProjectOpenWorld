@@ -15,7 +15,7 @@ class PROJECTOPENWORLD_API UInventorySlotToolTip : public UUserWidget
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "ItemRecipe")
 	FName RecipeID = NAME_None;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr <UTextBlock> ItemNameText{};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))

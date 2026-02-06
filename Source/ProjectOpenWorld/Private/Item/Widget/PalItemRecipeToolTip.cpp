@@ -38,6 +38,7 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 				Result->OverrideName == "None" ? RecipeID.ToString() :
 				Result->OverrideName
 			);
+			ItemName = FText::FromStringTable("/Game/Global/StringTable/ST_PSN_EULA", *ItemName.ToString());
 			RecipeNameText->SetText(ItemName);
 		}
 		if (RecipeIconImage)
@@ -50,10 +51,12 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 		}
 		if (RecipeDescText)
 		{
-			RecipeDescText->SetText(FText::FromString(
-				Result->OverrideDescription == "None" ? FString("No Description Available") :
-				Result->OverrideDescription
-						));
+			FText Desc = FText::FromString(
+				Result->OverrideName == "None" ? RecipeID.ToString() :
+				Result->OverrideName
+			);
+			Desc = FText::FromStringTable("/Game/Global/StringTable/ST_PalItemDesc", *Desc.ToString());
+			RecipeDescText->SetText(Desc);
 		}
 	}
 

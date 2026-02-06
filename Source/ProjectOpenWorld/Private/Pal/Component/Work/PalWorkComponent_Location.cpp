@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/Work/PalWorkComponent_Location.h"
+#include "Pal/Component/Work/PalWorkComponent_Location.h"
 
 UPalWorkComponent_Location::UPalWorkComponent_Location()
 {
@@ -18,8 +18,8 @@ void UPalWorkComponent_Location::WorkStart(const FPalCommand& Command)
 {
 	if (bIsWorking)
 		return;
-	UE_LOG(LogTemp, Log, TEXT("Location Work Start"));
 	bIsWorking = true;
+	bIsWorkEnd = false;
 	if (OwnerController)
 	{
 		OwnerController->SetBBTargetLocation(Command.TargetLocation);
@@ -28,14 +28,7 @@ void UPalWorkComponent_Location::WorkStart(const FPalCommand& Command)
 
 void UPalWorkComponent_Location::WorkEvent(const FPalCommand& Command)
 {
-	UE_LOG(LogTemp, Log, TEXT("Location Work Event"));
-	if (FVector::Distance(Command.TargetLocation, OwnerPal->GetActorLocation()) >= 100.0f)
-	{
-		if (OwnerController)
-		{
-			OwnerController->SetBBTargetLocation(Command.TargetLocation);
-		}
-	}
+	WorkCancel();
 }
 
 void UPalWorkComponent_Location::WorkEnd(const FPalCommand& Command)
@@ -47,9 +40,11 @@ void UPalWorkComponent_Location::WorkCancel()
 {
 	if (!bIsWorking)
 		return;
+	bIsWorkEnd = true;
 	bIsWorking = false;
 	if (OwnerController)
 	{
+		UE_LOG(LogTemp, Log, TEXT("UPalWorkComponent_Location :: WorkEvent %s"), * OwnerController->GetName());
 		OwnerController->ResetMove();
 	}
 }

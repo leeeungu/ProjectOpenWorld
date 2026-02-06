@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/Work/PalWorkComponent.h"
+#include "Pal/Component/Work/PalWorkComponent.h"
 #include "Resource/Interface/ResourceInterface.h"
 
 
@@ -10,9 +10,13 @@ UPalWorkComponent::UPalWorkComponent()
 void UPalWorkComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	OwnerPal = Cast<ABaseCreature>(GetOwner());;
-	if(OwnerPal)
-		OwnerController = Cast<APalAIController>(OwnerPal->GetController());
+	OwnerPal = Cast<ABaseCreature>(GetOwner());
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerController = Cast<APalAIController>(OwnerCharacter->GetController());
+	}
 }
 
 //void UPalWorkComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

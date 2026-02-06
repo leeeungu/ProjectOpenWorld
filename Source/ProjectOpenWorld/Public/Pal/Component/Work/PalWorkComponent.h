@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -22,6 +22,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<APalAIController> OwnerController{};
 	bool bIsWorking{};
+	bool bIsWorkEnd{};
 	bool bIsArrive{};
 public:	
 	UPalWorkComponent();
@@ -34,6 +35,8 @@ public:
 	bool IsArrive() const { return bIsArrive; }
 	UFUNCTION()
 	virtual bool CanWork() { return !bIsWorking; }
+	UFUNCTION()
+	virtual bool IsWorkEnd() const { return bIsWorkEnd; }
 	UFUNCTION()
 	virtual void WorkStart(const FPalCommand& Command) PURE_VIRTUAL(UPalWorkComponent::WorkStart, );
 	UFUNCTION()

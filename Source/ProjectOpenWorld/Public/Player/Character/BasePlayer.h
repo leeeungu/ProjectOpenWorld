@@ -21,6 +21,8 @@ class UNavigationInvokerComponent;
 class UPlayerAttackComponent;
 class UPlayerDetectCollision;
 class UPlayerItemComponent;
+class ABasePlayerController;
+class UStatComponent_Level;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -71,7 +73,7 @@ protected:
 	TObjectPtr< UCameraComponent> FollowCamera{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	TObjectPtr <UStatComponent> LevelComponent{};
+	TObjectPtr <UStatComponent_Level> StatComponent_Level{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr <USkeletalMeshComponent> WeaponMeshComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building)
@@ -112,7 +114,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UUserWidget> GameOverWidget{};
 
-
+	TObjectPtr< ABasePlayerController> BasePlayerController{};
 	//bool TopDownMode{};
 public:
 
@@ -162,10 +164,14 @@ protected:
 	///** Called for movement input */
 	void MoveClimb(const FInputActionValue& Value);
 	void MoveTravel(const FInputActionValue& Value);
+	virtual void PossessedBy(AController* NewController) override;
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
+	UFUNCTION()
+	void OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel);
+
 public:
 	FORCEINLINE UPlayerAttackComponent* const GetPlayerAttackComponent() const { return PlayerAttackComponent; }
 	FORCEINLINE EPlayerState GetPlayerState() const { return CurrentPlayerState; }  //
@@ -177,6 +183,7 @@ public:
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
 	FORCEINLINE  USkeletalMeshComponent* const GetWeaponMeshComponent() const { return WeaponMeshComponent; }
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
+	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
 
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }

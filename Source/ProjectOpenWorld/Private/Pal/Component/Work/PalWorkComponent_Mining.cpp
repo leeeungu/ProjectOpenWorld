@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/Work/PalWorkComponent_Mining.h"
+#include "Pal/Component/Work/PalWorkComponent_Mining.h"
 
 #include "Interaction/Component/InteractionComponent.h"	
 
@@ -23,6 +23,7 @@ bool UPalWorkComponent_Mining::CanWork()
 void UPalWorkComponent_Mining::WorkStart(const FPalCommand& Command)
 {
 	bIsArrive = true;
+	bIsWorkEnd = false;
 	if (OwnerController)
 		OwnerController->SetBBTargetActor(Command.pTarget.Get());
 }
@@ -51,6 +52,7 @@ void UPalWorkComponent_Mining::WorkCancel()
 	if (!bIsWorking)
 		return;
 	bIsWorking = false;
+	bIsWorkEnd = true;
 	if (InteractionComp)
 	{
 		InteractionComp->OnInteractionStart();

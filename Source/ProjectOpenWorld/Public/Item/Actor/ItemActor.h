@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -10,16 +10,19 @@
 class USkeletalMeshComponent;
 class UWidgetComponent;
 class USphereComponent;
+class UStaticMeshComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface, public IGenerateWorldInterface
 {
 	GENERATED_BODY()
 protected:
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
-	//TObjectPtr<USphereComponent> ItemCollision{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<USphereComponent> ItemCollision{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<USkeletalMeshComponent> ItemSkeletalMesh{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> ItemStaticMesh{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UWidgetComponent> ItemWidget{};
 	

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
@@ -23,6 +23,7 @@ enum class EInputKeyType : uint8
 	Key2	,
 	Key3	,
 	KeyE	,
+	KeyTab	,	
 };
 
 class UInputAction;

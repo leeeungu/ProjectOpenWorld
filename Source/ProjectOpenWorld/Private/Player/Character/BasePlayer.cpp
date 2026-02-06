@@ -21,6 +21,8 @@
 #include "Player/Component/PlayerDetectCollision.h"
 #include "Player/Component/PlayerItemComponent.h"
 #include "GameBase/Component/StatComponent.h"
+#include "GameBase/Component/StatComponent_Level.h"
+#include "Player/Controller/BasePlayerController.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -95,7 +97,7 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	PlayerDetectCollision->SetupAttachment(RootComponent);
 
 	PlayerItemManagerComponent	 = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
-	LevelComponent = CreateDefaultSubobject<UStatComponent>(TEXT("LevelComponent"));
+	StatComponent_Level = CreateDefaultSubobject<UStatComponent_Level>(TEXT("StatComponent_Level"));
 
 	WeaponMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComponent"));
 	WeaponMeshComponent->SetupAttachment(GetMesh(), TEXT("WeaponR_Sword"));
@@ -152,7 +154,22 @@ void ABasePlayer::BeginPlay()
 		GameOverWidget = CreateWidget<UUserWidget>(PlayerController, GameOverWidgetClass);
 	}
 
-	SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
+	//SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
+	HPStat->SetCurrentStat(*GetStatusRef(EStatusType::MaxHp));
+	HPStat->SetMaxStat(*GetStatusRef(EStatusType::MaxHp));
+	StatComponent_Level->OnLevelUp.AddUniqueDynamic(this, &ABasePlayer::OnLevelUpEvent);
+}
+
+void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
+{
+	if (IsMaxLevel)
+		return;
+	float MaxHp = *GetStatusRef(EStatusType::MaxHp);
+	float NewMaxHp = MaxHp + 50;
+	SetStatus(EStatusType::MaxHp, NewMaxHp);
+	HPStat->SetMaxStat(NewMaxHp);
+	HPStat->SetCurrentStat(NewMaxHp);
+	AttackStat->AddCurrentStat(20.0f);
 }
 
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
@@ -175,11 +192,39 @@ void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 
 bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 {
-	if (StatusArray.IsValidIndex((uint8)StatusType))
+	switch (StatusType)
 	{
-		Result = StatusArray[(uint8)StatusType];
-		return true;
+	case EStatusType::None:
+		break;
+	case EStatusType::Hp:
+		Result = HPStat->GetCurrentStat();
+		break;
+	case EStatusType::MaxHp:
+		Result = HPStat->GetMaxStat();
+		break;
+	case EStatusType::Attack:
+		Result = AttackStat->GetCurrentStat();
+		break;
+	case EStatusType::Defense:
+		Result = DefendStat->GetCurrentStat();
+		break;
+	case EStatusType::Shield:
+	case EStatusType::MaxShield:
+	case EStatusType::Health:
+	case EStatusType::MaxHealth:
+	case EStatusType::Stamina:
+	case EStatusType::WorkSpeed:
+	case EStatusType::MaxWeight:
+	case EStatusType::EnumMax:
+	default:
+		if (StatusArray.IsValidIndex((uint8)StatusType))
+		{
+			Result = StatusArray[(uint8)StatusType];
+			return true;
+		}
+		break;
 	}
+	
 	return false;
 }
 
@@ -298,19 +343,14 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 		return false;
 	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
-	float Hp{};
-	GetStatus(EStatusType::Hp, Hp);
-	if (Hp < Damage)
-		Damage = Hp;
-	Hp -= Damage;
-	SetStatus(EStatusType::Hp, Hp);
+	//GetStatus(EStatusType::Hp, Hp);
+	Damage = HPStat->AddCurrentStat(-Damage);
 	if (OnDamagedDelegate.IsBound())
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}
-	if (Hp <= 0.f)
+	if (HPStat->GetCurrentStat() <= 0.f)
 	{
-		Hp = 0.0f;
 		PlayerAttackComponent->StopAttack();
 		PlayerAttackComponent->Attack(EPlayerAttackType::Dead);
 		DisableInput(Cast<APlayerController>(GetController()));
@@ -370,8 +410,8 @@ void ABasePlayer::StopArchitect_Implementation(ABaseBuilding* Building)
 
 void ABasePlayer::EndArchitect_Implementation(ABaseBuilding* Building)
 {
-	if(LevelComponent)
-		LevelComponent->AddCurrentStat(35.0);
+	if(StatComponent_Level)
+		StatComponent_Level->AddCurrentStat(35.0);
 	GetPlayerAnimationComponent()->ResetAnimationState();
 }
 
@@ -457,10 +497,20 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		}
 		break;
 	case EInputKeyType::MouseWheel:
-	
 		break;
 	case EInputKeyType::KeyB:
 		break;
+	case EInputKeyType::KeyTab:
+	{
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !InteractionComponent->IsInteracting())
+		{
+			if (BasePlayerController)
+			{
+				BasePlayerController->ToggleInventory();
+			}
+		}
+		break;
+	}
 	default:
 		break;
 	}
@@ -491,7 +541,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 		}
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
 		{
 			InteractionComponent->OnInteractionTriggered();
 		}
@@ -499,7 +549,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::Esc:
 		break;
 	case EInputKeyType::KeyC:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
 		{
 			InteractionComponent->OnActorCancel();
 		}
@@ -564,11 +614,15 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	}
 		break;
 	case EInputKeyType::KeyB:
-		if (BuildingWidget && CurrentPlayerState != EPlayerState::TopDown)
+		if (BuildingWidget && CurrentPlayerState != EPlayerState::TopDown && !BasePlayerController->bIsInventoryOpen())
 		{
 			BuildingWidget->ToggleWidget();
 		}
 		break;
+	case EInputKeyType::KeyTab:
+	{
+		break;
+	}
 	default:
 		break;
 	}
@@ -596,7 +650,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
 		{
 			InteractionComponent->OnInteractionCompleted();
 		}
@@ -616,7 +670,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseR:
 		break;
 	case EInputKeyType::MouseL:
-		if (CurrentPlayerState != EPlayerState::Battle)
+		if (CurrentPlayerState == EPlayerState::Battle)
 		{
 			if (PlayerAttackComponent)
 			{
@@ -641,10 +695,15 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	}
 	case EInputKeyType::KeyE:
 	{
-
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !InteractionComponent->IsInteracting())
+		{
+			if (BasePlayerController)
+			{
+				BasePlayerController->ToggleInventory();
+			}
+		}
 		break;
 	}
-	break;
 	default:
 		break;
 	}
@@ -667,7 +726,7 @@ void ABasePlayer::Restart()
 	if (bDead)
 	{
 		bDead = false;
-		SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
+		HPStat->SetCurrentStat(HPStat->GetMaxStat());
 		if (PlayerAttackComponent)
 			PlayerAttackComponent->StopAttack();
 		EnableInput(Cast<APlayerController>(GetController()));
@@ -809,4 +868,10 @@ void ABasePlayer::MoveTravel(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+}
+
+void ABasePlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	BasePlayerController = Cast<ABasePlayerController>(NewController);
 }

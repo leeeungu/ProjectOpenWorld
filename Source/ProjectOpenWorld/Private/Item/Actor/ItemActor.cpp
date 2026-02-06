@@ -10,23 +10,27 @@
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
 
+
 AItemActor::AItemActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	//ItemCollision = CreateDefaultSubobject< USphereComponent>(TEXT("ItemCollision"));
+	ItemCollision = CreateDefaultSubobject<USphereComponent>(TEXT("ItemCollision"));
+	SetRootComponent(ItemCollision);
+	ItemCollision->SetCollisionProfileName(TEXT("NoCollision"));
+	ItemCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	ItemCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);;
+	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
+	ItemCollision->SetGenerateOverlapEvents(true);
+	ItemCollision->SetLinearDamping(5.f);
+	ItemCollision->SetAngularDamping(5.f);
+	ItemCollision->SetSimulatePhysics(true);
+
 	ItemSkeletalMesh = CreateDefaultSubobject< USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
-	SetRootComponent(ItemSkeletalMesh);
-	ItemSkeletalMesh->SetSimulatePhysics(true);
+	ItemSkeletalMesh->SetupAttachment(GetRootComponent());
 	ItemSkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"));
-	ItemSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	ItemSkeletalMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);;
-	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
-	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	ItemSkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
-	ItemSkeletalMesh->SetGenerateOverlapEvents(true);
-	ItemSkeletalMesh->SetLinearDamping(5.f);
-	ItemSkeletalMesh->SetAngularDamping(5.f);
 
 	//Script/Engine.StaticMesh'/Game/Pal/Model/Weapon/PalSphere/Mesh/SM_PalSphere.SM_PalSphere'
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshObj(TEXT("/Game/Pal/Model/Weapon/PalSphere/Mesh/SK_PalSphere.SK_PalSphere"));
@@ -45,6 +49,9 @@ AItemActor::AItemActor()
 	ItemWidget->SetCollisionProfileName(TEXT("NoCollision"));
 	ItemWidget->SetWidgetClass(ToolTipWidgetClass);
 	ItemWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	ItemStaticMesh = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("ItemStaticMeshComponent"));
+	ItemStaticMesh->SetupAttachment(GetRootComponent());
+	ItemStaticMesh->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
 void AItemActor::BeginPlay()
@@ -70,12 +77,8 @@ void AItemActor::Init(FName NewItemID, int Count)
 	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
 	if (!ItemDataStruct)
 		return;
-	//ItemData = ItemDataStruct->ItemPrimaryDataAsset;
-	if (ItemSkeletalMesh)
-	{
-		//ItemSkeletalMesh->SetSkeletalMesh(ItemData->GetItemSkeletalMesh());
-	}
-		
+	
+
 }
 
 void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
@@ -171,7 +174,7 @@ void AItemActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 
 UPrimitiveComponent* AItemActor::GetItemCollision() const
 {
-	return ItemSkeletalMesh.Get();
+	return ItemCollision;
 }
 
 

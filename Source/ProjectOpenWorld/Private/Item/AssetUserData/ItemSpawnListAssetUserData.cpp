@@ -22,6 +22,7 @@ FItemSpawnRateData UItemSpawnListAssetUserData::GetRandomItem() const
 
 void UItemSpawnListAssetUserData::PostEditChangeOwner()
 {
+	Super::PostEditChangeOwner();
 	if (ItemSpawnDTListName != NAME_None)
 	{
 		UDataTable* DataTable = nullptr;

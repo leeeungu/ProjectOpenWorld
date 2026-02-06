@@ -157,6 +157,7 @@ void UPalItemRecipeWidget::SetItemRecipe( FName InItemRecipe)
 				Result->OverrideName == "None" ? ItemRecipe_ID.ToString() :
 				Result->OverrideName
 			);
+			ItemName = FText::FromStringTable("/Game/Global/StringTable/ST_PSN_EULA", *ItemName.ToString());
 			ItemNameText->SetText(FText::Format(FText::FromString("{0} x {1}"), ItemName, FText::AsNumber(Recipe->Product_Count)));
 		}
 		if (ItemIconImage)

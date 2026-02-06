@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "StatComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, double, PreCurrentStat, double, PreMaxStat);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UStatComponent : public UActorComponent
@@ -18,6 +19,8 @@ private:
 public:	
 	UStatComponent();
 
+	UPROPERTY(BlueprintAssignable, Category = "Stat")
+	FOnStatChanged OnStatChanged{};
 protected:
 	virtual void BeginPlay() override;
 

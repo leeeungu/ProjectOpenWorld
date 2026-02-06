@@ -12,12 +12,22 @@ void UStatComponent::BeginPlay()
 
 void UStatComponent::SetCurrentStat(double Value)
 {
+	double PreCurrentStat = CurrentStat;
 	CurrentStat = Value;
+	if (OnStatChanged.IsBound())
+	{
+		OnStatChanged.Broadcast(PreCurrentStat, MaxStat);
+	}
 }
 
 void UStatComponent::SetMaxStat(double Value)
 {
+	double PreMaxStat = MaxStat;
 	MaxStat = Value;
+	if (OnStatChanged.IsBound())
+	{
+		OnStatChanged.Broadcast(CurrentStat, PreMaxStat);
+	}
 }
 
 double UStatComponent::AddCurrentStat(double Value)
@@ -38,7 +48,12 @@ double UStatComponent::AddCurrentStat(double Value)
 			AddValue = -CurrentStat;
 		}
 	}
+	double PreCurrentStat = CurrentStat;
 	CurrentStat += AddValue;
+	if (OnStatChanged.IsBound())
+	{
+		OnStatChanged.Broadcast(PreCurrentStat, MaxStat);
+	}
 	return AddValue;
 }
 
@@ -60,7 +75,12 @@ double UStatComponent::AddMaxStat(double Value)
 			AddValue = -MaxStat;
 		}
 	}
+	double PreMaxStat = MaxStat;
 	MaxStat += AddValue;
+	if (OnStatChanged.IsBound())
+	{
+		OnStatChanged.Broadcast(CurrentStat, PreMaxStat);
+	}
 	return AddValue;
 }
 

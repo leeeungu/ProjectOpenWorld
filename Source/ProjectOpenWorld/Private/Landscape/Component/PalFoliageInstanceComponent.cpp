@@ -37,7 +37,7 @@ void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 
 		for (const FHitResult& Hit : arHitResult)
 		{
-			if (Hit.GetActor() && !Hit.GetActor()->ActorHasTag("Landscape") && Hit.GetActor() != GetOwner())
+			if (Hit.GetActor() && (Hit.GetActor() != GetOwner() || !Hit.GetActor()->ActorHasTag("Landscape")))
 			{
 				bCanAddInstance = false;
 				break;
@@ -66,7 +66,7 @@ void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 		DrawDebugCapsule(GetWorld(), CapsuleCenter, SphylElem.Length * 0.5f, SphylElem.Radius, CapsuleRotation, FColor::Blue, false, 10.0f);
 		for (const FHitResult& Hit : arHitResult)
 		{
-			if (Hit.GetActor() && !Hit.GetActor()->ActorHasTag("Landscape") && Hit.GetActor() != GetOwner())
+			if (Hit.GetActor() && (Hit.GetActor() != GetOwner() || !Hit.GetActor()->ActorHasTag("Landscape")))
 			{
 				bCanAddInstance = false;
 				break;
@@ -90,7 +90,7 @@ void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 		DrawDebugSphere(GetWorld(), SphereCenter, SphereElem.Radius, 12, FColor::Red, false, 10.0f);
 		for (const FHitResult& Hit : arHitResult)
 		{
-			if (Hit.GetActor() && !Hit.GetActor()->ActorHasTag("Landscape") && Hit.GetActor() != GetOwner())
+			if (Hit.GetActor() && (Hit.GetActor() != GetOwner() || !Hit.GetActor()->ActorHasTag("Landscape")))
 			{
 				bCanAddInstance = false;
 				break;
@@ -136,10 +136,16 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 						SpawnClass.Get(), 
 						&NewLocation, {}, SpawnParam
 					);
-				if (SpawnedActor)
+				if (AItemActor* ItemActor = Cast<AItemActor>(SpawnedActor))
 				{
-					AItemActor* ItemActor = Cast<AItemActor>(SpawnedActor);
 					ItemActor->Init(ItemName, SpawnData.SpawnRandomCount);
+					FVector RandomDir = FVector
+					(
+						FMath::FRandRange(-1.0f, 1.0f),
+						FMath::FRandRange(-1.0f, 1.0f),
+						0.5f
+					).GetSafeNormal();
+					ItemActor->GetItemCollision()->AddImpulse(RandomDir * 300.0f, NAME_None, true);
 				}
 			}
 			if (Count <= 0)

@@ -1,4 +1,4 @@
-﻿#include "Item/Widget/PalItemRecipeMaterialWidget.h"
+#include "Item/Widget/PalItemRecipeMaterialWidget.h"
 #include "Item/DataTable/PalItemRecipe.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
@@ -33,7 +33,9 @@ void UPalItemRecipeMaterialWidget::SetMaterialData( FName InMaterialID, int InMa
 					Result->OverrideName == "None" ? Material_ID.ToString() :
 					Result->OverrideName
 				);
-				ItemNameText->SetText(ItemName);
+
+			ItemName = FText::FromStringTable("/Game/Global/StringTable/ST_PSN_EULA", *ItemName.ToString());
+			ItemNameText->SetText(ItemName);
 		}
 		
 		UpdateMaterialWidget();

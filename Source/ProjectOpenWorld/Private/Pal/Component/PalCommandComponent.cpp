@@ -10,6 +10,10 @@
 
 bool UPalCommandComponent::PushCommand_Default(const FPalCommand& NewCommand)
 {
+	if (CurrentExcute && CurrentExcute->IsWorkEnd())
+	{
+		FinishCommand();
+	}
 	CurrentCommand = &CurrentCommandData;
 	if (CurrentCommandData == NewCommand || FPalCommand::IsValidCommand(CurrentCommandData))
 		return false;

@@ -1,4 +1,4 @@
-﻿#include "Player/Widget/PlayerStatusWidget.h"
+#include "Player/Widget/PlayerStatusWidget.h"
 #include "Player/Widget/PlayerStatusProgress.h"
 #include "Player/Widget/PlayerStatusSlot.h"
 #include "Player/Character/BasePlayer.h"
@@ -20,7 +20,7 @@ void UPlayerStatusWidget::SetStatusProgress(EStatusProgressType StatusType, floa
 	};
 	if (arSlot[StatusType] && *arSlot[StatusType])
 	{
-		(*arSlot[StatusType])->SetStatusProgress(&Value, &MaxValue);
+	//	(*arSlot[StatusType])->SetStatusProgress(&Value, &MaxValue);
 		(*arSlot[StatusType])->UpdateStatus();
 	}
 }

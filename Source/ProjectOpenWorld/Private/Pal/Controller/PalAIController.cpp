@@ -1,4 +1,4 @@
-ï»¿#include "Pal/Controller/PalAIController.h"
+#include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/AIAsyncTaskBlueprintProxy.h"
@@ -65,7 +65,7 @@ EPathFollowingRequestResult::Type APalAIController::MoveToActor(AActor* TargetAc
 {
 	if (!TargetActor)
 		return EPathFollowingRequestResult::Failed;
-	// ì™œ ì´ë™ì— ì˜¤ì°¨ê°€ ìƒê¸¸ê¹Œ
+	// ¿Ö ÀÌµ¿¿¡ ¿ÀÂ÷°¡ »ý±æ±î
 	//FVector Location = TargetActor->GetActorLocation();
 	////Location.Z = GetPawn()->GetActorLocation().Z;
 
@@ -165,7 +165,7 @@ void APalAIController::SetBBTargetLocation(FVector TargetLocation, float fAccept
 void APalAIController::ResetMove()
 {
 	bIsMove = false; 
-	//StopMovement();
+	StopMovement();
 	if (!GetBlackboardComponent())
 		return;
 	if (OwnerPal)

@@ -1,4 +1,4 @@
-﻿#include "Pal/Component/Work/PalWorkComponent_Architecture.h"
+#include "Pal/Component/Work/PalWorkComponent_Architecture.h"
 #include "Building/BaseBuilding.h"
 #include "Building/Component/BuildingProgress.h"
 
@@ -14,6 +14,7 @@ bool UPalWorkComponent_Architecture::CanWork()
 void UPalWorkComponent_Architecture::WorkStart(const FPalCommand& Command)
 {
 	bIsArrive = true;
+	bIsWorkEnd = false;
 	TargetBuilding = MakeWeakObjectPtr(Cast< ABaseBuilding>(Command.pTarget));
 	if (OwnerController && TargetBuilding.IsValid())
 	{
@@ -45,6 +46,7 @@ void UPalWorkComponent_Architecture::WorkCancel()
 	if (!bIsWorking)
 		return;
 	bIsWorking = false;
+	bIsWorkEnd = true;
 	if (TargetBuilding.IsValid())
 	{
 		TargetBuilding->GetBuildingProgress()->StopBuilding(OwnerPal);

@@ -28,6 +28,7 @@ bool UPalWorkComponent_Attack::CanWork()
 void UPalWorkComponent_Attack::WorkStart(const FPalCommand& Command)
 {
 	bIsArrive = true;
+	bIsWorkEnd = false;
 	if(AttackComponent)
 		AttackComponent->SetAttackData(ESubAttackType::Default);
 	if (OwnerController)
@@ -59,6 +60,7 @@ void UPalWorkComponent_Attack::WorkCancel()
 	//UE_LOG(LogTemp, Log, TEXT("%s : Attack Work Cancel"), *GetOwner()->GetName());
 	if (bIsWorking == false)
 		return;
+	bIsWorkEnd = true;
 	AttackTarget = nullptr;
 	bIsArrive = false;
 	bIsWorking = false;
