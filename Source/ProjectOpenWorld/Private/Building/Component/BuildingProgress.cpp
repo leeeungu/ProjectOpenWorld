@@ -1,4 +1,4 @@
-﻿#include "Building/Component/BuildingProgress.h"
+#include "Building/Component/BuildingProgress.h"
 #include "Building/BaseBuilding.h"
 
 UBuildingProgress::UBuildingProgress()
@@ -197,15 +197,15 @@ void UBuildingProgress::EndBuilding()
 	}
 	InstigatorList.Empty(0);
 
-	if (onBuildingEnd.IsBound())
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("BuildingProgress :: BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
-		//for (UObject* Obj : onBuildingEnd.GetAllObjects())
-		//{
-		//	//UE_LOG(LogTemp, Warning, TEXT("%s"), *Obj->GetFName().ToString());
-		//}
-		onBuildingEnd.Broadcast();
-	}
+	//if (onBuildingEnd.IsBound())
+	//{
+	//	//UE_LOG(LogTemp, Warning, TEXT("BuildingProgress :: BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
+	//	//for (UObject* Obj : onBuildingEnd.GetAllObjects())
+	//	//{
+	//	//	//UE_LOG(LogTemp, Warning, TEXT("%s"), *Obj->GetFName().ToString());
+	//	//}
+	//	onBuildingEnd.Broadcast();
+	//}
 
 	/*if(ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
 	{

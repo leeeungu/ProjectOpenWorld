@@ -37,7 +37,7 @@ void UBuildingWidgetSubsystem::PlayerControllerChanged(APlayerController* NewPla
 	}
 }
 
-void UBuildingWidgetSubsystem::SetBuildingWidgetProperty(UBuildingProgress* ProgressComponent)
+void UBuildingWidgetSubsystem::SetBuildingWidgetProperty(UPalBuildingStaticMeshComponent* ProgressComponent)
 {
 	if (buildingStateWidget)
 	{

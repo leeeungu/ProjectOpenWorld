@@ -47,8 +47,8 @@ bool UBuildingDataSubsystem::GetPalBuildObjectIconData(FName RowName, const FPal
 
 TSubclassOf<ABuildingActor> UBuildingDataSubsystem::GetPalBuildObjectBuildingClassByName(FName RowName)
 {
-	const FPalBuildObjectIconData* Result{};
-	GetPalBuildObjectIconData(RowName, Result);
+	const FPalBuildObjectData* Result{};
+	GetPalBuildObjectData(RowName, Result);
 	if (Result)
 		return Result->BuildingClass;
 	return TSubclassOf<ABuildingActor>();

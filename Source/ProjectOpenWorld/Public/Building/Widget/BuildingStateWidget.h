@@ -4,7 +4,7 @@
 #include "Blueprint/UserWidget.h"
 #include "BuildingStateWidget.generated.h"
 
-class UBuildingProgress;
+class UPalBuildingStaticMeshComponent;
 
 
 UCLASS()
@@ -17,9 +17,9 @@ class PROJECTOPENWORLD_API UBuildingStateWidget : public UUserWidget
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UBuildingProgress> buildProgress{};
+	TObjectPtr<UPalBuildingStaticMeshComponent> buildProgress{};
 public:
-	void InitializeWidget(UBuildingProgress* Widget);
+	void InitializeWidget(UPalBuildingStaticMeshComponent* Widget);
 	void SetBuildPercent(const float* BuildPercent);
 	void SetBuildTime(const float* BuildTime);
 	void SetBuildSpeed(const float* BuildSpeed);

@@ -14,7 +14,7 @@ class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IIntera
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Building")
 	FName BuildingID{};
 protected:
 	virtual void BeginPlay() override;
@@ -23,8 +23,10 @@ protected:
 	TSoftObjectPtr<ACharacter> Player{};
 	
 public: // IInteractionInterface
-	UFUNCTION()
+	UFUNCTION(BlueprintPure, Category = "Building")
 	FName GetBuildingID() const { return BuildingID; }
+
+	virtual void PostLoad() override;
 
 	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
 	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;

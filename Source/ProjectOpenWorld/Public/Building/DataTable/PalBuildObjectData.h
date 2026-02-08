@@ -49,8 +49,7 @@ struct FPalBuildObjectIconData : public FTableRowBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalBuildObjectIconData")
 	TObjectPtr< UTexture2D> SoftIcon{};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalBuildObjectIconData")
-	TSubclassOf< ABuildingActor> BuildingClass{};
+
 };
 
 USTRUCT(BlueprintType)
@@ -110,4 +109,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalBuildObjectData")
 	bool bInstallableNoObstacleFromCamera = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalBuildObjectIconData")
+	TSubclassOf< ABuildingActor> BuildingClass{};
 };

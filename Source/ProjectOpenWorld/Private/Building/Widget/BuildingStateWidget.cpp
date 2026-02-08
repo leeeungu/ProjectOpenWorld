@@ -1,7 +1,7 @@
 #include "Building/Widget/BuildingStateWidget.h"
-#include "Building/Component/BuildingProgress.h"	
+#include "Building/Component/PalBuildingStaticMeshComponent.h"	
 
-void UBuildingStateWidget::InitializeWidget(UBuildingProgress* ProgressComponent)
+void UBuildingStateWidget::InitializeWidget(UPalBuildingStaticMeshComponent* ProgressComponent)
 {
 	if (buildProgress)
 		buildProgress->onBuildingEnd.RemoveDynamic(this, &UBuildingStateWidget::OnBuildingEnd);

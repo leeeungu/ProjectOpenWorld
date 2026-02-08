@@ -1,4 +1,4 @@
-Ôªø// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,14 +13,14 @@ class UMaterial;
 class UMaterialInstanceDynamic;
 class IArchitectureInterface;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
 
 UCLASS( ClassGroup=(Architecture), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UBuildingProgress : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	// Ìï¥Îãπ Í∏∞Îä•ÏùÑ Î¨∂Ïñ¥ÏÑú Ï≤òÎ¶¨Î©¥ Ï¢ãÏùÑÎìØ?
+	// «ÿ¥Á ±‚¥…¿ª π≠æÓº≠ √≥∏Æ∏È ¡¡¿ªµÌ?
 	TSoftObjectPtr<UStaticMeshComponent> buildingMeshComponent{};
 	TSoftObjectPtr < UMaterial> buildingMakingMat{};
 	TArray<TSoftObjectPtr <UMaterialInstanceDynamic>> buildingMaking{};
@@ -36,8 +36,8 @@ protected:
 	TSet< TWeakObjectPtr<UObject>> InstigatorList{};
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Building")
-	FOnBuildingEnd onBuildingEnd{};
+	//UPROPERTY(BlueprintAssignable, Category = "Building")
+	//FOnBuildingEnd onBuildingEnd{};
 public:
 	UBuildingProgress();
 

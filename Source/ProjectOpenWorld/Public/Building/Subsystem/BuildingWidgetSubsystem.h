@@ -5,7 +5,7 @@
 #include "BuildingWidgetSubsystem.generated.h"
 
 class UBuildingStateWidget;
-class UBuildingProgress;
+class UPalBuildingStaticMeshComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBuildingSubsystem, Log, All);
 
@@ -20,7 +20,7 @@ protected:
 	UPROPERTY()
 	TSubclassOf<UBuildingStateWidget> buildingStateWidgetClass{};
 	UPROPERTY()
-	TSoftObjectPtr<UBuildingProgress> buildProgress{};
+	TSoftObjectPtr<UPalBuildingStaticMeshComponent> buildProgress{};
 public:
 	UBuildingWidgetSubsystem();
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -28,7 +28,7 @@ public:
 	virtual void PlayerControllerChanged(APlayerController* NewPlayerController) override;
 
 	/// BuildingTimeWidget
-	void SetBuildingWidgetProperty(UBuildingProgress* ProgressComponent);
+	void SetBuildingWidgetProperty(UPalBuildingStaticMeshComponent* ProgressComponent);
 	void AddBuildTimeWidget();
 	void RemoveBuildTimeWidget();
 };

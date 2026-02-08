@@ -1,14 +1,30 @@
-ï»¿#include "Building/Actor/BuildingActor.h"
+#include "Building/Actor/BuildingActor.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Subsystem/BuildingWidgetSubsystem.h"
 #include "Player/Character/BasePlayer.h"
 #include "Player/Component/PlayerAnimationComponent.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
+#include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Building/Widget/BaseBuildingAction.h"
 
 void ABuildingActor::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ABuildingActor::PostLoad()
+{
+	Super::PostLoad();
+	if (BuildingID == "Bp_BuildingActorBase" || BuildingID == NAME_None)
+	{
+		FString LoadContext = GetClass()->GetName();
+		{
+			LoadContext.Split(TEXT("_C"), &LoadContext, nullptr);
+			LoadContext.Split(TEXT("Building_"), nullptr, &LoadContext);
+		}
+		BuildingID = *LoadContext;
+		UE_LOG(LogTemp, Warning, TEXT("ABuildingActor::PostLoad %s"), *LoadContext);
+	}
 }
 
 void ABuildingActor::OnBeginDetected_Implementation(ACharacter* pOther)
@@ -19,7 +35,7 @@ void ABuildingActor::OnBeginDetected_Implementation(ACharacter* pOther)
 	if (!pPlayer || !pPlayer->GetLocalPlayer())
 		return;
 	Player = pPlayer;
-	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystemê°€ Mapì—ì„œ ì°¾ìœ¼ë‹ˆ ê´œì°®ì€ ë“¯
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
 	{
 		BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
 		if (!GetBuildingProgress()->IsBuildingEnd())
@@ -79,16 +95,17 @@ void ABuildingActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 	APlayerController* pPlayer = Cast< APlayerController>(pOther->GetController());
 	if (!pPlayer)
 		return;
-	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystemê°€ Mapì—ì„œ ì°¾ìœ¼ë‹ˆ ê´œì°®ì€ ë“¯
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
 	{
 		BuildingWidgetSubsystem->SetBuildingWidgetProperty(nullptr);
 		BuildingWidgetSubsystem->RemoveBuildTimeWidget();
 	}
-	buildingProgressComponent->StopAll();
-	//if (buildingProgressComponent)
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));
-	//	//buildingProgressComponent->onBuildingEnd.Broadcast();
-	//}
+	PalBuildingStaticMeshComponent->StopAll();
+	if (GetBuildingProgress())
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));
+		//GetBuildingProgress()->onBuildingEnd.Broadcast();
+		GetBuildingProgress()->EndBuilding();
+	}
 	Destroy();
 }

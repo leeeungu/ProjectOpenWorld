@@ -215,13 +215,13 @@ void UBuildingAssistComponent::SpawnBuilding()
 	SpawnTransform .SetScale3D(buildingPreviewActor->GetComponentScale());
 
 	ABaseBuilding* Building = GetWorld()->SpawnActor<ABaseBuilding>(BuildingClass, SpawnTransform, Param);
-	if (Building)
+	/*if (Building)
 	{
-		/*if (UBuildingProgress* Progress = Building->GetBuildingProgress())
+		if (UStaticMeshComponent* Progress = Building->GetBuildingMeshComponent())
 		{
 			Progress->SetStaticMesh(BuildingMesh.Get());
-		}*/
-	}
+		}
+	}*/
 
 	// 프리뷰 회전 초기화
 	buildingPreviewActor->SetWorldRotation(FQuat::Identity);

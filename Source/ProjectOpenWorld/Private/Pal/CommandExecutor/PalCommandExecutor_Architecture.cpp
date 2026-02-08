@@ -1,6 +1,6 @@
 #include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
 #include "Building/BaseBuilding.h"
-#include "Building/Component/BuildingProgress.h"
+#include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"

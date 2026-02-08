@@ -22,6 +22,29 @@ void UPalBuildingStaticMeshComponent::BeginPlay()
 	if (!Building)
 		return;
 	buildingTime = UBuildingDataSubsystem::GetPalBuildObjectRequiredBuildWorkAmountByName(Building->GetBuildingID());
+	if (buildingTime <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UPalBuildingStaticMeshComponent::BeginPlay BuildingID : %s , Time : %f"), *Building->GetBuildingID().ToString(), buildingTime);
+		buildingTime = 1.0f;
+	}
+	if (buildingMakingMat)
+	{
+		int nSize = GetMaterials().Num();
+		buildingMaking.Empty(nSize);
+		for (int i = 0; i < nSize; i++)
+		{
+			if (UMaterialInstanceDynamic* Making = CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
+			{
+				Making->SetScalarParameterValue(TEXT("MeshHeight"), GetStaticMesh()->GetBoundingBox().GetSize().Z);
+				float MeshWorldHeight = GetOwner()->GetActorLocation().Z;
+				Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
+					MeshWorldHeight);
+
+				SetMaterial(i, Making);
+				buildingMaking.Add(Making);
+			}
+		}
+	}
 	buildSpeed = 0.0f;
 	curentPercent = 0.0f;
 	isBuilding = false;
@@ -38,6 +61,8 @@ void UPalBuildingStaticMeshComponent::PostEditChangeProperty(FPropertyChangedEve
 		if (Building)
 		{
 			buildingTime = UBuildingDataSubsystem::GetPalBuildObjectRequiredBuildWorkAmountByName(Building->GetBuildingID());
+			if (buildingTime < 0)
+				buildingTime = 1;
 		}
 	}
 	SetBuildingPercent(0.3);
@@ -55,16 +80,6 @@ void UPalBuildingStaticMeshComponent::TickComponent(float DeltaTime, ELevelTick 
 			EndBuilding();
 		}
 }
-
-//void UPalBuildingStaticMeshComponent::SetbuildingMesh(UStaticMesh* NewMesh)
-//{
-//	//buildingMesh = NewMesh;
-//	//ABuildingActor* Building = Cast<ABuildingActor>(GetOwner());
-//	//if (!Building)
-//	//	return;
-//	//buildingMesh = Building->GetBuildingMeshComponent()->GetStaticMesh();
-//
-//}
 
 void UPalBuildingStaticMeshComponent::StopBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator)
 {
@@ -160,20 +175,10 @@ void UPalBuildingStaticMeshComponent::EndBuilding()
 	}
 	InstigatorList.Empty(0);
 
-	//if (onBuildingEnd.IsBound())
-	//{
-	//	//UE_LOG(LogTemp, Warning, TEXT("BuildingProgress :: BreadCast %d"), onBuildingEnd.GetAllObjects().Num());
-	//	//for (UObject* Obj : onBuildingEnd.GetAllObjects())
-	//	//{
-	//	//	//UE_LOG(LogTemp, Warning, TEXT("%s"), *Obj->GetFName().ToString());
-	//	//}
-	//	onBuildingEnd.Broadcast();
-	//}
-
-	/*if(ABaseBuilding* OwnerActor = Cast<ABaseBuilding>(GetOwner()))
+	if (onBuildingEnd.IsBound())
 	{
-		OwnerActor->UpdateModifier();
-	}*/
+		onBuildingEnd.Broadcast();
+	}
 }
 
 bool UPalBuildingStaticMeshComponent::SetStaticMesh(UStaticMesh* NewMesh)
@@ -181,32 +186,12 @@ bool UPalBuildingStaticMeshComponent::SetStaticMesh(UStaticMesh* NewMesh)
 	bool Result = Super::SetStaticMesh(NewMesh);
 	if (NewMesh)
 	{
-		//curentPercent = 0;
-		//SetMobility(EComponentMobility::Movable);
-		//SetMobility(EComponentMobility::Static);
-		//if (buildingMakingMat)
-		//{
-		//	int nSize = GetMaterials().Num();
-		//	buildingMaking.Empty(nSize);
-
-
-		//	for (int i = 0; i < nSize; i++)
-		//	{
-		//		if (UMaterialInstanceDynamic* Making = CreateDynamicMaterialInstance(i, buildingMakingMat.Get()))
-		//		{
-		//			Making->SetScalarParameterValue(TEXT("MeshHeight"), NewMesh->GetBoundingBox().GetSize().Z);
-		//			float MeshWorldHeight = GetOwner()->GetActorLocation().Z;
-		//			// -buildingMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize().Z
-		//			//	- GetOwner()->GetActorLocation().Z + buildingMeshComponent->GetStaticMesh()->GetBounds().BoxExtent.Y;
-		//			Making->SetScalarParameterValue(TEXT("MeshWorldHeight"),
-		//				MeshWorldHeight);
-
-		//			//UE_LOG(LogTemp, Warning, TEXT("MeshHeight : %s"), *buildingMeshComponent->GetStaticMesh()->GetBounds().ToString());
-		//			SetMaterial(i, Making);
-		//			buildingMaking.Add(Making);
-		//		}
-		//	}
-		//}
+		ABuildingActor* Building = Cast<ABuildingActor>(GetOwner());
+		if (Building)
+		{
+			buildingTime = UBuildingDataSubsystem::GetPalBuildObjectRequiredBuildWorkAmountByName(Building->GetBuildingID());
+		}
+		curentPercent = 0;
 	}
 	return Result;
 }

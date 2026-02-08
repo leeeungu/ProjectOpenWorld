@@ -5,7 +5,7 @@
 #include "Building/Interface/ArchitectureInterface.h"
 #include "PalBuildingStaticMeshComponent.generated.h"
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildingEnd);
 
 UCLASS(ClassGroup = (Architecture), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UPalBuildingStaticMeshComponent : public UStaticMeshComponent
@@ -25,8 +25,8 @@ protected:
 	TSet< TWeakObjectPtr<UObject>> InstigatorList{};
 
 public:
-	//UPROPERTY(BlueprintAssignable, Category = "Building")
-	//FOnBuildingEnd onBuildingEnd{};
+	UPROPERTY(BlueprintAssignable, Category = "Building")
+	FOnBuildingEnd onBuildingEnd{};
 public:
 	UPalBuildingStaticMeshComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

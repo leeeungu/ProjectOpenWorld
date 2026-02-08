@@ -1,6 +1,6 @@
 #include "Pal/Component/Work/PalWorkComponent_Architecture.h"
 #include "Building/BaseBuilding.h"
-#include "Building/Component/BuildingProgress.h"
+#include "Building/Component/PalBuildingStaticMeshComponent.h"
 
 UPalWorkComponent_Architecture::UPalWorkComponent_Architecture() : Super()
 {

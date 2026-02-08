@@ -1,6 +1,7 @@
 #include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
+#include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
 #include "NavModifierComponent.h"
 #include "NavAreas/NavArea_Obstacle.h"
@@ -12,15 +13,16 @@ ABaseBuilding::ABaseBuilding() :Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	//mobility(EComponentMobility::Static);
-	buildingMeshComponent = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("BuildingMesh"));
-	SetRootComponent(buildingMeshComponent);
-	buildingMeshComponent->SetMobility(EComponentMobility::Static);
+	PalBuildingStaticMeshComponent = CreateDefaultSubobject<UPalBuildingStaticMeshComponent>(TEXT("PalBuildingStaticMeshComponent"));
+
+	SetRootComponent(PalBuildingStaticMeshComponent);
+	PalBuildingStaticMeshComponent->SetMobility(EComponentMobility::Static);
 	//buildingMeshComponent->SetCanEverAffectNavigation(false);
-	buildingMeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	buildingMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	buildingMeshComponent->SetGenerateOverlapEvents(true);
+	PalBuildingStaticMeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	PalBuildingStaticMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	PalBuildingStaticMeshComponent->SetGenerateOverlapEvents(true);
 	
-	buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
+	//buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
 	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
 	if (BuildActionWidget)
 	{
@@ -39,6 +41,11 @@ ABaseBuilding::ABaseBuilding() :Super()
 void ABaseBuilding::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+UStaticMeshComponent* ABaseBuilding::GetBuildingMeshComponent() const
+{
+	return PalBuildingStaticMeshComponent;
 }
 
 void ABaseBuilding::Tick(float DeltaTime)
@@ -73,22 +80,22 @@ FPalCommand ABaseBuilding::GetCommand_Implementation()
 
 bool ABaseBuilding::IsCommandFinished_Implementation()
 {
-	if (!buildingProgressComponent)
+	if (!PalBuildingStaticMeshComponent)
 		return true;
-	return buildingProgressComponent->IsBuildingEnd();
+	return PalBuildingStaticMeshComponent->IsBuildingEnd();
 }
 
 void ABaseBuilding::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	if (buildingProgressComponent->IsBuildingEnd())
+	if (PalBuildingStaticMeshComponent->IsBuildingEnd())
 		UpdateModifier();
 }
 
 void ABaseBuilding::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
 	NoCollision();
-	if (!buildingProgressComponent->IsBuildingEnd())
-		buildingProgressComponent->StopAll();
+	if (!PalBuildingStaticMeshComponent->IsBuildingEnd())
+		PalBuildingStaticMeshComponent->StopAll();
 }
 
 void ABaseBuilding::UpdateModifier()
@@ -97,12 +104,12 @@ void ABaseBuilding::UpdateModifier()
 		return;
 
 ///	UE_LOG(LogTemp, Warning, TEXT("ABaseBuilding::UpdateModifier"));
-	buildingMeshComponent->SetCollisionProfileName(TEXT("P_Building"));
-	buildingMeshComponent->SetMobility(EComponentMobility::Static);
-	buildingMeshComponent->SetCanEverAffectNavigation(true);
+	PalBuildingStaticMeshComponent->SetCollisionProfileName(TEXT("P_Building"));
+	PalBuildingStaticMeshComponent->SetMobility(EComponentMobility::Static);
+	PalBuildingStaticMeshComponent->SetCanEverAffectNavigation(true);
 	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	if (Nav && buildingMeshComponent->GetStaticMesh())
-		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
+	if (Nav && PalBuildingStaticMeshComponent->GetStaticMesh())
+		Nav->AddDirtyArea(PalBuildingStaticMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }
@@ -110,10 +117,10 @@ void ABaseBuilding::UpdateModifier()
 void ABaseBuilding::NoCollision()
 {
 	BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
-	buildingMeshComponent->SetCanEverAffectNavigation(false);
+	PalBuildingStaticMeshComponent->SetCanEverAffectNavigation(false);
 	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	if (Nav && buildingMeshComponent->GetStaticMesh())
-		Nav->AddDirtyArea(buildingMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
+	if (Nav && PalBuildingStaticMeshComponent->GetStaticMesh())
+		Nav->AddDirtyArea(PalBuildingStaticMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }

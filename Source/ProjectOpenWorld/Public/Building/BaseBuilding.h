@@ -1,4 +1,4 @@
-Ôªø#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -12,6 +12,7 @@ class UMaterialInstanceDynamic;
 class UMaterials;
 class UBuildingProgress;
 class UNavModifierComponent;
+class UPalBuildingStaticMeshComponent;
 class UBuildingActionWidgetComponent;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
@@ -19,13 +20,9 @@ class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManag
 {
 	GENERATED_BODY()
 protected:
-
-	// Ìï¥Îãπ Í∏∞Îä•ÏùÑ Î¨∂Ïñ¥ÏÑú Ï≤òÎ¶¨Î©¥ Ï¢ãÏùÑÎìØ?
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture", BlueprintGetter = "GetBuildingMeshComponent")
-	TObjectPtr < UStaticMeshComponent> buildingMeshComponent{};
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture", BlueprintGetter = "GetBuildingProgress")
-	TObjectPtr < UBuildingProgress> buildingProgressComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
+	TObjectPtr<UPalBuildingStaticMeshComponent> PalBuildingStaticMeshComponent{};
+	// «ÿ¥Á ±‚¥…¿ª π≠æÓº≠ √≥∏Æ∏È ¡¡¿ªµÌ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
 	TObjectPtr<UBuildingActionWidgetComponent> BuildActionWidget{};
 
@@ -57,7 +54,7 @@ protected:
 	virtual void BeginPlay() override;
 public:
 	UFUNCTION(BlueprintPure, Category = "Building")
-	FORCEINLINE UStaticMeshComponent* GetBuildingMeshComponent() const { return buildingMeshComponent; }
+	FORCEINLINE UStaticMeshComponent* GetBuildingMeshComponent() const;
 	UFUNCTION(BlueprintPure, Category = "Building")
-	FORCEINLINE UBuildingProgress* GetBuildingProgress() const { return buildingProgressComponent; }
+	FORCEINLINE UPalBuildingStaticMeshComponent* GetBuildingProgress() const { return PalBuildingStaticMeshComponent; }
 };
