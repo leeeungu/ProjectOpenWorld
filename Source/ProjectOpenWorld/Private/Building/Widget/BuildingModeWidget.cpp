@@ -94,17 +94,17 @@ void UBuildingModeWidget::PostEditChangeProperty(FPropertyChangedEvent& Property
 		ButtonPanel->PreConstruct();
 }
 
-void UBuildingModeWidget::ToggleWidget()
-{
-	if (!IsInViewport())
-	{
-		StartViewWidget();
-	}
-	else
-	{
-		EndViewWidget();
-	}
-}
+//void UBuildingModeWidget::ToggleWidget()
+//{
+//	if (!IsInViewport())
+//	{
+//		StartViewWidget();
+//	}
+//	else
+//	{
+//		EndViewWidget();
+//	}
+//}
 
 void UBuildingModeWidget::StartViewWidget()
 {

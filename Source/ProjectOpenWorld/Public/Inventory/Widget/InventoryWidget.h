@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -38,4 +38,5 @@ private:
 	UFUNCTION()
 	void UpdateAllInventorySlot();
 	void UpdateInventoryWeight();
+
 };

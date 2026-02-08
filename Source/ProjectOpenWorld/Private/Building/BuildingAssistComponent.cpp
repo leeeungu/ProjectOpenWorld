@@ -18,6 +18,7 @@
 
 #include "Player/Controller/BasePlayerController.h"
 #include "Inventory/Component/InventoryComponent.h"
+#include "Building/Widget/BuildingModeWidget.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent() :Super()
@@ -25,11 +26,11 @@ UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// 안내 위젯
-	static ConstructorHelpers::FClassFinder<UUserWidget> BuildingWidget(
+	static ConstructorHelpers::FClassFinder<UUserWidget> BuildingWidgetObject(
 		TEXT("/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo_C"));
-	if (BuildingWidget.Succeeded())
+	if (BuildingWidgetObject.Succeeded())
 	{
-		BuildingInfoClass = BuildingWidget.Class;
+		BuildingInfoClass = BuildingWidgetObject.Class;
 	}
 
 	// 기본 빌딩 Actor 클래스
@@ -56,11 +57,20 @@ UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 	EndBuilding();
+	//Script/UMGEditor.WidgetBlueprint'/Game/Building/Widget/WBP_BuildModeWidget.WBP_BuildModeWidget'
+
+	static ConstructorHelpers::FClassFinder<UBuildingModeWidget> WidgetClass(TEXT("/Game/Building/Widget/WBP_BuildModeWidget.WBP_BuildModeWidget_C"));
+	if (WidgetClass.Succeeded())
+	{
+		BuildingWidgetClass = WidgetClass.Class;
+	}
 }
 
 void UBuildingAssistComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	if(BuildingWidgetClass)
+		BuildingWidget = CreateWidget< UBuildingModeWidget>(GetWorld(), BuildingWidgetClass);
 
 	if (GetOwner())
 	{
@@ -234,6 +244,24 @@ void UBuildingAssistComponent::RotateBuilding(float AddYaw)
 		buildingPreviewActor->AddWorldRotation(FRotator(0.f, AddYaw, 0.f));
 		YawRotation = UKismetMathLibrary::NormalizeAxis(YawRotation + AddYaw);
 	}
+}
+
+bool UBuildingAssistComponent::SetMainWidget()
+{
+	if (BuildingWidget)
+	{
+		BuildingWidget->StartViewWidget();
+	}
+	return BuildingWidget->IsInViewport();
+}
+
+void UBuildingAssistComponent::UnSetMainWidget()
+{
+	if (BuildingWidget)
+	{
+		BuildingWidget->EndViewWidget();
+	}
+	EndBuilding();
 }
 
 void UBuildingAssistComponent::OnOffAssist(bool bValue)

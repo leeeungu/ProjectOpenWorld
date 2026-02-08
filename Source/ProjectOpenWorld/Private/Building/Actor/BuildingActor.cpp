@@ -23,7 +23,6 @@ void ABuildingActor::PostLoad()
 			LoadContext.Split(TEXT("Building_"), nullptr, &LoadContext);
 		}
 		BuildingID = *LoadContext;
-		UE_LOG(LogTemp, Warning, TEXT("ABuildingActor::PostLoad %s"), *LoadContext);
 	}
 }
 
@@ -66,10 +65,24 @@ void ABuildingActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	{
 		GetBuildingProgress()->StartBuilding(pOther);
 	}
-	else if (UBaseBuildingAction* Action = Cast<UBaseBuildingAction>(BuildActionWidget->GetWidget()))
+	else if (ABasePlayer* pPlayer = Cast<ABasePlayer>(pOther))
 	{
-		Action->BuildingAction();
+		if (!pPlayer->AddToViewPort(BuildActionWidget->GetWidget()))
+		{
+			pPlayer->RemoveFromViewPort(BuildActionWidget->GetWidget());
+		}
 	}
+	//else if (UBaseBuildingAction* Action = Cast<UBaseBuildingAction>(BuildActionWidget->GetWidget()))
+	//{
+	//	if (!Action->IsInViewport())
+	//	{
+	//		Action->OpenBuildingActionWidget();
+	//	}
+	//	else
+	//	{
+	//		Action->CloseBuildingActionWidget();
+	//	}
+	//}
 
 }
 

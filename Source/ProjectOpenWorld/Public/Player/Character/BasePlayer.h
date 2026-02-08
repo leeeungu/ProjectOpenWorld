@@ -23,6 +23,8 @@ class UPlayerDetectCollision;
 class UPlayerItemComponent;
 class ABasePlayerController;
 class UStatComponent_Level;
+class IMainWidgetInterface;
+class UPlayerGameOver;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -110,11 +112,13 @@ protected:
 	
 	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
 
-	TSubclassOf<UUserWidget> GameOverWidgetClass{};
+	TSubclassOf<UPlayerGameOver> GameOverWidgetClass{};
 	UPROPERTY()
-	TObjectPtr<UUserWidget> GameOverWidget{};
+	TObjectPtr<UPlayerGameOver> GameOverWidget{};
 
 	TObjectPtr< ABasePlayerController> BasePlayerController{};
+
+	TScriptInterface< IMainWidgetInterface> MainWidgetInterface{};
 	//bool TopDownMode{};
 public:
 
@@ -220,5 +224,10 @@ public:
 	virtual void StartResource_Implementation(AResourceActor* ResourceActor) override;
 	virtual void StopResource_Implementation(AResourceActor* ResourceActor) override;
 	virtual void EndResource_Implementation(AResourceActor* ResourceActor) override;
+	
+	bool HasMainWidget() const { return MainWidgetInterface != nullptr; }
+	bool AddToViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);
+	void RemoveFromViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);
+
 };
 

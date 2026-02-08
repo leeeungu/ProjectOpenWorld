@@ -14,7 +14,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Player/Animation/PlayerAnimInstance.h"
 #include "Blueprint/UserWidget.h"
-#include "Building/Widget/BuildingModeWidget.h"
 #include "GenericTeamAgentInterface.h"
 #include "NavigationInvokerComponent.h"
 #include "Player/Component/PlayerAttackComponent.h"
@@ -23,6 +22,8 @@
 #include "GameBase/Component/StatComponent.h"
 #include "GameBase/Component/StatComponent_Level.h"
 #include "Player/Controller/BasePlayerController.h"
+#include "Player/Interface/MainWidgetInterface.h"
+#include "GameBase/Widget/PlayerGameOver.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -68,14 +69,6 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
 	PlayerMoveFunc = &ABasePlayer::MoveTravel;
 
-	//Script/UMGEditor.WidgetBlueprint'/Game/Building/Widget/WBP_BuildModeWidget.WBP_BuildModeWidget'
-
-	static ConstructorHelpers::FClassFinder<UBuildingModeWidget> WidgetClass(TEXT("/Game/Building/Widget/WBP_BuildModeWidget.WBP_BuildModeWidget_C"));
-	if (WidgetClass.Succeeded())
-	{
-		BuildingWidget = CreateWidget< UBuildingModeWidget>(GetWorld(), WidgetClass.Class);
-	}
-
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
 
 	PlayerAttackComponent = CreateDefaultSubobject<UPlayerAttackComponent>(TEXT("PlayerAttackComponent"));
@@ -112,6 +105,7 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 {
 	if (bTopDown)
 	{
+		RemoveFromViewPort(MainWidgetInterface);
 		ChangePlayerState(EPlayerState::TopDown);
 	}
 	else
@@ -151,7 +145,7 @@ void ABasePlayer::BeginPlay()
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
-		GameOverWidget = CreateWidget<UUserWidget>(PlayerController, GameOverWidgetClass);
+		GameOverWidget = CreateWidget<UPlayerGameOver>(PlayerController, GameOverWidgetClass);
 	}
 
 	//SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
@@ -355,8 +349,11 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 		PlayerAttackComponent->Attack(EPlayerAttackType::Dead);
 		DisableInput(Cast<APlayerController>(GetController()));
 		bDead = true;
-		if(GameOverWidget)
-			GameOverWidget->AddToViewport();
+		if (GameOverWidget)
+		{
+			RemoveFromViewPort(MainWidgetInterface);
+			AddToViewPort(GameOverWidget);
+		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameOverWidget is null"));
@@ -435,6 +432,26 @@ void ABasePlayer::EndResource_Implementation(AResourceActor* ResourceActor)
 	GetPlayerAnimationComponent()->ResetAnimationState();
 }
 
+bool ABasePlayer::AddToViewPort(TScriptInterface<IMainWidgetInterface> NewWidget)
+{
+	if (MainWidgetInterface || !NewWidget)
+		return false;
+	MainWidgetInterface = NewWidget;
+	MainWidgetInterface->SetMainWidget();
+	return true;
+}
+
+void ABasePlayer::RemoveFromViewPort(TScriptInterface<IMainWidgetInterface> NewWidget)
+{
+	if (MainWidgetInterface != NewWidget)
+		return;
+	if (MainWidgetInterface)
+	{
+		MainWidgetInterface->UnSetMainWidget();
+	}
+	MainWidgetInterface = nullptr;
+}
+
 void ABasePlayer::OnStartEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
 	TScriptInterface<IPlayerInputInterface>* InputInterface =InputMapping.Find(KeyType);
@@ -474,9 +491,10 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() || !HasMainWidget())
 		{
 			InteractionComponent->OnInteractionStart();
+			//AddToViewPort(InteractionComponent);
 		}
 		break;
 	case EInputKeyType::Esc:
@@ -493,7 +511,7 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
-			BuildAssistComponent->EndBuilding();
+			RemoveFromViewPort(MainWidgetInterface);
 		}
 		break;
 	case EInputKeyType::MouseWheel:
@@ -502,13 +520,16 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		break;
 	case EInputKeyType::KeyTab:
 	{
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !InteractionComponent->IsInteracting())
-		{
+		//if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !InteractionComponent->IsInteracting())
+		//{
 			if (BasePlayerController)
 			{
-				BasePlayerController->ToggleInventory();
+				if (!AddToViewPort(BasePlayerController->GetInventoryWidget()))
+				{
+					RemoveFromViewPort(BasePlayerController->GetInventoryWidget());
+				}
 			}
-		}
+		//}
 		break;
 	}
 	default:
@@ -541,7 +562,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 		}
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionTriggered();
 		}
@@ -549,7 +570,7 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::Esc:
 		break;
 	case EInputKeyType::KeyC:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() )
 		{
 			InteractionComponent->OnActorCancel();
 		}
@@ -614,11 +635,9 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	}
 		break;
 	case EInputKeyType::KeyB:
-		if (BuildingWidget && CurrentPlayerState != EPlayerState::TopDown && !BasePlayerController->bIsInventoryOpen())
-		{
-			BuildingWidget->ToggleWidget();
-		}
+	{
 		break;
+	}
 	case EInputKeyType::KeyTab:
 	{
 		break;
@@ -656,15 +675,21 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 		}
 		break;
 	case EInputKeyType::Esc:
-		if (BuildAssistComponent && InteractionComponent && !InteractionComponent->IsInteracting())
+	{
+		if (HasMainWidget())
 		{
-			BuildAssistComponent->EndBuilding();
+			RemoveFromViewPort(MainWidgetInterface);
 		}
+		//if (BuildAssistComponent && InteractionComponent && !InteractionComponent->IsInteracting())
+		//{
+		//	BuildAssistComponent->EndBuilding();
+		//}
 		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionCompleted();
 		}
 		break;
+	}
 	case EInputKeyType::KeyC:
 		break;
 	case EInputKeyType::MouseR:
@@ -681,7 +706,16 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseWheel:
 		break;
 	case EInputKeyType::KeyB:
+	{
+		if (CurrentPlayerState != EPlayerState::TopDown)
+		{
+			if (!AddToViewPort(BuildAssistComponent))
+			{
+				RemoveFromViewPort(BuildAssistComponent);
+			}
+		}
 		break;
+	}
 	case EInputKeyType::Key1:
 	case EInputKeyType::Key2:
 	case EInputKeyType::Key3:
@@ -690,18 +724,15 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 		{
 			int32 SkillIndex = (int32)KeyType - (int32)EInputKeyType::Key1 + (int32)EPlayerAttackType::Skill01;
 			PlayerAttackComponent->Attack((EPlayerAttackType)(SkillIndex));
+			if (PlayerAttackComponent->IsAttacking())
+			{
+				RemoveFromViewPort(MainWidgetInterface);
+			}
 		}
 		break;
 	}
-	case EInputKeyType::KeyE:
+	case EInputKeyType::KeyTab:
 	{
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !InteractionComponent->IsInteracting())
-		{
-			if (BasePlayerController)
-			{
-				BasePlayerController->ToggleInventory();
-			}
-		}
 		break;
 	}
 	default:
@@ -726,6 +757,7 @@ void ABasePlayer::Restart()
 	if (bDead)
 	{
 		bDead = false;
+		RemoveFromViewPort(GameOverWidget);
 		HPStat->SetCurrentStat(HPStat->GetMaxStat());
 		if (PlayerAttackComponent)
 			PlayerAttackComponent->StopAttack();

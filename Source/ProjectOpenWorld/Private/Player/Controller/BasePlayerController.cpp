@@ -1,6 +1,7 @@
 #include "Player/Controller/BasePlayerController.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Player/Widget/PlayerInventoryWidget.h"
 
 ABasePlayerController::ABasePlayerController() : Super()
 {
@@ -18,23 +19,28 @@ void ABasePlayerController::BeginPlay()
 	Super::BeginPlay();
 	if (InventoryWidgetClass)
 	{
-		InventoryWidget = CreateWidget<UUserWidget>(this, InventoryWidgetClass);
+		InventoryWidget = CreateWidget<UPlayerInventoryWidget>(this, InventoryWidgetClass);
 	}
 }
 
-void ABasePlayerController::ToggleInventory()
-{
-	if (InventoryWidget)
-	{
-		if (InventoryWidget->IsInViewport())
-		{
-			InventoryWidget->RemoveFromParent();
-		}
-		else
-		{
-			InventoryWidget->AddToViewport();
-		}
-	}
+//void ABasePlayerController::ToggleInventory()
+//{
+//	if (InventoryWidget)
+//	{
+//		if (InventoryWidget->IsInViewport())
+//		{
+//			InventoryWidget->RemoveFromParent();
+//		}
+//		else
+//		{
+//			InventoryWidget->AddToViewport();
+//		}
+//	}
+//}
+
+UUserWidget* ABasePlayerController::GetInventoryWidget() const
+{ 
+	return InventoryWidget;
 }
 
 bool ABasePlayerController::bIsInventoryOpen() const

@@ -93,7 +93,7 @@ void UGenerateFoliageComponent::GenerateFoliageAsync()
 {
 	if (!bGeneratingFoliage && !bUpdateBackData )
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %f "), Time);
+		//UE_LOG(LogTemp, Warning, TEXT("Finish Generate Foliage Async %f "), Time);
 		bDelayUpdate = false;
 		PlayerLastSectionID = GeneratorSectionComponent->GetPlayerSection();
 		bGeneratingFoliage = false;
@@ -126,7 +126,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 					// Section 제거 처리
 					if (Data.bRemove)
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Update Foliage %d"), Data.bRemove);
+						//UE_LOG(LogTemp, Warning, TEXT("Update Foliage %d"), Data.bRemove);
 						if (SectionData)
 						{
 							for (auto& Instance : SectionData->FoliageInstanceMap)
@@ -197,7 +197,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 			// 섹션 별로 전체 섹션 업데이트 완료
 			if (UpdateData.IsEmpty())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Finish Update Foliage %f"), Time);
+				//UE_LOG(LogTemp, Warning, TEXT("Finish Update Foliage %f"), Time);
 				bUpdateBackData = false;
 			}
 		}
@@ -234,7 +234,7 @@ void UGenerateFoliageComponent::StartGenerateWorld(bool bEditor)
 	Super::StartGenerateWorld(bEditor);
 	EditorModeGenerate = bEditor;
 	Time = 0.0f;
-	UE_LOG(LogTemp, Warning, TEXT("Start Generate Foliage %f "), Time);
+	//UE_LOG(LogTemp, Warning, TEXT("Start Generate Foliage %f "), Time);
 }
 
 void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)

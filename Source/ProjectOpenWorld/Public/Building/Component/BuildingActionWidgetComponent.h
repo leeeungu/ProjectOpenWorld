@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/WidgetComponent.h"
@@ -10,5 +10,5 @@ class PROJECTOPENWORLD_API UBuildingActionWidgetComponent : public UWidgetCompon
 	GENERATED_BODY()
 public:
 	UBuildingActionWidgetComponent();
-	
+	virtual void InitWidget() override;
 };

@@ -2,12 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Player/Interface/MainWidgetInterface.h"
 #include "PlayerGameOver.generated.h"
 
 class UButton;
 
 UCLASS()
-class PROJECTOPENWORLD_API UPlayerGameOver : public UUserWidget
+class PROJECTOPENWORLD_API UPlayerGameOver : public UUserWidget, public IMainWidgetInterface
 {
 	GENERATED_BODY()
 protected:
@@ -22,4 +23,7 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+	// 	IMainWidgetInterface interface
+	virtual bool SetMainWidget() override;
+	virtual void UnSetMainWidget() override;
 };

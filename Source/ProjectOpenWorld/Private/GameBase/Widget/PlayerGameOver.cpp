@@ -5,9 +5,8 @@
 
 void UPlayerGameOver::OnRestartButtonClicked()
 {
-	if(GetOwningPlayerPawn())
+	if (GetOwningPlayerPawn())
 		GetOwningPlayerPawn()->Restart();
-	RemoveFromParent();
 }
 
 void UPlayerGameOver::NativeOnInitialized()
@@ -40,4 +39,15 @@ void UPlayerGameOver::NativeDestruct()
 		PlayerController->SetShowMouseCursor(false);
 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(PlayerController, true);
 	}
+}
+
+bool UPlayerGameOver::SetMainWidget()
+{
+	AddToViewport();
+	return true;
+}
+
+void UPlayerGameOver::UnSetMainWidget()
+{
+	RemoveFromParent();
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Interaction/InteractionInterface.h"
+#include "Player/Interface/MainWidgetInterface.h"
 #include "InteractionComponent.generated.h"
 
 class ACharacter;

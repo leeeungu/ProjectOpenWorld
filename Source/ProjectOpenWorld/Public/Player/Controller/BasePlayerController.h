@@ -7,6 +7,7 @@
 
 class UInventoryComponent;
 class UUserWidget;
+class UPlayerInventoryWidget;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayerController : public APlayerController, public IGenericTeamAgentInterface
@@ -18,9 +19,9 @@ protected:
 
 
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TObjectPtr<UUserWidget> InventoryWidget{};
+	TObjectPtr<UPlayerInventoryWidget> InventoryWidget{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
-	TSubclassOf<UUserWidget> InventoryWidgetClass{};
+	TSubclassOf<UPlayerInventoryWidget> InventoryWidgetClass{};
 
 public:
 	ABasePlayerController();
@@ -31,6 +32,6 @@ public:
 
 	virtual FGenericTeamId GetGenericTeamId() const { return FGenericTeamId(1); }
 
-	void ToggleInventory();
+	UUserWidget* GetInventoryWidget() const;
 	bool bIsInventoryOpen() const;
 };

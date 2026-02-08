@@ -12,3 +12,12 @@ UBuildingActionWidgetComponent::UBuildingActionWidgetComponent() :
 	//}
 	SetVisibility(false);
 }
+
+void UBuildingActionWidgetComponent::InitWidget()
+{
+	Super::InitWidget();
+	if (UBaseBuildingAction* BuildingActionWidget = Cast<UBaseBuildingAction>(GetUserWidgetObject()))
+	{
+		BuildingActionWidget->SetOwnerActor(GetOwner());
+	}
+}

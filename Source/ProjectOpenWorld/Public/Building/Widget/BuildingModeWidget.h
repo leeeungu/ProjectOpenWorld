@@ -35,8 +35,6 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	void StartViewWidget();
-	void EndViewWidget();
 
 
 public:
@@ -44,7 +42,8 @@ public:
 	void SelectBuilding(FName BuildingID);
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
-	void ToggleWidget();
+	void StartViewWidget();
+	void EndViewWidget();
 
 	UFUNCTION()
 	void StartBuildingMode(FName BuildingID , UStaticMesh* Mesh);
