@@ -28,7 +28,7 @@ void ABasePlayerController::ToggleInventory()
 	{
 		if (InventoryWidget->IsInViewport())
 		{
-			InventoryWidget->RemoveFromViewport();
+			InventoryWidget->RemoveFromParent();
 		}
 		else
 		{

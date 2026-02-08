@@ -1,7 +1,8 @@
-﻿#include "Building/Widget/BuildingModeImage.h"
+#include "Building/Widget/BuildingModeImage.h"
 #include "Building/Widget/BuildingModeWidget.h"
 #include "Components/Button.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Building/Subsystem/BuildingDataSubsystem.h"
 
 UBuildingModeImage::UBuildingModeImage() : UButton{}
 {
@@ -20,10 +21,12 @@ void UBuildingModeImage::OnHoverBuilding()
 		return;
 	if (IsHovered())
 	{
+		ParentWidget->SelectBuilding(BuildObjectId);
 		ParentWidget->HoverBuildingMode(SlotIndex);
 	}
 	else
 	{
+		ParentWidget->SelectBuilding(NAME_None);
 		ParentWidget->HoverBuildingMode(-1);
 	}
 	//ParentWidget->
@@ -33,7 +36,10 @@ void UBuildingModeImage::ChangeButtonImage()
 {
 	FButtonStyle style = GetStyle();
 	FSlateBrush Image{};
-	Image.SetResourceObject(BuildingTexture);
+	{
+		UTexture2D* IconTexture = UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(BuildObjectId);
+		Image.SetResourceObject(IconTexture);
+	}
 	Image.DrawAs = ESlateBrushDrawType::Type::Image;
 	style.SetNormal(Image);
 	style.SetHovered(Image);
@@ -55,8 +61,23 @@ void UBuildingModeImage::SetSlotIndex(uint8 Index)
 	SlotIndex = Index;
 }
 
+void UBuildingModeImage::SetBuildingID(FName ID)
+{
+	BuildObjectId = ID;
+	BuildingTexture = UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(BuildObjectId);
+	//BuildingMesh = UBuildingDataSubsystem::GetPalBuildObjectBuildingMeshByName(BuildObjectId);
+	if (BuildObjectId == NAME_None || !BuildingTexture || !BuildingMesh)
+	{
+		SetVisibility(ESlateVisibility::Hidden);
+		return;
+	}
+	SetVisibility(ESlateVisibility::Visible);
+	ChangeButtonImage();
+}
+
 void UBuildingModeImage::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	UButton::PostEditChangeProperty(PropertyChangedEvent);
+	BuildingTexture = UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(BuildObjectId);
 	ChangeButtonImage();
 }

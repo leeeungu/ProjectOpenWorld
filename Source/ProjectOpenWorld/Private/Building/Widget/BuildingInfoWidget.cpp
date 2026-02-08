@@ -1,4 +1,4 @@
-﻿#include "Building/Widget/BuildingInfoWidget.h"
+#include "Building/Widget/BuildingInfoWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
@@ -15,7 +15,10 @@ void UBuildingInfoWidget::SetBuildingInfoData(FName InBuildObjectId)
 	{
 		if (BuildObjectIdText)
 		{
-			BuildObjectIdText->SetText(FText::FromName(*BuildObjectData->MapObjectId));
+			FText Text = FText::FromName(*BuildObjectData->MapObjectId);
+			//Script/Engine.StringTable'/Game/Global/StringTable/ST_BuildingName.ST_BuildingName'
+			Text = FText::FromStringTable("/Game/Global/StringTable/ST_BuildingName", *Text.ToString());
+			BuildObjectIdText->SetText(Text);
 		}
 		if (MaterialBox)
 		{

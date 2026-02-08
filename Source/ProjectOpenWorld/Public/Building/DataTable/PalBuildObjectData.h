@@ -1,6 +1,7 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
+#include "Building/Actor/BuildingActor.h"
 #include "UObject/NoExportTypes.h"
 #include "PalBuildObjectData.generated.h"
 
@@ -36,6 +37,21 @@
 //"bIsProhibitedInRaidBossArea" : false,
 //"MaxBuildCountInRaidBossArea" : 0,
 //"bIsPaintable" : false
+
+class UTexture2D;
+class UStaticMesh;
+class ABuildingActor;
+
+USTRUCT(BlueprintType)
+struct FPalBuildObjectIconData : public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalBuildObjectIconData")
+	TObjectPtr< UTexture2D> SoftIcon{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalBuildObjectIconData")
+	TSubclassOf< ABuildingActor> BuildingClass{};
+};
 
 USTRUCT(BlueprintType)
 struct FBuildMaterialData

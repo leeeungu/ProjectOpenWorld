@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -8,6 +8,7 @@ class UBuildingAssistComponent;
 class UImage;
 class UMaterialInstanceDynamic;
 class UBuildingModeCanvasPanel;
+class UBuildingDescWidget;
 
 UCLASS()
 class PROJECTOPENWORLD_API UBuildingModeWidget : public UUserWidget
@@ -21,9 +22,13 @@ protected:
 	TObjectPtr<UImage> SelectImage{};
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta = (Bindwidget))
 	TObjectPtr<UBuildingModeCanvasPanel> ButtonPanel{};
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta = (Bindwidget))
+	TObjectPtr<UBuildingDescWidget> BuildingDescWidget{};
 
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> DynamicMaterial{};
+
+	
 protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;
@@ -32,7 +37,11 @@ protected:
 
 	void StartViewWidget();
 	void EndViewWidget();
+
+
 public:
+	void SetBuildingUI(TArray<FName> BuildingIDs);
+	void SelectBuilding(FName BuildingID);
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	void ToggleWidget();

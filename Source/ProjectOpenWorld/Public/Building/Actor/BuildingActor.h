@@ -14,12 +14,18 @@ class PROJECTOPENWORLD_API ABuildingActor : public ABaseBuilding, public IIntera
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY()
+	FName BuildingID{};
+protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
 	TSoftObjectPtr<ACharacter> Player{};
 	
 public: // IInteractionInterface
+	UFUNCTION()
+	FName GetBuildingID() const { return BuildingID; }
+
 	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
 	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;
 	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;

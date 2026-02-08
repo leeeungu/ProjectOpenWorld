@@ -1,9 +1,13 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Building/DataTable/PalBuildObjectData.h"
 #include "BuildingDataSubsystem.generated.h"
+
+class UTexture2D;
+class UStaticMesh;
+class ABuildingActor;
 
 UCLASS()
 class PROJECTOPENWORLD_API UBuildingDataSubsystem : public UGameInstanceSubsystem
@@ -23,6 +27,7 @@ private:
 protected:
 
 	DataTableStruct< FPalBuildObjectData> PalBuildObjectDataTable{};
+	DataTableStruct< FPalBuildObjectIconData> PalBuildObjectIconDataTable{};
 
 	template<typename T>
 	bool LoadAndSaveDataTableToMap(DataTableStruct<T>& DataStruct, FString Path)
@@ -50,6 +55,7 @@ public:
 
 	static bool IsValidInstance() { return SingletonInstance != nullptr; }
 	static bool GetPalBuildObjectData(FName RowName, const FPalBuildObjectData*& Data);
+	static bool GetPalBuildObjectIconData(FName RowName, const FPalBuildObjectIconData*& Data);
 
 	//FString MapObjectId{};
 	//int32 SortId = 0;
@@ -63,7 +69,13 @@ public:
 	//bool bIsInstallOnlyHubAround = false;
 	//int32 InstallMaxNumInBaseCamp = 0;
 	//bool bInstallableNoObstacleFromCamera = false;
+	UFUNCTION(BlueprintPure, Category = "BuildingDataSubsystem")
+	static TSubclassOf< ABuildingActor> GetPalBuildObjectBuildingClassByName(FName RowName);
+	UFUNCTION(BlueprintPure, Category = "BuildingDataSubsystem")
+	static UStaticMesh* GetPalBuildObjectBuildingMeshByName(FName RowName);
 
+	UFUNCTION(BlueprintPure, Category = "BuildingDataSubsystem")
+	static UTexture2D* GetPalBuildObjectIconTextureByName(FName RowName);
 	UFUNCTION(BlueprintPure, Category = "BuildingDataSubsystem")
 	static FString GetPalBuildObjectMapObjectIdByName(FName RowName);
 	UFUNCTION(BlueprintPure, Category = "BuildingDataSubsystem")

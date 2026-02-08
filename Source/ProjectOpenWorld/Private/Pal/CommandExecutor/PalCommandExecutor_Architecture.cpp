@@ -1,4 +1,4 @@
-﻿#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
+#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
 #include "Building/BaseBuilding.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Creature/Character/BaseCreature.h"

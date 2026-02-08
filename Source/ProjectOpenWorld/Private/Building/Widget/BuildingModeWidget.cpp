@@ -8,6 +8,7 @@
 #include "Building/Widget/BuildingModeCanvasPanel.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Building/Widget/BuildingDescWidget.h"
 
 
 void UBuildingModeWidget::NativeOnInitialized()
@@ -52,8 +53,8 @@ void UBuildingModeWidget::NativeConstruct()
 	ABasePlayer* Player = GetOwningPlayer()->GetPawn<ABasePlayer>();
 	if (!Player)
 		return;
+	SelectBuilding(NAME_None);
 	BuildingAssistComp = Player->GetBuildingAssist();
-	HoverBuildingMode(-1);
 	if (ButtonPanel)
 		ButtonPanel->PreConstruct();
 	if (ButtonPanel)
@@ -78,6 +79,7 @@ void UBuildingModeWidget::NativeConstruct()
 			SelectImage->SetBrushFromSoftMaterial(DynamicMaterial);
 		}
 	}
+	HoverBuildingMode(-1);
 }
 
 void UBuildingModeWidget::NativeDestruct()
@@ -119,6 +121,29 @@ void UBuildingModeWidget::EndViewWidget()
 	UGameplayStatics::SetViewportMouseCaptureMode(GetOwningPlayer()->GetWorld(), EMouseCaptureMode::CaptureDuringMouseDown);
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(GetOwningPlayer(), true);
 	UWidgetBlueprintLibrary::CancelDragDrop();
+}
+
+void UBuildingModeWidget::SetBuildingUI(TArray<FName> BuildingIDs)
+{
+	if (ButtonPanel)
+	{
+		int32 Size = ButtonPanel->GetChildrenCount();
+		for (int32 i = 1; i < Size; i++)
+		{
+			if (UBuildingModeImage* btn = Cast<UBuildingModeImage>(ButtonPanel->GetChildAt(i)))
+			{
+				btn->SetBuildingID(BuildingIDs.IsValidIndex(i - 1) ? BuildingIDs[i - 1] : NAME_None);
+			}
+		}
+	}
+}
+
+void UBuildingModeWidget::SelectBuilding(FName BuildingID)
+{
+	if (BuildingDescWidget)
+	{
+		BuildingDescWidget->SetBuildingDescData(BuildingID);
+	}
 }
 
 void UBuildingModeWidget::StartBuildingMode(FName BuildingID, UStaticMesh* Mesh)

@@ -2,11 +2,12 @@ import json
 import unreal
 from pathlib import Path
 
-JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Item\DataTable\DT_ItemIconDataTable_Source.json"
-#/Script/Engine.DataTable'/Game/Item/DataTable/DT_ItemIconDataTable.DT_ItemIconDataTable'
-TARGET_DT_ASSET = r"/Game/Item/DataTable/DT_ItemIconDataTable.DT_ItemIconDataTable"
+#/Script/Engine.DataTable'/Game/Building/DataTable/DT_BuildObjectIconDataTable.DT_BuildObjectIconDataTable'
+JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Building\DataTable\DT_BuildObjectIconDataTable.json"
+#/Script/Engine.DataTable'/Game/Building/DataTable/DT_BuildObjectIconDataTable.DT_BuildObjectIconDataTable'
+TARGET_DT_ASSET = r"/Game/Building/DataTable/DT_BuildObjectIconDataTable.DT_BuildObjectIconDataTable"
 
-WANTED_KEYS = ["Icon"]
+WANTED_KEYS = ["SoftIcon"]
 
 def main():
     # source rows

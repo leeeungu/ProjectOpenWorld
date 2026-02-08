@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/Button.h"
@@ -36,5 +36,7 @@ protected:
 public:
 	void SetParent(UBuildingModeWidget* Parent);
 	void SetSlotIndex(uint8 Index);
+
+	void SetBuildingID(FName ID);
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 };
