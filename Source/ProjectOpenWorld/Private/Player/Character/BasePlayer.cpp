@@ -511,7 +511,7 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
-			RemoveFromViewPort(MainWidgetInterface);
+			//RemoveFromViewPort(MainWidgetInterface);
 		}
 		break;
 	case EInputKeyType::MouseWheel:

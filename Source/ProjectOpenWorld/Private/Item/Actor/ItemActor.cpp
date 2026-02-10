@@ -77,8 +77,6 @@ void AItemActor::Init(FName NewItemID, int Count)
 	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
 	if (!ItemDataStruct)
 		return;
-	
-
 }
 
 void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)

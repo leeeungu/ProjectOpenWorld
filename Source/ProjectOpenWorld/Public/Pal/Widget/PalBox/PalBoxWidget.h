@@ -6,9 +6,11 @@
 #include "PalBoxWidget.generated.h"
 
 class ABaseCreature;
-class UPalCommanderComponent;
+class UPalStorageComponent;
 class UPalInventoryWidget;
 class UPalInfomation;
+class UPalBoxSpawnWidget;
+class AActor;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction
@@ -16,7 +18,7 @@ class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction
 	GENERATED_BODY()
 protected:
 	UPROPERTY()
-	TObjectPtr<UPalCommanderComponent> CommanderComponent;
+	TObjectPtr<UPalStorageComponent> PalStorageComponent;
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UPalInventoryWidget> PalInventoryWidget{};
@@ -24,6 +26,8 @@ protected:
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr < UPalInfomation> PalInfoWidget{};
 
+	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
+	TObjectPtr < UPalBoxSpawnWidget> PalBoxSpawnWidget{};
 	TWeakObjectPtr<ABaseCreature> CurrentSelectedPal{};
 
 public:
@@ -33,10 +37,19 @@ public:
 	//void SetCommanderComponent(UPalCommanderComponent* InCommanderComponent);
 
 	UFUNCTION()
-	void OnPalSelectedChanged(ABaseCreature* SelectedPal);	
+	void OnPalInventoryChanged(int nIndex, AActor* Actor);	
+	UFUNCTION()
+	void OnPalSpawnInventoryChanged(int nIndex, AActor* Actor);	
+	UFUNCTION()
+	void OnPalSelectedChanged(ABaseCreature* Actor);
 
-	void GetSelectedPalArray(TArray<TObjectPtr<ABaseCreature>>& OutSelectedPals) const;
+	TObjectPtr<ABaseCreature> GetPalInInventory(int Index) const;
 	virtual void SetOwnerActor(AActor* NewOwner) override;
+
+	void SwapPalInInventory(int FromIndex, int ToIndex);
+	void SpawnSlotFromInventory(int FromIndex, int ToIndex);
+	void SwapSpawnInventory(int FromIndex, int ToIndex);
+	void DespawnSlotToInventory(int FromIndex, int ToIndex);
 	//OnWidgetAdded
 protected:
 	//DECLARE_EVENT_TwoParams(UGameViewportSubsystem, FWidgetAddedEvent, UWidget*, ULocalPlayer*);
@@ -45,5 +58,7 @@ protected:
 	void OnPalBoxWidgetAdded(UWidget* Widget, ULocalPlayer* LocalPlayer);
 	UFUNCTION()
 	void OnPalBoxChangeEvent();
+
+
 
 };

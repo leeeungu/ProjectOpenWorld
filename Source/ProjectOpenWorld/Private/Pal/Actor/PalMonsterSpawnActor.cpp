@@ -1,4 +1,4 @@
-ï»¿#include "Pal/Actor/PalMonsterSpawnActor.h"
+#include "Pal/Actor/PalMonsterSpawnActor.h"
 #include "Pal/DataTable/PalSpawnerPlacementDatabaseRow.h"
 #include "Pal/DataTable/PalWildSpawnerDatabaseRow.h"
 #include "Kismet/DataTableFunctionLibrary.h"
@@ -148,7 +148,7 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 						//UE_LOG(LogTemp, Warning, TEXT("Set Patrol Data for Monster: %s"), *MonsterData->MonsterData->MonsterName.ToString());
 						PalMonster->GetPalPatrolComponent()->SetPatrolData(&MonsterData->MonsterData->PatrolData);
 					}
-					/*else if (MonsterData->MonsterData && MonsterData->MonsterData->PatrolLevel.GetName() != GetWorld()->GetName()) // ë ˆë²¨ êµí™˜ ì‹œ deleteë¡œ ì¸í•´ crash ë¬¸ì œê°€ ë‚˜ì„œ ì£¼ì„
+					/*else if (MonsterData->MonsterData && MonsterData->MonsterData->PatrolLevel.GetName() != GetWorld()->GetName()) // ·¹º§ ±³È¯ ½Ã delete·Î ÀÎÇØ crash ¹®Á¦°¡ ³ª¼­ ÁÖ¼®
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Patrol Level is different from Spawn Level for Monster: %s"), *MonsterData->MonsterData->MonsterName.ToString());
 							UE_LOG(LogTemp, Warning, TEXT("Monster Patrol Level: %d, Spawn Level: %d"), MonsterData->MonsterData->PatrolLevel->GetUniqueID(), GetWorld()->GetUniqueID());
@@ -191,8 +191,8 @@ void APalMonsterSpawnActor::DelGenerateWorldEvent(const FGenerateSectionData& Se
 	{
 		if (Pal.Key)
 		{
-			Pal.Key->SetActorHiddenInGame(true);
-			ABasePalMonster* pCharacter = Cast<ABasePalMonster>(Pal.Key);
+			Pal.Key->Destroy();
+			/*ABasePalMonster* pCharacter = Cast<ABasePalMonster>(Pal.Key);
 			if (pCharacter)
 			{
 				pCharacter->StopAnimMontage();
@@ -202,8 +202,9 @@ void APalMonsterSpawnActor::DelGenerateWorldEvent(const FGenerateSectionData& Se
 				{
 					AIController->BrainComponent->PauseLogic(TEXT("Generate"));
 				}
-			}
+			}*/
 		}
 	}
+	SpawnedMonsters.Empty();
 }
 

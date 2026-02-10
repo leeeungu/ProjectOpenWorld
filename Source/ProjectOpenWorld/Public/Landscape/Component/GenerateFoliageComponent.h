@@ -16,6 +16,7 @@ struct FFoliageInstanceData
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	FFoliageInstanceData() = default;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
 	TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageType{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
@@ -28,6 +29,7 @@ struct FFoliageDataTable : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	FFoliageDataTable() = default;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
 	TArray<FFoliageInstanceData> InstanceData{};
 };

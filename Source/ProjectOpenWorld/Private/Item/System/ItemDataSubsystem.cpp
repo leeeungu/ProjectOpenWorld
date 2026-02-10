@@ -1,4 +1,5 @@
 #include "Item/System/ItemDataSubsystem.h"
+#include "Item/Actor/ItemActor.h"
 
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
 
@@ -160,7 +161,43 @@ TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlu
 	return TSubclassOf<UBaseItemObject>();
 }
 
-FString UItemDataSubsystem::GetPalItemRecipeProductIdByName(FName RowName) 
+AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName RowName, const FTransform& SpawnTransform, int Count)
+{
+	const FPalStaticItemDataStruct* Result{};
+	GetPalStaticItemDataPtr(RowName, Result);
+	TSubclassOf<UObject> SpawnClass = Result->VisualBlueprintClassSoft;
+	if (Result && WorldContextObject)
+	{
+		UWorld* World = WorldContextObject->GetWorld();
+		if (!SpawnClass)
+		{
+			// Script / Engine.Blueprint'/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem'
+			SpawnClass = LoadClass<UObject>(World, TEXT("/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem_C"));
+		}
+		if (World && SpawnClass)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			AItemActor* SpawnedActor = World->SpawnActor<AItemActor>(SpawnClass, SpawnTransform, SpawnParams);
+			if (SpawnedActor)
+			{
+				SpawnedActor->Init(RowName, Count);
+			}
+			return SpawnedActor;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. World or SpawnClass is null."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. Result or WorldContextObject is null."));
+	}
+	return nullptr;
+}
+
+FString UItemDataSubsystem::GetPalItemRecipeProductIdByName(FName RowName)
 {
 	const FPalItemRecipe* Result{};
 	GetPalItemRecipeDataPtr(RowName, Result);

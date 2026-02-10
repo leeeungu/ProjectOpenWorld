@@ -1,4 +1,4 @@
-﻿#include "Pal/Actor/PalBaseCamp.h"
+#include "Pal/Actor/PalBaseCamp.h"
 #include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -8,6 +8,9 @@
 #include "Components/SphereComponent.h"
 #include "Creature/Character/BaseMonster.h"
 #include "NavigationInvokerComponent.h"
+#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+#include "Item/System/ItemDataSubsystem.h"
+
 
 APalBaseCamp::APalBaseCamp() : Super()
 {
@@ -28,7 +31,8 @@ APalBaseCamp::APalBaseCamp() : Super()
 	CampBounds->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	CampBounds->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CampBounds->SetGenerateOverlapEvents(true);
-
+	SpawnComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnPoint"));
+	SpawnComponent->SetupAttachment(RootComponent);
 	NavInvoker = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavInvoker"));
 }
 #if WITH_EDITOR
@@ -73,6 +77,7 @@ void APalBaseCamp::OnCampBeginOverlap(UPrimitiveComponent* OverlappedComp, AActo
 	if (!OtherActor || !PalCommander)
 		return;
 	PalCommander->RegisterWork(OtherActor);
+	OtherActor->OnDestroyed.AddUniqueDynamic(this, &APalBaseCamp::WorkDestory);
 }
 
 void APalBaseCamp::OnCampEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -88,43 +93,69 @@ void APalBaseCamp::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-bool APalBaseCamp::SpawnPal(int Index, AActor*& Spawned)
+bool APalBaseCamp::SpawnPal(AActor* Spawned)
 {
-	Spawned = PalStore->SpawnPal(Index);
-	if (Spawned)
-	{
-		Spawned->OnDestroyed.AddUniqueDynamic(this, &APalBaseCamp::PalDead);
-		PalCommander->StorePal(Spawned);
-		return true;
-	}
-	return false;
+	if (!Spawned)
+		return false;
+
+	Spawned->SetActorTransform(SpawnComponent->GetComponentTransform());
+	Spawned->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
+	PalCommander->StorePal(Spawned);
+	return true;
+}
+
+void APalBaseCamp::DeSpawnPal(AActor* DeSpawned)
+{
+	if (!DeSpawned)
+		return ;
+	PalCommander->RemovePal(DeSpawned);
 }
 
 void APalBaseCamp::StorePalClass(TSubclassOf<AActor> NewPal, int Index)
 {
-	FPalStoreInventoryData data{};
-	data.SpawnClass = NewPal;
-	PalStore->StorePal(data, Index);
+	//FPalStoreInventoryData data{};
+	//data.SpawnActor = NewPal;
+	//PalStore->StorePal(data, Index);
 }
 
 void APalBaseCamp::RemovePalClass(TSubclassOf<AActor> targetPal, int Index)
 {
-	FPalStoreInventoryData data{};
-	data.SpawnClass = targetPal;
-	PalStore->RemovePal(data, Index);
+	/*FPalStoreInventoryData data{};
+	data.SpawnActor = GetWorld()->SpawnActor(targetPal);
+	PalStore->RemovePal(data, Index);*/
 }
 
 void APalBaseCamp::PalDead(AActor* DeadPal)
 {
-	PalCommander->RemovePal(DeadPal);
-	PalStore->DeSpawnPal(DeadPal);
+	//PalCommander->RemovePal(DeadPal);
+	//PalStore->DeSpawnPal(DeadPal);
+}
+
+void APalBaseCamp::WorkDestory(AActor* DeadPal)
+{
+	PalCommander->UnRegisterWork(DeadPal);
+	if(ABaseMonster* Monster = Cast<ABaseMonster>(DeadPal))
+	{
+		TArray<FPalItemDropData> DropItemList =
+		UPalCharacterDataSubsystem::GetDropItemListByCharacterID(Monster->GetMonsterName());
+		UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item %s %d"), *Monster->GetMonsterName().ToString(), DropItemList.Num());
+		for (const FPalItemDropData& ItemData : DropItemList)
+		{
+			int Rate = FMath::RandRange(0, 100);
+			if (Rate > ItemData.Rate)
+				continue;
+
+			UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item Spawn %s "), *ItemData.ItemId.ToString());
+			int nCount = FMath::RandRange(ItemData.min, ItemData.Max);
+			UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemData.ItemId, DeadPal->GetActorTransform(), nCount);
+		}
+	}
 }
 
 void APalBaseCamp::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
 	PalStore->ShowAllSpawnedPals();
 	PalCommander->SetComponentTickEnabled(true);
-	//UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL START"));
 }
 
 void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
@@ -132,5 +163,4 @@ void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData
 	PalCommander->SetComponentTickEnabled(false);
 	PalCommander->StopAllPal();
 	PalStore->HideAllSpawnedPals();
-	//UE_LOG(LogTemp, Error, TEXT("TODO :: ALL PAL STOP, COOMMAND NOT RESET이어야 하나?"));
 }

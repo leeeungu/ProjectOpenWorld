@@ -90,12 +90,11 @@ FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry&
 
 FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	UUserWidget::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && itemPointer)
 	{
 		return UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton).NativeReply;
 	}
-	return FReply::Unhandled();
+	return UUserWidget::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 }
 
 void UInventoryGirdSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)

@@ -7,6 +7,8 @@
 class UUniformGridPanel;
 class UTextBlock;
 class UPalInventorySlot;
+class ABaseCreature;
+class UPalBoxWidget;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalInventoryWidget : public UUserWidget
@@ -24,11 +26,13 @@ protected:
 	int32 NumColumns = 6;
 	UPROPERTY(EditDefaultsOnly, Category = "PalBox", meta = (ClampMin = 1, ClampMax = 5))
 	int32 NumRows = 5;
+	UPROPERTY()
+	TObjectPtr< UPalBoxWidget> ParentPalBoxWidget{};
 public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
 
-
+	void UpdatePalInventory(int InventoryIndex, TObjectPtr<ABaseCreature> NewPal);
 	void SetPalSlot();
 };

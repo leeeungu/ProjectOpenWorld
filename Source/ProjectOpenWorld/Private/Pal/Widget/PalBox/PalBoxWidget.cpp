@@ -1,9 +1,11 @@
 #include "Pal/Widget/PalBox/PalBoxWidget.h"
 #include "Pal/Widget/PalBox/PalInfomation.h"
 #include "Pal/Widget/PalBox/PalInventoryWidget.h"
-#include "Pal/Component/PalCommanderComponent.h"
+#include "Pal/Widget/PalBox/PalBoxSpawnWidget.h"
+#include "Pal/Component/PalStorageComponent.h"
 #include "Pal/Actor/PalBaseCamp.h"
 #include "Blueprint/GameViewportSubsystem.h"
+#include "Creature/Character/BaseCreature.h"
 
 void UPalBoxWidget::NativeOnInitialized()
 {
@@ -26,16 +28,21 @@ void UPalBoxWidget::OnPalSelectedChanged(ABaseCreature* SelectedPal)
 		PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
 }
 
-void UPalBoxWidget::GetSelectedPalArray(TArray<TObjectPtr<ABaseCreature>>& OutSelectedPals) const
+void UPalBoxWidget::OnPalInventoryChanged(int nIndex, AActor* Actor)
 {
-	if (CommanderComponent)
-	{
-		CommanderComponent->GetPalArray(OutSelectedPals);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PalBoxWidget: CommanderComponent is null"));
-	}
+	if (PalInventoryWidget)
+		PalInventoryWidget->UpdatePalInventory(nIndex, Cast< ABaseCreature>(Actor));
+}
+
+void UPalBoxWidget::OnPalSpawnInventoryChanged(int nIndex, AActor* Actor)
+{
+	if (PalBoxSpawnWidget)
+		PalBoxSpawnWidget->UpdatePalSpawnInventory(nIndex, Cast< ABaseCreature>(Actor));
+}
+
+TObjectPtr<ABaseCreature>  UPalBoxWidget::GetPalInInventory(int Index) const
+{
+	return PalStorageComponent ? Cast<ABaseCreature>(PalStorageComponent->GetStoredPal(Index)) : nullptr;
 }
 
 void UPalBoxWidget::SetOwnerActor(AActor* NewOwner)
@@ -47,13 +54,47 @@ void UPalBoxWidget::SetOwnerActor(AActor* NewOwner)
 		UE_LOG(LogTemp, Warning, TEXT("PalBoxWidget: Owner is not PalBaseCamp"));
 		return;
 	}
-	CommanderComponent = PalBaseCamp->GetPalCommanderComponent();
-	if (!CommanderComponent)
+	PalStorageComponent = PalBaseCamp->GetPalStoreComponent();
+	if (!PalStorageComponent)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PalBoxWidget: PalBaseCamp has no CommanderComponent"));
 		return;
 	}
-	CommanderComponent->OnChangePalArray.AddUniqueDynamic(this, &UPalBoxWidget::OnPalBoxChangeEvent);
+	PalBoxSpawnWidget->CreateSpawnSlotWidget(PalStorageComponent->GetSpawnInventorySize());
+	PalStorageComponent->OnPalStoreChanged.AddUniqueDynamic(this, &UPalBoxWidget::OnPalInventoryChanged);
+	PalStorageComponent->OnPalSpawnChanged.AddUniqueDynamic(this, &UPalBoxWidget::OnPalSpawnInventoryChanged);
+}
+
+void UPalBoxWidget::SwapPalInInventory(int FromIndex, int ToIndex)
+{
+	if (PalStorageComponent)
+	{
+		PalStorageComponent->SwapStoredPals(FromIndex, ToIndex);
+	}
+}
+
+void UPalBoxWidget::SpawnSlotFromInventory(int FromIndex, int ToIndex)
+{
+	if (PalStorageComponent)
+	{
+		PalStorageComponent->SpawnPal(FromIndex, ToIndex);
+	}
+}
+
+void UPalBoxWidget::SwapSpawnInventory(int FromIndex, int ToIndex)
+{
+	if (PalStorageComponent)
+	{
+		PalStorageComponent->SwapSpawnedPals(FromIndex, ToIndex);
+	}
+}
+
+void UPalBoxWidget::DespawnSlotToInventory(int FromIndex, int ToIndex)
+{
+	if (PalStorageComponent)
+	{
+		PalStorageComponent->DeSpawnPal(ToIndex, FromIndex);
+	}
 }
 
 void UPalBoxWidget::OnPalBoxWidgetAdded(UWidget* Widget, ULocalPlayer* LocalPlayer)
@@ -71,5 +112,4 @@ void UPalBoxWidget::OnPalBoxChangeEvent()
 		PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
 	if (PalInventoryWidget)
 		PalInventoryWidget->SetPalSlot();
-
 }

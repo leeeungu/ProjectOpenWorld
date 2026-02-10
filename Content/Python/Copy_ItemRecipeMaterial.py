@@ -3,9 +3,10 @@ import unreal
 from pathlib import Path
 
 # 1) 입력 파일 경로
-JSON_PATH = r"P:\source\Unreal\ProjectOpenWorld\Content\Building\DataTable\DT_BuildObjectDataTable_Source.json"
-#/Script/Engine.DataTable'/Game/Building/DataTable/DT_BuildObjectDataTable.DT_BuildObjectDataTable'
-TARGET_DT_ASSET = "/Game/Building/DataTable/DT_BuildObjectDataTable.DT_BuildObjectDataTable"  # 수정할 DataTable 에셋 경로
+JSON_PATH = r"P:\FModel\Output\Exports\Pal\Content\Pal\DataTable\Character\DT_PalDropItem.json"
+
+#/Script/Engine.DataTable'/Game/Item/DataTable/DT_PalDropItem.DT_PalDropItem'
+TARGET_DT_ASSET = "/Game/Item/DataTable/DT_PalDropItem.DT_PalDropItem"  # 수정할 DataTable 에셋 경로
 
 
 
@@ -40,25 +41,27 @@ def main():
 
         # ---- 핵심: Material 배열 만들기 ----
         mats = []
-        for i in range(1, 6):
-            mid = payload.get(f"Material{i}_Id")
-            cnt = payload.get(f"Material{i}_Count")
+        for i in range(1, 10):
+            ID = payload.get(f"ItemId{i}")
 
             # 필요 없으면 제외(권장): None/0 제거
-            if not mid or mid == "None":
+            if ID == "None":
                 continue
-            if not isinstance(cnt, int) or cnt <= 0:
-                continue
-
             mats.append({
-                "Material_Id": mid,
-                "Material_Count": cnt
+                "ItemId": ID,
+                "Rate": payload.get(f"Rate{i}"),
+                "min" : payload.get(f"min{i}"),
+                "Max" : payload.get(f"Max{i}")
             })
-
+            
+            #unreal.log(f"ItemID : " + ID)
         if not mats:
             continue
-
-        patch = {"Materials": mats}
+        patch = {
+            "CharacterID" : payload.get(f"CharacterID"),
+            "Level" : payload.get(f"Level"),
+            "DropItemList": mats
+            }
 
         if row_name in target_map:
             target_map[row_name].update(patch)

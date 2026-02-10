@@ -1,4 +1,4 @@
-﻿#include "Landscape/Actor/WorldGenerator.h"
+#include "Landscape/Actor/WorldGenerator.h"
 #include "Landscape/Component/GeneratorSectionComponent.h"
 #include "Landscape/Component/GenerateTerrainComponent.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"

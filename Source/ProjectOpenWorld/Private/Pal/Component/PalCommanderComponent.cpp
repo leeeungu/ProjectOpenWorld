@@ -103,7 +103,7 @@ void UPalCommanderComponent::StorePal(AActor* NewPal)
 	if (!Creature || !Creature->Implements<UPalCommandInterface>())
 		return;
 	pals.insert(Creature);
-	OnChangePalArray.Broadcast();
+	//OnChangePalArray.Broadcast();
 	ArrayIter = pals.begin();
 }
 
@@ -113,7 +113,7 @@ void UPalCommanderComponent::RemovePal(AActor* targetPal)
 	if (!Creature)
 		return;
 	pals.erase(Creature);
-	OnChangePalArray.Broadcast();
+	//OnChangePalArray.Broadcast();
 	ArrayIter = pals.begin();
 }
 

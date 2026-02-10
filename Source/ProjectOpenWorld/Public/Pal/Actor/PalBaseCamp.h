@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -21,6 +21,8 @@ protected:
 	TObjectPtr<UPalStorageComponent> PalStore{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UPalCommanderComponent> PalCommander{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<USceneComponent> SpawnComponent{};
 	//UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	//TObjectPtr<USceneComponent> Root{};
 	//UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
@@ -46,7 +48,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
-	bool SpawnPal(int Index, AActor*& Spawned);
+	bool SpawnPal(AActor* Spawned);
+	void DeSpawnPal(AActor* DeSpawned);
 	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
 	void StorePalClass(TSubclassOf<AActor> NewPal, int Index);
 	UFUNCTION(BlueprintCallable, Category = "BaseCamp")
@@ -56,8 +59,12 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UPalCommanderComponent* GetPalCommanderComponent() const {return PalCommander;}
 
+protected:
 	UFUNCTION()
 	void PalDead(AActor* DeadPal);
+	UFUNCTION()
+	void WorkDestory(AActor* DeadPal);
+public:
 
 	// GenerateWorldInterface
 	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;

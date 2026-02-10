@@ -97,6 +97,8 @@ public:
 	static TSubclassOf<UBaseItemObject> GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static AItemActor* SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName RowName, const FTransform& SpawnTransform, int Count = 1);
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FString GetPalItemRecipeProductIdByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")

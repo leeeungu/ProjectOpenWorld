@@ -7,7 +7,7 @@
 #include <set>
 #include "PalCommanderComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangePalArray);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangePalArray);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPalCommanderComponent : public UActorComponent
@@ -28,8 +28,8 @@ protected:
 	int QueSize{};
 public:	
 	UPalCommanderComponent();
-	UPROPERTY(BlueprintAssignable, Category = "Commander")
-	FOnChangePalArray OnChangePalArray{};
+	//UPROPERTY(BlueprintAssignable, Category = "Commander")
+	//FOnChangePalArray OnChangePalArray{};
 protected:
 	virtual void BeginPlay() override;
 

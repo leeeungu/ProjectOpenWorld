@@ -12,6 +12,12 @@ void UPalCharacterDataSubsystem::Initialize(FSubsystemCollectionBase& Collection
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load PalCharacterIconData DataTable"));
 	}
+	//Script/Engine.DataTable'/Game/Item/DataTable/DT_PalDropItem.DT_PalDropItem'
+	if (!LoadAndSaveDataTableToMap(PalDropItemDatabaseTable, TEXT("/Game/Item/DataTable/DT_PalDropItem.DT_PalDropItem")))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load PalDropItemDatabase DataTable"));
+	}
+
 }
 
 bool UPalCharacterDataSubsystem::GetPalCharacterIconData(FName RowName, const FPalCharacterIconDataRow*& Data)
@@ -27,12 +33,35 @@ bool UPalCharacterDataSubsystem::GetPalCharacterIconData(FName RowName, const FP
 	return false;
 }
 
-UTexture2D* UPalCharacterDataSubsystem::GetPalCharacterIconByName(FName RowName)
+bool UPalCharacterDataSubsystem::GetPalDropItemData(FName RowName, const FPalDropItemDatabaseRow*& Data)
+{
+	if (!SingletonInstance)
+		return false;
+	if (const FPalDropItemDatabaseRow* const* FoundData = SingletonInstance->PalDropItemDatabaseTable.DataMap.Find(RowName))
+	{
+		Data = *FoundData;
+		return true;
+	}
+	Data = &SingletonInstance->PalDropItemDatabaseTable.Dummy;
+	return false;
+}
+
+UTexture2D* UPalCharacterDataSubsystem::GetPalCharacterIconByName(FName CharacterID)
 {
 	const FPalCharacterIconDataRow* Data = nullptr;
-	if (GetPalCharacterIconData(RowName, Data))
+	if (GetPalCharacterIconData(CharacterID, Data))
 	{
 		return Data->Icon;
 	}
 	return nullptr;
+}
+
+TArray<FPalItemDropData> UPalCharacterDataSubsystem::GetDropItemListByCharacterID(FName CharacterID)
+{
+	const FPalDropItemDatabaseRow* Data = nullptr;
+	if (GetPalDropItemData(CharacterID, Data))
+	{
+		return Data->DropItemList;
+	}
+	return TArray<FPalItemDropData>();
 }
