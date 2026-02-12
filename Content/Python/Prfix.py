@@ -1,17 +1,27 @@
 import unreal
+import importlib
+import PalConfig
+importlib.reload(PalConfig)
+from PalConfig import (
+    CONFIG_PAL_NAME
+)
 
 # ==========================================================
 #  수정하고 싶은 폴더 경로 + 제거할 PREFIX 입력
 # ==========================================================
 #/Script/Engine.AnimSequence'/Game/Player/Character/Animation/Frank_RPG_GreatSword_Combo01_All.Frank_RPG_GreatSword_Combo01_All'
-ANIM_DIR = "/Game/Pal/Model/Monster/PinkCat/Animation"   # ← 원하는 경로
-REMOVE_PREFIX = "PinkCat_Anim_Armature_" # ← 지우고 싶던 prefix
+#ANIM_DIR = "/Game/Pal/Model/Monster/Kitsunebi/Animation"   # ← 원하는 경로
+#REMOVE_PREFIX = "SK_Kitsunebi_Anim_Armature_" # ← 지우고 싶던 prefix
 #FlowerDinosaur_Anim_Armature_AS_FlowerDinosaur_Carrying
-PREFIX  = ""
+PREFIX  = ""  # ← 추가하고 싶은 prefix
 
 # ==========================================================
 #  유틸
 # ==========================================================
+
+ANIM_DIR = f"/Game/Pal/Model/Monster/{CONFIG_PAL_NAME}/Animation"   # ← 원하는 경로
+REMOVE_PREFIX = f"SK_{CONFIG_PAL_NAME}_Anim_Armature_" # ← 지우고 싶은  prefix
+
 
 editor_lib = unreal.EditorAssetLibrary
 

@@ -1,5 +1,7 @@
 import unreal
+import importlib
 import PalConfig
+importlib.reload(PalConfig)
 from PalConfig import (
     GLOBAL_ANIM_DIR,
     MONSTER_ROOT,
@@ -8,6 +10,7 @@ from PalConfig import (
     PAL_AS_PREFIX,
     PAL_BS_PREFIX,
     find_asset,
+    CONFIG_PAL_NAME
 )
 
 from typing import Type, TypeVar
@@ -16,8 +19,8 @@ from typing import Type, TypeVar
 # 사용자 설정
 # ------------------------------------------------------------------
 
-# 작업 대상 팔 이름
-PAL_NAME: str = "PinkCat"  # 필요한 팔 이름으로 수정
+# 작업 대상 팔 / 이름  필요한 팔 이름으로 수정
+PAL_NAME: str = CONFIG_PAL_NAME 
 
 # 복사 대상 Global BlendSpace 경로 (ObjectPath 전체)
 TARGET_ASSET_PATH: str = f"{GLOBAL_ANIM_DIR}/BS_MM_Locomotion"
@@ -187,13 +190,14 @@ def create_or_update_pal_bs_from_target(global_bs_path: str, pal_name: str) -> N
 
     # 6) 축 설정 복사
     configure_axes_for_pal_bs(pal_bs)
-
+    
     # 7) SampleData 복사 (애니 이름 치환)
     build_pal_samples_from_global(global_bs, pal_bs, pal_name, pal_anim_dir)
 
     # 8) 저장/컴파일은 하지 않음 (요청 사항)
     #    → 에디터 상에서 해당 BS 패키지가 Dirty 상태로 남음.
-    unreal.log(f"[DONE] Pal BS 구성 완료 (저장 안 함): {pal_bs_path}")
+    unreal.log(f"[DONE] Pal BS 구성 완료 (저장): {pal_bs_path}")
+    unreal.EditorAssetLibrary.save_asset(pal_bs_path)
 
 
 # ------------------------------------------------------------------

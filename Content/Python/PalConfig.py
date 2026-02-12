@@ -13,6 +13,8 @@ GLOBAL_BS_PREFIX  = "BS_MM_"
 PAL_AS_PREFIX     = "AS_"
 PAL_BS_PREFIX     = "BS_"
 PAL_BP_PREFIX     = "Bp_"   # Bp_팰이름
+CONFIG_PAL_NAME   = "FlameBambi"
+
 from typing import Type, TypeVar
 
 T = TypeVar("T", bound=unreal.Object)
@@ -76,6 +78,7 @@ def child_asset(  child_name   : str,  pal_folder : str,  template_bp: unreal.Ob
 
     unreal.log(f"[성공] 자식 BP 생성: {child_bp.get_path_name()}")
     return child_bp
+
 
 """
 def main():

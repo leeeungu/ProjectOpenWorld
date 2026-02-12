@@ -48,7 +48,6 @@ void UPalBoxSpawnWidget::CreateSpawnSlotWidget(int SlotIndex)
 			UPalBoxSpawnSlot* SpawnSlot = CreateWidget<UPalBoxSpawnSlot>(this, PalBoxSpawnSlotClass);
 			if (SpawnBoxScrollBox->AddChild(SpawnSlot))
 			{
-				UE_LOG(LogTemp, Log, TEXT("PalBoxSpawnWidget: Created SpawnSlot widget at index %d %s"), i + SpawnBoxScrollBox->GetChildrenCount(), *PalBoxSpawnSlotClass->GetName());
 				SpawnSlot->SetSlotIndex(i + SpawnBoxScrollBox->GetChildrenCount());
 			}
 		}

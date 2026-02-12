@@ -26,7 +26,7 @@ class PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter,
 	GENERATED_BODY()
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Pal")
-	FName PalID{};
+	FName PalName{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Pal")
 	TObjectPtr<UStaticMeshComponent> ArchitectureMeshComponent{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Pal")
@@ -65,7 +65,7 @@ public:
 	void SetActionStarted(bool bValue);
 
 	virtual void PossessedBy(AController* NewController) override;
-	FORCEINLINE FName GetPalID() const { return PalID; }
+	FORCEINLINE FName GetPalID() const { return PalName; }
 public:
 	//AttackInterface
 	virtual float GetAttackValue_Implementation() const override;

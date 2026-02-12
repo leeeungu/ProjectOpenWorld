@@ -1,5 +1,7 @@
 import unreal
+import importlib
 import PalConfig
+importlib.reload(PalConfig)
 from PalConfig import (
     GLOBAL_ANIM_DIR,
     MONSTER_ROOT,
@@ -8,7 +10,9 @@ from PalConfig import (
     PAL_AS_PREFIX,
     PAL_BS_PREFIX,
     find_asset,
-    child_asset
+    child_asset,
+    CONFIG_PAL_NAME,
+    GLOBAL_DIR
 )
 
 
@@ -20,10 +24,7 @@ from PalConfig import (
 #  - SkeletalMesh            : Monster/<PAL_NAME>/Mesh/SK_<PAL_NAME> 를 사용
 # ============================================================
 
-PAL_NAME = "PinkCat"
-CHILD_BP_POSTFIX = "_Monster"
-TARGET_BP_PATH     = f"/Game/Pal/Model/Global/Bp{CHILD_BP_POSTFIX}Base"
-TARGET_ANIMBP_PATH = f"/Game/Pal/Model/Monster/{PAL_NAME}/ABP_{PAL_NAME}{CHILD_BP_POSTFIX}"
+PAL_NAME = CONFIG_PAL_NAME
 CHILD_BP_PREFIX    = "Bp_" 
 
 
@@ -68,10 +69,10 @@ def configure_bp_mesh_and_anim(
 # ------------------------------------------------------------
 # 메인
 # ------------------------------------------------------------
-def create_or_update_blueprint():
+def create_or_update_blueprint(TEMPLATE_NAME : str):
     unreal.log("====================================================")
     unreal.log("[Start] Pal BP 생성/갱신 + Mesh/AnimBP 설정")
-
+    TARGET_BP_PATH     = f"{GLOBAL_DIR}/Bp_{TEMPLATE_NAME}_Base"
     # 템플릿 BP 로드
     template_bp = find_asset(TARGET_BP_PATH,unreal.Blueprint)
     if  not template_bp :
@@ -79,6 +80,8 @@ def create_or_update_blueprint():
     #unreal.log(f"[템플릿 BP 로드 성공] {template_bp.get_path_name()}")
     
     # 타겟 AnimBlueprint 로드
+    
+    TARGET_ANIMBP_PATH = f"{MONSTER_ROOT}/{PAL_NAME}/ABP_{PAL_NAME}_{TEMPLATE_NAME}"
     anim_bp = find_asset(TARGET_ANIMBP_PATH, unreal.AnimBlueprint)
     if not anim_bp:
         return
@@ -95,7 +98,7 @@ def create_or_update_blueprint():
     #unreal.log(f"[Mesh 로드 성공] {skeletal_mesh.get_path_name()}")
 
     # Pal용 BP 생성 또는 로드
-    child_name        = f"{CHILD_BP_PREFIX}{pal_name}{CHILD_BP_POSTFIX}"  # 예: Bp_Anubis
+    child_name        = f"{CHILD_BP_PREFIX}{pal_name}_{TEMPLATE_NAME}"  # 예: Bp_Anubis
     child_package     = f"{pal_folder}/{child_name}"    # 패키지 이름
     bp =  find_asset( child_package, unreal.Blueprint)
     if  not bp:
@@ -108,4 +111,4 @@ def create_or_update_blueprint():
     unreal.log("====================================================")
 
 if __name__ == "__main__":
-    create_or_update_blueprint()
+    create_or_update_blueprint(TEMPLATE_NAME)

@@ -9,14 +9,15 @@
 #include "GenericTeamAgentInterface.h"
 #include "Interaction/Component/PalInteractionComponent.h"
 #include "GameBase/Component/StatComponent.h"
+#include "UObject/ObjectSaveContext.h"
 
 void ABaseCreature::BeginPlay()
 {
-	ABaseCharacter::BeginPlay();
+	Super::BeginPlay();
 	GetCharacterMovement()->SetUpdateNavAgentWithOwnersCollisions(true);
 }
 
-ABaseCreature::ABaseCreature() : ABaseCharacter{}
+ABaseCreature::ABaseCreature() : Super{}
 {
 	AIControllerClass = APalAIController::StaticClass();
 	ArchitectureMeshComponent = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("ArchitectureMesh"));
@@ -34,6 +35,8 @@ ABaseCreature::ABaseCreature() : ABaseCharacter{}
 	HPStat->SetCurrentStat(300.0f);
 	HPStat->SetMaxStat(300.0f);
 	AttackStat->SetCurrentStat(10.0f);
+
+	
 }
 
 bool ABaseCreature::ReceiveCommand_Implementation(FPalCommand Command)
@@ -72,7 +75,7 @@ void ABaseCreature::SetActionStarted(bool bValue)
 
 void ABaseCreature::PossessedBy(AController* NewController)
 {
-	ABaseCharacter::PossessedBy(NewController);
+	Super::PossessedBy(NewController);
 	if (IGenericTeamAgentInterface* newTeam = Cast<IGenericTeamAgentInterface>(NewController))
 	{
 		newTeam->SetGenericTeamId(FGenericTeamId(0));

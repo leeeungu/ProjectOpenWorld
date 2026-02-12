@@ -19,7 +19,7 @@ class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalComm
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Monster")
 	FName MonsterName{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Status")
 	int Level{};

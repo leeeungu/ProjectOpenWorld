@@ -1,4 +1,7 @@
 import unreal
+import importlib
+import PalConfig
+importlib.reload(PalConfig)
 from PalConfig import (
     GLOBAL_ANIM_DIR,
     MONSTER_ROOT,
@@ -8,6 +11,7 @@ from PalConfig import (
     PAL_BS_PREFIX,
     GLOBAL_DIR,
     find_asset,
+    CONFIG_PAL_NAME,
 )
 
 # ============================================================
@@ -17,9 +21,7 @@ from PalConfig import (
 #  - 결과 ABP 이름   : ABP_<PAL_NAME>
 #  - 결과 위치       : /Game/Pal/Model/Monster/<PAL_NAME> (pal_folder 루트)
 # ============================================================
-PAL_NAME = "PinkCat" 
-TEMPLATE_ABP_NAME = "_Monster"
-TARGET_ABP_PATH   = f"{GLOBAL_DIR}/ABP_MM{TEMPLATE_ABP_NAME}Template"
+PAL_NAME = CONFIG_PAL_NAME 
 
 editor_lib  = unreal.EditorAssetLibrary
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -136,10 +138,12 @@ def apply_overrides_for_pal(
 #   - skeleton 없으면 return
 #   - ABP 생성/로드 후 애니메이션 Override 적용
 # ------------------------------------------------------------
-def create_or_update_pal_anim_blueprint() -> None:
+def create_or_update_pal_anim_blueprint(TEMPLATE_NAME : str) -> None:
     unreal.log("==============================================")
     unreal.log("[START] 템플릿 ABP → Pal AnimBP 생성/갱신")
 
+
+    TARGET_ABP_PATH   = f"{GLOBAL_DIR}/ABP_MM_{TEMPLATE_NAME}_Template"
     # 1) 템플릿 AnimBlueprint 로드
     template_abp = find_asset(TARGET_ABP_PATH, unreal.AnimBlueprint)
     if not template_abp:
@@ -155,7 +159,7 @@ def create_or_update_pal_anim_blueprint() -> None:
         return
 
     # 4) Pal 전용 AnimBlueprint 생성 또는 로드
-    abp_path = f"{pal_folder}/ABP_{PAL_NAME}{TEMPLATE_ABP_NAME}"
+    abp_path = f"{pal_folder}/ABP_{PAL_NAME}_{TEMPLATE_NAME}"
     pal_abp = find_asset(abp_path , unreal.AnimBlueprint)
     if not pal_abp:
            parent_class = template_abp.generated_class()
@@ -167,7 +171,7 @@ def create_or_update_pal_anim_blueprint() -> None:
            factory.set_editor_property("target_skeleton", skel)
            
            pal_abp = asset_tools.create_asset(
-                  asset_name   = f"ABP_{PAL_NAME}{TEMPLATE_ABP_NAME}",
+                  asset_name   = f"ABP_{PAL_NAME}_{TEMPLATE_NAME}",
                   package_path = pal_folder,
                   asset_class  = unreal.AnimBlueprint,
                   factory      = factory,
@@ -184,9 +188,10 @@ def create_or_update_pal_anim_blueprint() -> None:
         pal_name      = PAL_NAME,
         template_abp = template_abp
     )
-
+    
+    unreal.EditorAssetLibrary.save_asset(abp_path)
     unreal.log("[END] 템플릿 ABP → Pal AnimBP 생성/갱신 종료")
     unreal.log("==============================================")
 
 if __name__ == "__main__":
-   create_or_update_pal_anim_blueprint()
+   create_or_update_pal_anim_blueprint(TEMPLATE_NAME)
