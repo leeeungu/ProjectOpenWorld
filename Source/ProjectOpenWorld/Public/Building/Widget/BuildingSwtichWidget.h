@@ -38,4 +38,6 @@ public:
 protected:
 	UFUNCTION()
 	void OnSwtichClicked();
+	UFUNCTION()
+	void OnSwtichHovered();
 };

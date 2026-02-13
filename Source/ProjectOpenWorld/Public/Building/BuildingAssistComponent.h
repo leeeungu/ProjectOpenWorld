@@ -6,7 +6,7 @@
 #include "Player/Interface/MainWidgetInterface.h"
 #include "BuildingAssistComponent.generated.h"
 
-class APawn;
+class ABasePlayer;
 class ABaseBuilding;
 class UStaticMesh;
 class UBuildingPreviewComponent;
@@ -29,7 +29,7 @@ class PROJECTOPENWORLD_API UBuildingAssistComponent : public UActorComponent, pu
 protected:
 	// 소유 Pawn
 	UPROPERTY()
-	TWeakObjectPtr<APawn> ownerPawn;
+	TWeakObjectPtr<ABasePlayer> ownerPawn;
 
 	// 프리뷰용 컴포넌트
 	UPROPERTY()
@@ -63,7 +63,7 @@ protected:
 	TSubclassOf<UUserWidget> BuildingInfoClass;
 
 	UPROPERTY()
-	UBuildingInfoWidget* BuildingInfo = nullptr;
+	TObjectPtr<UBuildingInfoWidget> BuildingInfo = nullptr;
 
 	// 스냅 데이터 (DataTable에서 로드된 전체 Row 포인터)
 	TArray<FSnapRule*> SnapDataRows{};
@@ -85,6 +85,9 @@ protected:
 	TSubclassOf<UBuildingModeWidget> BuildingWidgetClass;
 	UPROPERTY()
 	TObjectPtr<UBuildingModeWidget> BuildingWidget{};
+
+	bool bBuildingWidgetSet = false;
+	bool bBuildingStarted = false;
 public:
 	UBuildingAssistComponent();
 
@@ -105,6 +108,8 @@ public:
 	void StartBuilding();
 	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
 	void EndBuilding();
+	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")
+	void CancelBuilding();
 
 	// 실제 빌딩 Actor 스폰
 	UFUNCTION(BlueprintCallable, Category = "BuildingAssist")

@@ -11,6 +11,7 @@
 #include "Interaction/Component/PlayerInteractionComponent.h"
 #include "Building/Component/BuildingAssistComponentV2.h"
 #include "Player/Component/PlayerAnimationComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Player/Animation/PlayerAnimInstance.h"
 #include "Blueprint/UserWidget.h"
@@ -24,6 +25,9 @@
 #include "Player/Controller/BasePlayerController.h"
 #include "Player/Interface/MainWidgetInterface.h"
 #include "GameBase/Widget/PlayerGameOver.h"
+#include "Sound/SoundWave.h"
+#include "Sound/SoundCue.h"
+#include "Building/BaseBuilding.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -83,13 +87,13 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	if (OverWidgetClass.Succeeded())
 	{
 		GameOverWidgetClass = OverWidgetClass.Class;
-		
+
 	}
 
 	PlayerDetectCollision = CreateDefaultSubobject<UPlayerDetectCollision>(TEXT("PlayerDetectCollision"));
 	PlayerDetectCollision->SetupAttachment(RootComponent);
 
-	PlayerItemManagerComponent	 = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
+	PlayerItemManagerComponent = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
 	StatComponent_Level = CreateDefaultSubobject<UStatComponent_Level>(TEXT("StatComponent_Level"));
 
 	WeaponMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComponent"));
@@ -432,13 +436,17 @@ void ABasePlayer::EndResource_Implementation(AResourceActor* ResourceActor)
 	GetPlayerAnimationComponent()->ResetAnimationState();
 }
 
+bool ABasePlayer::HasMainWidget() const
+{
+	return MainWidgetInterface != nullptr;
+}
+
 bool ABasePlayer::AddToViewPort(TScriptInterface<IMainWidgetInterface> NewWidget)
 {
 	if (MainWidgetInterface || !NewWidget)
 		return false;
 	MainWidgetInterface = NewWidget;
-	MainWidgetInterface->SetMainWidget();
-	return true;
+	return MainWidgetInterface->SetMainWidget();
 }
 
 void ABasePlayer::RemoveFromViewPort(TScriptInterface<IMainWidgetInterface> NewWidget)
@@ -511,6 +519,7 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
+			BuildAssistComponent->EndBuilding();
 			//RemoveFromViewPort(MainWidgetInterface);
 		}
 		break;
@@ -709,9 +718,10 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	{
 		if (CurrentPlayerState != EPlayerState::TopDown)
 		{
-			if (!AddToViewPort(BuildAssistComponent))
+			if (BuildAssistComponent && !AddToViewPort(BuildAssistComponent))
 			{
 				RemoveFromViewPort(BuildAssistComponent);
+				//BuildAssistComponent->EndBuilding();
 			}
 		}
 		break;

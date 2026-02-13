@@ -1,9 +1,10 @@
-﻿#include "Inventory/Widget/InventorySlotButton.h"
+#include "Inventory/Widget/InventorySlotButton.h"
 #include "Inventory/Widget/InventoryDDO.h"
 #include "GameBase/Widget/ConfirmationWidgetBase.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 UInventorySlotButton::UInventorySlotButton(const FObjectInitializer& ObjectInitializer) :
-	UUserWidget(ObjectInitializer)
+	Super(ObjectInitializer)
 {
 	///Script/UMGEditor.WidgetBlueprint'/Game/Widget/WBP_Confirmationwindow.WBP_Confirmationwindow'
 	static ConstructorHelpers::FClassFinder<UUserWidget> UWClass(TEXT("/Game/Widget/WBP_Confirmationwindow.WBP_Confirmationwindow_C"));
@@ -24,9 +25,15 @@ void UInventorySlotButton::SetSlotIndex_Implementation(int Row, int Col)
 	SlotCol = Col;
 }
 
+void UInventorySlotButton::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+	UUIDataGameInstanceSubsystem::PlayUIHoverSound();
+}
+
 bool UInventorySlotButton::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	bool Result = UUserWidget::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	bool Result = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
 	{
 		IInventorySlotInterface::Execute_SetSlotData(this, DDO->GetSlotData());

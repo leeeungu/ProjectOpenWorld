@@ -7,6 +7,7 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Inventory/Widget/InventoryDDO.h"
 #include "Inventory/Widget/InventorySlotToolTip.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 UInventoryGirdSlotWidget::UInventoryGirdSlotWidget(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget{ ObjectInitializer }
@@ -74,6 +75,16 @@ void UInventoryGirdSlotWidget::NativeConstruct()
 	}
 }
 
+void UInventoryGirdSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	UUserWidget::NativeOnMouseEnter(InGeometry, InMouseEvent);
+	if (IsHovered())
+	{
+		UUIDataGameInstanceSubsystem::PlayUIHoverSound();
+	}
+}
+
+
 FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	UUserWidget::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
@@ -84,6 +95,7 @@ FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry&
 		{
 			inventoryComponent->UseItem(inventoryRow, inventoryCol);
 		}
+		UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 	}
 	return FReply::Handled();
 }

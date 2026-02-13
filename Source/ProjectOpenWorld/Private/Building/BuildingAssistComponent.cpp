@@ -17,9 +17,11 @@
 #include "Blueprint/UserWidget.h"
 
 #include "Player/Controller/BasePlayerController.h"
+#include "Player/Character/BasePlayer.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Building/Widget/BuildingModeWidget.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 {
@@ -74,7 +76,7 @@ void UBuildingAssistComponent::BeginPlay()
 
 	if (GetOwner())
 	{
-		ownerPawn = Cast<APawn>(GetOwner());
+		ownerPawn = Cast<ABasePlayer>(GetOwner());
 	}
 
 	if (ownerPawn.IsValid())
@@ -148,10 +150,15 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(FName BuildingID, UStaticMe
 void UBuildingAssistComponent::StartBuilding()
 {
 	OnOffAssist(true);
-
+	bBuildingStarted = true;
 	if (BuildingInfo)
 	{
 		BuildingInfo->SetBuildingInfoData(CurrentBuildingID);
+		if (BuildingWidget && bBuildingWidgetSet)
+		{
+			BuildingWidget->EndViewWidget();
+			bBuildingWidgetSet = false;
+		}
 		BuildingInfo->AddToViewport();
 	}
 
@@ -167,6 +174,7 @@ void UBuildingAssistComponent::EndBuilding()
 
 	if (BuildingInfo)
 	{
+		//ownerPawn->RemoveFromViewPort(BuildingInfo);
 		BuildingInfo->RemoveFromParent();
 	}
 
@@ -174,6 +182,12 @@ void UBuildingAssistComponent::EndBuilding()
 	{
 		buildingPreviewActor->EndPreView();
 	}
+}
+
+void UBuildingAssistComponent::CancelBuilding()
+{
+	EndBuilding();
+	UUIDataGameInstanceSubsystem::PlayUIBuildCancelSound();
 }
 
 void UBuildingAssistComponent::SpawnBuilding()
@@ -248,20 +262,27 @@ void UBuildingAssistComponent::RotateBuilding(float AddYaw)
 
 bool UBuildingAssistComponent::SetMainWidget()
 {
-	if (BuildingWidget)
+	if (BuildingWidget && !bBuildingWidgetSet)
 	{
+		bBuildingWidgetSet = true;
 		BuildingWidget->StartViewWidget();
+		return bBuildingWidgetSet;
 	}
-	return BuildingWidget->IsInViewport();
+	return false;
 }
 
 void UBuildingAssistComponent::UnSetMainWidget()
 {
-	if (BuildingWidget)
+	if (BuildingWidget && bBuildingWidgetSet)
 	{
 		BuildingWidget->EndViewWidget();
+		bBuildingWidgetSet = false;
 	}
-	EndBuilding();
+	if (bBuildingStarted)
+	{
+		EndBuilding();
+		bBuildingStarted = false;
+	}
 }
 
 void UBuildingAssistComponent::OnOffAssist(bool bValue)

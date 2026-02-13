@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -25,4 +25,5 @@ public:
 	void SetBuildingInfoData(FName InBuildObjectId);
 
 	void UpdateBuildingInfo();
+
 };

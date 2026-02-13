@@ -20,4 +20,6 @@ public:
 	virtual void UnSetMainWidget() override;
 
 	virtual void SetOwnerActor(AActor* NewOwner) {}
+
+
 };

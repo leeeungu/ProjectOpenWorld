@@ -8,6 +8,7 @@
 #include "Blueprint/DragDropOperation.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Pal/Widget/PalBox/PalBoxDDO.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void UPalInventorySlot::NativeOnInitialized()
 {
@@ -46,6 +47,7 @@ void UPalInventorySlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FP
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
 	if (IsHovered() && SlotFrameImage)
 	{
+		UUIDataGameInstanceSubsystem::PlayUIHoverSound();
 		SlotFrameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
@@ -73,6 +75,7 @@ FReply UPalInventorySlot::NativeOnMouseButtonUp(const FGeometry& InGeometry, con
 
 		if (ParentWidget)
 		{
+			UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 			ParentWidget->OnPalSelectedChanged(CurrentSelectedCreature.Get());
 		}
 	}

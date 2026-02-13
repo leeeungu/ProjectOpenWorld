@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void UBuildingSwtichWidget::NativePreConstruct()
 {
@@ -30,6 +31,7 @@ void UBuildingSwtichWidget::NativeOnInitialized()
 	if (SwtichButton)
 	{
 		SwtichButton->OnClicked.AddUniqueDynamic(this, &UBuildingSwtichWidget::OnSwtichClicked);
+		SwtichButton->OnHovered.AddUniqueDynamic(this, &UBuildingSwtichWidget::OnSwtichHovered);
 	}
 }
 
@@ -38,5 +40,11 @@ void UBuildingSwtichWidget::OnSwtichClicked()
 	if (ParentWidget)
 	{
 		ParentWidget->SetBuildingUI(BuildingIDs);
+		UUIDataGameInstanceSubsystem::PlayUITabChangeSound();
 	}
+}
+
+void UBuildingSwtichWidget::OnSwtichHovered()
+{
+//	UUIDataGameInstanceSubsystem::PlayUIBuildHoverSound();
 }

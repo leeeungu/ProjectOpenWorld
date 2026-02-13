@@ -28,7 +28,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> DynamicMaterial{};
 
-	
+	bool StartedBuilding{};
 protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;

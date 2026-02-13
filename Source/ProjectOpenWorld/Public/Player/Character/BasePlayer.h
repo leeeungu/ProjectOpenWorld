@@ -119,7 +119,7 @@ protected:
 	TObjectPtr< ABasePlayerController> BasePlayerController{};
 
 	TScriptInterface< IMainWidgetInterface> MainWidgetInterface{};
-	//bool TopDownMode{};
+
 public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
@@ -225,7 +225,7 @@ public:
 	virtual void StopResource_Implementation(AResourceActor* ResourceActor) override;
 	virtual void EndResource_Implementation(AResourceActor* ResourceActor) override;
 	
-	bool HasMainWidget() const { return MainWidgetInterface != nullptr; }
+	bool HasMainWidget() const;
 	bool AddToViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);
 	void RemoveFromViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);
 

@@ -9,11 +9,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Building/Widget/BuildingDescWidget.h"
-
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void UBuildingModeWidget::NativeOnInitialized()
 {
-	UUserWidget::NativeOnInitialized();
+	Super::NativeOnInitialized();
 	ABasePlayer* Player = GetOwningPlayer()->GetPawn<ABasePlayer>();
 	if (!Player)
 		return;
@@ -41,14 +41,14 @@ void UBuildingModeWidget::NativeOnInitialized()
 
 void UBuildingModeWidget::NativePreConstruct()
 {
-	UUserWidget::NativePreConstruct();
+	Super::NativePreConstruct();
 	if (ButtonPanel)
 		ButtonPanel->PreConstruct();
 }
 
 void UBuildingModeWidget::NativeConstruct()
 {
-	UUserWidget::NativeConstruct();
+	Super::NativeConstruct();
 
 	ABasePlayer* Player = GetOwningPlayer()->GetPawn<ABasePlayer>();
 	if (!Player)
@@ -94,33 +94,31 @@ void UBuildingModeWidget::PostEditChangeProperty(FPropertyChangedEvent& Property
 		ButtonPanel->PreConstruct();
 }
 
-//void UBuildingModeWidget::ToggleWidget()
-//{
-//	if (!IsInViewport())
-//	{
-//		StartViewWidget();
-//	}
-//	else
-//	{
-//		EndViewWidget();
-//	}
-//}
-
 void UBuildingModeWidget::StartViewWidget()
 {
+	APlayerController* pc = GetOwningPlayer();
+	if (!pc || IsInViewport())
+		return;
 	AddToViewport();
 	GetOwningPlayer()->SetShowMouseCursor(true);
+	UUIDataGameInstanceSubsystem::PlayUIOpenSound();
 	UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(GetOwningPlayer(), this, EMouseLockMode::DoNotLock, true, true);
 	UGameplayStatics::SetViewportMouseCaptureMode(GetOwningPlayer()->GetWorld(), EMouseCaptureMode::NoCapture);
 }
 
 void UBuildingModeWidget::EndViewWidget()
 {
+	APlayerController* pc = GetOwningPlayer();
+	if (!pc || !IsInViewport())
+		return;
 	RemoveFromParent();
 	GetOwningPlayer()->SetShowMouseCursor(false);
+	if(!StartedBuilding)
+		UUIDataGameInstanceSubsystem::PlayUICloseSound();
 	UGameplayStatics::SetViewportMouseCaptureMode(GetOwningPlayer()->GetWorld(), EMouseCaptureMode::CaptureDuringMouseDown);
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(GetOwningPlayer(), true);
 	UWidgetBlueprintLibrary::CancelDragDrop();
+	StartedBuilding = false;
 }
 
 void UBuildingModeWidget::SetBuildingUI(TArray<FName> BuildingIDs)
@@ -150,9 +148,9 @@ void UBuildingModeWidget::StartBuildingMode(FName BuildingID, UStaticMesh* Mesh)
 {
 	if (!BuildingAssistComp || !Mesh)
 		return;
+	StartedBuilding = true;
 	BuildingAssistComp->SetBuildingStaticMesh(BuildingID, Mesh);
 	BuildingAssistComp->StartBuilding();
-	EndViewWidget();
 }
 
 void UBuildingModeWidget::HoverBuildingMode(int SlotIndex)

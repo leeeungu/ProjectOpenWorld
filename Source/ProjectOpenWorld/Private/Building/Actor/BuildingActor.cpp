@@ -6,6 +6,7 @@
 #include "Building/Component/BuildingActionWidgetComponent.h"
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Building/Widget/BaseBuildingAction.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void ABuildingActor::BeginPlay()
 {
@@ -114,6 +115,7 @@ void ABuildingActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 		BuildingWidgetSubsystem->RemoveBuildTimeWidget();
 	}
 	PalBuildingStaticMeshComponent->StopAll();
+	UUIDataGameInstanceSubsystem::PlayUIBuildCancelSound();
 	if (GetBuildingProgress())
 	{
 		UE_LOG(LogTemp, Error, TEXT("ABaseBuilding::BeginDestroy "));

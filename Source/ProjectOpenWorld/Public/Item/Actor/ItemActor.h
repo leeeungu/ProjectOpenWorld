@@ -38,6 +38,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
 	int itemCount = 1;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
+	TObjectPtr<USoundBase> PickUpSound{};
 	UPROPERTY()
 	TObjectPtr< AActor> Transport{};
 	ETransportState TransportState{};

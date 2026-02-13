@@ -26,6 +26,7 @@ protected:
 	int inventoryRow{};
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
 	int inventoryCol{};
+
 	const FInventorySlot* itemPointer{};
 public:
 	UInventoryGirdSlotWidget(const FObjectInitializer& ObjectInitializer);
@@ -42,6 +43,7 @@ protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 	
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;

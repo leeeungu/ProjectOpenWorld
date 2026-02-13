@@ -1,10 +1,11 @@
-﻿#include "Item/Widget/PalItemWorkingWidget.h"
+#include "Item/Widget/PalItemWorkingWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
 #include "Item/Widget/PalItemRecipeWidget.h"
 #include "Item/Widget/PalItemRecipeSlot.h"
 #include "Blueprint/WidgetTree.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void UPalItemWorkingWidget::NativeOnInitialized()
 {

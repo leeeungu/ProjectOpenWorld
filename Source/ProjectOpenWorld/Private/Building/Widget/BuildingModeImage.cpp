@@ -3,6 +3,7 @@
 #include "Components/Button.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 UBuildingModeImage::UBuildingModeImage() : UButton{}
 {
@@ -12,24 +13,25 @@ void UBuildingModeImage::OnStartBuilding()
 {
 	if (!ParentWidget || !BuildingMesh)
 		return;
+	UUIDataGameInstanceSubsystem::PlayUIBuildPressSound();
 	ParentWidget->StartBuildingMode(BuildObjectId, BuildingMesh);
 }
 
 void UBuildingModeImage::OnHoverBuilding()
 {
+	if (!ParentWidget && !IsHovered())
+		return;
+	UUIDataGameInstanceSubsystem::PlayUIBuildHoverSound();
+	ParentWidget->SelectBuilding(BuildObjectId);
+	ParentWidget->HoverBuildingMode(SlotIndex);
+}
+
+void UBuildingModeImage::OnUnHoverBuilding()
+{
 	if (!ParentWidget)
 		return;
-	if (IsHovered())
-	{
-		ParentWidget->SelectBuilding(BuildObjectId);
-		ParentWidget->HoverBuildingMode(SlotIndex);
-	}
-	else
-	{
-		ParentWidget->SelectBuilding(NAME_None);
-		ParentWidget->HoverBuildingMode(-1);
-	}
-	//ParentWidget->
+	ParentWidget->SelectBuilding(NAME_None);
+	ParentWidget->HoverBuildingMode(-1);
 }
 
 void UBuildingModeImage::ChangeButtonImage()
@@ -52,7 +54,7 @@ void UBuildingModeImage::SetParent(UBuildingModeWidget* Parent)
 	ParentWidget = Parent;
 	OnClicked.AddUniqueDynamic(this, &UBuildingModeImage::OnStartBuilding);
 	OnHovered.AddUniqueDynamic(this, &UBuildingModeImage::OnHoverBuilding);
-	OnUnhovered.AddUniqueDynamic(this, &UBuildingModeImage::OnHoverBuilding);
+	OnUnhovered.AddUniqueDynamic(this, &UBuildingModeImage::OnUnHoverBuilding);
 	ChangeButtonImage();
 }
 

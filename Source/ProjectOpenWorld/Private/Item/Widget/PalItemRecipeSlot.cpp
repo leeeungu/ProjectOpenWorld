@@ -1,4 +1,4 @@
-﻿#include "Item/Widget/PalItemRecipeSlot.h"
+#include "Item/Widget/PalItemRecipeSlot.h"
 #include "Item/Widget/PalItemRecipeToolTip.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -7,6 +7,7 @@
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/Widget/PalItemWorkingWidget.h"
 #include "Blueprint/WidgetTree.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void UPalItemRecipeSlot::NativeOnInitialized()
 {
@@ -44,6 +45,7 @@ void UPalItemRecipeSlot::OnItemButtonClicked()
 {
 	if (OwningWorkingWidget && OwningWorkingWidget.Get())
 	{
+		UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 		OwningWorkingWidget->SetSelectedRecipeWidget(RecipeID);
 	}
 }
@@ -55,6 +57,7 @@ void UPalItemRecipeSlot::OnItemButtonHovered()
 	{
 		RecipeToolTip->UpdateToolTipWidget();
 	}
+	UUIDataGameInstanceSubsystem::PlayUIHoverSound();
 	if (SlotFrame)
 	{
 		SlotFrame->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

@@ -31,6 +31,8 @@ protected:
 
 	UFUNCTION()
 	void OnHoverBuilding();
+	UFUNCTION()
+	void OnUnHoverBuilding();
 
 	void ChangeButtonImage();
 public:

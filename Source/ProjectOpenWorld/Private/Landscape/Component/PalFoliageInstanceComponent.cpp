@@ -4,6 +4,7 @@
 #include "Item/Actor/ItemActor.h"
 #include "Resource/Interface/ResourceInterface.h"
 #include "PhysicsEngine/BodySetup.h"
+#include "Resource/AssetUserData/ResourceEndEvent.h"
 
 void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 {
@@ -87,7 +88,7 @@ void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 			FCollisionShape::MakeSphere(SphereElem.Radius),
 			FCollisionQueryParams::DefaultQueryParam
 		);
-		DrawDebugSphere(GetWorld(), SphereCenter, SphereElem.Radius, 12, FColor::Red, false, 10.0f);
+		//DrawDebugSphere(GetWorld(), SphereCenter, SphereElem.Radius, 12, FColor::Red, false, 10.0f);
 		for (const FHitResult& Hit : arHitResult)
 		{
 			if (Hit.GetActor() && (Hit.GetActor() != GetOwner() || !Hit.GetActor()->ActorHasTag("Landscape")))
@@ -147,9 +148,16 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 					).GetSafeNormal();
 					ItemActor->GetItemCollision()->AddImpulse(RandomDir * 300.0f, NAME_None, true);
 				}
+				
 			}
 			if (Count <= 0)
 			{
+				float ReSpawnTimeSec = 15;
+				if (UResourceEndEvent* ResourceEndEvent = Cast<UResourceEndEvent>(GetStaticMesh()->GetAssetUserDataOfClass(UResourceEndEvent::StaticClass())))
+				{
+					ResourceEndEvent->ResourceEndEvent(this, InstanceTransform);
+					ReSpawnTimeSec = ResourceEndEvent->GetRandomReSpawnTime();
+				}
 				Count = 0;
 				ItemSpawnMap.Remove(InstanceTransform.GetLocation());
 				RemoveIndices.Add(InstanceIndices[i]);
@@ -158,8 +166,9 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 				GetOwner()->GetWorldTimerManager().SetTimer(TimerHandle,
 					this, 
 					& UPalFoliageInstanceComponent::ResetItemSpawnMap,
-					15.0f,
-					false);
+					0,
+					false,
+					ReSpawnTimeSec);
 
 				///FTimerManager::get::SetTimer()
 			}

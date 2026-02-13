@@ -1,6 +1,7 @@
 #include "Building/Widget/BaseBuildingAction.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 UBaseBuildingAction::UBaseBuildingAction(const FObjectInitializer& ObjectInitializer) 
 	:Super(ObjectInitializer)
@@ -23,6 +24,7 @@ bool UBaseBuildingAction::SetMainWidget()
 	if (!pc || IsInViewport())
 		return false;
 	AddToViewport();
+	UUIDataGameInstanceSubsystem::PlayUIOpenSound();
 	pc->SetShowMouseCursor(true);
 	UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, this, EMouseLockMode::DoNotLock, true, true);
 	UGameplayStatics::SetViewportMouseCaptureMode(pc->GetWorld(), EMouseCaptureMode::NoCapture);
@@ -35,6 +37,7 @@ void UBaseBuildingAction::UnSetMainWidget()
 	if (!pc || !IsInViewport())
 		return;
 	RemoveFromParent();
+	UUIDataGameInstanceSubsystem::PlayUICloseSound();
 	pc->SetShowMouseCursor(false);
 	UGameplayStatics::SetViewportMouseCaptureMode(pc->GetWorld(), EMouseCaptureMode::CaptureDuringMouseDown);
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc, true);

@@ -9,6 +9,8 @@
 #include "Interaction/Component/InteractionComponent.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 AItemActor::AItemActor()
@@ -52,6 +54,13 @@ AItemActor::AItemActor()
 	ItemStaticMesh = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("ItemStaticMeshComponent"));
 	ItemStaticMesh->SetupAttachment(GetRootComponent());
 	ItemStaticMesh->SetCollisionProfileName(TEXT("NoCollision"));
+
+	//Script/Engine.SoundCue'/Game/Pal/Sound/Events/SE/Player/PickUpItem/PickUpItem_Others__SFX__Cue.PickUpItem_Others__SFX__Cue'
+	static ConstructorHelpers::FObjectFinder<USoundCue> PickUpSoundObj(TEXT("/Game/Pal/Sound/Events/SE/Player/PickUpItem/PickUpItem_Others__SFX__Cue.PickUpItem_Others__SFX__Cue"));
+	if (PickUpSoundObj.Succeeded())
+	{
+		PickUpSound = PickUpSoundObj.Object;
+	}
 }
 
 void AItemActor::BeginPlay()
@@ -121,6 +130,10 @@ void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	}
 	if (Inventory->AddItem(ItemID, itemCount))
 	{
+		if (PickUpSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, PickUpSound, GetActorLocation());
+		}
 		Destroy();
 	}
 }

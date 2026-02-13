@@ -12,6 +12,7 @@
 #include "Item/Widget/PalItemRecipeMaterialWidget.h"
 #include "Player/Controller/BasePlayerController.h"
 #include "Inventory/Component/InventoryComponent.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 void UPalItemRecipeWidget::NativeOnInitialized()
 {
@@ -80,6 +81,7 @@ void UPalItemRecipeWidget::OnMakeButtonClicked()
 							nMaxCount = FMath::Min(nMaxCount, ChildWidget->GetMakeableCount());
 					}
 				}
+				UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 				Inventory->AddItem(ItemRecipe_ID, MakeItemCount);
 
 				int nMinCount{};

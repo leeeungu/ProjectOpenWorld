@@ -10,6 +10,7 @@
 #include "Pal/Widget/PalBox/PalBoxWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "GameBase/Widget/UserWidgetTemplate.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 
 
 void UPalBoxSpawnSlot::NativeConstruct()
@@ -53,6 +54,7 @@ void UPalBoxSpawnSlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPo
 {
 	//(R=0.000000,G=0.004000,B=0.015000,A=0.800000)
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent); 
+	UUIDataGameInstanceSubsystem::PlayUIHoverSound();
 	if (BackgroundFrameImage)
 		BackgroundFrameImage->SetColorAndOpacity(WidgetTemplate::UIBackGround);
 }
@@ -76,9 +78,9 @@ FReply UPalBoxSpawnSlot::NativeOnMouseButtonUp(const FGeometry& InGeometry, cons
 			ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
 			OuterWidget = OuterWidget->GetOuter();
 		}
-
 		if (ParentWidget)
 		{
+			UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 			ParentWidget->OnPalSelectedChanged(CurrentSelectedCreature.Get());
 		}
 	}
