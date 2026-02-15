@@ -1,39 +1,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 #include "UIDataGameInstanceSubsystem.generated.h"
 
 UCLASS()
-class PROJECTOPENWORLD_API UUIDataGameInstanceSubsystem : public UGameInstanceSubsystem
+class PROJECTOPENWORLD_API UUIDataGameInstanceSubsystem : public USoundGameInstanceSubsystem
 {
 	GENERATED_BODY()
-protected:
-	static UUIDataGameInstanceSubsystem* Instance;
-	UPROPERTY()
-	TObjectPtr<USoundBase> ButtonClickSound{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIOpen{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIClose{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIHover{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UITabChange{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIBuildPress{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIBuildHover{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIBuildCancel{};
-	UPROPERTY()
-	TObjectPtr<USoundBase> UIBuildComplete{};
 
 public:
-	UUIDataGameInstanceSubsystem();
-
-
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	UFUNCTION(BlueprintCallable, Category = "UIDataGameInstanceSubsystem")
 	static void PlayButtonClickSound();
 	UFUNCTION(BlueprintCallable, Category = "UIDataGameInstanceSubsystem")
@@ -50,7 +26,4 @@ public:
 	static void PlayUIBuildHoverSound();
 	UFUNCTION(BlueprintCallable, Category = "UIDataGameInstanceSubsystem")
 	static void PlayUIBuildCancelSound();
-	UFUNCTION(BlueprintCallable, Category = "UIDataGameInstanceSubsystem")
-	static void PlayUIBuildCompleteSound();
-
 };

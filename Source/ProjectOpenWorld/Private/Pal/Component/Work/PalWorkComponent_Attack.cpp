@@ -1,5 +1,7 @@
 #include "Pal/Component/Work/PalWorkComponent_Attack.h"
 #include "Pal/Component/PalAttackComponent.h"
+#include "Creature/Character/BaseMonster.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 UPalWorkComponent_Attack::UPalWorkComponent_Attack() : Super()
 {
@@ -12,6 +14,10 @@ void UPalWorkComponent_Attack::BeginPlay()
 	if (OwnerPal)
 	{
 		AttackComponent = OwnerPal->GetAttackComponent();
+	}
+	else if (ABaseMonster* Monster = Cast<ABaseMonster>(GetOwner()))
+	{
+		AttackComponent = Monster->GetAttackComponent();
 	}
 	if (AttackComponent)
 	{
@@ -29,25 +35,43 @@ void UPalWorkComponent_Attack::WorkStart(const FPalCommand& Command)
 {
 	bIsArrive = true;
 	bIsWorkEnd = false;
-	if(AttackComponent)
-		AttackComponent->SetAttackData(ESubAttackType::Default);
+	if (AttackComponent)
+	{
+		CurrentSubAttackType = static_cast<ESubAttackType>(Command.SubCommandType);
+		if (CurrentSubAttackType <= ESubAttackType::None_AttackType  || CurrentSubAttackType >= ESubAttackType::Max_AttackType)
+		{
+			CurrentSubAttackType = ESubAttackType::Default;
+		}
+		AttackComponent->SetAttackData(CurrentSubAttackType);
+		TargetCharacter = Command.pTarget.Get();
+		AttackComponent->SetAttackTarget(TargetCharacter.Get());
+		if (AttackComponent->TargetIsInRange())
+		{
+			AttackComponent->StartAttack();
+			OwnerController->ResetMove();
+			return;
+		}
+	}
 	if (OwnerController)
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+	{
+		OwnerController->SetBBTargetActor(TargetCharacter.Get());
+	}
 }
 
 void UPalWorkComponent_Attack::WorkEvent(const FPalCommand& Command)
 {
-	if (bIsWorking && !AttackComponent && Command.pTarget.IsValid())
+	if (!AttackComponent || !Command.pTarget.IsValid() || AttackComponent->IsAttacking())
 		return;
-	bIsArrive = false;
-	AttackTarget = Command.pTarget.Get();
-	bIsWorking = true;
-	AttackComponent->SetAttackTarget(Command.pTarget.Get());
-	if (!AttackComponent->IsSetAttackData())
+	if (AttackComponent->TargetIsInRange())
 	{
-		AttackComponent->SetAttackData(ESubAttackType::Default);
+		bIsWorking = true;
+		AttackComponent->StartAttack();
+		OwnerController->ResetMove();
 	}
-	AttackComponent->StartAttack();
+	else
+	{
+		WorkStart(Command);
+	}
 }
 
 void UPalWorkComponent_Attack::WorkEnd(const FPalCommand& Command)
@@ -57,7 +81,18 @@ void UPalWorkComponent_Attack::WorkEnd(const FPalCommand& Command)
 
 void UPalWorkComponent_Attack::WorkCancel()
 {
-	//UE_LOG(LogTemp, Log, TEXT("%s : Attack Work Cancel"), *GetOwner()->GetName());
+	if (AttackComponent && OwnerController)
+	{
+		if (AttackComponent)
+		{
+			AttackComponent->SetAttackTarget(TargetCharacter.Get());
+			AttackComponent->SetAttackData(CurrentSubAttackType);
+
+		}
+		OwnerController->SetBBTargetActor(TargetCharacter.Get());
+		return;
+	}
+	
 	if (bIsWorking == false)
 		return;
 	bIsWorkEnd = true;
@@ -68,6 +103,5 @@ void UPalWorkComponent_Attack::WorkCancel()
 	{
 		//AttackComponent->SetAttackTarget
 		AttackComponent->EndAttack();
-		AttackComponent->ResetAttack();
 	}
 }

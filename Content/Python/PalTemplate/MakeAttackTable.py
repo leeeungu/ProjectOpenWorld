@@ -8,7 +8,7 @@ from PalTemplate.PalConfig import (
     PAL_BP_PREFIX,
     CONFIG_PAL_NAME,
     PAL_ATTACK_DT_STRUCT_PATH,
-    ANIM_SEQUENCE_NAMES
+    ANIM_SEQUENCE_NAMES,
 )
 
 

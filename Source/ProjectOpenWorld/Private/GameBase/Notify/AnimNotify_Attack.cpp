@@ -78,10 +78,10 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 				}
 			}
 		}
-		if (arResult.IsEmpty())
-		{
-			UE_LOG(LogTemp, Log, TEXT("UAnimNotify_Attack :: Notify Attacked Count : %d"), Attacked.Num());
-		}
+		//if (arResult.IsEmpty())
+		//{
+		//	UE_LOG(LogTemp, Log, TEXT("UAnimNotify_Attack :: Notify Attacked Count : %d"), Attacked.Num());
+		//}
 	}
 	AttackEventObjectDebug(MeshComp);
 }

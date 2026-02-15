@@ -1,5 +1,6 @@
 #include "Building/Component/BuildingProgress.h"
 #include "Building/BaseBuilding.h"
+#include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 
 UBuildingProgress::UBuildingProgress()
 {
@@ -187,7 +188,7 @@ void UBuildingProgress::EndBuilding()
 
 	SetComponentTickEnabled(false);
 	curentPercent = 1.0f; 
-
+	USoundGameInstanceSubsystem::PlayEffectSound(EEffectSoundType::EST_BuildingComplete, GetOwner()->GetActorLocation());
 	for (TWeakObjectPtr<UObject>& Other : InstigatorList)
 	{
 		if (Other.IsValid())

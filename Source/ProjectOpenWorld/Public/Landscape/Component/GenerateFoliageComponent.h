@@ -20,7 +20,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
 	TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageType{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage")
-	FVector InstanceOffset{};
+	FVector InstanceOffset = FVector::ZeroVector;
 };
 
 

@@ -135,11 +135,6 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	{
 		AIController->SetBBTargetActor(pOther);
 	}
-	if (AttackComponent && !AttackComponent->IsSetTarget())
-	{
-		AttackComponent->SetAttackTarget(pOther);
-		AttackComponent->SetAttackData(ESubAttackType::Default);
-	}
 	if (PalCommand && PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		PalCommand->ResetCommandQue();

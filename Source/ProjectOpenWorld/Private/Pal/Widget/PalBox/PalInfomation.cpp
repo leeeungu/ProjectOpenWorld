@@ -20,7 +20,12 @@ void UPalInfomation::SetPalCreature(ABaseCreature* SelectedCreature)
 	if (CurrentSelectedCreature.IsValid())
 	{
 		PalInventorySlot->SetPalCreature(SelectedCreature);
-		PalNameText->SetText(FText::FromName(SelectedCreature->GetPalID()));
+		FText CharacterID = FText::FromName(SelectedCreature->GetPalID());
+		//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
+		
+		CharacterID= FText::FromStringTable("/Game/Pal/StringTable/ST_PalName.ST_PalName", *CharacterID.ToString());
+
+		PalNameText->SetText(CharacterID);
 		InfoVerticalBox->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }

@@ -50,12 +50,7 @@ void UPalAttackComponent::ResetAttackData()
 
 void UPalAttackComponent::EndAttackMontage()
 {
-	/*if (TargetActor)
-	{
-		Controller->SetBBTargetActor(TargetActor);
-	}*/
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttackMontage Called "), *GetOwner()->GetName());
-	ResetAttackData();
+	EndAttack();
 }
 
 void UPalAttackComponent::ResetAttack()
@@ -150,6 +145,7 @@ void UPalAttackComponent::StartAttack()
 	{
 		OnPalAttackStart.Broadcast();
 	}
+	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: StartAttack Called "), *GetOwner()->GetName());
 }
 
 void  UPalAttackComponent::EndAttack()
@@ -170,6 +166,8 @@ void  UPalAttackComponent::EndAttack()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack Finished "), *GetOwner()->GetName());
 	TargetActor = nullptr;
+	AttackData.AttackData.Empty();
+	AttackData.AttackSlot = ESubAttackType::None_AttackType;
 }
 
 void UPalAttackComponent::StopAttack()
@@ -180,8 +178,7 @@ void UPalAttackComponent::StopAttack()
 		Anim->StopMontageQueue();
 	}
 	EndAttack();
-	//OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.01f);
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: StopAttack Called "), *GetOwner()->GetName());
+//	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: StopAttack Called "), *GetOwner()->GetName());
 	ResetAttackData();
 }
 
@@ -190,7 +187,6 @@ bool UPalAttackComponent::TargetIsInRange() const
 	if (TargetActor && OwnerCharacter)
 	{
 		const double Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
-		//UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f , AttackDistance : %f"), *GetOwner()->GetName(), Distance, AttackData.AttackDistance* AttackData.AttackDistance);
 		if (Distance <= AttackData.AttackDistance * AttackData.AttackDistance)
 		{
 			return true;
@@ -198,34 +194,3 @@ bool UPalAttackComponent::TargetIsInRange() const
 	}
 	return false;
 }
-//
-//UAnimMontage* UPalAttackComponent::GetMontage() const
-//{
-//	UAnimMontage* NextMontage = nullptr;
-//	if (AttackData.AttackData.IsValidIndex(AttackIndex) && bSetAttackData)
-//	{
-//		NextMontage = AttackData.AttackData[AttackIndex];
-//	}
-//	return NextMontage;
-//}
-//
-//void UPalAttackComponent::MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage)
-//{
-//	//UE_LOG(LogTemp, Warning, TEXT("MontageStartEvent"));
-//}
-//
-//void UPalAttackComponent::MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted)
-//{
-//	/*if (!Montage || !BaseAnim)
-//		return;
-//	if (!BaseAnim->IsLoop())
-//		AttackIndex++;
-//	if (!AttackData.AttackData.IsValidIndex(AttackIndex))
-//	{
-//		BaseAnim->SetMontageQueueInterface(nullptr);
-//		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: MontageBlendingEvent End Attack "), *GetOwner()->GetName());
-//		EndAttack();
-//		return;
-//	}
-//	BaseAnim->PlayMontageQueue();*/
-//}

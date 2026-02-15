@@ -1,4 +1,4 @@
-﻿#include "Pal/Widget/PalHpWidget_Boss.h"
+#include "Pal/Widget/PalHpWidget_Boss.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Creature/Character/BaseMonster.h"
@@ -25,7 +25,10 @@ void UPalHpWidget_Boss::InitializeHPWidget(ABaseCharacter* OwnerCharacter)
 		OwnerMonster->OnDamagedDelegate.AddUniqueDynamic(this, &UPalHpWidget_Boss::OnDamageEvent);
 		if (MonsterNameTextBlock)
 		{
-			MonsterNameTextBlock->SetText(FText::FromName(OwnerMonster->GetMonsterName()));
+			FText MonsterName = FText::FromString(OwnerMonster->GetMonsterName().ToString());
+			//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
+			MonsterName = FText::FromStringTable("/Game/Monster/StringTable/ST_PalName.ST_PalName", *MonsterName.ToString());
+			MonsterNameTextBlock->SetText(MonsterName);
 		}
 		if (MonsterLevel)
 		{

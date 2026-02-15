@@ -1,4 +1,4 @@
-﻿#include "GameBase/Animation/BaseAnimInstance.h"
+#include "GameBase/Animation/BaseAnimInstance.h"
 #include "GameBase/MetaData/AMDLoop.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"

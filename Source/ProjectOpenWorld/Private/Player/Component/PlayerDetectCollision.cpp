@@ -6,7 +6,7 @@
 UPlayerDetectCollision::UPlayerDetectCollision() : Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	SphereRadius = 2000.f;
+	SphereRadius = 3000.f;
 	SetGenerateOverlapEvents(true);
 	SetCollisionProfileName(TEXT("OverlapAll"));
 }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Pal/Component/Work/PalWorkComponent.h"
@@ -6,6 +6,7 @@
 
 class UPalAttackComponent;
 class UAttackInterface;
+enum class ESubAttackType : uint8;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalWorkComponent_Attack : public UPalWorkComponent
@@ -15,6 +16,8 @@ private:
 	UPROPERTY()
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 	TScriptInterface < UAttackInterface> AttackTarget{};
+	TWeakObjectPtr<AActor> TargetCharacter{};
+	ESubAttackType CurrentSubAttackType{};
 public:
 	UPalWorkComponent_Attack();
 protected:

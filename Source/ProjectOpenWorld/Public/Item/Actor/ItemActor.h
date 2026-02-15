@@ -11,7 +11,7 @@ class USkeletalMeshComponent;
 class UWidgetComponent;
 class USphereComponent;
 class UStaticMeshComponent;
-
+enum EEffectSoundType : uint8;
 UCLASS()
 class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface, public IGenerateWorldInterface
 {
@@ -39,7 +39,7 @@ protected:
 	int itemCount = 1;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
-	TObjectPtr<USoundBase> PickUpSound{};
+	TEnumAsByte<EEffectSoundType> PickUpSound{};
 	UPROPERTY()
 	TObjectPtr< AActor> Transport{};
 	ETransportState TransportState{};

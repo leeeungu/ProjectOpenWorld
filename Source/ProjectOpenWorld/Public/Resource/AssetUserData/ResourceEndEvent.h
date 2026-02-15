@@ -6,6 +6,7 @@
 
 
 class UMeshComponent;
+enum EEffectSoundType : uint8;
 
 UCLASS()
 class PROJECTOPENWORLD_API UResourceEndEvent : public UAssetUserData
@@ -17,7 +18,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Resource")
 	float MaxReSpawnTimeSec = 15.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Resource")
-	TObjectPtr<USoundBase> ResourceEndSound = nullptr;
+	TEnumAsByte < EEffectSoundType> ResourceEndSound{};
 
 public:
 	float GetRandomReSpawnTime() const { return FMath::FRandRange(MinReSpawnTimeSec, MaxReSpawnTimeSec); }

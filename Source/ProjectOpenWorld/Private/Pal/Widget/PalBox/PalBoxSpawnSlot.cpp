@@ -34,7 +34,11 @@ void UPalBoxSpawnSlot::SetPalCreature(ABaseCreature* InCreature)
 	if (CurrentSelectedCreature.IsValid())
 	{
 		PalInfoCanvasPanel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		NameText->SetText(FText::FromName(CurrentSelectedCreature->GetPalID()));
+		FText CharacterID = FText::FromName(CurrentSelectedCreature->GetPalID());
+		//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
+
+		CharacterID = FText::FromStringTable("/Game/Pal/StringTable/ST_PalName.ST_PalName", *CharacterID.ToString());
+		NameText->SetText(CharacterID);
 		LevelText->SetText(FText::AsNumber(1)); 
 		UTexture2D* IconDataRow = UPalCharacterDataSubsystem::GetPalCharacterIconByName(CurrentSelectedCreature->GetPalID());
 		IconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

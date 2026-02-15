@@ -6,6 +6,7 @@
 #include "Pal/Component/PalCommandComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Player/Character/BasePlayer.h"
+#include "Pal/Data/PalCommandData.h"
 
 void ABossMonster::BeginPlay()
 {
@@ -61,12 +62,10 @@ void ABossMonster::OnDetectBeginEvent_Implementation(ABasePlayer* Player)
 {
 	if(HpWidget)
 		HpWidget->AddToViewport();
-	if (AttackComponent && !AttackComponent->IsSetTarget())
+	
+	if (!PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
-		AttackComponent->SetAttackTarget(Player);
-	}
-	if (PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
-	{
+		UE_LOG(LogTemp, Warning, TEXT("BossMonster: Detected player, executing attack command."));
 		PalCommand->ResetCommandQue();
 		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, Player, ESubAttackType::Default));
 	}

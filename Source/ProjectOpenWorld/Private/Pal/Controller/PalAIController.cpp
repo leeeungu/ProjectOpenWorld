@@ -10,7 +10,7 @@
 #include "GameBase/BaseCharacter.h"
 
 
-APalAIController::APalAIController() : AAIController{}
+APalAIController::APalAIController() : Super{}
 {
 	//GetPathFollowingComponent()->block
 	//OnMoveCompleted.AddDynamic(this, &APalAIController::OnMoveCompletedHandler);
@@ -144,9 +144,11 @@ void APalAIController::SetBBTargetActor(AActor* TargetActor, float fAcceptanceRa
 		return;
 	if (OwnerPal)
 		OwnerPal->UseControllerDesiredRotation();
+	SetFocus(TargetActor);
 	OwnerPal->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetActorName(), TargetActor);
 	AcceptanceRadius = fAcceptanceRadius;
+	APalAIController::MoveToActor(TargetActor, fAcceptanceRadius);
 }
 
 void APalAIController::SetBBTargetLocation(FVector TargetLocation, float fAcceptanceRadius)
@@ -156,6 +158,7 @@ void APalAIController::SetBBTargetLocation(FVector TargetLocation, float fAccept
 		return;
 	if (OwnerPal)
 		OwnerPal->UseOrientRotationToMovement();
+	SetFocus(nullptr);
 	OwnerPal->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 	GetBlackboardComponent()->SetValueAsVector(GetBBTargetLocationName(), TargetLocation);

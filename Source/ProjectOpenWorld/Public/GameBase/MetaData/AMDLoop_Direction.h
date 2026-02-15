@@ -35,12 +35,14 @@ class PROJECTOPENWORLD_API UAnimLoopObject_Direction : public UAnimLoopObject
 {
 	GENERATED_BODY()
 private:
+	FVector InitialActorDirection{};
 	FVector MoveWorldDirection{};
 	float MoveSpeed = 3500.f;
 	float MoveDistance = 3500.f;
 	float CurrenDistance{};
 	EMovementMode InitMovement{};
 	uint8 InitCustomMovement{};
+	bool bWorldDirection{};
 
 public:
 	virtual void Initialize(UAnimInstance* Animinstance, UAMDLoop* MetaData) override;

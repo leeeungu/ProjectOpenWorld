@@ -51,5 +51,4 @@ public:
 	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override;
 	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override;
 
-
 };

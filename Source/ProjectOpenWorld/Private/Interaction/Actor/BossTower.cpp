@@ -3,6 +3,7 @@
 #include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/TargetPoint.h"
+#include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 
 ABossTower::ABossTower() : Super()
 {
@@ -21,6 +22,10 @@ void ABossTower::BeginPlay()
 	Super::BeginPlay();
 	if(BossTowerWidgetComponent)
 		BossTowerWidgetComponent->SetVisibility(false);
+	if (BoosLanscape)
+	{
+		BoosLanscape->SetActorHiddenInGame(true);
+	}
 }
 
 void ABossTower::Tick(float DeltaTime)
@@ -42,8 +47,13 @@ void ABossTower::OnEndDetected_Implementation(ACharacter* pOther)
 
 void ABossTower::OnInteractionStart_Implementation(ACharacter* pOther)
 {
+	if (BoosLanscape)
+	{
+		BoosLanscape->SetActorHiddenInGame(false);
+	}
 	if (BossPoint && pOther)
 	{
+		USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType::BGMST_BossTower);
 		pOther->SetActorLocation(BossPoint->GetActorLocation());
 		pOther->SetActorRotation(BossPoint->GetActorRotation());
 		pOther->GetController()->SetControlRotation(BossPoint->GetActorRotation());

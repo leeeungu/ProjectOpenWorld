@@ -23,10 +23,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "BossTower")
 	TObjectPtr<ATargetPoint>  BossPoint{};
-	//UPROPERTY()
-	//TSubclassOf<UUserWidget> BossTowerWidgetClass{};
-	//UPROPERTY()
-	//TObjectPtr<UUserWidget> BossTowerWidget{};
+	UPROPERTY(EditAnywhere, Category = "BossTower")
+	TObjectPtr <AActor> BoosLanscape{};
 
 public:	
 	ABossTower();

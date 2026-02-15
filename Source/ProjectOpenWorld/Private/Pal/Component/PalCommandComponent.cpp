@@ -124,6 +124,7 @@ void UPalCommandComponent::ResetCommandQue()
 
 void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
+	UE_LOG(LogTemp, Log, TEXT("%s : Move Completed with Result %d"), *GetOwner()->GetName(), (int)Result);
 	if (!CurrentExcute)// || Result == EPathFollowingResult::Type::Invalid || Result == EPathFollowingResult::Type::OffPath)
 	{
 		return;
