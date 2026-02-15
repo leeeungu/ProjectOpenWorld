@@ -9,6 +9,7 @@ void UBaseAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 	OnMontageStarted.AddUniqueDynamic(this, &UBaseAnimInstance::OnMontageStartedEvent);
 	OnMontageBlendingOut.AddUniqueDynamic(this, &UBaseAnimInstance::OnMontageBlendingOutEvent);
+	OnMontageEnded.AddUniqueDynamic(this, &UBaseAnimInstance::OnMontageEndedEvent);
 	if (ACharacter* Owner = Cast<ACharacter>(TryGetPawnOwner()))
 	{
 		MovementComponent = Owner->GetCharacterMovement();
@@ -32,6 +33,20 @@ void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		{
 			LoopObject->EndLoop();
 			LoopObject = nullptr;
+			CurrentMontageIndex++;
+			if (CanPlayMontage())
+			{
+				const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
+				for (UAnimMetaData* Data : MetaData)
+				{
+					if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
+					{
+						ChangeEvent->EndEvent(this);
+					}
+				}
+				PlayMontage();
+				return;
+			}
 		}
 	}
 }
@@ -76,7 +91,12 @@ void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bI
 		PlayMontage();
 		return;
 	}
-	OnMontageEnd();
+}
+
+void UBaseAnimInstance::OnMontageEndedEvent(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!CanPlayMontage() && !bInterrupted)
+		OnMontageEnd();
 }
 
 void UBaseAnimInstance::ChangeMontageArray(const TArray<UAnimMontage*>& NewMontageArray)
@@ -111,6 +131,8 @@ bool UBaseAnimInstance::CanPlayMontage()
 
 void UBaseAnimInstance::OnMontageEnd()
 {
+	if (!bIsPlayingMontage)
+		return;
 	//UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd "), *GetName());
 	if (CurrentMontage)
 	{
@@ -123,6 +145,7 @@ void UBaseAnimInstance::OnMontageEnd()
 			}
 		}
 	}
+	MontageArray.Empty(false);
 	bIsPlayingMontage = false;
 	CurrentMontageIndex = 0;
 	CurrentMontage = nullptr;

@@ -4,6 +4,7 @@
 #include "GameBase/MetaData/AMDLoop.h"
 #include "AMDLoop_Direction.generated.h"
 
+class APawn;
 UCLASS()
 class PROJECTOPENWORLD_API UAMDLoop_Direction : public UAMDLoop
 {
@@ -17,6 +18,8 @@ protected:
 	float MoveDistance = 3500.f;
 	UPROPERTY(EditInstanceOnly, Category = "Loop Data")
 	bool bWorldDirection = true;
+	UPROPERTY(EditInstanceOnly, Category = "Loop Data")
+	bool bControllerRotattion{};
 public:
 	UAMDLoop_Direction(const FObjectInitializer& ObjectInitializer);
 	UFUNCTION(BlueprintPure, Category = "Loop Data")
@@ -27,6 +30,8 @@ public:
 	float GetMoveDistance() const { return MoveDistance; }
 	UFUNCTION(BlueprintPure, Category = "Loop Data")
 	bool GetWorldDirection() const { return  bWorldDirection; }
+	UFUNCTION(BlueprintPure, Category = "Loop Data")
+	bool IsControllerRotation() const { return bControllerRotattion; }
 };
 
 
@@ -43,9 +48,14 @@ private:
 	EMovementMode InitMovement{};
 	uint8 InitCustomMovement{};
 	bool bWorldDirection{};
+	bool bControllerRotattion{};
+
+	UPROPERTY()
+	TWeakObjectPtr<APawn> OwnerPawn{};
 
 public:
 	virtual void Initialize(UAnimInstance* Animinstance, UAMDLoop* MetaData) override;
 	virtual void UpdateLoop(float DeltaTime = 0) override;
+	virtual bool IsLoop() const override;
 };
 

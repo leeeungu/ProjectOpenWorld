@@ -10,7 +10,8 @@ from PalTemplate.PalConfig import (
     PAL_AS_PREFIX,
     PAL_BS_PREFIX,
     find_asset,
-    CONFIG_PAL_NAME
+    CONFIG_PAL_NAME,
+    BS_WEIGHT_SPEED
 )
 
 from typing import Type, TypeVar
@@ -68,7 +69,7 @@ def configure_axes_for_pal_bs(pal_bs: unreal.BlendSpace) -> None:
     horiz.set_editor_property("snap_to_grid", True)
 
     pal_bs.set_editor_property("blend_parameters", params)
-
+    pal_bs.set_editor_property("target_weight_interpolation_speed_per_sec", BS_WEIGHT_SPEED)
 
 # ------------------------------------------------------------------
 # Global BS → Pal BS sample_data 복사 (애니 이름 치환)

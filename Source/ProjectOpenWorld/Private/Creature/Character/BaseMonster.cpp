@@ -13,6 +13,7 @@
 #include "Pal/Widget/PalHpWidget_MonsterDefault.h"
 #include "Pal/Controller/PalAIController.h"
 #include "GameBase/Component/StatComponent.h"
+#include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 
 
 
@@ -130,12 +131,8 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
 	Damage = HPStat->AddCurrentStat(-Damage);
-
-	if (APalAIController* AIController = Cast<APalAIController>(GetController()))
-	{
-		AIController->SetBBTargetActor(pOther);
-	}
-	if (PalCommand && PalCommand->IsValidCommand() && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
+	USoundGameInstanceSubsystem::DamageEventBGMSound(this);
+	if (PalCommand && PalCommand->GetCurrentCommandKind() != EPalCommandKind::Attack)
 	{
 		PalCommand->ResetCommandQue();
 		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));

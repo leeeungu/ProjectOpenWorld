@@ -7,6 +7,7 @@
 class USoundBase;
 class UAudioComponent;
 class UDataTable;
+class AActor;
 
 UENUM(BlueprintType)
 enum EUISoundType : uint8
@@ -100,6 +101,9 @@ private:
 	TObjectPtr<UDataTable> EffectSoundDataTable{};
 
 	EBGMSoundType CurrentMainBGM{ EBGMSoundType::BGMST_None };
+
+	UPROPERTY()
+	TObjectPtr<AActor> DamagedActorForBGM{};
 public:
 	USoundGameInstanceSubsystem();
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -115,7 +119,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
 	static void PlayMainBGMSound(EBGMSoundType SoundType);
 
+	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
+	static void DamageEventBGMSound(AActor* DamagedActor);
 private:
+
+	UFUNCTION()
+	void OnMonsterDead(AActor* DestroyedActor);
 
 	USoundBase* GetUISound(EUISoundType SoundType);
 	USoundBase* GetEffectSound(EEffectSoundType SoundType);

@@ -2,6 +2,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
+#include "Pal/Character/BossMonster.h"
+#include "Pal/Character/BasePalMonster.h"
 
 USoundGameInstanceSubsystem* USoundGameInstanceSubsystem::Instance{};
 
@@ -93,7 +95,8 @@ void USoundGameInstanceSubsystem::PlayBGMSound(EBGMSoundType SoundType)
 	}
 	else
 	{
-		StoredAudioComponent->SetPaused(false);
+		StoredAudioComponent->SetSound(Instance->GetBGMSound(SoundType));
+		StoredAudioComponent->FadeIn(1.0f, 1);
 	}
 }
 
@@ -104,7 +107,7 @@ void USoundGameInstanceSubsystem::PauseBGMSound(EBGMSoundType SoundType)
 	UAudioComponent*& StoredAudioComponent = Instance->BGMAudioComponentMap.FindOrAdd(SoundType, nullptr);
 	if (StoredAudioComponent != nullptr)
 	{
-		StoredAudioComponent->SetPaused(true);
+		StoredAudioComponent->FadeOut(5.0f,0);
 	}
 	else
 	{
@@ -121,6 +124,46 @@ void USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType SoundType)
 		PauseBGMSound(Instance->CurrentMainBGM);
 		Instance->CurrentMainBGM = SoundType;
 		PlayBGMSound(SoundType);
+	}
+}
+
+void USoundGameInstanceSubsystem::DamageEventBGMSound(AActor* DamagedActor)
+{
+	if (!Instance || !DamagedActor)
+		return;
+	EBGMSoundType SoundTypeToPlay = Instance->CurrentMainBGM;
+
+	ABasePalMonster* PalMonster = Cast<ABasePalMonster>(DamagedActor);
+	ABossMonster* BossMonster = Cast<ABossMonster>(DamagedActor);
+	if (BossMonster)
+	{
+		SoundTypeToPlay = EBGMSoundType::BGMST_BossTower;
+	}
+	else if (PalMonster)
+	{
+		SoundTypeToPlay = EBGMSoundType::BGMST_Battle;
+	}
+	if (Instance->DamagedActorForBGM)
+	{
+		Instance->DamagedActorForBGM->OnDestroyed.RemoveDynamic(Instance, &USoundGameInstanceSubsystem::OnMonsterDead);
+	}
+	if (DamagedActor)
+	{
+		Instance->DamagedActorForBGM = DamagedActor;
+		DamagedActor->OnDestroyed.AddUniqueDynamic(Instance, &USoundGameInstanceSubsystem::OnMonsterDead);
+	}
+	PlayMainBGMSound(SoundTypeToPlay);
+}
+
+
+void USoundGameInstanceSubsystem::OnMonsterDead(AActor* DestroyedActor)
+{
+	if (!Instance)
+		return;
+	if (DestroyedActor == Instance->DamagedActorForBGM)
+	{
+		Instance->DamagedActorForBGM = nullptr;
+		PlayMainBGMSound(EBGMSoundType::BGMST_InGame);
 	}
 }
 
@@ -156,8 +199,10 @@ USoundBase* USoundGameInstanceSubsystem::GetBGMSound(EBGMSoundType SoundType)
 
 void USoundGameInstanceSubsystem::PlaySound2D(USoundBase* Sound)
 {
-	if(Sound)
+	if (Sound)
+	{
 		UGameplayStatics::PlaySound2D(Instance->GetWorld(), Sound);
+	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Sound is null, cannot play sound."));

@@ -7,12 +7,10 @@
 #include "Animation/AnimInstance.h"
 #include "Engine/DataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
-//#include "GameBase/Component/CharacterMontageComponent.h"
 
 UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	//AttackData.AttackDistance = 50.0f;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 }
 
@@ -25,7 +23,7 @@ void UPalAttackComponent::BeginPlay()
 		UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 		if (Anim)
 		{
-			Anim->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttackMontage);
+			Anim->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
 		}
 	}
 	if (!Controller)
@@ -35,30 +33,14 @@ void UPalAttackComponent::BeginPlay()
 	}
 }
 
-void UPalAttackComponent::TargetIsDead(AActor* Actor)
-{
-	EndAttack();
-}
-
 void UPalAttackComponent::ResetAttackData()
 {
-	
 	bSetAttackData = false;
 	bAttacking = false;
-	AttackIndex = 0;
-}
-
-void UPalAttackComponent::EndAttackMontage()
-{
-	EndAttack();
 }
 
 void UPalAttackComponent::ResetAttack()
 {
-	if (TargetActor)
-	{
-		TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
-	}
 	TargetActor = nullptr;
 	AttackData.AttackData.Empty();
 	AttackData.AttackSlot = ESubAttackType::None_AttackType;
@@ -75,7 +57,6 @@ void UPalAttackComponent::SetAttackTarget(AActor* Actor)
 		return;
 	}
 	TargetActor = Actor;
-	TargetActor->OnDestroyed.AddUniqueDynamic(this, &UPalAttackComponent::TargetIsDead);
 	bSetTargetData = true;
 }
 
@@ -85,22 +66,19 @@ void UPalAttackComponent::SetAttackData(ESubAttackType eType)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no AttackDataAsset "), *GetOwner()->GetName());
 		AttackData.AttackSlot = ESubAttackType::None_AttackType;
-		AttackIndex = 0;
 		bSetAttackData = false;
 		return;
 	}
 	bSetAttackData = false;
-	if (AttackDataAsset)
+	if (AttackDataAsset && AllAttackDataArray.IsEmpty())
 	{
-		TArray<FPalAttackDataTable*> ArrayData{};
-
-		AttackDataAsset->GetAllRows("", ArrayData);
+		AttackDataAsset->GetAllRows("", AllAttackDataArray);
 		uint8 Index = static_cast<uint8>(eType);
-		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData in DataTable %d"), *GetOwner()->GetName(), Index);
-		if (ArrayData.IsValidIndex(Index))
+		CoolDownArray.Init(false, static_cast<uint8>(ESubAttackType::Max_AttackType));
+		if (AllAttackDataArray.IsValidIndex(Index))
 		{
-			AttackData.AttackData = ArrayData[Index]->AttackData;
-			AttackData.AttackDistance = ArrayData[Index]->AttackDistance;
+			AttackData.AttackData = AllAttackDataArray[Index]->AttackData;
+			AttackData.AttackDistance = AllAttackDataArray[Index]->AttackDistance;
 			bSetAttackData = true;
 		}
 		else
@@ -110,7 +88,6 @@ void UPalAttackComponent::SetAttackData(ESubAttackType eType)
 		}
 	}
 	AttackData.AttackSlot = eType;
-	AttackIndex = 0;
 }
 
 void UPalAttackComponent::StartAttack()
@@ -118,56 +95,68 @@ void UPalAttackComponent::StartAttack()
 	if (!bSetTargetData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData before use StartAttack "), *GetOwner()->GetName());
-		EndAttack();
+		ResetAttack();
 		return;
 	}
-	if (bAttacking)
+	if (!TargetActor.IsValid() || IAttackInterface::Execute_IsDead(TargetActor.Get()))
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: already Attacking "), *GetOwner()->GetName());
+		ResetAttack();
 		return;
 	}
-	if (IAttackInterface::Execute_IsDead(TargetActor))
-	{
+	uint8 Index = static_cast<uint8>(AttackData.AttackSlot);
+	if (bAttacking )
 		return;
-	}
-	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
-	if (Anim)
+
+	if (CoolDownArray.IsValidIndex(Index) && CoolDownArray[Index])
 	{
-		Anim->ChangeMontageArray(AttackData.AttackData);
-		Anim->PlayMontageQueue();
+		FTimerHandle Handle{};
+		GetWorld()->GetTimerManager().SetTimer(Handle,
+			[this]()
+			{
+				StartAttack();
+			},
+			2, false, 2);
 	}
-	bAttacking = true;
-	Controller->SetFocus(TargetActor);
-	OwnerCharacter->GetCharacterMovement()->StopMovementImmediately();
-	OwnerCharacter->GetCharacterMovement()->DisableMovement();
-	AttackIndex = 0;
-	if (OnPalAttackStart.IsBound())
+	else
 	{
-		OnPalAttackStart.Broadcast();
+		CoolDownArray[Index] = true;
+
+		UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
+		if (Anim)
+		{
+			Anim->ChangeMontageArray(AttackData.AttackData);
+			Anim->PlayMontageQueue();
+		}
+		bAttacking = true;
+		FTimerHandle Handle{};
+		UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: CoolDown Start"), *GetOwner()->GetName());
+		GetWorld()->GetTimerManager().SetTimer(Handle,
+			[this, Index]()
+			{
+				UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: CoolDown End"), *GetOwner()->GetName());
+				if (CoolDownArray.IsValidIndex(Index))
+				{
+					CoolDownArray[Index] = false;
+				}
+			},
+			AttackData.AttackCooldown, false, AttackData.AttackCooldown);
+		if (OnPalAttackStart.IsBound())
+		{
+			OnPalAttackStart.Broadcast();
+		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: StartAttack Called "), *GetOwner()->GetName());
 }
 
 void  UPalAttackComponent::EndAttack()
 {
 	if (!bAttacking)
 		return;
-
 	ResetAttackData();
 	bSetTargetData= false;
-	Controller->SetFocus(nullptr);
-	if (TargetActor)
-	{
-		TargetActor->OnDestroyed.RemoveDynamic(this, &UPalAttackComponent::TargetIsDead);
-	}
 	if (OnPalAttackEnd.IsBound())
 	{
 		OnPalAttackEnd.Broadcast();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: EndAttack Finished "), *GetOwner()->GetName());
-	TargetActor = nullptr;
-	AttackData.AttackData.Empty();
-	AttackData.AttackSlot = ESubAttackType::None_AttackType;
 }
 
 void UPalAttackComponent::StopAttack()
@@ -177,20 +166,38 @@ void UPalAttackComponent::StopAttack()
 	{
 		Anim->StopMontageQueue();
 	}
-	EndAttack();
-//	UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: StopAttack Called "), *GetOwner()->GetName());
-	ResetAttackData();
 }
 
 bool UPalAttackComponent::TargetIsInRange() const
 {
-	if (TargetActor && OwnerCharacter)
+	if (TargetActor.IsValid() && OwnerCharacter)
 	{
 		const double Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
-		if (Distance <= AttackData.AttackDistance * AttackData.AttackDistance)
-		{
-			return true;
-		}
+		UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f"), *GetOwner()->GetName(), Distance);
+		return Distance <= AttackData.AttackDistance * AttackData.AttackDistance;
 	}
 	return false;
+}
+
+bool UPalAttackComponent::IsTargetNotDead() const
+{
+	if (TargetActor.IsValid())
+	{
+		return !IAttackInterface::Execute_IsDead(TargetActor.Get());
+	}
+	return false;
+}
+bool UPalAttackComponent::IsCoolDown(ESubAttackType Type) const
+{
+	uint8 Index = static_cast<uint8>(Type);
+	if (CoolDownArray.IsValidIndex(Index))
+	{
+		UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: IsCoolDown %d"), *GetOwner()->GetName(), CoolDownArray[Index]);
+		return !CoolDownArray[Index];
+	}
+	return false;
+}
+AActor* UPalAttackComponent::GetTargetActor() const 
+{
+	return TargetActor.IsValid() ? TargetActor.Get() : nullptr;
 }

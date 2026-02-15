@@ -17,7 +17,7 @@ CONFIG_PAL_NAME   = "Anubis"
 PAL_ATTACK_DT_STRUCT_PATH = "/Script/ProjectOpenWorld.PalAttackDataTable"
 ANIM_SEQUENCE_NAMES = ["FarSkill_Start", "FarSkill_StartLoop",
                        "FarSkill_Action", "FarSkill_ActionLoop", "FarSkill_End"]  # 접두사 제외한 꼬리만
-
+BS_WEIGHT_SPEED = 5
 
 from typing import Type, TypeVar
 

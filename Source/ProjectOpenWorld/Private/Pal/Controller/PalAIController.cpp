@@ -163,6 +163,7 @@ void APalAIController::SetBBTargetLocation(FVector TargetLocation, float fAccept
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 	GetBlackboardComponent()->SetValueAsVector(GetBBTargetLocationName(), TargetLocation);
 	AcceptanceRadius = fAcceptanceRadius;
+	APalAIController::MoveToLocation(TargetLocation, fAcceptanceRadius);
 }
 
 void APalAIController::ResetMove()
@@ -171,8 +172,8 @@ void APalAIController::ResetMove()
 	StopMovement();
 	if (!GetBlackboardComponent())
 		return;
-	if (OwnerPal)
-		OwnerPal->UseOrientRotationToMovement();
+	/*if (OwnerPal)
+		OwnerPal->UseOrientRotationToMovement();*/
 	GetBlackboardComponent()->SetValueAsObject(GetBBTargetLocationName(), nullptr);
 }
 

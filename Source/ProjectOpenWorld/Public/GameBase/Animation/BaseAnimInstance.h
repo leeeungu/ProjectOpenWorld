@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
@@ -41,6 +41,8 @@ private:
 	void OnMontageStartedEvent(UAnimMontage* Montage);
 	UFUNCTION()
 	void OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION()
+	void OnMontageEndedEvent(UAnimMontage* Montage, bool bInterrupted);
 
 	bool CanPlayMontage();
 	void OnMontageEnd();

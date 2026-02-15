@@ -1,4 +1,4 @@
-Ôªø#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -29,6 +29,8 @@ public:
 	TArray<TObjectPtr<UAnimMontage>> AttackData{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	float AttackDistance = 100.0f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
+	float AttackCooldown = 5.0f;
 };
 
 
@@ -42,7 +44,7 @@ protected:
 
 	TArray< FPalAttackDataTable*> AllAttackDataArray{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
-	TObjectPtr<AActor> TargetActor{};
+	TWeakObjectPtr<AActor> TargetActor{};
 	UPROPERTY()
 	TObjectPtr< ABaseCharacter> OwnerCharacter{};
 	UPROPERTY()
@@ -57,6 +59,8 @@ protected:
 	bool bAttacking{};
 	UPROPERTY(VisibleAnywhere, Category = "PalAttackData")
 	bool bSetAttackData{};
+
+	TArray<bool> CoolDownArray{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackEnd{};
@@ -67,14 +71,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void TargetIsDead(AActor* Actor);
 	void ResetAttackData();
-	UFUNCTION()
-	void EndAttackMontage();
 public:	
 	void ResetAttack();
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "PalAttackData")
 	void  SetAttackTarget(AActor* Actor);
@@ -100,11 +99,13 @@ public:
 	bool IsAttacking() const { return bAttacking; }
 
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
-	AActor* GetTargetActor() const { return TargetActor; }
+	AActor* GetTargetActor() const;
 	UFUNCTION(BlueprintPure, Category = "PalAttackData")
 	bool IsSetAttackData()const { return bSetAttackData; }
 
-	//// IMontageQueueInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
+	bool IsTargetNotDead() const;
+	bool IsCoolDown(ESubAttackType Type) const;
+	//// IMontageQueueInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
 	//UAnimMontage* GetMontage() const override;
 	//void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) override;
 	//void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) override;

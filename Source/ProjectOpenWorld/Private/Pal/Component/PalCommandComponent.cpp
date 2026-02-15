@@ -124,7 +124,6 @@ void UPalCommandComponent::ResetCommandQue()
 
 void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	UE_LOG(LogTemp, Log, TEXT("%s : Move Completed with Result %d"), *GetOwner()->GetName(), (int)Result);
 	if (!CurrentExcute)// || Result == EPathFollowingResult::Type::Invalid || Result == EPathFollowingResult::Type::OffPath)
 	{
 		return;
@@ -133,7 +132,7 @@ void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResu
 	{
 		CurrentExcute->WorkEvent(CurrentCommandData);
 	}
-	else if (Result == EPathFollowingResult::Invalid)
+	else //if (Result == EPathFollowingResult::Invalid)
 	{
 		FinishCommand();
 		ACharacter* OwnerPal = Cast<ACharacter>(GetOwner());
@@ -146,11 +145,11 @@ void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResu
 			}
 		}
 	}
-	else
-	{
-		if (CurrentExcute->CanWork())
-		{
-			CurrentExcute->WorkStart(CurrentCommandData);
-		}
-	}
+	//else
+	//{
+	//	if (CurrentExcute->CanWork())
+	//	{
+	//		CurrentExcute->WorkStart(CurrentCommandData);
+	//	}
+	//}
 }
