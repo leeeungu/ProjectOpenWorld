@@ -29,6 +29,8 @@ protected:
 	TObjectPtr< UMaterialInterface> TerrainMaterial{};
 	TMap<FIntPoint, TObjectPtr<UProceduralMeshComponent>> SectionIDToMeshIndex{};
 	TArray<TObjectPtr<UProceduralMeshComponent>> EmpthyMeshComponent{};
+
+	float Time{};
 public:	
 	UGenerateTerrainComponent();
 #if WITH_EDITOR

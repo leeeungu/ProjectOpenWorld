@@ -38,6 +38,7 @@ void UGenerateTerrainComponent::BeginPlay()
 
 void UGenerateTerrainComponent::StartGenerateWorld(bool bEditor)
 {
+	Time = FPlatformTime::Seconds();
 	if (bEditor)
 	{
 		SectionIDToMeshIndex.Empty();
@@ -89,6 +90,7 @@ void UGenerateTerrainComponent::DelGenerateWorld(const FGenerateSectionData& Sec
 
 void UGenerateTerrainComponent::FinishGenerateWorld()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Finish Generate Terrain %f"), abs(FPlatformTime::Seconds() - Time));
 }
 
 void UGenerateTerrainComponent::Initialize(USceneComponent* ParentComponent)
