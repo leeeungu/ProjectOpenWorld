@@ -26,6 +26,7 @@ def set_default_if_none(path: str, TEMPLATE_NAME : str) -> bool:
     return True
 
 def ChangeAndSaveAsset(TEMPLATE_NAME: str) -> bool:
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} {TEMPLATE_NAME}의 Character Name 수정")
     target_name = f"{PAL_BP_PREFIX}{CONFIG_PAL_NAME}_{TEMPLATE_NAME}"
     path = f"{MONSTER_ROOT}/{CONFIG_PAL_NAME}/{target_name}"
     if not target_name in path:
@@ -33,6 +34,8 @@ def ChangeAndSaveAsset(TEMPLATE_NAME: str) -> bool:
     if set_default_if_none(path, TEMPLATE_NAME):
        unreal.EditorAssetLibrary.save_asset(path)
        unreal.log(f"[Path] {path}")
+       unreal.log(f"[Python] End : 펠 네임 {CONFIG_PAL_NAME} {TEMPLATE_NAME}의 Character Name 수정 성공")
        return True
+    unreal.log(f"[Python] End : 펠 네임 {CONFIG_PAL_NAME} {TEMPLATE_NAME}의 Character Name 수정 실패")
     return False
 

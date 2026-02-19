@@ -139,6 +139,7 @@ def apply_overrides_for_pal(
 #   - ABP 생성/로드 후 애니메이션 Override 적용
 # ------------------------------------------------------------
 def create_or_update_pal_anim_blueprint(TEMPLATE_NAME : str) -> None:
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} {TEMPLATE_NAME}전용 자식 ABP 생성")
     unreal.log("==============================================")
     unreal.log("[START] 템플릿 ABP → Pal AnimBP 생성/갱신")
 
@@ -192,6 +193,7 @@ def create_or_update_pal_anim_blueprint(TEMPLATE_NAME : str) -> None:
     unreal.EditorAssetLibrary.save_asset(abp_path)
     unreal.log("[END] 템플릿 ABP → Pal AnimBP 생성/갱신 종료")
     unreal.log("==============================================")
+    unreal.log(f"[Python] END : 펠 네임 {CONFIG_PAL_NAME} {TEMPLATE_NAME}전용 자식 ABP 생성 완료")
 
 if __name__ == "__main__":
    create_or_update_pal_anim_blueprint(TEMPLATE_NAME)

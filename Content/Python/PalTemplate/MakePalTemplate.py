@@ -1,4 +1,12 @@
 import importlib
+import unreal
+
+from PalTemplate import PalConfig
+importlib.reload(PalConfig)
+from PalTemplate.PalConfig import (
+   CONFIG_PAL_NAME
+)
+
 
 from PalTemplate import Prfix
 importlib.reload(Prfix)
@@ -19,11 +27,14 @@ def MakeCharacter(TEMPLATE_NAME : str):
    ChangeProperty.ChangeAndSaveAsset(TEMPLATE_NAME)
    MakeAttackTable.set_pal_attack_component_attack_data_asset_to_dt(TEMPLATE_NAME)
 
+
+
+unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} 자동 생성 파이브 라인")
 Prfix.main()
 Make_PalBS.main()
 
 MakeAttackTable.run_build_attack_montages_and_patch_dt()
 MakeCharacter("Monster")
 MakeCharacter("Pal")
-
+unreal.log(f"[Python]  End : 펠 네임 {CONFIG_PAL_NAME} 자동 생성 파이브 라인")
 

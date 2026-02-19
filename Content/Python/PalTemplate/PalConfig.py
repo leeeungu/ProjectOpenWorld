@@ -13,7 +13,7 @@ GLOBAL_BS_PREFIX  = "BS_MM_"
 PAL_AS_PREFIX     = "AS_"
 PAL_BS_PREFIX     = "BS_"
 PAL_BP_PREFIX     = "Bp_"   # Bp_팰이름
-CONFIG_PAL_NAME   = "Anubis"
+CONFIG_PAL_NAME   = "ChickenPal"
 PAL_ATTACK_DT_STRUCT_PATH = "/Script/ProjectOpenWorld.PalAttackDataTable"
 ANIM_SEQUENCE_NAMES = ["FarSkill_Start", "FarSkill_StartLoop",
                        "FarSkill_Action", "FarSkill_ActionLoop", "FarSkill_End"]  # 접두사 제외한 꼬리만

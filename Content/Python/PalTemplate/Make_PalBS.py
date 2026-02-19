@@ -206,6 +206,7 @@ def create_or_update_pal_bs_from_target(global_bs_path: str, pal_name: str) -> N
 # ------------------------------------------------------------------
 
 def main():
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} Blenda Space 생성")
     unreal.log("==============================================")
     unreal.log("[START] Global BS → Pal BS 생성 스크립트 (단일 TARGET_ASSET_PATH)")
 
@@ -213,6 +214,7 @@ def main():
 
     unreal.log("[완료] 처리 종료 (저장은 수행하지 않음)")
     unreal.log("==============================================")
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} Blenda Space 생성 완료")
 
 
 if __name__ == "__main__":

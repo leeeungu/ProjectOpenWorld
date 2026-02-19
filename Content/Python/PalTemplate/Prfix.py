@@ -79,7 +79,9 @@ def remove_prefix_from_assets(anim_dir: str, prefix: str):
 # ==========================================================
 
 def main():
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} AnimSequence 이름 변경")
     remove_prefix_from_assets(ANIM_DIR, REMOVE_PREFIX)
+    unreal.log(f"[Python] End : 펠 네임 {CONFIG_PAL_NAME} AnimSequence 이름 변경")
 
 
 if __name__ == "__main__":

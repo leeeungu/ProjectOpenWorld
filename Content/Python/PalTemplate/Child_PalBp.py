@@ -70,6 +70,7 @@ def configure_bp_mesh_and_anim(
 # 메인
 # ------------------------------------------------------------
 def create_or_update_blueprint(TEMPLATE_NAME : str):
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} 자식 {TEMPLATE_NAME}Character 생성")
     unreal.log("====================================================")
     unreal.log("[Start] Pal BP 생성/갱신 + Mesh/AnimBP 설정")
     TARGET_BP_PATH     = f"{GLOBAL_DIR}/Bp_{TEMPLATE_NAME}_Base"
@@ -109,6 +110,7 @@ def create_or_update_blueprint(TEMPLATE_NAME : str):
 
     unreal.log(f"[End] : BlueprintUdate 성공 {bp.get_path_name()}")
     unreal.log("====================================================")
+    unreal.log(f"[Python] End : 펠 네임 {CONFIG_PAL_NAME} 자식 {TEMPLATE_NAME}Character 생성 완료")
 
 if __name__ == "__main__":
     create_or_update_blueprint(TEMPLATE_NAME)

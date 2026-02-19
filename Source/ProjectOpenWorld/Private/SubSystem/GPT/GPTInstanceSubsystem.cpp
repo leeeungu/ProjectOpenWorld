@@ -160,6 +160,7 @@ void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, 
 
 void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, TScriptInterface< IGPTResponseInterface> Target)
 {
+	// Check Send Condition
 	if (!Target.GetObject())
 	{
 		if (Target.GetObject())
@@ -194,12 +195,6 @@ void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, TS
 				array.Add(VaRestSubsystem->ConstructJsonValueObject(RequestValueObj));
 				RequestRootObject->SetArrayField(TEXT("tools"), array);
 			}
-			/*{
-				UVaRestJsonObject* RequestValueObj = VaRestSubsystem->ConstructVaRestJsonObject();
-				RequestValueObj->SetStringField(TEXT("size"), TEXT("1024x1024"));
-				RequestValueObj->SetStringField(TEXT("quality"), TEXT("Low"));
-				RequestRootObject->SetObjectField(TEXT("image"), RequestValueObj);
-			}*/
 		}
 
 		Request->SetRequestObject(RequestRootObject);

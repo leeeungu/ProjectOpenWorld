@@ -321,7 +321,7 @@ def set_pal_attack_component_attack_data_asset_to_dt(TEMPLATE_NAME : str):
     결과:
       - BP의 UPalAttackComponent.AttackDataAsset = DT_{CONFIG_PAL_NAME}_AttackData 로 설정
     """
-
+    unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} AttackDataTable")
     # BP / DT 경로 구성
     bp_name = f"{PAL_BP_PREFIX}{CONFIG_PAL_NAME}_{TEMPLATE_NAME}"
     bp_path = f"{MONSTER_ROOT}/{CONFIG_PAL_NAME}/{bp_name}"
@@ -408,8 +408,7 @@ def set_pal_attack_component_attack_data_asset_to_dt(TEMPLATE_NAME : str):
             pass
 
         unreal.EditorAssetLibrary.save_loaded_asset(bp)
-
-    unreal.log(f"[BP] 완료: {bp_name}.AttackComponent.AttackDataAsset = {dt_name}")
+    unreal.log(f"[Python] End : 펠 네임 {CONFIG_PAL_NAME} AttackDataTable 생성 성공")
     return True
 
 # 실행
