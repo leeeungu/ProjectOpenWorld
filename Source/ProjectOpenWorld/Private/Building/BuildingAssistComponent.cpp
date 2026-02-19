@@ -136,7 +136,11 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(FName BuildingID, UStaticMe
 	BuildingMesh = NewStaticMesh;
 	buildingPreviewActor->SetBuildingMsh(BuildingMesh.Get());
 	BottomTrans = buildingPreviewActor->GetSocketTransform(TEXT("Bottom"), ERelativeTransformSpace::RTS_Component);
-	// 현재 ChildMesh 에 맞는 SnapRule들만 추려둠
+}
+
+void UBuildingAssistComponent::StartBuilding()
+{
+	// Mesh 선택 시 현재 ChildMesh 에 맞는 SnapRule들만 추려둠
 	SnapRulesForChild.Reset();
 	for (FSnapRule* Row : SnapDataRows)
 	{
@@ -145,10 +149,6 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(FName BuildingID, UStaticMe
 			SnapRulesForChild.Add(Row);
 		}
 	}
-}
-
-void UBuildingAssistComponent::StartBuilding()
-{
 	OnOffAssist(true);
 	bBuildingStarted = true;
 	if (BuildingInfo)
@@ -396,6 +396,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		return true;
 	}
 
+	// tick 중 hit 된 메시에 대한 스냅 데이터 선택
 	const FSnapRule* MainRule{};
 	for (const FSnapRule* Rule : SnapRulesForChild)
 	{

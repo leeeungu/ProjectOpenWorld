@@ -15,9 +15,9 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	SectionGenerator->BindGenerteComponent(TerrainGenerator);
 	TerrainGenerator->Initialize(RootComponent);
 
-	//FoliageGenerator = CreateDefaultSubobject<UGenerateFoliageComponent>(TEXT("FoliageGenerator"));
-	//SectionGenerator->BindGenerteComponent(FoliageGenerator);
-	//FoliageGenerator->Initialize(RootComponent);
+	FoliageGenerator = CreateDefaultSubobject<UGenerateFoliageComponent>(TEXT("FoliageGenerator"));
+	SectionGenerator->BindGenerteComponent(FoliageGenerator);
+	FoliageGenerator->Initialize(RootComponent);
 
 	StaticObjectGenerator = CreateDefaultSubobject<UGemerateStaticObjectComponent>(TEXT("StaticObjectGenerator"));
 	SectionGenerator->BindGenerteComponent(StaticObjectGenerator);

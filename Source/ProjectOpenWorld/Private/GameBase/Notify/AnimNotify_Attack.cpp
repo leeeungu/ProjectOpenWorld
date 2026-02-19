@@ -89,13 +89,16 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 void UAnimNotify_Attack::AttackEventObjectDebug(USkeletalMeshComponent* MeshComp)
 {
 #if WITH_EDITOR	
-	FVector StartLocation = GetStartLocation(MeshComp);
-	FVector EndLocation = GetEndLocation(MeshComp);
-	for (UAttackObject* AttackObject : AttackEventObject)
+	if (!MeshComp->GetWorld()->HasBegunPlay())
 	{
-		if (AttackObject)
+		FVector StartLocation = GetStartLocation(MeshComp);
+		FVector EndLocation = GetEndLocation(MeshComp);
+		for (UAttackObject* AttackObject : AttackEventObject)
 		{
-			AttackObject->ExecuteDebugAttackEvent(MeshComp, StartLocation, EndLocation, GetAttackCollisionShape());
+			if (AttackObject)
+			{
+				AttackObject->ExecuteDebugAttackEvent(MeshComp, StartLocation, EndLocation, GetAttackCollisionShape());
+			}
 		}
 	}
 #endif
