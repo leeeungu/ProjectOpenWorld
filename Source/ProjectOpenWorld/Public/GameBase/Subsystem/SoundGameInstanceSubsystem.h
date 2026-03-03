@@ -112,12 +112,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
 	static void PlayEffectSound(EEffectSoundType SoundType, FVector Location);
 	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
-	static void PlayBGMSound(EBGMSoundType SoundType);
+	static void PlayBGMSound(EBGMSoundType SoundType, float FadeInDuration = 1.0f);
 	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
 	static void PauseBGMSound(EBGMSoundType SoundType);
 
 	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
-	static void PlayMainBGMSound(EBGMSoundType SoundType);
+	static void PlayMainBGMSound(EBGMSoundType SoundType, float FadeInDuration = 1.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "SoundGameInstanceSubsystem")
 	static void DamageEventBGMSound(AActor* DamagedActor);

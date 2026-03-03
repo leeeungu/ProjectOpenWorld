@@ -84,7 +84,7 @@ void USoundGameInstanceSubsystem::PlayEffectSound(EEffectSoundType SoundType, FV
 	Instance->PlaySoundAtLocation(Instance->GetEffectSound(SoundType), Location);
 }
 
-void USoundGameInstanceSubsystem::PlayBGMSound(EBGMSoundType SoundType)
+void USoundGameInstanceSubsystem::PlayBGMSound(EBGMSoundType SoundType, float FadeInDuration)
 {
 	if (!Instance)
 		return;
@@ -92,11 +92,12 @@ void USoundGameInstanceSubsystem::PlayBGMSound(EBGMSoundType SoundType)
 	if (StoredAudioComponent == nullptr)
 	{
 		StoredAudioComponent = UGameplayStatics::SpawnSound2D(Instance->GetWorld(), Instance->GetBGMSound(SoundType));
+		StoredAudioComponent->FadeIn(FadeInDuration, 1);
 	}
 	else
 	{
 		StoredAudioComponent->SetSound(Instance->GetBGMSound(SoundType));
-		StoredAudioComponent->FadeIn(1.0f, 1);
+		StoredAudioComponent->FadeIn(FadeInDuration	, 1);
 	}
 }
 
@@ -115,15 +116,18 @@ void USoundGameInstanceSubsystem::PauseBGMSound(EBGMSoundType SoundType)
 	}
 }
 
-void USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType SoundType)
+void USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType SoundType, float FadeInDuration)
 {
 	if (!Instance)
 		return;
 	if (Instance->CurrentMainBGM != SoundType)
 	{
-		PauseBGMSound(Instance->CurrentMainBGM);
-		Instance->CurrentMainBGM = SoundType;
-		PlayBGMSound(SoundType);
+		if (Instance->CurrentMainBGM != EBGMSoundType::BGMST_None)
+		{
+			PauseBGMSound(Instance->CurrentMainBGM);
+			Instance->CurrentMainBGM = SoundType;
+		}
+		PlayBGMSound(SoundType, FadeInDuration);
 	}
 }
 

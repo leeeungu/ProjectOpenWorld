@@ -3,7 +3,7 @@
 #include "Components/HorizontalBox.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
 #include "Building/Widget/PalBuildingRecipeMaterial.h"
-
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 void UBuildingInfoWidget::SetBuildingInfoData(FName InBuildObjectId)
 {
@@ -17,7 +17,7 @@ void UBuildingInfoWidget::SetBuildingInfoData(FName InBuildObjectId)
 		{
 			FText Text = FText::FromName(*BuildObjectData->MapObjectId);
 			//Script/Engine.StringTable'/Game/Global/StringTable/ST_BuildingName.ST_BuildingName'
-			Text = FText::FromStringTable("/Game/Global/StringTable/ST_BuildingName", *Text.ToString());
+			Text = UStringTableFunctionLibrary::GetBuildingNameFromStringTable(*Text.ToString());
 			BuildObjectIdText->SetText(Text);
 		}
 		if (MaterialBox)

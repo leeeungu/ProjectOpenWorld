@@ -13,7 +13,7 @@ GLOBAL_BS_PREFIX  = "BS_MM_"
 PAL_AS_PREFIX     = "AS_"
 PAL_BS_PREFIX     = "BS_"
 PAL_BP_PREFIX     = "Bp_"   # Bp_팰이름
-CONFIG_PAL_NAME   = "ChickenPal"
+CONFIG_PAL_NAME   = "PinkCat"
 PAL_ATTACK_DT_STRUCT_PATH = "/Script/ProjectOpenWorld.PalAttackDataTable"
 ANIM_SEQUENCE_NAMES = ["FarSkill_Start", "FarSkill_StartLoop",
                        "FarSkill_Action", "FarSkill_ActionLoop", "FarSkill_End"]  # 접두사 제외한 꼬리만
@@ -82,6 +82,34 @@ def child_asset(  child_name   : str,  pal_folder : str,  template_bp: unreal.Ob
 
     unreal.log(f"[성공] 자식 BP 생성: {child_bp.get_path_name()}")
     return child_bp
+
+def get_pal_names_from_monster_root() -> list[str]:
+    """
+    MONSTER_ROOT 하위의 1차 폴더명을 전부 Pal 이름으로 간주해서 반환.
+    예: /Game/Pal/Model/Monster/Anubis, /Game/Pal/Model/Monster/Fox ...
+    """
+    editor_lib = unreal.EditorAssetLibrary
+    root = MONSTER_ROOT  # "/Game/Pal/Model/Monster"
+
+    # 모든 에셋/폴더 경로를 가져온 뒤, MONSTER_ROOT 기준 첫 세그먼트만 추출
+    all_paths = editor_lib.list_assets(root, True, True)
+    pal_names = set()
+
+    for path in all_paths:
+        # path 예: "/Game/Pal/Model/Monster/Anubis", "/Game/Pal/Model/Monster/Anubis/Animation/AS_..."
+        rel = str(path)[len(root):].lstrip("/")
+        if not rel:
+            continue
+
+        first = rel.split("/")[0]
+        if not first:
+            continue
+
+        pal_folder = f"{root}/{first}"
+        if editor_lib.does_directory_exist(pal_folder):
+            pal_names.add(first)
+
+    return sorted(pal_names)
 
 
 """

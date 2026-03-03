@@ -17,6 +17,7 @@ APalMonsterSpawnActor::APalMonsterSpawnActor()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
+
 }
 
 void APalMonsterSpawnActor::BeginPlay()
@@ -143,16 +144,10 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 						SpawnedMonster->SetPalMonsterLevelData(lv, *LevelData);
 					}
 					ABasePalMonster* PalMonster = Cast<ABasePalMonster>(SpawnedMonster);
-					if (PalMonster && PalMonster->GetPalPatrolComponent() && MonsterData->MonsterData ) // && MonsterData->MonsterData->PatrolLevel->GetName() == GetWorld()->GetName())
+					if (PalMonster && PalMonster->GetPalPatrolComponent() && MonsterData->MonsterData )
 					{
-						//UE_LOG(LogTemp, Warning, TEXT("Set Patrol Data for Monster: %s"), *MonsterData->MonsterData->MonsterName.ToString());
 						PalMonster->GetPalPatrolComponent()->SetPatrolData(&MonsterData->MonsterData->PatrolData);
 					}
-					/*else if (MonsterData->MonsterData && MonsterData->MonsterData->PatrolLevel.GetName() != GetWorld()->GetName()) // 레벨 교환 시 delete로 인해 crash 문제가 나서 주석
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Patrol Level is different from Spawn Level for Monster: %s"), *MonsterData->MonsterData->MonsterName.ToString());
-							UE_LOG(LogTemp, Warning, TEXT("Monster Patrol Level: %d, Spawn Level: %d"), MonsterData->MonsterData->PatrolLevel->GetUniqueID(), GetWorld()->GetUniqueID());
-					}*/
 				}
 			}
 		}
@@ -183,6 +178,7 @@ void APalMonsterSpawnActor::NewGenerateWorldEvent(const FGenerateSectionData& Se
 			}
 		}
 	}
+	SetActorTickEnabled(true);
 }
 
 void APalMonsterSpawnActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
@@ -206,5 +202,6 @@ void APalMonsterSpawnActor::DelGenerateWorldEvent(const FGenerateSectionData& Se
 		}
 	}
 	SpawnedMonsters.Empty();
+	SetActorTickEnabled(false);
 }
 

@@ -3,6 +3,7 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 
 void UInventorySlotToolTip::NativeConstruct()
@@ -33,7 +34,7 @@ void UInventorySlotToolTip::SetRecipeID(FName InRecipeID)
 				Result->OverrideName == "None" ? RecipeID.ToString() :
 				Result->OverrideName
 			);
-			ItemName = FText::FromStringTable("/Game/Global/StringTable/ST_PSN_EULA", *ItemName.ToString());
+			ItemName = UStringTableFunctionLibrary::GetItemNameFromStringTable(*ItemName.ToString());
 			ItemNameText->SetText(ItemName);
 		}
 		if (ItemIconImage)
@@ -50,7 +51,7 @@ void UInventorySlotToolTip::SetRecipeID(FName InRecipeID)
 				Result->OverrideName == "None" ? RecipeID.ToString() :
 				Result->OverrideName
 			);
-			Desc = FText::FromStringTable("/Game/Global/StringTable/ST_PalItemDesc", *Desc.ToString());
+			Desc = UStringTableFunctionLibrary::GetItemDescFromStringTable(*Desc.ToString());
 			ItemDescText->SetText(Desc);
 		}
 	}

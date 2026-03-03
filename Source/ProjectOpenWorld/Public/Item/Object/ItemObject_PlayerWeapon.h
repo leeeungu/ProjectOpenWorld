@@ -13,7 +13,7 @@ class PROJECTOPENWORLD_API UItemObject_PlayerWeapon : public UBaseItemObject
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
-	TSoftObjectPtr<USkeletalMesh> WeaponMesh = nullptr;
+	TObjectPtr<USkeletalMesh> WeaponMesh = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
 	FName WeaponSocketName = NAME_None;
 

@@ -20,6 +20,9 @@ from PalTemplate import ChangeProperty
 importlib.reload(ChangeProperty)
 from PalTemplate import MakeAttackTable
 importlib.reload(MakeAttackTable)
+from PalTemplate import Make_LevelTable
+importlib.reload(Make_LevelTable)
+
 
 def MakeCharacter(TEMPLATE_NAME : str):
    Make_PalABP.create_or_update_pal_anim_blueprint(TEMPLATE_NAME)
@@ -32,7 +35,7 @@ def MakeCharacter(TEMPLATE_NAME : str):
 unreal.log(f"[Python] Start : 펠 네임 {CONFIG_PAL_NAME} 자동 생성 파이브 라인")
 Prfix.main()
 Make_PalBS.main()
-
+Make_LevelTable.run_build_LevelData_and_patch_dt(CONFIG_PAL_NAME)
 MakeAttackTable.run_build_attack_montages_and_patch_dt()
 MakeCharacter("Monster")
 MakeCharacter("Pal")

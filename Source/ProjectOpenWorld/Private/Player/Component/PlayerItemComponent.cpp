@@ -13,7 +13,7 @@ void UPlayerItemComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UPlayerItemComponent::RegisterItemActor(TSubclassOf<UBaseItemObject> InItemObject)
+bool UPlayerItemComponent::RegisterItemActor(TSubclassOf<UBaseItemObject> InItemObject)
 {
 	if (InItemObject)
 	{
@@ -22,8 +22,11 @@ void UPlayerItemComponent::RegisterItemActor(TSubclassOf<UBaseItemObject> InItem
 		if (!bAlreadyIn)
 		{
 			InItemObject.GetDefaultObject()->RegisterItemObject(GetOwner());
+			return true;
 		}
+		return false;
 	}
+	return false;
 }
 
 void UPlayerItemComponent::UnRegisterItemActor(TSubclassOf<UBaseItemObject> InItemObject)

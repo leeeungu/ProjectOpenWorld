@@ -23,7 +23,7 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "ItemManager")
-	virtual void RegisterItemActor(TSubclassOf<UBaseItemObject> InItemObject);
+	virtual bool RegisterItemActor(TSubclassOf<UBaseItemObject> InItemObject);
 	UFUNCTION(BlueprintCallable, Category = "ItemManager")
 	virtual void UnRegisterItemActor(TSubclassOf<UBaseItemObject> InItemObject);
 		

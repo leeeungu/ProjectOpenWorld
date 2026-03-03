@@ -45,6 +45,8 @@ public:
 	bool HasItem(FName SearchItemID, int SearchItemCount = 1) const;
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool RemoveItem(FName RemoveItemID, int RemoveItemCount = 1);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool RemoveItemSlot(int Row, int Col, int RemoveItemCount = 1);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool DeleteItem(int Row, int Col);

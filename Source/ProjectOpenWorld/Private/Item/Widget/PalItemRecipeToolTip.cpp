@@ -7,6 +7,7 @@
 #include "Components/Image.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Blueprint/WidgetTree.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 void UPalItemRecipeToolTip::NativeConstruct()
 {
@@ -30,15 +31,13 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 	const FPalStaticItemDataStruct* Result{};
 	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, Result) && Result)
 	{
-		// Further implementation can be added here to update the tooltip UI based on the RecipeID
-
 		if (RecipeNameText)
 		{
 			FText ItemName = FText::FromString(
 				Result->OverrideName == "None" ? RecipeID.ToString() :
 				Result->OverrideName
 			);
-			ItemName = FText::FromStringTable("/Game/Global/StringTable/ST_PSN_EULA", *ItemName.ToString());
+			ItemName = UStringTableFunctionLibrary::GetItemNameFromStringTable(*ItemName.ToString());
 			RecipeNameText->SetText(ItemName);
 		}
 		if (RecipeIconImage)
@@ -55,7 +54,7 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 				Result->OverrideName == "None" ? RecipeID.ToString() :
 				Result->OverrideName
 			);
-			Desc = FText::FromStringTable("/Game/Global/StringTable/ST_PalItemDesc", *Desc.ToString());
+			Desc = UStringTableFunctionLibrary::GetItemDescFromStringTable(*Desc.ToString());
 			RecipeDescText->SetText(Desc);
 		}
 	}

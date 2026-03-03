@@ -10,9 +10,8 @@ UItemObject_PlayerWeapon::UItemObject_PlayerWeapon() :Super()
 void UItemObject_PlayerWeapon::RegisterItemObject(AActor* TargetActor)
 {
 	ABasePlayer* Player = Cast<ABasePlayer>(TargetActor);
-	if (Player && WeaponMesh.IsValid())
+	if (Player && WeaponMesh)
 	{
-		WeaponMesh.LoadSynchronous();
 		Player->SetWeaponMesh(WeaponMesh.Get(), WeaponSocketName);
 		Player->ChangePlayerState(EquipPlayerState);
 	}

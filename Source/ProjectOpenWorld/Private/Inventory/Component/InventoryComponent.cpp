@@ -121,6 +121,35 @@ bool UInventoryComponent::RemoveItem(FName RemoveItemID, int RemoveItemCount)
 	return false;
 }
 
+bool UInventoryComponent::RemoveItemSlot(int Row, int Col, int RemoveItemCount)
+{
+	int Index = Row * inventoryCol + Col;
+	if(!inventoryViewArray.IsValidIndex(Index))
+		return false;
+	FInventorySlot* SlotData = inventoryViewArray[Index];
+	if (!SlotData || SlotData->isEmpthySlot || SlotData->ItemCount < RemoveItemCount)
+		return false;
+	const FPalStaticItemDataStruct* ItemDataStruct{};
+	UItemDataSubsystem::GetPalStaticItemDataPtr(SlotData->ItemID, ItemDataStruct);
+	if (!ItemDataStruct)
+		return false;
+	SlotData->ItemCount -= RemoveItemCount;
+	totalInventoryWeight -= ItemDataStruct->Weight;
+	if (PlayerCharacter)
+		PlayerCharacter->UpdateWeight(totalInventoryWeight);
+	if (SlotData->ItemCount <= 0)
+	{
+		SlotData->ItemCount = 0;
+		SlotData->isEmpthySlot = true;
+		SlotData->ItemID = NAME_None;
+	}
+	if (onUpdateInventory.IsBound())
+	{
+		onUpdateInventory.Broadcast();
+	}
+	return true;
+}
+
 bool UInventoryComponent::DeleteItem(int Row, int Col)
 {
 	int Index = Row * inventoryCol + Col;
@@ -174,8 +203,10 @@ void UInventoryComponent::UseItem(int Row, int Col)
 		return;
 	TSubclassOf<UBaseItemObject> ItemObjectClass = UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(SlotData->ItemID);
 	//SlotData->ItemID
-	PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass);
-
+	if (PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass))
+	{
+		RemoveItemSlot(Row, Col, 1);
+	}
 }
 
 bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol)

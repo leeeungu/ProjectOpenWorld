@@ -3,14 +3,14 @@
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Item/Widget/PalItemRecipeMaterialWidget.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 void UBuildingDescWidget::UpdateNameText()
 {
 	if (!BuildNameText)
 		return;
 	FText BuildName = FText::FromName(BuildObjectId);
-	//Script/Engine.StringTable'/Game/Global/StringTable/ST_BuildingName.ST_BuildingName'
-	BuildName = FText::FromStringTable("/Game/Global/StringTable/ST_BuildingName", *BuildName.ToString());
+	BuildName = UStringTableFunctionLibrary::GetBuildingNameFromStringTable(*BuildName.ToString());
 	BuildNameText->SetText(BuildName);
 }
 
@@ -19,8 +19,7 @@ void UBuildingDescWidget::UpdateDescText()
 	if (!BuildDescText)
 		return;
 	FText BuildDesc = FText::FromName(BuildObjectId);
-	//Script/Engine.StringTable'/Game/Global/StringTable/ST_BuildingDesc.ST_BuildingDesc'
-	BuildDesc = FText::FromStringTable("/Game/Global/StringTable/ST_BuildingDesc", *BuildDesc.ToString());
+	BuildDesc = UStringTableFunctionLibrary::GetBuildingDescFromStringTable(*BuildDesc.ToString());
 	BuildDescText->SetText(BuildDesc);
 }
 

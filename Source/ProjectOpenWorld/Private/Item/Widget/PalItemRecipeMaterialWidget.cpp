@@ -7,6 +7,7 @@
 #include "Components/SizeBox.h"
 #include "Player/Controller/BasePlayerController.h"
 #include "Inventory/Component/InventoryComponent.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 void UPalItemRecipeMaterialWidget::SetMaterialData( FName InMaterialID, int InMaterialCount)
 {
@@ -26,15 +27,13 @@ void UPalItemRecipeMaterialWidget::SetMaterialData( FName InMaterialID, int InMa
 	const FPalStaticItemDataStruct* Result{};
 	if (UItemDataSubsystem::GetPalStaticItemDataPtr(Material_ID, Result))
 	{
-		
 		if (ItemNameText)
 		{
 			FText ItemName = FText::FromString(
 					Result->OverrideName == "None" ? Material_ID.ToString() :
 					Result->OverrideName
 				);
-
-			ItemName = FText::FromStringTable("/Game/Global/StringTable/ST_PSN_EULA", *ItemName.ToString());
+			ItemName = UStringTableFunctionLibrary::GetItemNameFromStringTable(*ItemName.ToString());
 			ItemNameText->SetText(ItemName);
 		}
 		
@@ -104,7 +103,7 @@ int UPalItemRecipeMaterialWidget::GetMakeableCount() const
 {
 	int ItemCount{};
 	ABasePlayerController* PC = Cast<ABasePlayerController>(GetOwningPlayer());
-	UE_LOG(LogTemp, Warning, TEXT("UPalItemRecipeMaterialWidget::GetMakeableCount - Material_ID: %s, Material_Count: %d"), *Material_ID.ToString(), Material_Count);
+	//UE_LOG(LogTemp, Warning, TEXT("UPalItemRecipeMaterialWidget::GetMakeableCount - Material_ID: %s, Material_Count: %d"), *Material_ID.ToString(), Material_Count);
 	if (PC && Material_Count > 0)
 	{
 		if (UInventoryComponent* Inventory = PC->GetInventoryComponent())

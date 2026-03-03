@@ -18,7 +18,7 @@ private:
 	int ColIndex = -1;
 
 public:
-
+	void SetItemID(FName NewID) { ItemID = NewID; }
 	virtual void RegisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::RegisterItemObject, );
 	virtual void UnregisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::UnregisterItemObject, );
 };
