@@ -18,6 +18,12 @@ APalMonsterSpawnActor::APalMonsterSpawnActor()
 
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
 
+	//Script/Engine.DataTable'/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData'
+	ConstructorHelpers::FObjectFinder<UDataTable> DTMonster(TEXT("/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData"));
+	if (DTMonster.Succeeded())
+	{
+		MonsterDataTable = DTMonster.Object;
+	}
 }
 
 void APalMonsterSpawnActor::BeginPlay()

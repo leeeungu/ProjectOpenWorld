@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -24,7 +24,7 @@
 
 
 USTRUCT(BlueprintType)
-struct FSpawnCharacterData
+struct FSpawnCharacterData : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
@@ -40,6 +40,8 @@ public:
 	int32 NumMin = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow", meta = (ClampMax = 10))
 	int32 NumMax = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow", meta = (ClampMin = 1))
+	float SpawnTime = 1.0f;
 };
 //{
 //    "SpawnerName": "Test",

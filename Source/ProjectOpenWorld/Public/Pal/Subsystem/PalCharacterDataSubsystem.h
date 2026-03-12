@@ -4,6 +4,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Item/DataTable/PalDropItemDatabaseRow.h"
 #include "Pal/DataTable/PalCharacterIconDataRow.h"
+#include "Pal/DataTable/PalWildSpawnerDatabaseRow.h"
 #include "PalCharacterDataSubsystem.generated.h"
 
 UCLASS()
@@ -22,10 +23,9 @@ private:
 	};
 	static UPalCharacterDataSubsystem* SingletonInstance;
 protected:
-
 	DataTableStruct<FPalCharacterIconDataRow> PalCharacterIconDataTable{};
 	DataTableStruct<FPalDropItemDatabaseRow> PalDropItemDatabaseTable{};
-
+	DataTableStruct<FSpawnCharacterData> PalSpawnCharacterDatabaseTable{};
 
 	template<typename T>
 	bool LoadAndSaveDataTableToMap(DataTableStruct<T>& DataStruct, FString Path)
@@ -54,9 +54,11 @@ public:
 
 	static bool GetPalCharacterIconData(FName RowName, const FPalCharacterIconDataRow*& Data);
 	static bool GetPalDropItemData(FName RowName, const FPalDropItemDatabaseRow*& Data);
+	static bool GetPalSpawnCharacterData(FName RowName, const FSpawnCharacterData*& Data);
 
 	static UTexture2D* GetPalCharacterIconByName(FName CharacterID);
 	static TArray< FPalItemDropData> GetDropItemListByCharacterID(FName CharacterID);
+	static FSpawnCharacterData GetSpawnCharacterDataByPalName(FName PalName);
 };
 ////LoadAndSaveDataTableToMap specialization for FPalDropItemDatabaseRow
 template<>

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -42,7 +42,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Spawner")
 	TObjectPtr<UDataTable> SpawnerPlacementDataTable = nullptr;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Spawner")
-	TObjectPtr<UDataTable> MonsterDataTable = nullptr;
+	TSoftObjectPtr<UDataTable> MonsterDataTable = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Navigation")
 	TObjectPtr<UNavigationInvokerComponent> NavigationInvokerComp = nullptr;

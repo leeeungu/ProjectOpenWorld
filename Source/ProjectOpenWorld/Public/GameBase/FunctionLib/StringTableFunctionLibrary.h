@@ -11,6 +11,8 @@ class PROJECTOPENWORLD_API UStringTableFunctionLibrary : public UBlueprintFuncti
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "PalItem")
+	static FString GetUnValidItem() { return FString("???"); }
+	UFUNCTION(BlueprintCallable, Category = "PalItem")
 	static FName GetItemNameStringTable() { return FName("/Game/Global/StringTable/ST_PalItemName"); }
 	UFUNCTION(BlueprintCallable, Category = "PalItem")
 	static FText GetItemNameFromStringTable(const FString& InKey) ;

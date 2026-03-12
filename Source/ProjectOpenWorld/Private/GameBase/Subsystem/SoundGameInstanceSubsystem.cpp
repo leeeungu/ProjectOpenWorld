@@ -118,16 +118,16 @@ void USoundGameInstanceSubsystem::PauseBGMSound(EBGMSoundType SoundType)
 
 void USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType SoundType, float FadeInDuration)
 {
-	if (!Instance)
+	if (!Instance || Instance->CurrentMainBGM == SoundType)
 		return;
 	if (Instance->CurrentMainBGM != SoundType)
 	{
 		if (Instance->CurrentMainBGM != EBGMSoundType::BGMST_None)
 		{
 			PauseBGMSound(Instance->CurrentMainBGM);
-			Instance->CurrentMainBGM = SoundType;
 		}
-		PlayBGMSound(SoundType, FadeInDuration);
+		Instance->CurrentMainBGM = SoundType;
+		PlayBGMSound(Instance->CurrentMainBGM, FadeInDuration);
 	}
 }
 
@@ -136,7 +136,6 @@ void USoundGameInstanceSubsystem::DamageEventBGMSound(AActor* DamagedActor)
 	if (!Instance || !DamagedActor)
 		return;
 	EBGMSoundType SoundTypeToPlay = Instance->CurrentMainBGM;
-
 	ABasePalMonster* PalMonster = Cast<ABasePalMonster>(DamagedActor);
 	ABossMonster* BossMonster = Cast<ABossMonster>(DamagedActor);
 	if (BossMonster)
@@ -147,6 +146,7 @@ void USoundGameInstanceSubsystem::DamageEventBGMSound(AActor* DamagedActor)
 	{
 		SoundTypeToPlay = EBGMSoundType::BGMST_Battle;
 	}
+	
 	if (Instance->DamagedActorForBGM)
 	{
 		Instance->DamagedActorForBGM->OnDestroyed.RemoveDynamic(Instance, &USoundGameInstanceSubsystem::OnMonsterDead);

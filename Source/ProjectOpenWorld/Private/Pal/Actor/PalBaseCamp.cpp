@@ -134,22 +134,7 @@ void APalBaseCamp::PalDead(AActor* DeadPal)
 void APalBaseCamp::WorkDestory(AActor* DeadPal)
 {
 	PalCommander->UnRegisterWork(DeadPal);
-	if(ABaseMonster* Monster = Cast<ABaseMonster>(DeadPal))
-	{
-		TArray<FPalItemDropData> DropItemList =
-		UPalCharacterDataSubsystem::GetDropItemListByCharacterID(Monster->GetMonsterName());
-		UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item %s %d"), *Monster->GetMonsterName().ToString(), DropItemList.Num());
-		for (const FPalItemDropData& ItemData : DropItemList)
-		{
-			int Rate = FMath::RandRange(0, 100);
-			if (Rate > ItemData.Rate)
-				continue;
 
-			UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item Spawn %s "), *ItemData.ItemId.ToString());
-			int nCount = FMath::RandRange(ItemData.min, ItemData.Max);
-			UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemData.ItemId, DeadPal->GetActorTransform(), nCount);
-		}
-	}
 }
 
 void APalBaseCamp::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)

@@ -22,6 +22,7 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	StaticObjectGenerator = CreateDefaultSubobject<UGemerateStaticObjectComponent>(TEXT("StaticObjectGenerator"));
 	SectionGenerator->BindGenerteComponent(StaticObjectGenerator);
 	StaticObjectGenerator->Initialize(RootComponent);
+
 	Tags.Add(FName("Ladnscape"));
 }
 

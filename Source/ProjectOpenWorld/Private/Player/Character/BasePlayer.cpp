@@ -28,6 +28,7 @@
 #include "Sound/SoundWave.h"
 #include "Sound/SoundCue.h"
 #include "Building/BaseBuilding.h"
+#include "Player/Component/MonsterSpawnerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -56,7 +57,7 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetupAttachment(GetRootComponent());
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -91,13 +92,16 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	}
 
 	PlayerDetectCollision = CreateDefaultSubobject<UPlayerDetectCollision>(TEXT("PlayerDetectCollision"));
-	PlayerDetectCollision->SetupAttachment(RootComponent);
+	PlayerDetectCollision->SetupAttachment(GetRootComponent());
 
 	PlayerItemManagerComponent = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
 	StatComponent_Level = CreateDefaultSubobject<UStatComponent_Level>(TEXT("StatComponent_Level"));
 
 	WeaponMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComponent"));
 	WeaponMeshComponent->SetupAttachment(GetMesh(), TEXT("WeaponR_Sword"));
+
+	MonsterSpawnerComponent = CreateDefaultSubobject<UMonsterSpawnerComponent>(TEXT("MonsterSpawnerComponent"));
+	MonsterSpawnerComponent->SetupAttachment(GetRootComponent());
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -443,8 +447,16 @@ bool ABasePlayer::HasMainWidget() const
 
 bool ABasePlayer::AddToViewPort(TScriptInterface<IMainWidgetInterface> NewWidget)
 {
-	if (MainWidgetInterface || !NewWidget)
+	if (MainWidgetInterface)
+	{
+		UE_LOG(LogBasePlayer, Warning, TEXT("MainWidgetInterface is already set"));
 		return false;
+	}
+	if(!NewWidget)
+	{
+		UE_LOG(LogBasePlayer, Warning, TEXT("NewWidget is null"));
+		return false;
+	}
 	MainWidgetInterface = NewWidget;
 	return MainWidgetInterface->SetMainWidget();
 }
@@ -519,8 +531,8 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
 		{
 			BuildAssistComponent->SpawnBuilding();
+			RemoveFromViewPort(BuildAssistComponent);
 			BuildAssistComponent->EndBuilding();
-			//RemoveFromViewPort(MainWidgetInterface);
 		}
 		break;
 	case EInputKeyType::MouseWheel:
@@ -730,7 +742,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::Key2:
 	case EInputKeyType::Key3:
 	{
-		if (PlayerAttackComponent)
+		if (PlayerAttackComponent && CurrentPlayerState == EPlayerState::Battle)
 		{
 			int32 SkillIndex = (int32)KeyType - (int32)EInputKeyType::Key1 + (int32)EPlayerAttackType::Skill01;
 			PlayerAttackComponent->Attack((EPlayerAttackType)(SkillIndex));

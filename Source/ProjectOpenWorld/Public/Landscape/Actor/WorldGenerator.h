@@ -28,7 +28,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGemerateStaticObjectComponent> StaticObjectGenerator{};
 	
-	
 public:	
 	AWorldGenerator();
 

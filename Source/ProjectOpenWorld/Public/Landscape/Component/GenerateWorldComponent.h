@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -12,8 +12,8 @@ class PROJECTOPENWORLD_API UGenerateWorldComponent : public UActorComponent
 	GENERATED_BODY()
 	friend UGeneratorSectionComponent;
 
-	bool bStartGenerate{ false };
 protected:
+	bool bStartGenerate{ false };
 	//virtual void BeginPlay() override;
 	UPROPERTY()
 	TObjectPtr <UGeneratorSectionComponent> GeneratorSectionComponent{};

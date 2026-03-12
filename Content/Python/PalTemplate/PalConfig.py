@@ -1,4 +1,5 @@
 import unreal
+import json
 
 # 모든 스크립트에서 공유할 기본 경로
 GLOBAL_ANIM_DIR = "/Game/Pal/Model/Global/Animation"
@@ -13,7 +14,7 @@ GLOBAL_BS_PREFIX  = "BS_MM_"
 PAL_AS_PREFIX     = "AS_"
 PAL_BS_PREFIX     = "BS_"
 PAL_BP_PREFIX     = "Bp_"   # Bp_팰이름
-CONFIG_PAL_NAME   = "PinkCat"
+CONFIG_PAL_NAME   = "HawkBird"
 PAL_ATTACK_DT_STRUCT_PATH = "/Script/ProjectOpenWorld.PalAttackDataTable"
 ANIM_SEQUENCE_NAMES = ["FarSkill_Start", "FarSkill_StartLoop",
                        "FarSkill_Action", "FarSkill_ActionLoop", "FarSkill_End"]  # 접두사 제외한 꼬리만
@@ -111,7 +112,94 @@ def get_pal_names_from_monster_root() -> list[str]:
 
     return sorted(pal_names)
 
+def load_or_create_datatable(dt_folder: str, dt_name: str, structStr : str) -> unreal.DataTable:
+    
+    if not unreal.EditorAssetLibrary.does_directory_exist(dt_folder):
+        unreal.EditorAssetLibrary.make_directory(dt_folder)    
+    dt_asset_path = f"{dt_folder}/{dt_name}"
+    if unreal.EditorAssetLibrary.does_asset_exist(dt_asset_path):
+        dt = unreal.EditorAssetLibrary.load_asset(dt_asset_path)
+        if not isinstance(dt, unreal.DataTable):
+            raise RuntimeError(f"경로에 DataTable이 아닌 에셋이 존재합니다: {dt_asset_path}")
+        return dt
+    candidates = [
+        f"/Script/ProjectOpenWorld.{structStr}",
+        structStr,  # find_object fallback 용
+    ]
+    row_struct = None
+    for c in candidates:
+        try:
+            obj = unreal.load_object(None, c)
+            if obj:
+                row_struct =  obj
+        except Exception:
+            pass
 
+        try:
+            obj = unreal.find_object(None, c)
+            if obj:
+                row_struct = obj
+        except Exception:
+            pass
+
+    if not row_struct:
+        raise RuntimeError(
+            f"RowStruct '{structStr}'을 찾지 못했습니다. "
+            f"구조체가 컴파일 되었는 지 확인해세요."
+        )
+
+    factory = unreal.DataTableFactory()
+    factory.set_editor_property("struct", row_struct)
+    unreal.log("make Struct")
+    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+    dt = asset_tools.create_asset(dt_name, dt_folder, unreal.DataTable, factory)
+    if not dt:
+        raise RuntimeError(f"DataTable 생성 실패: {dt_asset_path}")
+    unreal.EditorAssetLibrary.save_loaded_asset(dt)
+    return dt
+
+
+def Get_DtRows_as_list(dt: unreal.DataTable) -> list[dict]:
+    s = dt.export_to_json_string()
+    if not s:
+        return []
+    data = json.loads(s)
+
+    # UE는 보통 list 포맷으로 내보냅니다. 혹시 dict면 list로 normalize.
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        rows = []
+        for k, v in data.items():
+            if isinstance(v, dict):
+                r = dict(v)
+                r.setdefault("Name", k)
+                rows.append(r)
+        return rows
+
+    return []
+
+def Apply_dt_from_rows_list(dt: unreal.DataTable, rows: list[dict]) -> bool:
+   
+    row_struct = dt.get_row_struct()
+    json_str = json.dumps(rows, ensure_ascii=False, indent=2)
+
+    ok = dt.fill_from_json_string(json_str, row_struct)
+   
+    return bool(ok)
+
+def Get_MonsterBp(MonsterName : str) -> unreal.Object:
+    return unreal.load_asset(f"{MONSTER_ROOT}/{MonsterName}/{PAL_BP_PREFIX}{MonsterName}_Monster")  
+    
+
+def Get_MonsterLevelDT(MonsterName : str) -> unreal.Object:
+    return unreal.load_asset(f"{MONSTER_ROOT}/{MonsterName}/DataTable/DT_{MonsterName}_LevelData")  
+    return None
+
+def Get_PalBp(PalName : str) -> unreal.Object:
+    return unreal.load_asset(f"{MONSTER_ROOT}/{PalName}/{PAL_BP_PREFIX}{PalName}_Pal")  
+    
+    
 """
 def main():
    pal_name  = "Anubis"

@@ -25,6 +25,7 @@ class ABasePlayerController;
 class UStatComponent_Level;
 class IMainWidgetInterface;
 class UPlayerGameOver;
+class UMonsterSpawnerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -84,7 +85,9 @@ protected:
 	TObjectPtr < UPlayerAnimationComponent>	PlayerAnimationComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<UNavigationInvokerComponent> NavigationInvokerComp{};
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<UMonsterSpawnerComponent> MonsterSpawnerComponent{};
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr < UInputMappingContext> DefaultMappingContext{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)

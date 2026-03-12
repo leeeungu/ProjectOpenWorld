@@ -14,6 +14,8 @@
 #include "Pal/Controller/PalAIController.h"
 #include "GameBase/Component/StatComponent.h"
 #include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
+#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+#include "Item/System/ItemDataSubsystem.h"
 
 
 
@@ -81,6 +83,24 @@ void ABaseMonster::PossessedBy(AController* NewController)
 		newTeam->SetGenericTeamId(FGenericTeamId(2));
 	}*/
 
+}
+
+void ABaseMonster::SpawnItem()
+{
+	TArray<FPalItemDropData> DropItemList =
+		UPalCharacterDataSubsystem::GetDropItemListByCharacterID(GetMonsterName());
+	//UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item %s %d"), *Monster->GetMonsterName().ToString(), DropItemList.Num());
+	for (const FPalItemDropData& ItemData : DropItemList)
+	{
+		int Rate = FMath::RandRange(0, 100);
+		if (Rate > ItemData.Rate)
+			continue;
+
+		UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item Spawn %s "), *ItemData.ItemId.ToString());
+		int nCount = FMath::RandRange(ItemData.min, ItemData.Max);
+		UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemData.ItemId, GetActorTransform(), nCount);
+	}
+	Destroy();
 }
 
 void ABaseMonster::SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData)
@@ -156,7 +176,7 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FTimerHandle handle{};
 		bDead = true;
-		GetWorldTimerManager().SetTimer(handle, [this]() {Destroy(); }, 4.0f, false, 4.0f);
+		GetWorldTimerManager().SetTimer(handle, [this]() {SpawnItem(); }, 4.0f, false, 4.0f);
 	}
 	return true;
 }

@@ -7,7 +7,7 @@ FText UStringTableFunctionLibrary::GetItemNameFromStringTable(const FString& InK
 	FText TableData = FText::FromStringTable(GetItemNameStringTable(), InKey);
 	if (TableData.ToString() == FStringTableEntry::GetPlaceholderSourceString())
 	{
-		TableData = FText::FromString("???");
+		TableData = FText::FromString(GetUnValidItem());
 	}
 	return TableData;
 }
@@ -17,7 +17,7 @@ FText UStringTableFunctionLibrary::GetItemDescFromStringTable(const FString& InK
 	FText TableData = FText::FromStringTable(GetItemDescStringTable(), InKey);
 	if (TableData.ToString() == FStringTableEntry::GetPlaceholderSourceString())
 	{
-		TableData = FText::FromStringTable(GetItemDescStringTable(), "???");
+		TableData = FText::FromStringTable(GetItemDescStringTable(), GetUnValidItem());
 	}
 	return TableData;
 }

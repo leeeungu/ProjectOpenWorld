@@ -24,7 +24,7 @@ void UPalHpWidget_MonsterDefault::InitializeHPWidget(ABaseCharacter* OwnerCharac
 		{
 			FText MonsterName = FText::FromString(OwnerMonster->GetMonsterName().ToString());
 			//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
-			MonsterName = FText::FromStringTable("/Game/Monster/StringTable/ST_PalName.ST_PalName", *MonsterName.ToString());
+			MonsterName = FText::FromStringTable("/Game/Pal/StringTable/ST_PalName.ST_PalName", *MonsterName.ToString());
 			MonsterNameTextBlock->SetText(MonsterName);
 		}
 		if (MonsterLevel)

@@ -156,6 +156,7 @@ void UBuildingAssistComponent::StartBuilding()
 		BuildingInfo->SetBuildingInfoData(CurrentBuildingID);
 		if (BuildingWidget && bBuildingWidgetSet)
 		{
+			//ownerPawn->RemoveFromViewPort(this);
 			BuildingWidget->EndViewWidget();
 			bBuildingWidgetSet = false;
 		}
@@ -174,7 +175,7 @@ void UBuildingAssistComponent::EndBuilding()
 
 	if (BuildingInfo)
 	{
-		//ownerPawn->RemoveFromViewPort(BuildingInfo);
+	//	//ownerPawn->RemoveFromViewPort(BuildingInfo);
 		BuildingInfo->RemoveFromParent();
 	}
 

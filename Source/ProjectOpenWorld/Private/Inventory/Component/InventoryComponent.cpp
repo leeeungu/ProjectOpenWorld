@@ -6,6 +6,7 @@
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/Object/BaseItemObject.h"
 #include "Player/Component/PlayerItemComponent.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 
 UInventoryComponent::UInventoryComponent()
@@ -202,8 +203,20 @@ void UInventoryComponent::UseItem(int Row, int Col)
 	if (SlotData->isEmpthySlot)
 		return;
 	TSubclassOf<UBaseItemObject> ItemObjectClass = UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(SlotData->ItemID);
-	//SlotData->ItemID
-	if (PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass))
+	if (!ItemObjectClass)
+	{
+		ItemObjectClass = UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName("Money");
+
+		//FText ItemName = UStringTableFunctionLibrary::GetItemNameFromStringTable(SlotData->ItemID.ToString());
+		//if (UStringTableFunctionLibrary::GetUnValidItem() == ItemName.ToString())
+		//{
+		//	
+		//	//SlotData->ItemCount * 
+		//	RemoveItemSlot(Row, Col, SlotData->ItemCount);
+		//	//ItemObjectClass = UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(NAME_None);
+		//}
+	}
+	else if (PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass))
 	{
 		RemoveItemSlot(Row, Col, 1);
 	}

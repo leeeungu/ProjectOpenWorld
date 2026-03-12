@@ -81,7 +81,7 @@ def resolve_row_struct_fpal_attackdatatable():
 
     # 1) 가장 흔한 형태: /Script/<ProjectModule>.<StructName>
     candidates = [
-        PAL_ATTACK_DT_STRUCT_PATH,
+        f"/Script/ProjectOpenWorld.{struct_name}",
         struct_name,  # find_object fallback 용
     ]
 
@@ -101,9 +101,9 @@ def resolve_row_struct_fpal_attackdatatable():
             pass
 
     raise RuntimeError(
-        f"RowStruct 'FPalMonsterLevelData'을 찾지 못했습니다. "
+        f"RowStruct 'F{struct_name}'을 찾지 못했습니다. "
         f"resolve_row_struct_fpal_PalMonsterLevelData()에 실제 스크립트 경로를 추가하세요. "
-        f"(예: /Script/ProjectOpenWorld.PalMonsterLevelData)"
+        f"(예: /Script/ProjectOpenWorld.{struct_name})"
     )
 
 
@@ -133,6 +133,43 @@ def make_soft_object_entry(object_path: str) -> dict:
     # UPROPERTY가 TSoftObjectPtr<UAnimMontage> 또는 FSoftObjectPath 류일 때 통하는 포맷
     return {"AssetPathName": object_path, "SubPathString": ""}
 
+def _export_dt_rows_as_list(dt: unreal.DataTable) -> list[dict]:
+    s = dt.export_to_json_string()
+    if not s:
+        return []
+    data = json.loads(s)
+
+    # UE는 보통 list 포맷으로 내보냅니다. 혹시 dict면 list로 normalize.
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        rows = []
+        for k, v in data.items():
+            if isinstance(v, dict):
+                r = dict(v)
+                r.setdefault("Name", k)
+                rows.append(r)
+        return rows
+
+    return []
+
+def _fill_dt_from_rows_list(dt: unreal.DataTable, rows: list[dict]) -> bool:
+    # enum(AttackSlot) 표기 호환을 위해 두 번 시도: "Default" -> 1
+    row_struct = dt.get_row_struct()
+    json_str = json.dumps(rows, ensure_ascii=False, indent=2)
+
+    ok = dt.fill_from_json_string(json_str, row_struct)
+    if ok:
+        return True
+
+    # 실패 시: AttackSlot이 문자열 enum을 못 받아들이는 케이스 대비 → 숫자(1)로 강제
+    for r in rows:
+        if "AttackSlot" in r and isinstance(r["AttackSlot"], str):
+            r["AttackSlot"] = 1
+    json_str2 = json.dumps(rows, ensure_ascii=False, indent=2)
+    ok2 = dt.fill_from_json_string(json_str2, row_struct)
+    return bool(ok2)
+
 def set_LevelDefault(dt: unreal.DataTable) -> bool:
     """
 
@@ -140,31 +177,19 @@ def set_LevelDefault(dt: unreal.DataTable) -> bool:
     rows = _export_dt_rows_as_list(dt)
 
     # row 0/1 보장 (이름은 Row0/Row1로 신규 생성)
-    if len(rows) != 0:
-        return True
-
-    rows.append({"Name": "1"})
+    if len(rows) == 0:
+        rows.append({"Name": "NewRow"})
     row = rows[0]
+    row["Name"] = "1"
+    row["AttackPower"] = 10
 
-    # AttackData 이미 있으면 스킵
-    current_attackdata = row2.get("AttackData", [])
-    if isinstance(current_attackdata, list) and len(current_attackdata) > 0:
-        unreal.log_warning("[DT] 2번째 Row의 AttackData에 이미 데이터가 존재합니다. 요구사항에 따라 수정/추가하지 않습니다.")
-        return False
-
-    # AttackSlot 설정 (문자열 Default 우선, 실패 시 fill 단계에서 1로 fallback)
-    row2["AttackSlot"] = "Default"  # ESubAttackType::Default 기대
-
-    # AttackData 포맷: SoftObjectPath dict (일반적으로 TSoftObjectPtr/SoftObjectPath에 적합)
-   
-    row2["AttackData"] = montage_object_paths
     
     ok = _fill_dt_from_rows_list(dt, rows)
     if not ok:
-        raise RuntimeError("[DT] fill_from_json_string 실패. AttackData 요소 타입/구조(배열 원소 타입)가 현재 포맷과 다를 가능성이 큽니다.")
+        raise RuntimeError("[DT] fill_from_json_string 실패.")
 
     save_asset(dt)
-    unreal.log(f"[DT] 2번째 Row 업데이트 완료: AttackData={len(montage_object_paths)}개")
+    unreal.log(f"[DT] 기본 Row 업데이트 완료")
     return True
 
 
@@ -185,7 +210,7 @@ def run_build_LevelData_and_patch_dt(Pal : str):
 
     # DataTable 로드/생성
     dt = load_or_create_datatable(dt_folder, dt_name)
-    dt
+    set_LevelDefault(dt)
     
 
 
