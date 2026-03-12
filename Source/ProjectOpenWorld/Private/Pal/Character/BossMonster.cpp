@@ -6,6 +6,7 @@
 #include "Pal/Component/PalCommandComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 #include "Player/Character/BasePlayer.h"
+#include "Pal/Component/PalMonsterInteractionComponent.h"
 #include "Pal/Data/PalCommandData.h"
 
 void ABossMonster::BeginPlay()
@@ -29,6 +30,7 @@ void ABossMonster::BeginPlay()
 ABossMonster::ABossMonster() : Super()
 {
 	PatternComponent = CreateDefaultSubobject<UPalPatternComponent>(TEXT("PatternComponent"));
+	MonsterInteractionComponent = CreateDefaultSubobject<UPalMonsterInteractionComponent>(TEXT("MonsterInteractionComponent"));
 }
 
 void ABossMonster::SetStunned(float Duration)

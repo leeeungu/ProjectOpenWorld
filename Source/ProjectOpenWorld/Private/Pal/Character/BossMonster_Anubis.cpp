@@ -55,9 +55,11 @@ void ABossMonster_Anubis::OnMovementModeChanged(EMovementMode PrevMovementMode, 
 void ABossMonster_Anubis::OnCustomModeDamaged(AActor* Other, float Damaage)
 {
 	float HPRadio = GetCurrentHp() / GetMaxHp();
-	if (HPRadio <= 0.5f)
+	if (HPRadio <= 0.5f && !bStartPattern)
 	{
+		bStartPattern = true;
 		AttackComponent->StopAttack();
+		AttackComponent->EndAttack();
 		AttackComponent->SetAttackData(ESubAttackType::Skill01);
 		AttackComponent->SetAttackTarget(Other);
 		AttackComponent->StartAttack();

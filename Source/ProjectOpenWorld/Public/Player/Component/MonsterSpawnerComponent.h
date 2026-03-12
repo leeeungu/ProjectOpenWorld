@@ -24,9 +24,11 @@ protected:
 
 
 	FTimerHandle SpawnTimerHandle{};
+	bool CanSpawnable = true;
 public:
 	UMonsterSpawnerComponent();
 
+	void SetSpawnable(bool bSpawnable);
 protected:
 	virtual void BeginPlay() override;
 

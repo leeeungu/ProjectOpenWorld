@@ -26,6 +26,8 @@ class UStatComponent_Level;
 class IMainWidgetInterface;
 class UPlayerGameOver;
 class UMonsterSpawnerComponent;
+class UPlayerMoveComponent;
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -87,6 +89,8 @@ protected:
 	TObjectPtr<UNavigationInvokerComponent> NavigationInvokerComp{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<UMonsterSpawnerComponent> MonsterSpawnerComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr< UPlayerMoveComponent> PlayerMoveComponent{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr < UInputMappingContext> DefaultMappingContext{};
@@ -191,6 +195,7 @@ public:
 	FORCEINLINE  USkeletalMeshComponent* const GetWeaponMeshComponent() const { return WeaponMeshComponent; }
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
+	FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
 
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
@@ -209,6 +214,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerState")
 	void ChangePlayerState(EPlayerState NewState);
 
+	void SetMonsterSpawner(bool bActive);
 
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;

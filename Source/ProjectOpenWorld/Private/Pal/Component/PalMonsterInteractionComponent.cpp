@@ -8,51 +8,52 @@
 UPalMonsterInteractionComponent::UPalMonsterInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	MonsterInteractionInterfaceList.Reserve(20);
 }
 
 void UPalMonsterInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	MonsterInteractionInterfaceList.Reserve(20);
-	FOnActorSpawned::FDelegate del{};
-	//del.BindUObject(this, &UPalMonsterInteractionComponent::CommandActorSpawned);
-	if (GetWorld())
-		GetWorld()->AddOnActorSpawnedHandler(del);
-	if (GetWorld()->PersistentLevel)
-	{
-		for (AActor* actor : GetWorld()->PersistentLevel->Actors)
-		{
-			if (!actor)
-				continue;
+	UE_LOG(LogTemp, Log, TEXT("UPalMonsterInteractionComponent::BeginPlay %s %d"), *GetOwner()->GetName(), MonsterInteractionInterfaceList.Num());
+	//FOnActorSpawned::FDelegate del{};
+	////del.BindUObject(this, &UPalMonsterInteractionComponent::CommandActorSpawned);
+	//if (GetWorld())
+	//	GetWorld()->AddOnActorSpawnedHandler(del);
+	//if (GetWorld()->PersistentLevel)
+	//{
+	//	for (AActor* actor : GetWorld()->PersistentLevel->Actors)
+	//	{
+	//		if (!actor)
+	//			continue;
 
-			TScriptInterface<IMonsterInteractionInterface> monsterInteractionInterface = TScriptInterface<IMonsterInteractionInterface>(actor);
-			if (!monsterInteractionInterface && !actor->Implements<UMonsterInteractionInterface>())
-				continue;
-			RegisterMonsterInteractionInterface(IMonsterInteractionInterface::Execute_GetInteractionID(actor), monsterInteractionInterface, actor);
-		}
-	}
+	//		TScriptInterface<IMonsterInteractionInterface> monsterInteractionInterface = TScriptInterface<IMonsterInteractionInterface>(actor);
+	//		if (!monsterInteractionInterface && !actor->Implements<UMonsterInteractionInterface>())
+	//			continue;
+	//		RegisterMonsterInteractionInterface(IMonsterInteractionInterface::Execute_GetInteractionID(actor), monsterInteractionInterface, actor);
+	//	}
+	//}
 }
 
 void UPalMonsterInteractionComponent::RegisterMonsterInteractionInterface(uint8 InteractionID, TScriptInterface<IMonsterInteractionInterface> MonsterInteractionInterface, AActor* Interaction)
 {
-	TArray < TObjectPtr<AActor>>* TargetList = nullptr;
-	while (!MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
-	{
-		MonsterInteractionInterfaceList.Push(TArray<TObjectPtr<AActor>>());
-		MonsterInteractionInterfaceList.Last().Reserve(20);
-	}
-	TargetList = &MonsterInteractionInterfaceList[InteractionID];
-	if (TargetList->Find(Interaction) == INDEX_NONE)
-	{
-		MonsterInteractionInterfaceList[InteractionID].Add(Interaction);
-	}
+	//TArray < TObjectPtr<AActor>>* TargetList = nullptr;
+	//while (!MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
+	//{
+	//	MonsterInteractionInterfaceList.Push(FPalMonsterInteractionData());
+	//	MonsterInteractionInterfaceList.Last().Reserve(20);
+	//}
+	//TargetList = &MonsterInteractionInterfaceList[InteractionID];
+	//if (TargetList->Find(Interaction) == INDEX_NONE)
+	//{
+	//	MonsterInteractionInterfaceList[InteractionID].Add(Interaction);
+	//}
 }
 
 TArray< AActor*> UPalMonsterInteractionComponent::GetMonsterInteractionInterfaceListByID(uint8 InteractionID) const
 {
 	if (MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
 	{
-		return MonsterInteractionInterfaceList[InteractionID];
+		return MonsterInteractionInterfaceList[InteractionID].InteractionList;
 	}
 	return TArray< AActor*>();
 }
@@ -61,7 +62,7 @@ void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID
 {
 	if (MonsterInteractionInterfaceList.IsValidIndex(InteractionID))
 	{
-		for (AActor* InterfaceItem : MonsterInteractionInterfaceList[InteractionID])
+		for (AActor* InterfaceItem : MonsterInteractionInterfaceList[InteractionID].InteractionList)
 		{
 			if (InterfaceItem)
 			{
@@ -91,7 +92,7 @@ void UPalMonsterInteractionComponent::InvokeInteractionEvent(uint8 InteractionID
 				}
 			}
 		}
-		if (MonsterInteractionInterfaceList[InteractionID].IsEmpty())
+		if (MonsterInteractionInterfaceList[InteractionID].InteractionList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("InvokeInteractionEvent No registered interfaces for InteractionID : %d"), InteractionID);
 		}

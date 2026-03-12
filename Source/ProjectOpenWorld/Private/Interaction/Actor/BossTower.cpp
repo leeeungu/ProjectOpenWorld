@@ -4,6 +4,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Engine/TargetPoint.h"
 #include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
+#include "Player/Character/BasePlayer.h"
 
 ABossTower::ABossTower() : Super()
 {
@@ -58,6 +59,10 @@ void ABossTower::OnInteractionStart_Implementation(ACharacter* pOther)
 		pOther->SetActorRotation(BossPoint->GetActorRotation());
 		pOther->GetController()->SetControlRotation(BossPoint->GetActorRotation());
 		//pOther->GetController()->SetActorLocation(BossPoint->GetActorLocation());
+	}
+	if(ABasePlayer* Player = Cast<ABasePlayer>(pOther))
+	{
+		Player->SetMonsterSpawner(false);
 	}
 }
 

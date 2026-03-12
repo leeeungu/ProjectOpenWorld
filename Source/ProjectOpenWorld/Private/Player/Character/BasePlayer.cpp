@@ -29,6 +29,7 @@
 #include "Sound/SoundCue.h"
 #include "Building/BaseBuilding.h"
 #include "Player/Component/MonsterSpawnerComponent.h"
+#include "Player/Component/PlayerMoveComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -102,6 +103,8 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 
 	MonsterSpawnerComponent = CreateDefaultSubobject<UMonsterSpawnerComponent>(TEXT("MonsterSpawnerComponent"));
 	MonsterSpawnerComponent->SetupAttachment(GetRootComponent());
+
+	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMoveComponent>(TEXT("PlayerMoveComponent"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -160,6 +163,8 @@ void ABasePlayer::BeginPlay()
 	HPStat->SetCurrentStat(*GetStatusRef(EStatusType::MaxHp));
 	HPStat->SetMaxStat(*GetStatusRef(EStatusType::MaxHp));
 	StatComponent_Level->OnLevelUp.AddUniqueDynamic(this, &ABasePlayer::OnLevelUpEvent);
+
+	SetInputInterface(EInputKeyType::WASD, PlayerMoveComponent);
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
@@ -239,6 +244,7 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	{
 	case EPlayerState::Travel:
 	{
+		
 		break;
 	}
 	case EPlayerState::Climb:
@@ -274,10 +280,13 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	{
 	case EPlayerState::Travel:
 	{
-		UE_LOG(LogBasePlayer, Log, TEXT("Travel Mode"));
-		if (PlayerAnimationComponent->StartTravel())
-			PlayerMoveFunc = &ABasePlayer::MoveTravel;
+		//UE_LOG(LogBasePlayer, Log, TEXT("Travel Mode"));
+		//if (PlayerAnimationComponent->StartTravel())
+		//	PlayerMoveFunc = &ABasePlayer::MoveTravel;
 		UseOrientRotationToMovement();
+		PlayerMoveComponent->SetDefaultMove();
+		//MonsterSpawnerComponent->SetSpawnable(true);
+		
 		break;
 	}
 	case EPlayerState::Climb:
@@ -288,6 +297,7 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	}
 	case EPlayerState::Battle:
 		//UE_LOG(LogBasePlayer, Log, TEXT("Battle Mode"));
+		PlayerMoveComponent->SetSwordMove();
 		UseControllerDesiredRotation();
 		break;
 	case EPlayerState::TopDown:
@@ -309,6 +319,8 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		//UE_LOG(LogBasePlayer, Log, TEXT("TopDown Mode"));
 		//EnableInput(PlayerController);
 		BuildAssistComponent->EndBuilding();
+		PlayerMoveComponent->SetTopDownMode();
+		//MonsterSpawnerComponent->SetSpawnable(false);
 		break;
 	}
 	case EPlayerState::EnumMax:
@@ -316,6 +328,12 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	default:
 		break;
 	}
+}
+
+void ABasePlayer::SetMonsterSpawner(bool bActive)
+{
+	if(MonsterSpawnerComponent)
+		MonsterSpawnerComponent->SetSpawnable(bActive);
 }
 
 float ABasePlayer::GetAttackValue_Implementation() const
@@ -497,8 +515,8 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 {
 	switch (KeyType)
 	{
-	case EInputKeyType::WASD:
-		break;
+	/*case EInputKeyType::WASD:
+		break;*/
 	case EInputKeyType::SpaceBar:
 		if (CurrentPlayerState == EPlayerState::TopDown)
 			break;
@@ -562,12 +580,12 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 {
 	switch (KeyType)
 	{
-	case EInputKeyType::WASD:
+	/*case EInputKeyType::WASD:
 		if (PlayerMoveFunc && CurrentPlayerState != EPlayerState::TopDown)
 		{
 			(this->*PlayerMoveFunc)(Value);
 		}
-		break;
+		break;*/
 	case EInputKeyType::SpaceBar:
 		break;
 	case EInputKeyType::MouseAxis:
@@ -601,49 +619,49 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState == EPlayerState::TopDown)
 		{
-			// 화면에서 지면으로 위치를 pick 하고 이동 방향 계산
-			APlayerController* PC = Cast<APlayerController>(GetController());
-			if (PC)
-			{
-				float MouseX = 0.f, MouseY = 0.f;
-				// 마우스 좌표 얻기
-				if (PC->GetMousePosition(MouseX, MouseY))
-				{
-					FVector WorldOrigin, WorldDir;
-					if (PC->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDir))
-					{
-						const FVector TraceStart = WorldOrigin;
-						const FVector TraceEnd = WorldOrigin + WorldDir * 100000.0f;
-
-						FHitResult Hit;
-						FCollisionQueryParams Params(SCENE_QUERY_STAT(TopDownClick), true);
-						Params.AddIgnoredActor(this);
-
-						GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params);
-						{
-							const FVector HitLocation = Hit.ImpactPoint;
-
-							FVector MoveDirection = (HitLocation - GetActorLocation()).GetSafeNormal2D();
-
-							const FRotator Rotation = MoveDirection.Rotation();
-							const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-							const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-							const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-							// add movement 
-							AddMovementInput(ForwardDirection, 6);
-
-#if ENABLE_DRAW_DEBUG
-							// 디버그 시각화 (에디터/개발용)
-							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
-							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
-#endif
-
-						}
-					}
-				}
-			}
+//			// 화면에서 지면으로 위치를 pick 하고 이동 방향 계산
+//			APlayerController* PC = Cast<APlayerController>(GetController());
+//			if (PC)
+//			{
+//				float MouseX = 0.f, MouseY = 0.f;
+//				// 마우스 좌표 얻기
+//				if (PC->GetMousePosition(MouseX, MouseY))
+//				{
+//					FVector WorldOrigin, WorldDir;
+//					if (PC->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDir))
+//					{
+//						const FVector TraceStart = WorldOrigin;
+//						const FVector TraceEnd = WorldOrigin + WorldDir * 100000.0f;
+//
+//						FHitResult Hit;
+//						FCollisionQueryParams Params(SCENE_QUERY_STAT(TopDownClick), true);
+//						Params.AddIgnoredActor(this);
+//
+//						GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params);
+//						{
+//							const FVector HitLocation = Hit.ImpactPoint;
+//
+//							FVector MoveDirection = (HitLocation - GetActorLocation()).GetSafeNormal2D();
+//
+//							const FRotator Rotation = MoveDirection.Rotation();
+//							const FRotator YawRotation(0, Rotation.Yaw, 0);
+//
+//							const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+//							const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+//
+//							// add movement 
+//							AddMovementInput(ForwardDirection, 6);
+//
+//#if ENABLE_DRAW_DEBUG
+//							// 디버그 시각화 (에디터/개발용)
+//							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
+//							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
+//#endif
+//
+//						}
+//					}
+//				}
+//			}
 		}
 		break;
 	case EInputKeyType::MouseWheel:
@@ -672,15 +690,15 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 {
 	switch (KeyType)
 	{
-	case EInputKeyType::WASD:
-		if (PlayerMoveFunc == &ABasePlayer::MoveClimb)
-		{
-			if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
-			{
-				Instance->SetClimbSpeed(0);
-			}
-		}
-		break;
+	//case EInputKeyType::WASD:
+	//	if (PlayerMoveFunc == &ABasePlayer::MoveClimb)
+	//	{
+	//		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+	//		{
+	//			Instance->SetClimbSpeed(0);
+	//		}
+	//	}
+	//	break;
 	case EInputKeyType::SpaceBar:
 		if (CurrentPlayerState != EPlayerState::TopDown)
 		{
@@ -764,7 +782,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 
 void ABasePlayer::SetInputInterface(EInputKeyType KeyType, TScriptInterface<IPlayerInputInterface> InputInterface)
 {
-	InputMapping.FindOrAdd(KeyType, InputInterface) = InputInterface;
+	InputMapping.FindOrAdd(KeyType, nullptr) = InputInterface;
 }
 
 void ABasePlayer::ResetDeaflut(EInputKeyType KeyType)

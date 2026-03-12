@@ -14,6 +14,8 @@ class PROJECTOPENWORLD_API ABossMonster_Anubis : public ABossMonster
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "BossPattern")
 	TObjectPtr<UWidgetComponent> PatternWidget{};
+
+	bool bStartPattern{ false };
 protected:
 	virtual void BeginPlay() override;
 

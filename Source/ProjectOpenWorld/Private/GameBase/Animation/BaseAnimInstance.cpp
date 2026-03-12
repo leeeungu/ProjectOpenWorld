@@ -87,8 +87,8 @@ void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bI
 					ChangeEvent->EndEvent(this);
 				}
 			}
+			PlayMontage();
 		}
-		PlayMontage();
 		return;
 	}
 }
@@ -164,7 +164,6 @@ void UBaseAnimInstance::PlayMontage()
 		NextMontage = MontageArray[CurrentMontageIndex];
 	if (NextMontage)
 	{
-		Montage_Play(NextMontage);
 		if (CurrentMontage != NextMontage)
 		{
 			CurrentMontage = NextMontage;
@@ -184,6 +183,7 @@ void UBaseAnimInstance::PlayMontage()
 				}
 			}
 		}
+		Montage_Play(NextMontage);
 	}
 	else
 	{

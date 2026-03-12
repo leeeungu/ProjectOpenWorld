@@ -5,6 +5,7 @@
 #include "BossMonster.generated.h"
 
 class UPalPatternComponent;
+class UPalMonsterInteractionComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABossMonster : public ABaseMonster
@@ -24,6 +25,10 @@ protected:
 	UPROPERTY()
 	TObjectPtr< UUserWidget> HpWidget{};
 
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -32,6 +37,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "BossPattern")
 	FORCEINLINE UPalPatternComponent* GetPatternComponent() const { return PatternComponent; }
+
+	UFUNCTION(BlueprintPure, Category = "BossAction")
+	FORCEINLINE UPalMonsterInteractionComponent* GetMonsterInteractionComponent() const { return MonsterInteractionComponent; }
 
 
 	void SetStunned(float Duration);

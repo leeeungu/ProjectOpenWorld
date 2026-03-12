@@ -20,6 +20,19 @@ UMonsterSpawnerComponent::UMonsterSpawnerComponent() : USphereComponent()
 	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
+void UMonsterSpawnerComponent::SetSpawnable(bool bSpawnable)
+{
+	CanSpawnable = bSpawnable;
+	if (!bSpawnable)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+	}
+	else if (SpawnedMonsters.Num() < MaxSpawnedMonsters)
+	{
+		GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &UMonsterSpawnerComponent::SpawnMonster, SpawnTime, false);
+	}
+}
+
 void UMonsterSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -52,6 +65,8 @@ FPalMonsterLevelData UMonsterSpawnerComponent::GetMonsterLevelData(const FPalMon
 
 void UMonsterSpawnerComponent::SpawnMonster()
 {
+	if (!CanSpawnable)
+		return;
 	if (SpawnedMonsters.Num() < MaxSpawnedMonsters)
 	{
 		TArray<FPalMonsterData*> SpawnDataList{};

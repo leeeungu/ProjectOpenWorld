@@ -9,7 +9,6 @@
 
 class UPalCommandComponent;
 class UPalAttackComponent;
-class UPalMonsterInteractionComponent;
 struct FPalMonsterLevelData;
 class UWidgetComponent;
 class ABasePlayer;
@@ -31,8 +30,6 @@ protected:
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr <UWidgetComponent> HpWidgetComponent{};	
 	bool bActionStarted{};
 protected:
@@ -46,8 +43,6 @@ public:
 	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
 	UFUNCTION(BlueprintPure, Category = "CreatureAction")
 	FORCEINLINE UPalCommandComponent* GetCommandComponent() const { return PalCommand; }
-	UFUNCTION(BlueprintPure, Category = "CreatureAction")
-	FORCEINLINE UPalMonsterInteractionComponent* GetMonsterInteractionComponent() const { return MonsterInteractionComponent; }
 
 	 // //virtual bool Attacked_Implementation(IAttackInterface* Other) override;
 	 // virtual float GetAttackValue_Implementation() const override;

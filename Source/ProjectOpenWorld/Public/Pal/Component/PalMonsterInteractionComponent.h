@@ -12,12 +12,23 @@ enum class EMonsterInteractionEvent : uint8
 	InteractionEnd UMETA(DisplayName = "InteractionEnd"),
 };
 
+USTRUCT(BlueprintType)
+struct FPalMonsterInteractionData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pal Monster Interface")
+
+	TArray < TObjectPtr<AActor>> InteractionList{};
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPalMonsterInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 protected:
-	TArray<TArray<TObjectPtr<AActor>>> MonsterInteractionInterfaceList{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pal Monster Interface")
+	TArray<FPalMonsterInteractionData> MonsterInteractionInterfaceList{};
 	TArray<TPair<TObjectPtr<AActor>, TObjectPtr<ACharacter>>> setActiveInteraction;
 public:
 	UPalMonsterInteractionComponent();

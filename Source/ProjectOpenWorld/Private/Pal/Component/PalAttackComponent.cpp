@@ -70,10 +70,10 @@ void UPalAttackComponent::SetAttackData(ESubAttackType eType)
 		return;
 	}
 	bSetAttackData = false;
+	uint8 Index = static_cast<uint8>(eType);
 	if (AttackDataAsset && AllAttackDataArray.IsEmpty())
 	{
 		AttackDataAsset->GetAllRows("", AllAttackDataArray);
-		uint8 Index = static_cast<uint8>(eType);
 		CoolDownArray.Init(false, static_cast<uint8>(ESubAttackType::Max_AttackType));
 		if (AllAttackDataArray.IsValidIndex(Index))
 		{
@@ -87,7 +87,10 @@ void UPalAttackComponent::SetAttackData(ESubAttackType eType)
 			UE_LOG(LogTemp, Warning, TEXT("%s UPalAttackComponent :: SetAttackData no data in DataTable "), *GetOwner()->GetName());
 		}
 	}
-	AttackData.AttackSlot = eType;
+	if(AllAttackDataArray.IsValidIndex(Index))
+		AttackData = *AllAttackDataArray[Index];
+	else
+		AttackData = FPalAttackDataTable{};
 }
 
 void UPalAttackComponent::StartAttack()
