@@ -87,8 +87,6 @@ void UPlayerMoveComponent::SetDefaultMove()
 		Player->SetInputInterface(EInputKeyType::WASD, this);
 		Player->SetInputInterface(EInputKeyType::MouseL, Player.Get());
 	}
-	//MoveStartedFunc = &UPlayerMoveComponent::MoveDefault;
-	//MoveReleasedFunc = &UPlayerMoveComponent::MoveDefault;
 }
 
 void UPlayerMoveComponent::SetSwordMove()

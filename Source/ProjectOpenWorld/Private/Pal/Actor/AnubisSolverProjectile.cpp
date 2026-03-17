@@ -34,10 +34,10 @@ void AAnubisSolverProjectile::BeginPlay()
 
 void AAnubisSolverProjectile::OnAnubisSolverBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Begin Overlap with %s"), *OtherActor->GetName());
 	if (OtherActor && OtherActor != this)
 	{
 		ABossMonster* AnubisBoss = Cast<ABossMonster>(OtherActor);
+		UE_LOG(LogTemp, Warning, TEXT("Anubis Solver Projectile Begin Overlap with %s"), *OtherActor->GetName());
 		if (AnubisBoss && bProjectileActive)
 		{
 			uint8 Index = static_cast<uint8>(PatternType);

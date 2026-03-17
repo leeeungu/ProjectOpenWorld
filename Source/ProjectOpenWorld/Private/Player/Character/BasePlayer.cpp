@@ -304,6 +304,9 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	{
 		TopDownMode = true;
 		UseOrientRotationToMovement();
+
+		PlayerMoveComponent->SetTopDownMode();
+		BuildAssistComponent->EndBuilding();
 		UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
 		if (InteractionComp)
 		{
@@ -314,12 +317,10 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		{
 			//UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
 			PlayerController->SetShowMouseCursor(true);
-
+			//PlayerController->
 		}
 		//UE_LOG(LogBasePlayer, Log, TEXT("TopDown Mode"));
 		//EnableInput(PlayerController);
-		BuildAssistComponent->EndBuilding();
-		PlayerMoveComponent->SetTopDownMode();
 		//MonsterSpawnerComponent->SetSpawnable(false);
 		break;
 	}
@@ -617,52 +618,6 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseR:
 		break;
 	case EInputKeyType::MouseL:
-		if (CurrentPlayerState == EPlayerState::TopDown)
-		{
-//			// 화면에서 지면으로 위치를 pick 하고 이동 방향 계산
-//			APlayerController* PC = Cast<APlayerController>(GetController());
-//			if (PC)
-//			{
-//				float MouseX = 0.f, MouseY = 0.f;
-//				// 마우스 좌표 얻기
-//				if (PC->GetMousePosition(MouseX, MouseY))
-//				{
-//					FVector WorldOrigin, WorldDir;
-//					if (PC->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDir))
-//					{
-//						const FVector TraceStart = WorldOrigin;
-//						const FVector TraceEnd = WorldOrigin + WorldDir * 100000.0f;
-//
-//						FHitResult Hit;
-//						FCollisionQueryParams Params(SCENE_QUERY_STAT(TopDownClick), true);
-//						Params.AddIgnoredActor(this);
-//
-//						GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params);
-//						{
-//							const FVector HitLocation = Hit.ImpactPoint;
-//
-//							FVector MoveDirection = (HitLocation - GetActorLocation()).GetSafeNormal2D();
-//
-//							const FRotator Rotation = MoveDirection.Rotation();
-//							const FRotator YawRotation(0, Rotation.Yaw, 0);
-//
-//							const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-//							const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-//
-//							// add movement 
-//							AddMovementInput(ForwardDirection, 6);
-//
-//#if ENABLE_DRAW_DEBUG
-//							// 디버그 시각화 (에디터/개발용)
-//							//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
-//							//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
-//#endif
-//
-//						}
-//					}
-//				}
-//			}
-		}
 		break;
 	case EInputKeyType::MouseWheel:
 	{

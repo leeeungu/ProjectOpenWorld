@@ -81,6 +81,7 @@ void ASpawnSolider::OnInteractionEndEvent_Implementation(ACharacter* TargetMonst
 		Soilder->Destroy();
 	}
 	arSolider.Empty(SpawnCount);
+	SpawnCount = 0;
 	SpawnLocation = SplineComp->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World);
 }
 
