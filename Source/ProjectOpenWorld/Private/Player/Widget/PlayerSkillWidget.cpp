@@ -40,10 +40,13 @@ void UPlayerSkillWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	ABasePlayer* Player = Cast<ABasePlayer>(GetOwningPlayerPawn());
+	UE_LOG(LogTemp, Warning, TEXT("PlayerSkillWidget::NativeOnInitialized Player : %s"), *GetNameSafe(Player));
 	if (Player)
 	{
 		PlayerAttackComponent = Player->GetPlayerAttackComponent();
 		PlayerAttackComponent->OnPlayMontage.AddUniqueDynamic(this, &UPlayerSkillWidget::OnMontagePlay);
+		Player->OnStateChangeDelegate.AddUniqueDynamic(this, &UPlayerSkillWidget::OnStateChange);
+		UE_LOG(LogTemp, Warning, TEXT("PlayerSkillWidget::NativeOnInitialized PlayerAttackComponent : %s"), *GetNameSafe(PlayerAttackComponent));
 	}
 	if (CoolTimeTextBlock)
 		CoolTimeTextBlock->SetVisibility(ESlateVisibility::Hidden);
@@ -63,6 +66,18 @@ void UPlayerSkillWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 			CoolTimeTextBlock->SetVisibility( ESlateVisibility::Hidden);
 		}
 		CoolTimeTextBlock->SetText(FText::AsNumber(FMath::CeilToInt(RemainTime * 10.f) * 0.1f));
+	}
+}
+
+void UPlayerSkillWidget::OnStateChange(EPlayerState NewPlayerState, EPlayerState PrePlayerState)
+{
+	if (NewPlayerState != EPlayerState::Battle)
+	{
+		SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
 

@@ -24,5 +24,5 @@ protected:
 	TObjectPtr<UCanvasPanel> WeaponSlot{};
 
 public:
-	
+	void ChangeWeapone(FName NewWeaponeID);
 };

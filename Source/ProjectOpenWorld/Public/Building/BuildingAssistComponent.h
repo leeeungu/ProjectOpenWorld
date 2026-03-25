@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Building/DataTable/SnapRule.h"
 #include "Player/Interface/MainWidgetInterface.h"
+#include "Player/Interface/PlayerInputInterface.h"
 #include "BuildingAssistComponent.generated.h"
 
 class ABasePlayer;
@@ -22,7 +23,8 @@ class UBuildingModeWidget;
  * - PreviewComponent의 겹침 판정 결과를 읽어 canBuilding 설정
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class PROJECTOPENWORLD_API UBuildingAssistComponent : public UActorComponent, public IMainWidgetInterface
+class PROJECTOPENWORLD_API UBuildingAssistComponent : public UActorComponent, public IMainWidgetInterface, 
+	public IPlayerInputInterface
 {
 	GENERATED_BODY()
 
@@ -126,6 +128,10 @@ public:
 	virtual bool SetMainWidget() override;
 	virtual void UnSetMainWidget() override;
 
+	// IPlayerInputInterface 구현
+	virtual void StartEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
+	virtual void TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
+	virtual void CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
 
 protected:
 	void OnOffAssist(bool bValue);

@@ -39,6 +39,7 @@ enum class EPlayerState : uint8
 	Battle,
 	TopDown,
 	Mining,
+	Building,
 	EnumMax UMETA(Hidden)
 };
 
@@ -61,7 +62,7 @@ enum class EStatusType : uint8
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChange, EPlayerState , PrePlayerState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerStateChange, EPlayerState, NewPlayerState, EPlayerState, PrePlayerState);
 
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface
@@ -106,7 +107,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
 	UAnimMontage* ClimbMontage{};
 
-	void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
+	//void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPlayerState CurrentPlayerState{};
 	UPROPERTY()
@@ -144,13 +145,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
 	void SetTopDownMode(bool bTopDown);
-	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
-	void StartClimb();
+	//UFUNCTION(BlueprintCallable, Category = "PlayerMode")
+	//void StartClimb();
 	UFUNCTION(BlueprintPure, Category = "PlayerMode")
 	bool IsTopDownMode() const { return CurrentPlayerState == EPlayerState::TopDown; }
 
-	UFUNCTION(BlueprintCallable )
-	void StartTravel();
+	//UFUNCTION(BlueprintCallable )
+	//void StartTravel();
 
 	void UpdateWeight(float InventoryWeight);
 
@@ -174,7 +175,7 @@ protected:
 	void KnockBackReset();
 	///** Called for movement input */
 	void MoveClimb(const FInputActionValue& Value);
-	void MoveTravel(const FInputActionValue& Value);
+	//void MoveTravel(const FInputActionValue& Value);
 	virtual void PossessedBy(AController* NewController) override;
 protected:
 	// APawn interface

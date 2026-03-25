@@ -19,6 +19,7 @@ private:
 
 public:
 	void SetItemID(FName NewID) { ItemID = NewID; }
+	FORCEINLINE FName GetItemID() const { return ItemID; }
 	virtual void RegisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::RegisterItemObject, );
 	virtual void UnregisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::UnregisterItemObject, );
 };

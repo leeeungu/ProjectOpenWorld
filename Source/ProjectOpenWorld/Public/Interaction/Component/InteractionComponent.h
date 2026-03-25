@@ -25,6 +25,8 @@ private:
 	bool bIsInteraction{};
 	bool bIsDetect{};
 protected:
+	bool bCanInteraction{};
+protected:
 	virtual void BeginPlay() override;
 
 	
@@ -36,6 +38,7 @@ public:
 
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetInteractionable(bool bInCanInteraction) { bCanInteraction = bInCanInteraction; }
 	void SetInteractionTarget(TScriptInterface<IInteractionInterface> NewTarget);
 	void OnInteractionStart();
 	void OnInteractionTriggered();

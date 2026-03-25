@@ -20,7 +20,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	float InteractionRadius = 30.0f;
 
-	bool bCanAiming = false;
 public:	
 	UPlayerInteractionComponent();
 
@@ -31,6 +30,4 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 		
 public:
-	FORCEINLINE void SetCanAiming(bool bEnable) { bCanAiming = bEnable; }
-	FORCEINLINE bool IsCanAiming() const { return bCanAiming; }
 };

@@ -6,6 +6,7 @@
 
 
 enum class EPlayerAttackType : uint8;
+enum class EPlayerState : uint8;
 class UPlayerAttackComponent;
 class UTextBlock;
 class UWidgetAnimation;
@@ -27,6 +28,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UTextBlock> CoolTimeTextBlock{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
+	TObjectPtr<UTextBlock> KeyName{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UImage> SkillImage{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget")
@@ -43,6 +46,9 @@ public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+protected:
+	UFUNCTION()
+	virtual void OnStateChange(EPlayerState NewPlayerState, EPlayerState PrePlayerState);
 	UFUNCTION()
 	virtual void OnMontagePlay(EPlayerAttackType InAttackType);
 	

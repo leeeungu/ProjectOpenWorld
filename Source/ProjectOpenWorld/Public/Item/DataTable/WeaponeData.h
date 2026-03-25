@@ -22,6 +22,19 @@ enum class EWeaponeUseType : uint8
 };
 
 
+UENUM(BlueprintType, Category = "Weapon")
+enum class EWeapone : uint8
+{
+	None,
+	StoneSpear,
+	Bow,
+	Sword,
+	PixAxe,
+	Axe,
+	PalSphere,
+};
+
+
 USTRUCT(BlueprintType)
 struct FWeaponData : public FTableRowBase
 {
@@ -31,4 +44,15 @@ public:
 	EWeaponeType WeaponeType{ EWeaponeType::None };
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponeUseType bIsInfinite{ false };
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponUIData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	EWeapone WeaponeType{ EWeapone::None };
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<UTexture2D> WeaponeImage{ nullptr };	
 };

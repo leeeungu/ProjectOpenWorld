@@ -183,6 +183,7 @@ void UBuildingAssistComponent::EndBuilding()
 	{
 		buildingPreviewActor->EndPreView();
 	}
+
 }
 
 void UBuildingAssistComponent::CancelBuilding()
@@ -254,7 +255,7 @@ void UBuildingAssistComponent::SpawnBuilding()
 
 void UBuildingAssistComponent::RotateBuilding(float AddYaw)
 {
-	if (buildingPreviewActor)
+	if (buildingPreviewActor && bBuildingStarted)
 	{
 		buildingPreviewActor->AddWorldRotation(FRotator(0.f, AddYaw, 0.f));
 		YawRotation = UKismetMathLibrary::NormalizeAxis(YawRotation + AddYaw);
@@ -283,6 +284,30 @@ void UBuildingAssistComponent::UnSetMainWidget()
 	{
 		EndBuilding();
 		bBuildingStarted = false;
+		if (ownerPawn.IsValid())
+			ownerPawn->ChangePlayerState(EPlayerState::Travel);
+	}
+}
+
+void UBuildingAssistComponent::StartEvent(const FInputActionValue& Value, EInputKeyType KeyType)
+{
+	
+}
+
+void UBuildingAssistComponent::TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType)
+{
+	if (KeyType == EInputKeyType::MouseWheel)
+	{
+		FVector2D LookAxisVector = Value.Get<FVector2D>();
+		RotateBuilding(LookAxisVector.X * 5.0f);
+	}
+}
+
+void UBuildingAssistComponent::CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType)
+{
+	if (KeyType == EInputKeyType::Esc && ownerPawn.IsValid())
+	{
+		ownerPawn->ChangePlayerState(EPlayerState::Travel);
 	}
 }
 

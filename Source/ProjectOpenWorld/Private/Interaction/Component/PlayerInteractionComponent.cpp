@@ -7,7 +7,7 @@
 UPlayerInteractionComponent::UPlayerInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	bCanAiming = true;
+	bCanInteraction = true;
 }
 
 void UPlayerInteractionComponent::BeginPlay()
@@ -19,7 +19,7 @@ void UPlayerInteractionComponent::BeginPlay()
 void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!bCanAiming)
+	if (!bCanInteraction)
 		return;
 	if (!IsSetTarget())
 	{

@@ -47,6 +47,13 @@ class UPlayerInputInterface : public UInterface
 	GENERATED_BODY()
 };
 
+/*
+* 인터페이스 구현된 객체로 넘겨서 
+* 책임이 확실하고 수정에 용이함
+  (키 입력 시 여러 상태 채크를 안해도 되서 코드의 복잡도가 줄어들고 성능 향상이 있다.)
+* 결합도가 높아지는 경향이 있음 (ex buildingassist)
+*/
+//
 class PROJECTOPENWORLD_API IPlayerInputInterface
 {
 	GENERATED_BODY()

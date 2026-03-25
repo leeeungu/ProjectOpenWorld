@@ -73,7 +73,7 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 
 	PlayerAnimationComponent = CreateDefaultSubobject<UPlayerAnimationComponent>(TEXT("PlayerAnimationComponent"));
 	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
-	PlayerMoveFunc = &ABasePlayer::MoveTravel;
+	//PlayerMoveFunc = &ABasePlayer::MoveTravel;
 
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
 
@@ -125,17 +125,17 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 	}
 }
 
-void ABasePlayer::StartClimb()
-{
-	if (PlayerAnimationComponent->StartClimb())
-		PlayerMoveFunc = &ABasePlayer::MoveClimb;
-}
-
-void ABasePlayer::StartTravel()
-{
-	if(PlayerAnimationComponent->StartTravel())
-		PlayerMoveFunc = &ABasePlayer::MoveTravel;
-}
+//void ABasePlayer::StartClimb()
+//{
+//	if (PlayerAnimationComponent->StartClimb())
+//		PlayerMoveFunc = &ABasePlayer::MoveClimb;
+//}
+//
+//void ABasePlayer::StartTravel()
+//{
+//	if(PlayerAnimationComponent->StartTravel())
+//		PlayerMoveFunc = &ABasePlayer::MoveTravel;
+//}
 
 void ABasePlayer::UpdateWeight(float InventoryWeight)
 {
@@ -244,7 +244,6 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	{
 	case EPlayerState::Travel:
 	{
-		
 		break;
 	}
 	case EPlayerState::Climb:
@@ -259,11 +258,15 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		{
 			PlayerController->SetShowMouseCursor(false);
 		}
-		UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
-		if (InteractionComp)
-		{
-			InteractionComp->SetCanAiming(true);
-		}
+		InteractionComponent->SetInteractionable(true);
+		break;
+	}
+	case EPlayerState::Building:
+	{
+		SetInputInterface(EInputKeyType::MouseWheel, this);
+		SetInputInterface(EInputKeyType::Esc, this);
+		InteractionComponent->SetInteractionable(true);
+		RemoveFromViewPort(BuildAssistComponent);
 		break;
 	}
 	case EPlayerState::EnumMax:
@@ -271,11 +274,8 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	default:
 		break;
 	}
+
 	CurrentPlayerState = NewState;
-	if (OnStateChangeDelegate.IsBound())
-	{
-		OnStateChangeDelegate.Broadcast(PrevState);
-	}
 	switch (CurrentPlayerState)
 	{
 	case EPlayerState::Travel:
@@ -285,14 +285,12 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		//	PlayerMoveFunc = &ABasePlayer::MoveTravel;
 		UseOrientRotationToMovement();
 		PlayerMoveComponent->SetDefaultMove();
-		//MonsterSpawnerComponent->SetSpawnable(true);
-		
 		break;
 	}
 	case EPlayerState::Climb:
 	{
-		if (PlayerAnimationComponent->StartClimb())
-			PlayerMoveFunc = &ABasePlayer::MoveClimb;
+		//if (PlayerAnimationComponent->StartClimb())
+		//	PlayerMoveFunc = &ABasePlayer::MoveClimb;
 		break;
 	}
 	case EPlayerState::Battle:
@@ -307,27 +305,38 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 
 		PlayerMoveComponent->SetTopDownMode();
 		BuildAssistComponent->EndBuilding();
-		UPlayerInteractionComponent* InteractionComp = Cast<UPlayerInteractionComponent>(InteractionComponent);
-		if (InteractionComp)
-		{
-			InteractionComp->SetCanAiming(false);
-		}
+		InteractionComponent->SetInteractionable(false);
 		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 		if (PlayerController)
 		{
-			//UE_LOG(LogTemp, Log, TEXT("SetTopDownMode"));
 			PlayerController->SetShowMouseCursor(true);
-			//PlayerController->
 		}
-		//UE_LOG(LogBasePlayer, Log, TEXT("TopDown Mode"));
-		//EnableInput(PlayerController);
-		//MonsterSpawnerComponent->SetSpawnable(false);
+		break;
+	}
+	case EPlayerState::Building:
+	{
+		if (!AddToViewPort(BuildAssistComponent))
+		{
+			ChangePlayerState(PrevState);
+			return;
+		}
+		else
+		{
+			SetInputInterface(EInputKeyType::MouseWheel, BuildAssistComponent);
+			SetInputInterface(EInputKeyType::Esc, BuildAssistComponent);
+			InteractionComponent->SetInteractionable(false);
+		}
 		break;
 	}
 	case EPlayerState::EnumMax:
 		break;
+
 	default:
 		break;
+	}
+	if (OnStateChangeDelegate.IsBound() && CurrentPlayerState != PrevState)
+	{
+		OnStateChangeDelegate.Broadcast(CurrentPlayerState, PrevState);
 	}
 }
 
@@ -620,22 +629,11 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseL:
 		break;
 	case EInputKeyType::MouseWheel:
-	{
-		FVector2D LookAxisVector = Value.Get<FVector2D>();
-		if (BuildAssistComponent && InteractionComponent && !InteractionComponent->IsInteracting())
-		{
-			BuildAssistComponent->RotateBuilding(LookAxisVector.X * 5.0f);
-		}
-	}
 		break;
 	case EInputKeyType::KeyB:
-	{
 		break;
-	}
 	case EInputKeyType::KeyTab:
-	{
 		break;
-	}
 	default:
 		break;
 	}
@@ -645,7 +643,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 {
 	switch (KeyType)
 	{
-	//case EInputKeyType::WASD:
+	case EInputKeyType::WASD:
 	//	if (PlayerMoveFunc == &ABasePlayer::MoveClimb)
 	//	{
 	//		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
@@ -653,7 +651,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	//			Instance->SetClimbSpeed(0);
 	//		}
 	//	}
-	//	break;
+		break;
 	case EInputKeyType::SpaceBar:
 		if (CurrentPlayerState != EPlayerState::TopDown)
 		{
@@ -703,11 +701,13 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	{
 		if (CurrentPlayerState != EPlayerState::TopDown)
 		{
-			if (BuildAssistComponent && !AddToViewPort(BuildAssistComponent))
+			if (CurrentPlayerState == EPlayerState::Building)
 			{
-				RemoveFromViewPort(BuildAssistComponent);
-				//BuildAssistComponent->EndBuilding();
+				ChangePlayerState(EPlayerState::Travel);
 			}
+			else
+				ChangePlayerState(EPlayerState::Building);
+		
 		}
 		break;
 	}
@@ -812,7 +812,7 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 {
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	/*FVector2D MovementVector = Value.Get<FVector2D>();
 	if (true)
 	{
 		StartTravel();
@@ -866,35 +866,8 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		NewRotation.Roll = 0.0f;
 		SetActorRotation(FMath::RInterpTo(Rotation, NewRotation, GetWorld()->GetDeltaSeconds(), 20.0f));
 		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
-	}
+	}*/
 
-}
-
-void ABasePlayer::MoveTravel(const FInputActionValue& Value)
-{	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (PlayerAnimationComponent->IsClimbing())
-	{
-		StartClimb();
-		return;
-	}
-	if (Controller != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
-	}
 }
 
 void ABasePlayer::PossessedBy(AController* NewController)
