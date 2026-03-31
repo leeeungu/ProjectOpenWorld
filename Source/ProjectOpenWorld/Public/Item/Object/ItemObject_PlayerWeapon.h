@@ -6,6 +6,7 @@
 
 class USkeletalMesh;
 enum class EPlayerState : uint8;
+enum class EWeapone : uint8;
 
 UCLASS()
 class PROJECTOPENWORLD_API UItemObject_PlayerWeapon : public UBaseItemObject
@@ -19,6 +20,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
 	EPlayerState EquipPlayerState{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData")
+	EWeapone WeaponeType{};
 public:
 	UItemObject_PlayerWeapon();
 

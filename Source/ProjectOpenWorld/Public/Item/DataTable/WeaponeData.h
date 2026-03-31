@@ -26,12 +26,14 @@ UENUM(BlueprintType, Category = "Weapon")
 enum class EWeapone : uint8
 {
 	None,
+	Hand,
 	StoneSpear,
 	Bow,
 	Sword,
 	PixAxe,
 	Axe,
 	PalSphere,
+	WeaponeMax UMETA(Hidden)
 };
 
 

@@ -1,4 +1,5 @@
 #include "Item/System/ItemDataSubsystem.h"
+#include "Item/DataTable/WeaponeData.h"
 #include "Item/Actor/ItemActor.h"
 
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
@@ -38,6 +39,23 @@ bool UItemDataSubsystem::GetPalItemIconDataPtr(FName RowName, const FPalEditorIt
 	}
 	Data = &SingletonInstance->PalItemIconDataTableStruct.Dummy;
 	return false;
+}
+
+UTexture2D* UItemDataSubsystem::GetWeaponUI(EWeapone WeaponeType)
+{
+	if (SingletonInstance)
+	{
+		TArray<FWeaponUIData*> WeaponUIDataArray{};
+		// /Script/Engine.DataTable'/Game/Item/DataTable/DT_WeaponUI.DT_WeaponUI'
+		UDataTable* WeaponUIDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/Item/DataTable/DT_WeaponUI.DT_WeaponUI"));
+		if (WeaponUIDataTable)
+		{
+			uint8 Index = static_cast<uint8>(WeaponeType);
+			WeaponUIDataTable->GetAllRows<FWeaponUIData>(TEXT(""), WeaponUIDataArray);
+			return WeaponUIDataArray[Index]->WeaponeImage;
+		}
+	}
+	return nullptr;
 }
 
 

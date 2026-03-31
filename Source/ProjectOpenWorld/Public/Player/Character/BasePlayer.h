@@ -27,7 +27,9 @@ class IMainWidgetInterface;
 class UPlayerGameOver;
 class UMonsterSpawnerComponent;
 class UPlayerMoveComponent;
-
+enum class EWeapone : uint8;
+class UUserWidget;
+class UPlayerEquipComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -61,7 +63,6 @@ enum class EStatusType : uint8
 	EnumMax UMETA(Hidden)
 };
 
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerStateChange, EPlayerState, NewPlayerState, EPlayerState, PrePlayerState);
 
 UCLASS()
@@ -80,8 +81,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr <UStatComponent_Level> StatComponent_Level{};
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	TObjectPtr <USkeletalMeshComponent> WeaponMeshComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building)
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
@@ -92,6 +91,10 @@ protected:
 	TObjectPtr<UMonsterSpawnerComponent> MonsterSpawnerComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr< UPlayerMoveComponent> PlayerMoveComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr< UPlayerEquipComponent> PlayerEquipComponent{};
+
+	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr < UInputMappingContext> DefaultMappingContext{};
@@ -128,6 +131,12 @@ protected:
 
 	TScriptInterface< IMainWidgetInterface> MainWidgetInterface{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment")
+	EWeapone CurrentEquip{};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MainWidget")
+	TSubclassOf<UUserWidget> MainWidgetClass{};
+	TObjectPtr<UUserWidget> MainWidget{};
 public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
@@ -193,7 +202,7 @@ public:
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
-	FORCEINLINE  USkeletalMeshComponent* const GetWeaponMeshComponent() const { return WeaponMeshComponent; }
+	USkeletalMeshComponent* const GetWeaponMeshComponent() const;
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
 	FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
@@ -203,6 +212,7 @@ public:
 	
 
 	void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName);
+	void UnEquip(USkeletalMesh* OldMesh);
 
 	FORCEINLINE  float* GetStatusRef(EStatusType StatusType) {
 		return  StatusArray.IsValidIndex((uint8)StatusType) ? &StatusArray[(uint8)StatusType] : &StatusArray[0];
@@ -214,6 +224,8 @@ public:
 	bool GetStatus(EStatusType StatusType, float& Result) const;
 	UFUNCTION(BlueprintCallable, Category = "PlayerState")
 	void ChangePlayerState(EPlayerState NewState);
+	void ChangePlayerEquip(FName WeaponName, EWeapone NewEquip);
+	void ChangeEquipWidget(FName WeaponName, EWeapone NewEquip);
 
 	void SetMonsterSpawner(bool bActive);
 

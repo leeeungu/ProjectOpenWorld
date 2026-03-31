@@ -45,5 +45,9 @@ FText UStringTableFunctionLibrary::GetBuildingDescFromStringTable(const FString&
 bool UStringTableFunctionLibrary::GetWeaponeNameFromStringTable(const FString& InKey, FText& OutWeaponeName)
 {
 	OutWeaponeName = FText::FromStringTable(GetWeaponeNameStringTable(), InKey);
-	return OutWeaponeName.ToString() != FStringTableEntry::GetPlaceholderSourceString();
+	if (OutWeaponeName.ToString() == FStringTableEntry::GetPlaceholderSourceString())
+	{
+		OutWeaponeName = FText::FromString(GetDefaultWeapone());
+	}
+	return true;
 }

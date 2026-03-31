@@ -30,6 +30,9 @@
 #include "Building/BaseBuilding.h"
 #include "Player/Component/MonsterSpawnerComponent.h"
 #include "Player/Component/PlayerMoveComponent.h"
+#include "Player/Component/PlayerEquipComponent.h"
+#include "Item/DataTable/WeaponeData.h"
+#include "Player/Widget/MainUI.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -98,13 +101,13 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	PlayerItemManagerComponent = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
 	StatComponent_Level = CreateDefaultSubobject<UStatComponent_Level>(TEXT("StatComponent_Level"));
 
-	WeaponMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComponent"));
-	WeaponMeshComponent->SetupAttachment(GetMesh(), TEXT("WeaponR_Sword"));
-
 	MonsterSpawnerComponent = CreateDefaultSubobject<UMonsterSpawnerComponent>(TEXT("MonsterSpawnerComponent"));
 	MonsterSpawnerComponent->SetupAttachment(GetRootComponent());
 
 	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMoveComponent>(TEXT("PlayerMoveComponent"));
+
+	PlayerEquipComponent = CreateDefaultSubobject<UPlayerEquipComponent>(TEXT("PlayerEquipComponent"));
+	PlayerEquipComponent->SetupAttachment(GetMesh(), TEXT("WeaponR_Sword"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -165,6 +168,16 @@ void ABasePlayer::BeginPlay()
 	StatComponent_Level->OnLevelUp.AddUniqueDynamic(this, &ABasePlayer::OnLevelUpEvent);
 
 	SetInputInterface(EInputKeyType::WASD, PlayerMoveComponent);
+	SetInputInterface(EInputKeyType::MouseWheel, PlayerEquipComponent);
+	
+	if (MainWidgetClass)
+	{
+		MainWidget = CreateWidget<UUserWidget>(PlayerController, MainWidgetClass);
+		if (MainWidget)
+		{
+			MainWidget->AddToViewport();
+		}
+	}
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
@@ -179,14 +192,26 @@ void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
 	AttackStat->AddCurrentStat(20.0f);
 }
 
+USkeletalMeshComponent* const ABasePlayer::GetWeaponMeshComponent() const
+{
+	return PlayerEquipComponent;
+}
+
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
 {
-	if (WeaponMeshComponent)
-	{
-		WeaponMeshComponent->SetSkeletalMesh(NewMesh);
-		WeaponMeshComponent->SetRelativeTransform(FTransform::Identity);
-		WeaponMeshComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
-	}
+	if (PlayerEquipComponent)
+		PlayerEquipComponent->SetEquipMesh(NewMesh);
+	//{
+	//	PlayerEquipComponent->SetSkeletalMesh(NewMesh);
+	//	PlayerEquipComponent->SetRelativeTransform(FTransform::Identity);
+	//	PlayerEquipComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
+	//}
+}
+
+void ABasePlayer::UnEquip(USkeletalMesh* OldMesh)
+{
+	if (PlayerEquipComponent)
+		PlayerEquipComponent->SetUnequipMesh(OldMesh);
 }
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
@@ -263,7 +288,7 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	}
 	case EPlayerState::Building:
 	{
-		SetInputInterface(EInputKeyType::MouseWheel, this);
+		SetInputInterface(EInputKeyType::MouseWheel, PlayerEquipComponent);
 		SetInputInterface(EInputKeyType::Esc, this);
 		InteractionComponent->SetInteractionable(true);
 		RemoveFromViewPort(BuildAssistComponent);
@@ -337,6 +362,48 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	if (OnStateChangeDelegate.IsBound() && CurrentPlayerState != PrevState)
 	{
 		OnStateChangeDelegate.Broadcast(CurrentPlayerState, PrevState);
+	}
+}
+
+void ABasePlayer::ChangePlayerEquip(FName WeaponName, EWeapone NewEquip)
+{
+	UE_LOG(LogBasePlayer, Log, TEXT("UnUsedFunction"));
+	//CurrentEquip = NewEquip;
+
+	
+	//switch (NewEquip)
+	//{
+	//case EWeapone::None:
+	//	ChangePlayerState(EPlayerState::Travel);
+	//	break;
+	//case EWeapone::StoneSpear:
+	//	break;
+	//case EWeapone::Bow:
+	//	break;
+	//case EWeapone::Sword:
+	//	ChangePlayerState(EPlayerState::Battle);
+	//	break;
+	//case EWeapone::PixAxe:
+	//	break;
+	//case EWeapone::Axe:
+	//	break;
+	//case EWeapone::PalSphere:
+	//	break;
+	//default:
+	//	break;
+	//}
+
+}
+
+void ABasePlayer::ChangeEquipWidget(FName WeaponName, EWeapone NewEquip)
+{
+	if (MainWidget)
+	{
+		UMainUI* WeaponeWidget = Cast<UMainUI>(MainWidget);
+		if (WeaponeWidget)
+		{
+			WeaponeWidget->ChangeWeapone(WeaponName, NewEquip);
+		}
 	}
 }
 
@@ -743,7 +810,7 @@ void ABasePlayer::SetInputInterface(EInputKeyType KeyType, TScriptInterface<IPla
 void ABasePlayer::ResetDeaflut(EInputKeyType KeyType)
 {
 	TScriptInterface<IPlayerInputInterface>& InputInterface = InputMapping.FindOrAdd(KeyType);
-		InputInterface = this;
+	InputInterface = this;
 }
 
 void ABasePlayer::Restart()
@@ -810,9 +877,17 @@ void ABasePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	}
 }
 
-void ABasePlayer::MoveClimb(const FInputActionValue& Value)
+void ABasePlayer::PossessedBy(AController* NewController)
 {
-	/*FVector2D MovementVector = Value.Get<FVector2D>();
+	Super::PossessedBy(NewController);
+	BasePlayerController = Cast<ABasePlayerController>(NewController);
+}
+
+
+
+
+//MoveClimb(const FInputActionValue& Value)
+/*FVector2D MovementVector = Value.Get<FVector2D>();
 	if (true)
 	{
 		StartTravel();
@@ -859,7 +934,7 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		{
 			AddActorWorldOffset(Hit->ImpactNormal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.0f);
 		}
-		
+
 		FRotator Rotation = GetActorRotation();
 		Rotation.Roll = 0.0f;
 		FRotator NewRotation = (Normal * -1).Rotation();
@@ -867,11 +942,3 @@ void ABasePlayer::MoveClimb(const FInputActionValue& Value)
 		SetActorRotation(FMath::RInterpTo(Rotation, NewRotation, GetWorld()->GetDeltaSeconds(), 20.0f));
 		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
 	}*/
-
-}
-
-void ABasePlayer::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	BasePlayerController = Cast<ABasePlayerController>(NewController);
-}

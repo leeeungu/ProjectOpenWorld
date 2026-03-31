@@ -8,6 +8,7 @@
 class UTextBlock;
 class UImage;
 class UCanvasPanel;
+enum class EWeapone : uint8;
 
 UCLASS()
 class PROJECTOPENWORLD_API UWeaponeWidget : public UUserWidget
@@ -22,7 +23,11 @@ protected:
 	TObjectPtr<UImage> ChangeImage{};
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Weapone")
 	TObjectPtr<UCanvasPanel> WeaponSlot{};
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Weapone")
+	TObjectPtr<UImage> WeaponImage{};
 
 public:
-	void ChangeWeapone(FName NewWeaponeID);
+	void ChangeWeapone(FName NewWeaponeID, EWeapone NewWeaponeType);
+
+	virtual void NativeConstruct() override;
 };

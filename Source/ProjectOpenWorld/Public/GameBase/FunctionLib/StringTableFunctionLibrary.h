@@ -30,8 +30,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PalBuilding")
 	static FText GetBuildingDescFromStringTable(const FString& InKey);
 
-	/// Script / Engine.StringTable'/Game/Global/StringTable/ST_WeaponeName.ST_WeaponeName'
 	UFUNCTION(BlueprintCallable, Category = "Weapone")
+	static FString GetDefaultWeapone() { return FString("???"); }
+	UFUNCTION(BlueprintCallable, Category = "Weapone")
+	/// Script / Engine.StringTable'/Game/Global/StringTable/ST_WeaponeName.ST_WeaponeName'
 	static FName GetWeaponeNameStringTable() { return FName("/Game/Global/StringTable/ST_WeaponeName"); }
 	UFUNCTION(BlueprintCallable, Category = "Weapone")
 	static bool GetWeaponeNameFromStringTable(const FString& InKey, FText& OutWeaponeName);

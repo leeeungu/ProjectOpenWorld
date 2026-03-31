@@ -11,6 +11,8 @@
 
 class AItemActor;
 class UBaseItemObject;
+class UTexture2D;
+enum class EWeapone : uint8;
 
 UCLASS()
 class PROJECTOPENWORLD_API UItemDataSubsystem : public UGameInstanceSubsystem
@@ -34,6 +36,7 @@ protected:
 	DataTableStruct< FPalStaticItemDataStruct> PalStaticItemDataTableStruct{};
 	DataTableStruct< FPalItemRecipe> PalItemRecipeDataTableStruct{};
 	DataTableStruct< FPalEditorItemIconTableRow> PalItemIconDataTableStruct{};
+
 
 	template<typename T>
 	bool LoadAndSaveDataTableToMap(DataTableStruct<T>& DataStruct, FString Path)
@@ -59,10 +62,14 @@ protected:
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
+
 	static bool IsValidInstance() { return SingletonInstance != nullptr; }
 	static bool GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data) ;
 	static bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data) ;
 	static bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data) ;
+
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static UTexture2D* GetWeaponUI(EWeapone WeaponeType);
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FPalStaticItemDataStruct GetPalStaticItemDataByName(FName RowName) ;

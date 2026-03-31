@@ -27,7 +27,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UTextBlock> CoolTimeTextBlock{};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UTextBlock> KeyName{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UImage> SkillImage{};
