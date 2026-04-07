@@ -309,6 +309,17 @@ void UBuildingAssistComponent::CompleteEvent(const FInputActionValue& Value, EIn
 	{
 		ownerPawn->ChangePlayerState(EPlayerState::Travel);
 	}
+	//if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
+	else if(KeyType == EInputKeyType::MouseR)
+	{
+		SpawnBuilding();
+	}
+	else if (KeyType == EInputKeyType::MouseL)
+	{
+		SpawnBuilding();
+		ownerPawn->RemoveFromViewPort(this);
+		EndBuilding();
+	}
 }
 
 void UBuildingAssistComponent::OnOffAssist(bool bValue)

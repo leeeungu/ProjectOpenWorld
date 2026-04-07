@@ -13,9 +13,7 @@ void UItemObject_PlayerWeapon::RegisterItemObject(AActor* TargetActor)
 	ABasePlayer* Player = Cast<ABasePlayer>(TargetActor);
 	if (Player && WeaponMesh)
 	{
-		Player->SetWeaponMesh(WeaponMesh.Get(), WeaponSocketName);
-	//	Player->ChangePlayerState(EquipPlayerState);
-		//Player->ChangePlayerEquip(ItemID, WeaponeType);
+		Player->SetWeaponMesh(WeaponMesh.Get());
 	}
 }
 
@@ -24,8 +22,6 @@ void UItemObject_PlayerWeapon::UnregisterItemObject(AActor* TargetActor)
 	ABasePlayer* Player = Cast<ABasePlayer>(TargetActor);
 	if (Player)
 	{
-		Player->SetWeaponMesh(nullptr, WeaponSocketName);
-		//Player->ChangePlayerState(EPlayerState::Travel);
-		//Player->ChangePlayerEquip(ItemID, EWeapone::None);
+		Player->UnEquip(WeaponMesh.Get());
 	}
 }

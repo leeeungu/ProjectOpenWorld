@@ -5,7 +5,7 @@
 #include "BaseItemObject.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTOPENWORLD_API UBaseItemObject : public UObject
+class PROJECTOPENWORLD_API UBaseItemObject : public UObject, public IInterface_AssetUserData
 {
 	GENERATED_BODY()
 protected:
@@ -13,6 +13,7 @@ protected:
 	FName ItemID = NAME_None;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
 	int itemCount = 1;
+
 private:
 	int RowIndex = -1;
 	int ColIndex = -1;
@@ -20,6 +21,7 @@ private:
 public:
 	void SetItemID(FName NewID) { ItemID = NewID; }
 	FORCEINLINE FName GetItemID() const { return ItemID; }
+
 	virtual void RegisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::RegisterItemObject, );
 	virtual void UnregisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::UnregisterItemObject, );
 };

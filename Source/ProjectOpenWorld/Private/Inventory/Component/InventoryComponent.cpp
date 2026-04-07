@@ -216,10 +216,10 @@ void UInventoryComponent::UseItem(int Row, int Col)
 		//	//ItemObjectClass = UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(NAME_None);
 		//}
 	}
-	else if (PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass))
+	/*else if (PlayerCharacter->GetPlayerItemComponent()->RegisterItemActor(ItemObjectClass))
 	{
 		RemoveItemSlot(Row, Col, 1);
-	}
+	}*/
 }
 
 bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol)

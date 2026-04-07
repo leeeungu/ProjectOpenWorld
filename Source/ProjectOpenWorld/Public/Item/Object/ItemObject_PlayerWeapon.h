@@ -8,7 +8,7 @@ class USkeletalMesh;
 enum class EPlayerState : uint8;
 enum class EWeapone : uint8;
 
-UCLASS()
+UCLASS(NotBlueprintable)
 class PROJECTOPENWORLD_API UItemObject_PlayerWeapon : public UBaseItemObject
 {
 	GENERATED_BODY()

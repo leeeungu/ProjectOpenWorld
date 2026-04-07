@@ -25,6 +25,10 @@ void UPlayerSkillWidget::NativePreConstruct()
 	{
 		SkillImage->SetBrushFromTexture(SkillImageTexture);
 	}
+	if (KeyName)
+	{
+		KeyName->SetText(KeyNameText);
+	}
 }
 
 void UPlayerSkillWidget::NativeConstruct()

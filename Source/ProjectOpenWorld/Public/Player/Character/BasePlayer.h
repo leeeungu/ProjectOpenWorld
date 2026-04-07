@@ -202,7 +202,6 @@ public:
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
-	USkeletalMeshComponent* const GetWeaponMeshComponent() const;
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
 	FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
@@ -211,7 +210,7 @@ public:
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
 	
 
-	void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName);
+	void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName  = NAME_None);
 	void UnEquip(USkeletalMesh* OldMesh);
 
 	FORCEINLINE  float* GetStatusRef(EStatusType StatusType) {

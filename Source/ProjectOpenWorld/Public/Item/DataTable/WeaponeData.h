@@ -30,7 +30,7 @@ enum class EWeapone : uint8
 	StoneSpear,
 	Bow,
 	Sword,
-	PixAxe,
+	PickAxe,
 	Axe,
 	PalSphere,
 	WeaponeMax UMETA(Hidden)

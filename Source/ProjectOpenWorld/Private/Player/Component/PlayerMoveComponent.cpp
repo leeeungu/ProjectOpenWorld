@@ -22,7 +22,7 @@ bool UPlayerMoveComponent::CheckFunction(void(UPlayerMoveComponent::* Func)(cons
 {
 	if(!Func)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerMoveComponent: Function pointer is null. FunctionName: %s"), *FunctionName);	
+		//UE_LOG(LogTemp, Warning, TEXT("PlayerMoveComponent: Function pointer is null. FunctionName: %s"), *FunctionName);	
 		return false;
 	}
 	if(!Player.IsValid())
@@ -105,11 +105,6 @@ void UPlayerMoveComponent::TriggerDefault(const FInputActionValue& Value)
 		return;
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	//if (PlayerAnimationComponent->IsClimbing())
-	//{
-	//	StartClimb();
-	//	return;
-	//}
 	// find out which way is forward
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);

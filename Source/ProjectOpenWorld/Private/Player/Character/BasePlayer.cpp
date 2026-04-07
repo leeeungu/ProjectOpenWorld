@@ -107,7 +107,6 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMoveComponent>(TEXT("PlayerMoveComponent"));
 
 	PlayerEquipComponent = CreateDefaultSubobject<UPlayerEquipComponent>(TEXT("PlayerEquipComponent"));
-	PlayerEquipComponent->SetupAttachment(GetMesh(), TEXT("WeaponR_Sword"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -192,15 +191,10 @@ void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
 	AttackStat->AddCurrentStat(20.0f);
 }
 
-USkeletalMeshComponent* const ABasePlayer::GetWeaponMeshComponent() const
-{
-	return PlayerEquipComponent;
-}
-
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
 {
-	if (PlayerEquipComponent)
-		PlayerEquipComponent->SetEquipMesh(NewMesh);
+	//if (PlayerEquipComponent)
+	//	PlayerEquipComponent->SetEquipMesh(NewMesh);
 	//{
 	//	PlayerEquipComponent->SetSkeletalMesh(NewMesh);
 	//	PlayerEquipComponent->SetRelativeTransform(FTransform::Identity);
@@ -210,8 +204,8 @@ void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
 
 void ABasePlayer::UnEquip(USkeletalMesh* OldMesh)
 {
-	if (PlayerEquipComponent)
-		PlayerEquipComponent->SetUnequipMesh(OldMesh);
+	//if (PlayerEquipComponent)
+	//	PlayerEquipComponent->SetUnequipMesh(OldMesh);
 }
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
@@ -288,6 +282,8 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	}
 	case EPlayerState::Building:
 	{
+		SetInputInterface(EInputKeyType::MouseL, this);
+		SetInputInterface(EInputKeyType::MouseR, this);
 		SetInputInterface(EInputKeyType::MouseWheel, PlayerEquipComponent);
 		SetInputInterface(EInputKeyType::Esc, this);
 		InteractionComponent->SetInteractionable(true);
@@ -347,6 +343,8 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		}
 		else
 		{
+			SetInputInterface(EInputKeyType::MouseL, BuildAssistComponent);
+			SetInputInterface(EInputKeyType::MouseR, BuildAssistComponent);
 			SetInputInterface(EInputKeyType::MouseWheel, BuildAssistComponent);
 			SetInputInterface(EInputKeyType::Esc, BuildAssistComponent);
 			InteractionComponent->SetInteractionable(false);
@@ -368,31 +366,6 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 void ABasePlayer::ChangePlayerEquip(FName WeaponName, EWeapone NewEquip)
 {
 	UE_LOG(LogBasePlayer, Log, TEXT("UnUsedFunction"));
-	//CurrentEquip = NewEquip;
-
-	
-	//switch (NewEquip)
-	//{
-	//case EWeapone::None:
-	//	ChangePlayerState(EPlayerState::Travel);
-	//	break;
-	//case EWeapone::StoneSpear:
-	//	break;
-	//case EWeapone::Bow:
-	//	break;
-	//case EWeapone::Sword:
-	//	ChangePlayerState(EPlayerState::Battle);
-	//	break;
-	//case EWeapone::PixAxe:
-	//	break;
-	//case EWeapone::Axe:
-	//	break;
-	//case EWeapone::PalSphere:
-	//	break;
-	//default:
-	//	break;
-	//}
-
 }
 
 void ABasePlayer::ChangeEquipWidget(FName WeaponName, EWeapone NewEquip)
@@ -617,18 +590,10 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::KeyC:
 		break;
 	case EInputKeyType::MouseR:
-		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
-		{
-			BuildAssistComponent->SpawnBuilding();
-		}
+	
 		break;
 	case EInputKeyType::MouseL:
-		if (BuildAssistComponent && CurrentPlayerState != EPlayerState::TopDown && InteractionComponent && !InteractionComponent->IsInteracting())
-		{
-			BuildAssistComponent->SpawnBuilding();
-			RemoveFromViewPort(BuildAssistComponent);
-			BuildAssistComponent->EndBuilding();
-		}
+		
 		break;
 	case EInputKeyType::MouseWheel:
 		break;
@@ -739,10 +704,6 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 		{
 			RemoveFromViewPort(MainWidgetInterface);
 		}
-		//if (BuildAssistComponent && InteractionComponent && !InteractionComponent->IsInteracting())
-		//{
-		//	BuildAssistComponent->EndBuilding();
-		//}
 		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
 		{
 			InteractionComponent->OnInteractionCompleted();
@@ -774,7 +735,6 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 			}
 			else
 				ChangePlayerState(EPlayerState::Building);
-		
 		}
 		break;
 	}

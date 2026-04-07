@@ -63,6 +63,7 @@
 //},
 
 class AItemActor;
+class UItemDataAsset;
 
 USTRUCT(BlueprintType)
 struct FPalStaticItemDataStruct : public FTableRowBase
@@ -101,6 +102,9 @@ public:
 	TSubclassOf<UObject> VisualBlueprintClassSoft{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	int64 Editor_RowNameHash{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
+	TSoftObjectPtr< UItemDataAsset> ItemDataAssetSoft{};
 };
 
 // LOCTEXT 에 사용할 네임스페이스 정의

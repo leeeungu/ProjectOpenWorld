@@ -1,5 +1,6 @@
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/DataTable/WeaponeData.h"
+#include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Actor/ItemActor.h"
 
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
@@ -256,6 +257,13 @@ const TArray<FRecipeMaterialData>& UItemDataSubsystem::GetPalItemRecipeMaterials
 	const FPalItemRecipe* Result{};
 	GetPalItemRecipeDataPtr(RowName, Result);
 	return Result->Materials;
+}
+
+UItemDataAsset* UItemDataSubsystem::GetPalItemDataAssetByName(FName RowName)
+{
+	const FPalStaticItemDataStruct* Result{};
+	GetPalStaticItemDataPtr(RowName, Result);
+	return Result->ItemDataAssetSoft.LoadSynchronous();
 }
 
 UTexture2D* UItemDataSubsystem::GetPalItemIconTextureByName(FName RowName) 

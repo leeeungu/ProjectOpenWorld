@@ -22,19 +22,21 @@ protected:
 	EPlayerAttackType SkillType{};
 
 	TObjectPtr< UPlayerAttackComponent> PlayerAttackComponent{};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidgetAnim), Transient)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidgetAnim), Transient)
 	TObjectPtr< UWidgetAnimation> CoolDownAnimation{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UTextBlock> CoolTimeTextBlock{};
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UTextBlock> KeyName{};
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerSkillWidget", meta = (BindWidget))
 	TObjectPtr<UImage> SkillImage{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget")
 	
 	TObjectPtr<UTexture2D> SkillImageTexture{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PlayerSkillWidget")
+	FText KeyNameText{};
 	
 	float RemainTime{};
 

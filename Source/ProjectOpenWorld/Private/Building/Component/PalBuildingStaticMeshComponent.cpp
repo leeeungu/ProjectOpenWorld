@@ -128,19 +128,18 @@ void UPalBuildingStaticMeshComponent::StartBuilding(TScriptInterface<IArchitectu
 		buildSpeed = 0;
 		return;
 	}
+	if (InstigatorList.Find(OtherInstigator.GetObject()))
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Log, TEXT("UPalBuildingStaticMeshComponent::StartBuilding Start : %s"), *GetOwner()->GetName());
 	if (OtherInstigator && OtherInstigator.GetObject())
 	{
-		if (InstigatorList.Find(OtherInstigator.GetObject()))
-		{
-			//UE_LOG(LogTemp, Log, TEXT("UPalBuildingStaticMeshComponent::StartBuilding Already has"));
-			return;
-		}
 		InstigatorList.Add(OtherInstigator.GetObject());
-		float Speed = IArchitectureInterface::Execute_GetArchitectSpeed(OtherInstigator.GetObject());// OtherInstigator->GetArchitectSpeed();
+		float Speed = IArchitectureInterface::Execute_GetArchitectSpeed(OtherInstigator.GetObject());
 		buildSpeed += Speed;
 		if (!isBuilding)
 		{
-
 			isBuilding = true;
 			SetComponentTickEnabled(true);
 		}
@@ -162,7 +161,6 @@ void UPalBuildingStaticMeshComponent::EndBuilding()
 	//if (buildingMeshComponent && buildingMesh)
 	//	buildingMeshComponent->SetStaticMesh(buildingMesh.Get());
 	ActiveBuildingNav();
-
 	SetComponentTickEnabled(false);
 	curentPercent = 1.0f;
 

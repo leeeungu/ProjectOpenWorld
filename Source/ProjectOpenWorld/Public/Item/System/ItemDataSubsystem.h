@@ -120,6 +120,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static const TArray< FRecipeMaterialData>& GetPalItemRecipeMaterialsByName(FName RowName) ;
 
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static UItemDataAsset* GetPalItemDataAssetByName(FName RowName);
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static UTexture2D* GetPalItemIconTextureByName(FName RowName) ;

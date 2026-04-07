@@ -73,18 +73,6 @@ void ABuildingActor::OnInteractionStart_Implementation(ACharacter* pOther)
 			pPlayer->RemoveFromViewPort(BuildActionWidget->GetWidget());
 		}
 	}
-	//else if (UBaseBuildingAction* Action = Cast<UBaseBuildingAction>(BuildActionWidget->GetWidget()))
-	//{
-	//	if (!Action->IsInViewport())
-	//	{
-	//		Action->OpenBuildingActionWidget();
-	//	}
-	//	else
-	//	{
-	//		Action->CloseBuildingActionWidget();
-	//	}
-	//}
-
 }
 
 void ABuildingActor::OnInteraction_Implementation(ACharacter* pOther)
