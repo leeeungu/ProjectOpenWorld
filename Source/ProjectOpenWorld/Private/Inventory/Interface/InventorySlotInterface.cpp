@@ -1,12 +1,12 @@
-﻿#include "Inventory/Interface/InventorySlotInterface.h"
+#include "Inventory/Interface/InventorySlotInterface.h"
 //#include "Item/DataAsset/ItemPrimaryDataAsset.h"
 
-FInventorySlot::FInventorySlot(FName NewItemID)
-	: ItemCount{} ,ItemTotalWeights{}
-{
-	ItemID = NewItemID;
-	ItemCount = 1;
-}
+//FInventorySlot::FInventorySlot(FName NewItemID)
+//	: ItemCount{} ,ItemTotalWeights{}
+//{
+//	ItemID = NewItemID;
+//	ItemCount = 1;
+//}
 //
 //FInventorySlot::FInventorySlot(UItemPrimaryDataAsset* DataAsset) :
 //	 ItemCount{}, ItemTotalWeights{}
@@ -17,7 +17,7 @@ FInventorySlot::FInventorySlot(FName NewItemID)
 //	//	ItemTotalWeights = DataAsset->GetItemWeight() * ItemCount;
 //}
 
-bool FInventorySlot::operator==(const FInventorySlot& sDst)
+bool FInventorySlot::operator==(const FInventorySlot& sDst) const
 {
 	return ItemID == sDst.ItemID;
 }

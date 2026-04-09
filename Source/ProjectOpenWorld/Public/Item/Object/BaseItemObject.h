@@ -4,23 +4,19 @@
 #include "UObject/NoExportTypes.h"
 #include "BaseItemObject.generated.h"
 
+class UBaseItem;
+
 UCLASS(Abstract, Blueprintable)
 class PROJECTOPENWORLD_API UBaseItemObject : public UObject, public IInterface_AssetUserData
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
-	FName ItemID = NAME_None;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemData", meta = (ExposeOnSpawn = "TRUE"))
-	int itemCount = 1;
-
-private:
-	int RowIndex = -1;
-	int ColIndex = -1;
-
+	UPROPERTY()
+	TObjectPtr< UBaseItem> ItemDataObject{};
 public:
-	void SetItemID(FName NewID) { ItemID = NewID; }
-	FORCEINLINE FName GetItemID() const { return ItemID; }
+	void SetBaseItem(UBaseItem* NewItemDataObject) { ItemDataObject = NewItemDataObject; }
+	UBaseItem* GetBaseItem() const { return ItemDataObject; }
+	FORCEINLINE FName GetItemID() const;
 
 	virtual void RegisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::RegisterItemObject, );
 	virtual void UnregisterItemObject(AActor* TargetActor) PURE_VIRTUAL(UBaseItemObject::UnregisterItemObject, );

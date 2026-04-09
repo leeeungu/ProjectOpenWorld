@@ -37,7 +37,6 @@ public:
 	FORCEINLINE EItemUseType GetUseType() const { return UseType; }	
 	FORCEINLINE void SetItemID(FName InItemID) { ItemID = InItemID; }
 	FORCEINLINE FName GetItemID() const { return ItemID; }
-	FORCEINLINE void SetItemCount(int32 InItemCount) { ItemCount = FMath::Clamp(InItemCount, 0, InItemCount); }
+	FORCEINLINE void SetItemCount(int32 InItemCount) { ItemCount = FMath::Max(0, InItemCount); }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
-
 };

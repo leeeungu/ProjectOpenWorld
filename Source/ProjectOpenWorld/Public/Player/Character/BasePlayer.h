@@ -30,6 +30,8 @@ class UPlayerMoveComponent;
 enum class EWeapone : uint8;
 class UUserWidget;
 class UPlayerEquipComponent;
+class UItemUseComponent;
+class UEquipmentComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -93,7 +95,9 @@ protected:
 	TObjectPtr< UPlayerMoveComponent> PlayerMoveComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr< UPlayerEquipComponent> PlayerEquipComponent{};
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr< UItemUseComponent> PlayerItemUseComponent{};
+	
 	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -205,7 +209,9 @@ public:
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
 	FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
-
+	FORCEINLINE UItemUseComponent* const GetPlayerItemUseComponent() const { return PlayerItemUseComponent; }
+	FORCEINLINE UEquipmentComponent* const GetPlayerEquipComponent() const;
+	
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
 	

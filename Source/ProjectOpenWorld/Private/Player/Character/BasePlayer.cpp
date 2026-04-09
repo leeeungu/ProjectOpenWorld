@@ -33,6 +33,7 @@
 #include "Player/Component/PlayerEquipComponent.h"
 #include "Item/DataTable/WeaponeData.h"
 #include "Player/Widget/MainUI.h"
+#include "Item/Component/ItemUseComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -107,6 +108,7 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMoveComponent>(TEXT("PlayerMoveComponent"));
 
 	PlayerEquipComponent = CreateDefaultSubobject<UPlayerEquipComponent>(TEXT("PlayerEquipComponent"));
+	PlayerItemUseComponent = CreateDefaultSubobject<UItemUseComponent>(TEXT("PlayerItemUseComponent"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -189,6 +191,11 @@ void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
 	HPStat->SetMaxStat(NewMaxHp);
 	HPStat->SetCurrentStat(NewMaxHp);
 	AttackStat->AddCurrentStat(20.0f);
+}
+
+UEquipmentComponent* const ABasePlayer::GetPlayerEquipComponent() const
+{
+	return PlayerEquipComponent;
 }
 
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)

@@ -1,5 +1,7 @@
 #include "Item/Component/ItemUseComponent.h"
+#include "Item/Component/EquipmentComponent.h"
 #include "Item/Object/BaseItem.h"
+#include "Player/Character/BasePlayer.h"
 
 UItemUseComponent::UItemUseComponent()
 {
@@ -14,6 +16,8 @@ UItemUseComponent::UItemUseComponent()
 void UItemUseComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
+	EquipmentComponent = Player ? Player->GetPlayerEquipComponent() : nullptr;
 }
 
 bool UItemUseComponent::UseItem(UBaseItem* Item)
@@ -35,6 +39,10 @@ bool UItemUseComponent::HandleDefault(UBaseItem* Item)
 
 bool UItemUseComponent::HandleHandEquip(UBaseItem* Item)
 {
+	if (EquipmentComponent)
+	{
+		return EquipmentComponent->EquipItem(Item);
+	}
 	return false;
 }
 

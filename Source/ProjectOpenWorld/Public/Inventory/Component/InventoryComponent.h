@@ -7,6 +7,7 @@
 
 //class UItemPrimaryDataAsset;
 class ABasePlayer;
+class UBaseItem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 
@@ -75,4 +76,8 @@ public:
 	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight ? *maxInventoryWeight : 1.0f; }
 protected:
 	virtual void BeginPlay() override;
+
+
+private:
+	UBaseItem* CreateItemObject(FName ItemID, int32 ItemCount) const;
 };
