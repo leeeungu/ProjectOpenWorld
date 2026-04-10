@@ -42,6 +42,36 @@ bool UItemDataSubsystem::GetPalItemIconDataPtr(FName RowName, const FPalEditorIt
 	return false;
 }
 
+bool UItemDataSubsystem::GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData*& Data)
+{
+	if (const FPalItemMeshData* const* FoundData = SingletonInstance->PalItemMeshDataTableStruct.ItemDataMap.Find(RowName))
+	{
+		Data = *FoundData;
+		return true;
+	}
+	Data = &SingletonInstance->PalItemMeshDataTableStruct.Dummy;
+	return false;
+}
+
+FPalItemMeshData UItemDataSubsystem::GetPalItemMeshDataByName(FName RowName)
+{
+	const FPalItemMeshData* Result{};
+	GetPalItemMeshDataPtr(RowName, Result);
+	if (Result)
+		return *Result;
+	return FPalItemMeshData();
+}
+
+UStaticMesh* UItemDataSubsystem::GetItemMeshByName(FName RowName)
+{
+	const FPalItemMeshData* MeshData{};
+	if (GetPalItemMeshDataPtr(RowName, MeshData) && MeshData->ItemStaticMeshSoft)
+	{
+		return MeshData->ItemStaticMeshSoft.LoadSynchronous();
+	}
+	return nullptr;
+}
+
 UTexture2D* UItemDataSubsystem::GetWeaponUI(EWeapone WeaponeType)
 {
 	if (SingletonInstance)
@@ -76,6 +106,11 @@ void UItemDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	}
 	// Script / Engine.DataTable'/Game/Item/DataTable/DT_ItemIconDataTable.DT_ItemIconDataTable'
 	if (!LoadAndSaveDataTableToMap(PalItemIconDataTableStruct, TEXT("/Game/Item/DataTable/DT_ItemIconDataTable.DT_ItemIconDataTable")))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load ItemIconData DataTable"));
+	}
+
+	if (!LoadAndSaveDataTableToMap(PalItemIconDataTableStruct, TEXT("/Game/Item/DataTable/DT_ItemMesh.DT_ItemMesh")))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load ItemIconData DataTable"));
 	}
@@ -180,10 +215,10 @@ TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlu
 	return TSubclassOf<UBaseItemObject>();
 }
 
-AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName RowName, const FTransform& SpawnTransform, int Count)
+AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count)
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
+	GetPalStaticItemDataPtr(ItemID, Result);
 	TSubclassOf<UObject> SpawnClass = Result->VisualBlueprintClassSoft;
 	if (Result && WorldContextObject)
 	{
@@ -200,7 +235,7 @@ AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* Wor
 			AItemActor* SpawnedActor = World->SpawnActor<AItemActor>(SpawnClass, SpawnTransform, SpawnParams);
 			if (SpawnedActor)
 			{
-				SpawnedActor->Init(RowName, Count);
+				SpawnedActor->Init(ItemID, Count);
 			}
 			return SpawnedActor;
 		}

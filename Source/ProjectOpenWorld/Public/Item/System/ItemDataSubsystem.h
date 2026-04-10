@@ -36,6 +36,7 @@ protected:
 	DataTableStruct< FPalStaticItemDataStruct> PalStaticItemDataTableStruct{};
 	DataTableStruct< FPalItemRecipe> PalItemRecipeDataTableStruct{};
 	DataTableStruct< FPalEditorItemIconTableRow> PalItemIconDataTableStruct{};
+	DataTableStruct<FPalItemMeshData> PalItemMeshDataTableStruct{};
 
 
 	template<typename T>
@@ -67,6 +68,12 @@ public:
 	static bool GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data) ;
 	static bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data) ;
 	static bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data) ;
+	static bool GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData*& Data);
+
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static FPalItemMeshData GetPalItemMeshDataByName(FName RowName);
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static UStaticMesh* GetItemMeshByName(FName RowName);
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static UTexture2D* GetWeaponUI(EWeapone WeaponeType);
@@ -103,8 +110,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static TSubclassOf<UBaseItemObject> GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName) ;
 
-	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	static AItemActor* SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName RowName, const FTransform& SpawnTransform, int Count = 1);
+	UFUNCTION(BlueprintCallable, Category = "ItemDataSubsystem")
+	static AItemActor* SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count = 1);
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FString GetPalItemRecipeProductIdByName(FName RowName) ;
 

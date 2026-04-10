@@ -29,6 +29,13 @@ UBaseItem* UInventoryComponent::CreateItemObject(FName ItemID, int32 ItemCount) 
 	return NewItem;
 }
 
+bool UInventoryComponent::AddItem(UBaseItem* NewItem)
+{
+	if (!NewItem || NewItem->GetItemID().IsNone() || NewItem->GetItemCount() <= 0)
+		return false;
+	return AddItem(NewItem->GetItemID(), NewItem->GetItemCount());
+}
+
 bool UInventoryComponent::AddItem(FName ItemID, int ItemCount)
 {
 	if (!UItemDataSubsystem::IsValidInstance() || ItemID.IsNone() || ItemCount <= 0)
@@ -50,6 +57,7 @@ bool UInventoryComponent::AddItem(FName ItemID, int ItemCount)
 		}))
 	{
 		Slot->ItemObject->SetItemCount(Slot->ItemObject->GetItemCount() + ItemCount);
+		Slot->ItemCount = Slot->ItemObject->GetItemCount();
 		//Slot->SyncCachedData(ItemDataStruct->Weight);
 	}
 	else

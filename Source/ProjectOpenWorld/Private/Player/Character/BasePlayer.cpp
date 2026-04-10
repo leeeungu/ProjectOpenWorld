@@ -102,8 +102,8 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	PlayerItemManagerComponent = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
 	StatComponent_Level = CreateDefaultSubobject<UStatComponent_Level>(TEXT("StatComponent_Level"));
 
-	MonsterSpawnerComponent = CreateDefaultSubobject<UMonsterSpawnerComponent>(TEXT("MonsterSpawnerComponent"));
-	MonsterSpawnerComponent->SetupAttachment(GetRootComponent());
+	//MonsterSpawnerComponent = CreateDefaultSubobject<UMonsterSpawnerComponent>(TEXT("MonsterSpawnerComponent"));
+	//MonsterSpawnerComponent->SetupAttachment(GetRootComponent());
 
 	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMoveComponent>(TEXT("PlayerMoveComponent"));
 

@@ -40,6 +40,8 @@ public:
 	UInventoryComponent();
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	//UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool AddItem(class UBaseItem* NewItem);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool AddItem(FName NewItemID, int ItemCount = 1);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")

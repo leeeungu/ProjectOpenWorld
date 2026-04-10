@@ -4,93 +4,138 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "Player/Character/BasePlayer.h"
 #include "Interaction/Component/InteractionComponent.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Item/FunctionLibrary/ItemFunctionLibrary.h"
 #include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
-
+#include "Item/Object/BaseItem.h"
 
 AItemActor::AItemActor() : Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
 	ItemCollision = CreateDefaultSubobject<USphereComponent>(TEXT("ItemCollision"));
 	SetRootComponent(ItemCollision);
 	ItemCollision->SetCollisionProfileName(TEXT("NoCollision"));
 	ItemCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	ItemCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);;
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	ItemCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
+	ItemCollision->SetCollisionObjectType(ECC_WorldDynamic);
+	ItemCollision->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+	ItemCollision->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	ItemCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	ItemCollision->SetCollisionResponseToChannel(ECC_GameTraceChannel3, ECR_Overlap);
 	ItemCollision->SetGenerateOverlapEvents(true);
 	ItemCollision->SetLinearDamping(5.f);
 	ItemCollision->SetAngularDamping(5.f);
 	ItemCollision->SetSimulatePhysics(true);
 
-	ItemSkeletalMesh = CreateDefaultSubobject< USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+	ItemSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	ItemSkeletalMesh->SetupAttachment(GetRootComponent());
 	ItemSkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
-	//Script/Engine.StaticMesh'/Game/Pal/Model/Weapon/PalSphere/Mesh/SM_PalSphere.SM_PalSphere'
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshObj(TEXT("/Game/Pal/Model/Weapon/PalSphere/Mesh/SK_PalSphere.SK_PalSphere"));
-	if(MeshObj.Succeeded())
-	{
-		ItemSkeletalMesh->SetSkeletalMesh(MeshObj.Object);
-	}
-	ItemWidget = CreateDefaultSubobject< UWidgetComponent>(TEXT("Widget"));
+	ItemStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMeshComponent"));
+	ItemStaticMesh->SetupAttachment(GetRootComponent());
+	ItemStaticMesh->SetCollisionProfileName(TEXT("NoCollision"));
+
+	ItemWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	ItemWidget->SetupAttachment(GetRootComponent());
-	//Script/UMGEditor.WidgetBlueprint'/Game/Item/Widget/WBP_ItemInteraction.WBP_ItemInteraction'
-	static ConstructorHelpers::FClassFinder<UUserWidget> InteractionWidget(TEXT("/Game/Item/Widget/WBP_ItemInteraction.WBP_ItemInteraction_C"));
+	ItemWidget->SetCollisionProfileName(TEXT("NoCollision"));
+	ItemWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> InteractionWidget(
+		TEXT("/Game/Item/Widget/WBP_ItemInteraction.WBP_ItemInteraction_C"));
 	if (InteractionWidget.Succeeded())
 	{
 		ToolTipWidgetClass = InteractionWidget.Class;
 	}
-	ItemWidget->SetCollisionProfileName(TEXT("NoCollision"));
-	ItemWidget->SetWidgetClass(ToolTipWidgetClass);
-	ItemWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	ItemStaticMesh = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("ItemStaticMeshComponent"));
-	ItemStaticMesh->SetupAttachment(GetRootComponent());
-	ItemStaticMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
 	PickUpSound = EEffectSoundType::EST_PickUpItem;
 }
 
 void AItemActor::BeginPlay()
 {
-	ToolTipWidget = CreateWidget(GetWorld(), ToolTipWidgetClass);
-	
 	Super::BeginPlay();
-
-	//ItemSkeletalMesh->SetLinearDamping(5.f);
-	ItemSkeletalMesh->SetAngularDamping(10.f);
-	if (ItemWidget && ToolTipWidget)
-		ItemWidget->SetWidget(ToolTipWidget.Get());
+	if (ToolTipWidgetClass)
+	{
+		ToolTipWidget = CreateWidget<UUserWidget>(GetWorld(), ToolTipWidgetClass);
+		if (ItemWidget && ToolTipWidget)
+		{
+			ItemWidget->SetWidget(ToolTipWidget);
+		}
+	}
+	Init(TEXT("Money"), 1);
 }
 
-
-void AItemActor::Init(FName NewItemID, int Count)
+bool AItemActor::InitFromItem(UBaseItem* InItem)
 {
-	ItemID = NewItemID;
-	itemCount = Count;
-	if (!UItemDataSubsystem::IsValidInstance())
+	if (!InItem)
+		return false;
+
+	ItemInstance = DuplicateObject<UBaseItem>(InItem, this);
+	if (!ItemInstance)
+		return false;
+
+	RefreshVisualFromItem();
+	return true;
+}
+
+void AItemActor::Init(FName NewItemID, int32 Count)
+{
+	// 임시 호환용
+	UBaseItem* NewItem = UItemFunctionLibrary::CreateBaseItem(NewItemID, Count, this);
+	//NewObject<UBaseItem>(this);
+	if (!NewItem)
 		return;
+
+	NewItem->SetItemID(NewItemID);
+	NewItem->SetItemCount(Count);
+
+	InitFromItem(NewItem);
+}
+
+UBaseItem* AItemActor::DuplicateItemFor(UObject* NewOuter) const
+{
+	if (!ItemInstance || !NewOuter)
+		return nullptr;
+
+	return DuplicateObject<UBaseItem>(ItemInstance, NewOuter);
+}
+
+FName AItemActor::GetItemID() const
+{
+	return ItemInstance ? ItemInstance->GetItemID() : NAME_None;
+}
+
+int32 AItemActor::GetItemCount() const
+{
+	return ItemInstance ? ItemInstance->GetItemCount() : 0;
+}
+
+void AItemActor::RefreshVisualFromItem()
+{
+	if (!ItemInstance || !UItemDataSubsystem::IsValidInstance())
+		return;
+
 	const FPalStaticItemDataStruct* ItemDataStruct{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemInstance->GetItemID(), ItemDataStruct);
 	if (!ItemDataStruct)
 		return;
+
+	
+	// 여기서 Static/Skeletal Mesh, Tooltip 이름 등 실제 표시 갱신
+	// 지금은 기존 데이터 연결 상태에 맞춰 확장
 }
 
 void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
-	if (ToolTipWidget )
+	if (UItemInteractionToolTipWidget* ToolTip = Cast<UItemInteractionToolTipWidget>(ToolTipWidget))
 	{
-		Cast<UItemInteractionToolTipWidget>(ToolTipWidget.Get())->SetItemName(ItemID);
-	}
-	if (ToolTipWidget)
-	{
-		ToolTipWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	UE_LOG(LogTemp, Log, TEXT("AItemActor::OnBeginDetected - Detected by %s"), *pOther->GetName());
+		ToolTip->SetItemName(GetItemID());
+		ToolTip->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
 
@@ -100,8 +145,8 @@ void AItemActor::OnEndDetected_Implementation(ACharacter* pOther)
 	{
 		ToolTipWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
-	ABasePlayer* Player = Cast<ABasePlayer>(pOther);
-	if (Player)
+
+	if (ABasePlayer* Player = Cast<ABasePlayer>(pOther))
 	{
 		Player->GetInteractionComponent()->OnInteractionCompleted();
 	}
@@ -109,48 +154,51 @@ void AItemActor::OnEndDetected_Implementation(ACharacter* pOther)
 
 void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 {
-	if (!pOther)
+	if (!pOther || !ItemInstance || !pOther->GetController())
 		return;
+	
 	UInventoryComponent* Inventory = pOther->GetController()->GetComponentByClass<UInventoryComponent>();
 	if (!Inventory)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AItemActor::OnInteractionStart - NoInventory"));
 		return;
 	}
-	ABasePlayer* Player = Cast<ABasePlayer>(pOther);
-	if (Player)
+
+	if (ABasePlayer* Player = Cast<ABasePlayer>(pOther))
 	{
 		Player->GetInteractionComponent()->OnInteractionCompleted();
 	}
-	if (Inventory->AddItem(ItemID, itemCount))
-	{
-		USoundGameInstanceSubsystem::PlayEffectSound(PickUpSound, GetActorLocation());
-		Destroy();
-	}
-}
+	Inventory->AddItem(DuplicateItemFor(Inventory));
+	// if (Inventory->AddItemObject(DuplicateItemFor(Inventory)))
 
+	USoundGameInstanceSubsystem::PlayEffectSound(PickUpSound, GetActorLocation());
+	Destroy();
+}
 
 void AItemActor::OnTransportRegister_Implementation(AActor* Other)
 {
-	if (Transport && Transport.Get() )
+	if (Transport)
 		return;
+
 	ACharacter* pTarget = Cast<ACharacter>(Other);
 	if (!pTarget)
 		return;
 
 	TransportState = ETransportState::Transport;
 	Transport = Other;
-	ItemSkeletalMesh->SetSimulatePhysics(false);
+
+	ItemCollision->SetSimulatePhysics(false);
 	AttachToComponent(pTarget->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_Transport"));
 }
 
 void AItemActor::OnTransportUnRegister_Implementation(AActor* Other)
 {
-	if (!Transport || !Transport.Get())
+	if (!Transport)
 		return;
+
 	TransportState = ETransportState::NotTransport;
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	ItemSkeletalMesh->SetSimulatePhysics(true);
+	ItemCollision->SetSimulatePhysics(true);
 	Transport = nullptr;
 }
 
@@ -159,28 +207,18 @@ ETransportState AItemActor::GetTransportState_Implementation()
 	return TransportState;
 }
 
-
 void AItemActor::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	//UE_LOG(LogTemp, Error, TEXT("AItemActor::NewGenerateWorldEvent TODO"));
-	ItemSkeletalMesh->SetSimulatePhysics(true);
-
+	ItemCollision->SetSimulatePhysics(true);
 }
 
 void AItemActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	//UE_LOG(LogTemp, Error, TEXT("AItemActor::DelGenerateWorldEvent TODO"));
-	ItemSkeletalMesh->SetSimulatePhysics(false);
-	ItemSkeletalMesh->BodyInstance.ClearForces();
+	ItemCollision->SetSimulatePhysics(false);
+	ItemCollision->BodyInstance.ClearForces();
 }
 
 UPrimitiveComponent* AItemActor::GetItemCollision() const
 {
 	return ItemCollision;
 }
-
-
-
-
-
-

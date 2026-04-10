@@ -64,6 +64,7 @@
 
 class AItemActor;
 class UItemDataAsset;
+class UStaticMesh;
 
 USTRUCT(BlueprintType)
 struct FPalStaticItemDataStruct : public FTableRowBase
@@ -107,5 +108,15 @@ public:
 	TSoftObjectPtr< UItemDataAsset> ItemDataAssetSoft{};
 };
 
+USTRUCT(BlueprintType)
+struct FPalItemMeshData : public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemMeshData")
+	TSoftObjectPtr<UStaticMesh> ItemStaticMeshSoft{};
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemMeshData")
+	//TSoftObjectPtr<USkeletalMesh> ItemSkeletalMeshSoft{};
+};
 // LOCTEXT 에 사용할 네임스페이스 정의
 	// 단일 파일 안에서만 유효하며, 파일이 끝나기 전 정의해야 합니다.
