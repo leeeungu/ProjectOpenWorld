@@ -6,19 +6,19 @@
 #include "Item/Object/BaseItemObject.h"
 #include "ItemFunctionLibrary.generated.h"
 
-class UBaseItem;
+class UObject;
 
 UCLASS()
 class PROJECTOPENWORLD_API UItemFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	//UFUNCTION(BlueprintCallable, Category = "Item", meta = (DeterminesOutputType = "ItemClass"))
+	UFUNCTION(BlueprintCallable, Category = "Item") //, meta = (DeterminesOutputType = "ItemClass"))
 	static UBaseItem* CreateBaseItem(
 		FName ItemId,
 		int32 ItemCount,
 		UObject* Outer,
-		TSubclassOf<UBaseItem> ItemClass = UBaseItem::StaticClass()
+		TSubclassOf<UBaseItem> ItemClass = nullptr 
 	);
 
 	static UBaseItemObject* CreateBaseItemObject(

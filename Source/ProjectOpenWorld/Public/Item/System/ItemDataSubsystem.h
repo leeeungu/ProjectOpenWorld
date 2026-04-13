@@ -6,6 +6,7 @@
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/DataTable/PalItemRecipe.h"
 #include "Item/DataTable/PalEditorItemIconTableRow.h"
+#include "Item/DataTable/PalItemSlotData.h"
 #include "UObject/UObjectGlobals.h"
 #include "ItemDataSubsystem.generated.h"
 
@@ -37,7 +38,7 @@ protected:
 	DataTableStruct< FPalItemRecipe> PalItemRecipeDataTableStruct{};
 	DataTableStruct< FPalEditorItemIconTableRow> PalItemIconDataTableStruct{};
 	DataTableStruct<FPalItemMeshData> PalItemMeshDataTableStruct{};
-
+	DataTableStruct<FPalItemSlotData> PalItemSlotDataTableStruct{};
 
 	template<typename T>
 	bool LoadAndSaveDataTableToMap(DataTableStruct<T>& DataStruct, FString Path)
@@ -69,7 +70,11 @@ public:
 	static bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data) ;
 	static bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data) ;
 	static bool GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData*& Data);
+	static bool GetPalItemSlotDataPtr(FName RowName, const FPalItemSlotData*& Data);
 
+
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static int32 GetPalItemSlotDataMaxStackCountByName(FName RowName);
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FPalItemMeshData GetPalItemMeshDataByName(FName RowName);
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
@@ -133,3 +138,4 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static UTexture2D* GetPalItemIconTextureByName(FName RowName) ;
 };
+

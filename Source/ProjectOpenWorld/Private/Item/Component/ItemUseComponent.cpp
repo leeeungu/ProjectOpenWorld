@@ -2,6 +2,7 @@
 #include "Item/Component/EquipmentComponent.h"
 #include "Item/Object/BaseItem.h"
 #include "Player/Character/BasePlayer.h"
+#include "Item/DataAsset/ItemDataAsset.h"
 
 UItemUseComponent::UItemUseComponent()
 {

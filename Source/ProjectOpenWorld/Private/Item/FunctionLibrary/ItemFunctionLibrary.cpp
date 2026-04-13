@@ -5,7 +5,7 @@ UBaseItem* UItemFunctionLibrary::CreateBaseItem(FName ItemId, int32 ItemCount,UO
 	if (!ItemClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CreateBaseItem Failed : ItemClass is null"));
-		return nullptr;
+		ItemClass = UBaseItem::StaticClass();
 	}
 
 	UBaseItem* NewItem = NewObject<UBaseItem>(Outer, ItemClass);

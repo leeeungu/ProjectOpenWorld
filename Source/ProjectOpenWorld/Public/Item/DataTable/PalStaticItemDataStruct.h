@@ -71,6 +71,7 @@ struct FPalStaticItemDataStruct : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
+	FPalStaticItemDataStruct();
 	// Override Name
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
 	FString OverrideName{};

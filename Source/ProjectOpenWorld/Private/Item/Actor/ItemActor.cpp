@@ -13,6 +13,8 @@
 #include "Item/FunctionLibrary/ItemFunctionLibrary.h"
 #include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 #include "Item/Object/BaseItem.h"
+#include "Item/DataAsset/ItemDataAsset.h"
+#include "Item/Object/Fragment/ItemVisibleDataFragment.h"
 
 AItemActor::AItemActor() : Super()
 {
@@ -53,6 +55,12 @@ AItemActor::AItemActor() : Super()
 	}
 
 	PickUpSound = EEffectSoundType::EST_PickUpItem;
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshAsset(TEXT("/Game/Pal/Model/Prop/Resource/CoinGold/Mesh/SM_CoinGold.SM_CoinGold"));
+	if (StaticMeshAsset.Succeeded())
+	{
+		SetStaticMeshAsset(StaticMeshAsset.Object);
+	}
 }
 
 void AItemActor::BeginPlay()
@@ -66,13 +74,15 @@ void AItemActor::BeginPlay()
 			ItemWidget->SetWidget(ToolTipWidget);
 		}
 	}
-	Init(TEXT("Money"), 1);
+	if(ItemInstance == nullptr)
+		Init(TEXT("Money"), 1);
 }
 
 bool AItemActor::InitFromItem(UBaseItem* InItem)
 {
 	if (!InItem)
 		return false;
+
 
 	ItemInstance = DuplicateObject<UBaseItem>(InItem, this);
 	if (!ItemInstance)
@@ -119,14 +129,11 @@ void AItemActor::RefreshVisualFromItem()
 	if (!ItemInstance || !UItemDataSubsystem::IsValidInstance())
 		return;
 
-	const FPalStaticItemDataStruct* ItemDataStruct{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemInstance->GetItemID(), ItemDataStruct);
-	if (!ItemDataStruct)
+	UItemDataAsset* ItemDataAsset = UItemDataSubsystem::GetPalItemDataAssetByName(ItemInstance->GetItemID());
+	if (!ItemDataAsset)
 		return;
-
-	
-	// 여기서 Static/Skeletal Mesh, Tooltip 이름 등 실제 표시 갱신
-	// 지금은 기존 데이터 연결 상태에 맞춰 확장
+	UItemVisibleDataFragment* VisibleDataFragment = Cast< UItemVisibleDataFragment>(ItemDataAsset->GetItemDataFragmentOfClass(UItemVisibleDataFragment::StaticClass()));
+	SetMeshAsset(VisibleDataFragment);
 }
 
 void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
@@ -221,4 +228,36 @@ void AItemActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 UPrimitiveComponent* AItemActor::GetItemCollision() const
 {
 	return ItemCollision;
+}
+
+void AItemActor::SetMeshAsset(UItemVisibleDataFragment* VisibleDataFragment)
+{
+	if (!VisibleDataFragment)
+		return;
+	if (EItemVisibleMeshType::SkeletalMesh == VisibleDataFragment->GetVisibleMeshType())
+	{
+		SetSkeletalMeshAsset(VisibleDataFragment->GetSkeletalMesh());
+	}
+	else
+	{
+		SetStaticMeshAsset(VisibleDataFragment->GetStaticMesh());
+	}
+}
+
+void AItemActor::SetStaticMeshAsset(UStaticMesh* StaticMesh)
+{
+	if (!ItemStaticMesh || !StaticMesh)
+		return;
+	ItemStaticMesh->SetStaticMesh(StaticMesh);
+	ItemStaticMesh->SetVisibility(true);
+	ItemSkeletalMesh->SetVisibility(false);
+}
+
+void AItemActor::SetSkeletalMeshAsset(class USkeletalMesh* SkeletalMesh)
+{
+	if (!ItemSkeletalMesh || !SkeletalMesh)
+		return;
+	ItemSkeletalMesh->SetSkeletalMesh(SkeletalMesh);
+	ItemSkeletalMesh->SetVisibility(true);
+	ItemStaticMesh->SetVisibility(false);
 }

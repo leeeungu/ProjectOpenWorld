@@ -39,27 +39,9 @@ public:
 	bool isEmpthySlot = true;
 
 	bool operator==(const FInventorySlot& sDst) const;
-	//{
-	//	return ItemID == Other.ItemID;
-	//}
 
-	/*void SyncCachedData(float UnitWeight = 0.f)
-	{
-		if (ItemObject)
-		{
-			ItemID = ItemObject->GetItemID();
-			ItemCount = ItemObject->GetItemCount();
-			ItemTotalWeights = UnitWeight * ItemCount;
-			isEmpthySlot = false;
-		}
-		else
-		{
-			ItemID = NAME_None;
-			ItemCount = 0;
-			ItemTotalWeights = 0.f;
-			isEmpthySlot = true;
-		}
-	}*/
+	void RefreshFromObject();
+	
 
 	void Clear()
 	{

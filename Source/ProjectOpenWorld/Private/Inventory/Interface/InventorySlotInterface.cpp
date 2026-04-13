@@ -1,5 +1,5 @@
 #include "Inventory/Interface/InventorySlotInterface.h"
-//#include "Item/DataAsset/ItemPrimaryDataAsset.h"
+#include "Item/Object/BaseItem.h"
 
 //FInventorySlot::FInventorySlot(FName NewItemID)
 //	: ItemCount{} ,ItemTotalWeights{}
@@ -20,5 +20,19 @@
 bool FInventorySlot::operator==(const FInventorySlot& sDst) const
 {
 	return ItemID == sDst.ItemID;
+}
+
+void FInventorySlot::RefreshFromObject()
+{
+	if (ItemObject)
+	{
+		ItemID = ItemObject->GetItemID();
+		ItemCount = ItemObject->GetItemCount();
+		isEmpthySlot = false;
+	}
+	else
+	{
+		Clear();
+	}
 }
 

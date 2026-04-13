@@ -1,6 +1,6 @@
 #include "Item/DataAsset/ItemDataAsset.h"
 
-const TArray<TObjectPtr<UItemDataFragment>> UItemDataAsset::GetItemDataFragmentOfClass(TSubclassOf<UItemDataFragment> InUserDataClass)
+const TArray<TObjectPtr<UItemDataFragment>> UItemDataAsset::GetItemDataFragmentArrayOfClass(TSubclassOf<UItemDataFragment> InUserDataClass)
 {
 	TArray<TObjectPtr<UItemDataFragment>> Result{};
 	for (int32 DataIdx = 0; DataIdx < ItemDataFragments.Num(); DataIdx++)
@@ -13,6 +13,20 @@ const TArray<TObjectPtr<UItemDataFragment>> UItemDataAsset::GetItemDataFragmentO
 	}
 	return Result;
 }
+
+const TObjectPtr<UItemDataFragment> UItemDataAsset::GetItemDataFragmentOfClass(TSubclassOf<UItemDataFragment> InUserDataClass)
+{
+	for (int32 DataIdx = 0; DataIdx < ItemDataFragments.Num(); DataIdx++)
+	{
+		TObjectPtr<UItemDataFragment> Datum = ItemDataFragments[DataIdx];
+		if (Datum != NULL && Datum->IsA(InUserDataClass))
+		{
+			return Datum;
+		}
+	}
+	return nullptr;
+}
+	
 
 const TArray<TObjectPtr<UItemDataFragment>>* UItemDataAsset::GetItemDataFragmentArray()
 {

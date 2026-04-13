@@ -53,6 +53,25 @@ bool UItemDataSubsystem::GetPalItemMeshDataPtr(FName RowName, const FPalItemMesh
 	return false;
 }
 
+bool UItemDataSubsystem::GetPalItemSlotDataPtr(FName RowName, const FPalItemSlotData*& Data)
+{
+	if (const FPalItemSlotData* const* FoundData = SingletonInstance->PalItemSlotDataTableStruct.ItemDataMap.Find(RowName))
+	{
+		Data = *FoundData;
+		return true;
+	}
+	Data = &SingletonInstance->PalItemSlotDataTableStruct.Dummy;
+	return false;
+}
+
+int32 UItemDataSubsystem::GetPalItemSlotDataMaxStackCountByName(FName RowName)
+{
+	const FPalItemSlotData* Result{};
+	if (GetPalItemSlotDataPtr(RowName, Result))
+		return Result->MaxStackCount;
+	return int32();
+}
+
 FPalItemMeshData UItemDataSubsystem::GetPalItemMeshDataByName(FName RowName)
 {
 	const FPalItemMeshData* Result{};
@@ -110,9 +129,14 @@ void UItemDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		UE_LOG(LogTemp, Error, TEXT("Failed to load ItemIconData DataTable"));
 	}
 
-	if (!LoadAndSaveDataTableToMap(PalItemIconDataTableStruct, TEXT("/Game/Item/DataTable/DT_ItemMesh.DT_ItemMesh")))
+	if (!LoadAndSaveDataTableToMap(PalItemMeshDataTableStruct, TEXT("/Game/Item/DataTable/DT_ItemMesh.DT_ItemMesh")))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load ItemIconData DataTable"));
+		UE_LOG(LogTemp, Error, TEXT("Failed to load DT_ItemMesh DataTable"));
+	}
+	///Script/Engine.DataTable'/Game/Item/DataTable/DT_PalItemSlotData.DT_PalItemSlotData'
+	if (!LoadAndSaveDataTableToMap(PalItemSlotDataTableStruct, TEXT("/Game/Item/DataTable/DT_PalItemSlotData.DT_PalItemSlotData")))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load DT_PalItemSlotData DataTable"));
 	}
 }
 
@@ -217,36 +241,31 @@ TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlu
 
 AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count)
 {
+	if (WorldContextObject == nullptr)
+		return nullptr;
 	const FPalStaticItemDataStruct* Result{};
 	GetPalStaticItemDataPtr(ItemID, Result);
+	UWorld* World = WorldContextObject->GetWorld();
 	TSubclassOf<UObject> SpawnClass = Result->VisualBlueprintClassSoft;
-	if (Result && WorldContextObject)
+	if (World && Result->VisualBlueprintClassSoft == nullptr)
 	{
-		UWorld* World = WorldContextObject->GetWorld();
-		if (!SpawnClass)
+		// Script / Engine.Blueprint'/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem'
+		SpawnClass = LoadClass<UObject>(World, TEXT("/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem_C"));
+	}
+	if (World && SpawnClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AItemActor* SpawnedActor = World->SpawnActor<AItemActor>(SpawnClass, SpawnTransform, SpawnParams);
+		if (SpawnedActor)
 		{
-			// Script / Engine.Blueprint'/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem'
-			SpawnClass = LoadClass<UObject>(World, TEXT("/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem_C"));
+			SpawnedActor->Init(ItemID, Count);
 		}
-		if (World && SpawnClass)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			AItemActor* SpawnedActor = World->SpawnActor<AItemActor>(SpawnClass, SpawnTransform, SpawnParams);
-			if (SpawnedActor)
-			{
-				SpawnedActor->Init(ItemID, Count);
-			}
-			return SpawnedActor;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. World or SpawnClass is null."));
-		}
+		return SpawnedActor;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. Result or WorldContextObject is null."));
+		UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. World or SpawnClass is null."));
 	}
 	return nullptr;
 }

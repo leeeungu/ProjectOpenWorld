@@ -3,6 +3,7 @@
 #include "Player/Character/BasePlayer.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Item/FunctionLibrary/ItemFunctionLibrary.h"
 #include "Item/Object/BaseItem.h"
 #include "Item/Component/ItemUseComponent.h"
 
@@ -11,84 +12,120 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-UBaseItem* UInventoryComponent::CreateItemObject(FName ItemID, int32 ItemCount) const
+const FPalStaticItemDataStruct* UInventoryComponent::FindStaticItemData(FName ItemID) const
 {
-	if (ItemID.IsNone() || ItemCount <= 0)
+	if (!UItemDataSubsystem::IsValidInstance() || ItemID.IsNone())
 		return nullptr;
 
-	UBaseItem* NewItem = NewObject<UBaseItem>(const_cast<UInventoryComponent*>(this));
-	if (!NewItem)
-		return nullptr;
+	const FPalStaticItemDataStruct* ItemDataStruct = nullptr;
+	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	return ItemDataStruct;
+}
 
-	NewItem->SetItemID(ItemID);
-	NewItem->SetItemCount(ItemCount);
+void UInventoryComponent::RefreshSlotCache(FInventorySlot& Slot)
+{
+	Slot.RefreshFromObject();
+}
 
-	// 데이터 테이블/에셋에 UseType 필드가 있으면 여기서 세팅
-	// NewItem->SetUseType(ItemDataStruct->UseType);
+void UInventoryComponent::BroadcastInventoryUpdated()
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->UpdateWeight(totalInventoryWeight);
+	}
 
-	return NewItem;
+	if (onUpdateInventory.IsBound())
+	{
+		onUpdateInventory.Broadcast();
+	}
+}
+
+bool UInventoryComponent::CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rhs) const
+{
+	if (!Lhs || !Rhs)
+		return false;
+
+	// 현재 최소 조건
+	if (Lhs->GetClass() != Rhs->GetClass())
+		return false;
+
+	if (Lhs->GetItemID() != Rhs->GetItemID())
+		return false;
+
+	const FPalItemSlotData* SlotData{};
+	UItemDataSubsystem::GetPalItemSlotDataPtr(Lhs->GetItemID(), SlotData);
+	if (!SlotData)
+		return false;
+	
+	if (!SlotData->bStackable)
+		return false;
+	
+	if (SlotData->MaxStackCount <= 1)
+		return false;
+
+	return true;
 }
 
 bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 {
 	if (!NewItem || NewItem->GetItemID().IsNone() || NewItem->GetItemCount() <= 0)
 		return false;
-	return AddItem(NewItem->GetItemID(), NewItem->GetItemCount());
+
+	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(NewItem->GetItemID());
+	if (!ItemDataStruct)
+		return false;
+
+	const float AddedWeight = ItemDataStruct->Weight * NewItem->GetItemCount();
+	if (maxInventoryWeight && (totalInventoryWeight + AddedWeight > *maxInventoryWeight))
+		return false;
+
+	// 1. 스택 가능한 기존 슬롯 탐색
+	for (FInventorySlot& Slot : inventoryArray)
+	{
+		if (!Slot.ItemObject)
+			continue;
+
+		if (!CanStackItem(Slot.ItemObject, NewItem))
+			continue;
+
+		Slot.ItemObject->SetItemCount(Slot.ItemObject->GetItemCount() + NewItem->GetItemCount());
+		RefreshSlotCache(Slot);
+
+		totalInventoryWeight += AddedWeight;
+		BroadcastInventoryUpdated();
+		return true;
+	}
+
+	// 2. 빈 슬롯 탐색
+	FInventorySlot** EmptySlot = inventoryViewArray.FindByPredicate(
+		[](const FInventorySlot* Slot)
+		{
+			return Slot && Slot->ItemObject == nullptr;
+		});
+
+	if (!EmptySlot)
+		return false;
+
+	// 3. 인벤토리 소유 object로 복제
+	UBaseItem* StoredItem = DuplicateObject<UBaseItem>(NewItem, this);
+	if (!StoredItem)
+		return false;
+
+	(*EmptySlot)->ItemObject = StoredItem;
+	RefreshSlotCache(**EmptySlot);
+
+	totalInventoryWeight += AddedWeight;
+	BroadcastInventoryUpdated();
+	return true;
 }
 
 bool UInventoryComponent::AddItem(FName ItemID, int ItemCount)
 {
-	if (!UItemDataSubsystem::IsValidInstance() || ItemID.IsNone() || ItemCount <= 0)
+	UBaseItem* TempItem = UItemFunctionLibrary::CreateBaseItem(ItemID, ItemCount, PlayerCharacter.Get());// CreateItemObject(ItemID, ItemCount);
+	if (!TempItem)
 		return false;
 
-	const FPalStaticItemDataStruct* ItemDataStruct{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
-	if (!ItemDataStruct)
-		return false;
-
-	const float AddedWeight = ItemDataStruct->Weight * ItemCount;
-	if (maxInventoryWeight && (totalInventoryWeight + AddedWeight > *maxInventoryWeight))
-		return false;
-
-	if (FInventorySlot* Slot = inventoryArray.FindByPredicate(
-		[ItemID](const FInventorySlot& InSlot)
-		{
-			return InSlot.ItemObject && InSlot.ItemObject->GetItemID() == ItemID;
-		}))
-	{
-		Slot->ItemObject->SetItemCount(Slot->ItemObject->GetItemCount() + ItemCount);
-		Slot->ItemCount = Slot->ItemObject->GetItemCount();
-		//Slot->SyncCachedData(ItemDataStruct->Weight);
-	}
-	else
-	{
-		FInventorySlot** EmptySlot = inventoryViewArray.FindByPredicate(
-			[](const FInventorySlot* Slot)
-			{
-				return Slot && !Slot->ItemObject;
-			});
-
-		if (!EmptySlot)
-			return false;
-
-		UBaseItem* NewItem = CreateItemObject(ItemID, ItemCount);
-		if (!NewItem)
-			return false;
-		(*EmptySlot)->ItemID = ItemID;
-		(*EmptySlot)->ItemCount = ItemCount;
-		(*EmptySlot)->isEmpthySlot = false;
-		(*EmptySlot)->ItemObject = NewItem;
-		//(*EmptySlot)->SyncCachedData(ItemDataStruct->Weight);
-	}
-
-	totalInventoryWeight += AddedWeight;
-	if (PlayerCharacter)
-		PlayerCharacter->UpdateWeight(totalInventoryWeight);
-
-	if (onUpdateInventory.IsBound())
-		onUpdateInventory.Broadcast();
-
-	return true;
+	return AddItem(TempItem);
 }
 
 bool UInventoryComponent::HasItem(FName SearchItemID, int SearchItemCount) const
@@ -111,11 +148,10 @@ bool UInventoryComponent::HasItem(FName SearchItemID, int SearchItemCount) const
 
 bool UInventoryComponent::RemoveItem(FName RemoveItemID, int RemoveItemCount)
 {
-	if (!UItemDataSubsystem::IsValidInstance() || RemoveItemID.IsNone() || RemoveItemCount <= 0)
+	if (RemoveItemID.IsNone() || RemoveItemCount <= 0)
 		return false;
 
-	const FPalStaticItemDataStruct* ItemDataStruct{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(RemoveItemID, ItemDataStruct);
+	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(RemoveItemID);
 	if (!ItemDataStruct)
 		return false;
 
@@ -140,7 +176,7 @@ bool UInventoryComponent::RemoveItem(FName RemoveItemID, int RemoveItemCount)
 		}
 		else
 		{
-			//Slot.SyncCachedData(ItemDataStruct->Weight);
+			RefreshSlotCache(Slot);
 		}
 
 		if (RemainingCount <= 0)
@@ -152,12 +188,7 @@ bool UInventoryComponent::RemoveItem(FName RemoveItemID, int RemoveItemCount)
 
 	totalInventoryWeight -= ItemDataStruct->Weight * RemovedCount;
 	totalInventoryWeight = FMath::Max(0.f, totalInventoryWeight);
-
-	if (PlayerCharacter)
-		PlayerCharacter->UpdateWeight(totalInventoryWeight);
-
-	if (onUpdateInventory.IsBound())
-		onUpdateInventory.Broadcast();
+	BroadcastInventoryUpdated();
 
 	return RemainingCount == 0;
 }
@@ -173,9 +204,7 @@ bool UInventoryComponent::RemoveItemSlot(int Row, int Col, int RemoveItemCount)
 		return false;
 
 	const FName ItemID = SlotData->ItemObject->GetItemID();
-
-	const FPalStaticItemDataStruct* ItemDataStruct{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(ItemID);
 	if (!ItemDataStruct)
 		return false;
 
@@ -184,11 +213,9 @@ bool UInventoryComponent::RemoveItemSlot(int Row, int Col, int RemoveItemCount)
 		return false;
 
 	SlotData->ItemObject->SetItemCount(CurrentCount - RemoveItemCount);
+
 	totalInventoryWeight -= ItemDataStruct->Weight * RemoveItemCount;
 	totalInventoryWeight = FMath::Max(0.f, totalInventoryWeight);
-
-	if (PlayerCharacter)
-		PlayerCharacter->UpdateWeight(totalInventoryWeight);
 
 	if (SlotData->ItemObject->GetItemCount() <= 0)
 	{
@@ -196,12 +223,10 @@ bool UInventoryComponent::RemoveItemSlot(int Row, int Col, int RemoveItemCount)
 	}
 	else
 	{
-		//SlotData->SyncCachedData(ItemDataStruct->Weight);
+		RefreshSlotCache(*SlotData);
 	}
 
-	if (onUpdateInventory.IsBound())
-		onUpdateInventory.Broadcast();
-
+	BroadcastInventoryUpdated();
 	return true;
 }
 
@@ -215,23 +240,15 @@ bool UInventoryComponent::DeleteItem(int Row, int Col)
 	if (!SlotData || !SlotData->ItemObject)
 		return false;
 
-	const FName ItemID = SlotData->ItemObject->GetItemID();
-	const FPalStaticItemDataStruct* ItemDataStruct{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(SlotData->ItemObject->GetItemID());
 	if (!ItemDataStruct)
 		return false;
 
 	totalInventoryWeight -= ItemDataStruct->Weight * SlotData->ItemObject->GetItemCount();
 	totalInventoryWeight = FMath::Max(0.f, totalInventoryWeight);
 
-	if (PlayerCharacter)
-		PlayerCharacter->UpdateWeight(totalInventoryWeight);
-
 	SlotData->Clear();
-
-	if (onUpdateInventory.IsBound())
-		onUpdateInventory.Broadcast();
-
+	BroadcastInventoryUpdated();
 	return true;
 }
 
@@ -246,6 +263,36 @@ int UInventoryComponent::GetItemCount(FName SearchItemID) const
 		}
 	}
 	return TotalCount;
+}
+
+UBaseItem* UInventoryComponent::ExtractItemObject(int Row, int Col, int ExtractCount, UObject* NewOuter)
+{
+	const int32 Index = Row * inventoryCol + Col;
+	if (!inventoryViewArray.IsValidIndex(Index) || ExtractCount <= 0)
+		return nullptr;
+
+	FInventorySlot* SlotData = inventoryViewArray[Index];
+	if (!SlotData || !SlotData->ItemObject)
+		return nullptr;
+
+	const int32 CurrentCount = SlotData->ItemObject->GetItemCount();
+	if (CurrentCount < ExtractCount)
+		return nullptr;
+
+	UObject* TargetOuter = NewOuter ? NewOuter : GetTransientPackage();
+
+	UBaseItem* OutItem = DuplicateObject<UBaseItem>(SlotData->ItemObject, TargetOuter);
+	if (!OutItem)
+		return nullptr;
+
+	OutItem->SetItemCount(ExtractCount);
+
+	if (!RemoveItemSlot(Row, Col, ExtractCount))
+	{
+		return nullptr;
+	}
+
+	return OutItem;
 }
 
 void UInventoryComponent::UseItem(int Row, int Col)
@@ -264,6 +311,9 @@ void UInventoryComponent::UseItem(int Row, int Col)
 
 	if (ItemUseComponent->UseItem(SlotData->ItemObject))
 	{
+		// TODO:
+		// 장비/비소모품은 제거하면 안 된다.
+		// 이후 UseResult 구조체나 ConsumeCount 반환 형태로 바꾸는 게 맞다.
 		RemoveItemSlot(Row, Col, 1);
 	}
 }
@@ -279,8 +329,9 @@ bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCo
 	inventoryViewArray.Swap(SrcIndex, DstIndex);
 
 	if (onUpdateInventory.IsBound())
+	{
 		onUpdateInventory.Broadcast();
-
+	}
 	return true;
 }
 
@@ -317,12 +368,17 @@ void UInventoryComponent::BeginPlay()
 		inventoryViewArray[i] = &inventoryArray[i];
 	}
 
-	APlayerController* Controller = Cast<APlayerController>(GetOwner());
-	if (!Controller)
-		return;
-
-	if (PlayerCharacter = Cast<ABasePlayer>(Controller->GetPawn()))
+	if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
 	{
-		maxInventoryWeight = PlayerCharacter->GetStatusRef(EStatusType::MaxWeight);
+		PlayerCharacter = Player;
+		maxInventoryWeight = Player->GetStatusRef(EStatusType::MaxWeight);
+	}
+	else if (APlayerController* Controller = Cast<APlayerController>(GetOwner()))
+	{
+		if (ABasePlayer* PawnPlayer = Cast<ABasePlayer>(Controller->GetPawn()))
+		{
+			PlayerCharacter = PawnPlayer;
+			maxInventoryWeight = PawnPlayer->GetStatusRef(EStatusType::MaxWeight);
+		}
 	}
 }

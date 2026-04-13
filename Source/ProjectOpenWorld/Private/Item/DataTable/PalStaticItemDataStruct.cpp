@@ -7,3 +7,12 @@
 //static FText constFTextGoodbyeWorld = LOCTEXT("GoodbyeWorld", "Goodbye World!");
 //// 파일이 끝나기 전 네임스페이스 정의를 해제합니다.
 //#undef LOCTEXT_NAMESPACE
+
+FPalStaticItemDataStruct::FPalStaticItemDataStruct() : FTableRowBase{}
+{
+	//ConstructorHelpers::FClassFinder<UObject> VisualBlueprintClassFinder(TEXT("/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem_C"));
+	//if(VisualBlueprintClassFinder.Succeeded())
+	//{
+	//	VisualBlueprintClassSoft = VisualBlueprintClassFinder.Class;
+	//}
+}

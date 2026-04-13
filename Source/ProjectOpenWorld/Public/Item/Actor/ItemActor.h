@@ -93,4 +93,9 @@ public:
 	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 
 	FORCEINLINE UPrimitiveComponent* GetItemCollision() const;
+
+private: 
+	void SetMeshAsset(class UItemVisibleDataFragment* VisibleDataFragment);
+	void SetStaticMeshAsset(class UStaticMesh* StaticMesh);
+	void SetSkeletalMeshAsset(class USkeletalMesh* SkeletalMesh);
 };

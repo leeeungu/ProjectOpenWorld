@@ -244,13 +244,12 @@ UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(UBaseItem* I
 	if (!ItemDataAsset)
 		return nullptr;
 
-	const TArray<TObjectPtr<UItemDataFragment>> Fragments =
-		ItemDataAsset->GetItemDataFragmentOfClass(UHandEquipItemFragment::StaticClass());
+	TObjectPtr < UItemDataFragment> Fragments = ItemDataAsset->GetItemDataFragmentOfClass(UHandEquipItemFragment::StaticClass());
 
-	if (Fragments.IsEmpty())
+	if (Fragments)
 		return nullptr;
 
-	return Cast<UHandEquipItemFragment>(Fragments[0]);
+	return Cast<UHandEquipItemFragment>(Fragments);
 }
 
 UWeaponeAssetUserData* UPlayerEquipComponent::GetWeaponAssetUserData(USkeletalMesh* Mesh)
