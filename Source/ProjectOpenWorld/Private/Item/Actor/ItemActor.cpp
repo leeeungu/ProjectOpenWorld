@@ -37,10 +37,12 @@ AItemActor::AItemActor() : Super()
 	ItemSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	ItemSkeletalMesh->SetupAttachment(GetRootComponent());
 	ItemSkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	ItemSkeletalMesh->SetRelativeLocation(FVector(0.f, 0.f, -20.f));
 
 	ItemStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMeshComponent"));
 	ItemStaticMesh->SetupAttachment(GetRootComponent());
 	ItemStaticMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	ItemStaticMesh->SetRelativeLocation(FVector(0.f, 0.f, -20.f));
 
 	ItemWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	ItemWidget->SetupAttachment(GetRootComponent());
@@ -82,7 +84,6 @@ bool AItemActor::InitFromItem(UBaseItem* InItem)
 {
 	if (!InItem)
 		return false;
-
 
 	ItemInstance = DuplicateObject<UBaseItem>(InItem, this);
 	if (!ItemInstance)
@@ -140,7 +141,7 @@ void AItemActor::OnBeginDetected_Implementation(ACharacter* pOther)
 {
 	if (UItemInteractionToolTipWidget* ToolTip = Cast<UItemInteractionToolTipWidget>(ToolTipWidget))
 	{
-	UE_LOG(LogTemp, Log, TEXT("AItemActor::OnBeginDetected - Detected by %s"), *pOther->GetName());
+		UE_LOG(LogTemp, Log, TEXT("AItemActor::OnBeginDetected - Detected by %s"), *pOther->GetName());
 		ToolTip->SetItemName(GetItemID());
 		ToolTip->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}

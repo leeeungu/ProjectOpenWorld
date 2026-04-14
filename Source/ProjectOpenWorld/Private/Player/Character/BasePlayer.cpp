@@ -198,6 +198,15 @@ UEquipmentComponent* const ABasePlayer::GetPlayerEquipComponent() const
 	return PlayerEquipComponent;
 }
 
+UPlayerAnimInstance* const ABasePlayer::GetPlayerAnimInstance() const
+{
+	if (GetMesh())
+	{
+		return Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	}
+	return nullptr;
+}
+
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
 {
 	//if (PlayerEquipComponent)
@@ -480,19 +489,22 @@ float ABasePlayer::GetArchitectSpeed_Implementation() const
 
 void ABasePlayer::StartArchitect_Implementation(ABaseBuilding* Building)
 {
-	GetPlayerAnimationComponent()->StartArchitecture();
+	if (GetPlayerAnimInstance()->SetArchitectAnimSequence())
+	{
+		GetPlayerAnimInstance()->StartAnimSection();
+	}
 }
 
 void ABasePlayer::StopArchitect_Implementation(ABaseBuilding* Building)
 {
-	GetPlayerAnimationComponent()->ResetAnimationState();
+	GetPlayerAnimInstance()->EndAnimSection();
 }
 
 void ABasePlayer::EndArchitect_Implementation(ABaseBuilding* Building)
 {
 	if(StatComponent_Level)
 		StatComponent_Level->AddCurrentStat(35.0);
-	GetPlayerAnimationComponent()->ResetAnimationState();
+	GetPlayerAnimInstance()->EndAnimSection();
 }
 
 float ABasePlayer::GetResourceSpeed_Implementation() const
@@ -502,17 +514,17 @@ float ABasePlayer::GetResourceSpeed_Implementation() const
 
 void ABasePlayer::StartResource_Implementation(AResourceActor* ResourceActor)
 {
-	GetPlayerAnimationComponent()->StartMining();
+	GetPlayerAnimInstance()->StartAnimSection();
 }
 
 void ABasePlayer::StopResource_Implementation(AResourceActor* ResourceActor)
 {
-	GetPlayerAnimationComponent()->ResetAnimationState();
+	GetPlayerAnimInstance()->EndAnimSection();
 }
 
 void ABasePlayer::EndResource_Implementation(AResourceActor* ResourceActor)
 {
-	GetPlayerAnimationComponent()->ResetAnimationState();
+	GetPlayerAnimInstance()->EndAnimSection();
 }
 
 bool ABasePlayer::HasMainWidget() const
@@ -666,7 +678,10 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 	case EInputKeyType::MouseR:
 		break;
 	case EInputKeyType::MouseL:
+	{
+
 		break;
+	}
 	case EInputKeyType::MouseWheel:
 		break;
 	case EInputKeyType::KeyB:
@@ -700,7 +715,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
+		if (BasePlayerController && InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
 		{
 			InteractionComponent->OnInteractionCompleted();
 		}
@@ -849,63 +864,3 @@ void ABasePlayer::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	BasePlayerController = Cast<ABasePlayerController>(NewController);
 }
-
-
-
-
-//MoveClimb(const FInputActionValue& Value)
-/*FVector2D MovementVector = Value.Get<FVector2D>();
-	if (true)
-	{
-		StartTravel();
-		return;
-	}
-	if (!PlayerAnimationComponent->ClimbLineCheck())
-	{
-		StartTravel();
-		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
-		{
-			Instance->SetClimbSpeed(0);
-		}
-		return;
-	}
-	if (MovementVector.Y > 0.9f && PlayerAnimationComponent->IsEmpthUp())
-	{
-		GetMesh()->GetAnimInstance()->Montage_Play(ClimbMontage);
-		StartTravel();
-		return;
-	}
-
-	if (GetMesh() != nullptr)
-	{
-		FVector Right = GetActorRightVector();
-		FVector Up = GetActorUpVector();
-		FVector MoveDir = (Right * MovementVector.X + Up * MovementVector.Y).GetSafeNormal();
-
-		const FHitResult* Hit = PlayerAnimationComponent->GetPelvisHit();
-		FVector Avg = PlayerAnimationComponent->GetAVGPosition();
-		FVector Normal = PlayerAnimationComponent->GetAVGNormal();
-		if (UPlayerAnimInstance* Instance = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
-		{
-			double DotAngle = FMath::RadiansToDegrees(FMath::Acos(FVector2D::DotProduct(FVector2D(0, 1), MovementVector.GetSafeNormal())));
-			double Angle = FVector2D::DotProduct(FVector2D(1, 0), MovementVector.GetSafeNormal()) > 0 ? DotAngle : -DotAngle;
-			Instance->SetClimbDirection(Angle);
-			Instance->SetClimbSpeed(MovementVector.GetSafeNormal().Size());
-		}
-		float Dis = FVector::Distance(GetActorLocation(), Avg);
-		if (Dis < 65.0f)
-		{
-			AddActorWorldOffset(Hit->ImpactNormal * GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.f);
-		}
-		else if (Dis > 67.0f)
-		{
-			AddActorWorldOffset(Hit->ImpactNormal * -GetCapsuleComponent()->GetScaledCapsuleRadius() * GetWorld()->GetDeltaSeconds() * 2.0f);
-		}
-
-		FRotator Rotation = GetActorRotation();
-		Rotation.Roll = 0.0f;
-		FRotator NewRotation = (Normal * -1).Rotation();
-		NewRotation.Roll = 0.0f;
-		SetActorRotation(FMath::RInterpTo(Rotation, NewRotation, GetWorld()->GetDeltaSeconds(), 20.0f));
-		AddActorWorldOffset(MoveDir* 200.0f * GetWorld()->GetDeltaSeconds(), false);
-	}*/

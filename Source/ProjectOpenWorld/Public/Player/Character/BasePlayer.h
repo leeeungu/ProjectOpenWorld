@@ -211,6 +211,7 @@ public:
 	FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
 	FORCEINLINE UItemUseComponent* const GetPlayerItemUseComponent() const { return PlayerItemUseComponent; }
 	FORCEINLINE UEquipmentComponent* const GetPlayerEquipComponent() const;
+	FORCEINLINE class UPlayerAnimInstance* const GetPlayerAnimInstance() const;
 	
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }

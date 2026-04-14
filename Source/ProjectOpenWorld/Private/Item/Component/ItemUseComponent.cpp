@@ -1,7 +1,7 @@
 #include "Item/Component/ItemUseComponent.h"
+#include "Player/Character/BasePlayer.h"
 #include "Item/Component/EquipmentComponent.h"
 #include "Item/Object/BaseItem.h"
-#include "Player/Character/BasePlayer.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 
 UItemUseComponent::UItemUseComponent()
@@ -17,13 +17,12 @@ UItemUseComponent::UItemUseComponent()
 void UItemUseComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
-	EquipmentComponent = Player ? Player->GetPlayerEquipComponent() : nullptr;
+	Player = Cast<ABasePlayer>(GetOwner());
 }
 
 bool UItemUseComponent::UseItem(UBaseItem* Item)
 {
-	if (Item)
+	if (Item && Player)
 	{
 		EItemUseType UseType = Item->GetUseType();
 		uint8 UseTypeValue = static_cast<uint8>(UseType);
@@ -40,7 +39,7 @@ bool UItemUseComponent::HandleDefault(UBaseItem* Item)
 
 bool UItemUseComponent::HandleHandEquip(UBaseItem* Item)
 {
-	if (EquipmentComponent)
+	if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
 	{
 		return EquipmentComponent->EquipItem(Item);
 	}

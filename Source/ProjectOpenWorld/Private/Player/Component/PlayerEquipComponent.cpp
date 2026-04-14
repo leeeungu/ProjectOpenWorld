@@ -4,7 +4,9 @@
 #include "Item/AssetUserData/WeaponeAssetUserData.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Object/BaseItem.h"
+#include "Item/Object/Fragment/PlayerAnimationDataFragment.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Player/Animation/PlayerAnimInstance.h"
 
 UPlayerEquipComponent::UPlayerEquipComponent()
 {
@@ -71,43 +73,56 @@ bool UPlayerEquipComponent::EquipItem(UBaseItem* Item)
 
 	if (CurrentEquipItem == Item)
 		return true;
+	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
+	if (!Player)
+		return false;
 
 	UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
-	if (!HandEquipData || !HandEquipData->HandEquipMesh)
-		return false;
-
-	UWeaponeAssetUserData* NewWeaponData = GetWeaponAssetUserData(HandEquipData->HandEquipMesh);
-	if (!NewWeaponData)
-		return false;
-
-	if (CurrentEquipItem && CurrentEquipItem != Item)
+	if (HandEquipData && HandEquipData->HandEquipMesh)
 	{
-		if (!UnequipItem(CurrentEquipItem))
-			return false;
-	}
-	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
+		UWeaponeAssetUserData* NewWeaponData = GetWeaponAssetUserData(HandEquipData->HandEquipMesh);
+		if (NewWeaponData)
+		{
+			if (CurrentEquipItem && CurrentEquipItem != Item)
+			{
+				if (!UnequipItem(CurrentEquipItem))
+					return false;
+			}
+			WeaponMesh->SetSkeletalMesh(HandEquipData->HandEquipMesh);
+			WeaponMesh->AttachToComponent(
+				PlayerMesh,
+				FAttachmentTransformRules::KeepRelativeTransform,
+				HandEquipData->HandEquipSocket);
+			WeaponMesh->SetRelativeTransform(HandEquipData->HandEquipRelativeTransform);
 
-	WeaponMesh->SetSkeletalMesh(HandEquipData->HandEquipMesh);
-	WeaponMesh->AttachToComponent(
-		PlayerMesh,
-		FAttachmentTransformRules::KeepRelativeTransform,
-		HandEquipData->HandEquipSocket);
-	WeaponMesh->SetRelativeTransform(HandEquipData->HandEquipRelativeTransform);
+			const EWeapone NewWeaponType = NewWeaponData->GetWeaponeData();
 
-	const EWeapone NewWeaponType = NewWeaponData->GetWeaponeData();
+			// 휠 전환용 등록 정보는 유지되어야 하므로 Equip 시 갱신만 한다.
+			EquipItemMap.FindOrAdd(NewWeaponType) = Item;
 
-	// 휠 전환용 등록 정보는 유지되어야 하므로 Equip 시 갱신만 한다.
-	EquipItemMap.FindOrAdd(NewWeaponType) = Item;
-
-	CurrentEquipItem = Item;
-	CurrentWeapone = NewWeaponType;
-
-	if (Player)
-	{
-		Player->ChangePlayerState(NewWeaponData->GetEquipPlayerState());
-		Player->ChangeEquipWidget(NewWeaponData->GetWeaponeID(), NewWeaponType);
+			CurrentEquipItem = Item;
+			CurrentWeapone = NewWeaponType;
+			Player->ChangePlayerState(NewWeaponData->GetEquipPlayerState());
+			Player->ChangeEquipWidget(NewWeaponData->GetWeaponeID(), NewWeaponType);
+		}
 	}
 
+	TObjectPtr < UPlayerAnimationSLEDataFragment> Fragment = GetPlayerAnimationSLEDataFragment(Item);
+	if (Fragment)
+	{
+		UE_LOG(LogTemp, Log, TEXT("SetAnimSequence"));
+		if(UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
+		{
+			PlayerAnimInstance->SetAnimationSequences(
+				Fragment->GetStartAnim(),
+				Fragment->GetLoopAnim(),
+				Fragment->GetEndAnim());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No PlayerAnimationSLEDataFragment found for item: %s"), *Item->GetItemID().ToString());
+	}
 	return true;
 }
 
@@ -140,10 +155,13 @@ bool UPlayerEquipComponent::UnequipItem(UBaseItem* Item)
 		return false;
 
 	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
+	if (!Player)
+		return false;
+
 	USkeletalMesh* CurrentMesh = WeaponMesh->GetSkeletalMeshAsset();
 	UWeaponeAssetUserData* CurrentWeaponData = GetWeaponAssetUserData(CurrentMesh);
 
-	if (Player && CurrentWeaponData)
+	if (CurrentWeaponData)
 	{
 		Player->ChangePlayerState(CurrentWeaponData->GetUnEquipPlayerState());
 		Player->ChangeEquipWidget(NAME_None, EWeapone::None);
@@ -155,10 +173,11 @@ bool UPlayerEquipComponent::UnequipItem(UBaseItem* Item)
 	CurrentEquipItem = nullptr;
 	CurrentWeapone = EWeapone::None;
 
-	// 주의:
-	// EquipItemMap은 비우지 않는다.
-	// 이 맵은 "현재 손에 들고 있는 것"이 아니라 "무기 타입별 등록 아이템"이어야
-	// 휠 전환 시 다시 꺼내 쓸 수 있다.
+
+	if (UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
+	{
+		PlayerAnimInstance->ResetAnimSection();
+	}
 
 	return true;
 }
@@ -169,27 +188,6 @@ void UPlayerEquipComponent::StartEvent(const FInputActionValue& Value, EInputKey
 
 void UPlayerEquipComponent::TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
-	//FVector2D AxisValue = Value.Get<FVector2D>();
-	//if (FMath::IsNearlyZero(AxisValue.X))
-	//	return;
-	//int value = AxisValue.X / FMath::Abs(AxisValue.X);
-	//UE_LOG(LogTemp, Warning, TEXT("Equip Triggered! %d"), value);
-	//uint8 WeaponeIndex = static_cast<uint8>(CurrentWeapone);
-	//WeaponeIndex += value;
-	//if(WeaponeIndex <= 0)
-	//	WeaponeIndex = static_cast<uint8>(EWeapone::WeaponeMax) - 1;
-	//if(WeaponeIndex >= static_cast<uint8>(EWeapone::WeaponeMax))
-	//	WeaponeIndex = static_cast<uint8>(EWeapone::None) + 1;
-	//if (CurrentEquipItem)
-	//{
-	//	UnequipItem(CurrentEquipItem);
-	//}
-	//CurrentWeapone = static_cast<EWeapone>(WeaponeIndex);
-	//TObjectPtr<UBaseItem>  Item = EquipItemMap.Contains(static_cast<EWeapone>(WeaponeIndex)) ? EquipItemMap[static_cast<EWeapone>(WeaponeIndex)] : nullptr;
-	//if (Item)
-	//{
-	//	EquipItem(Item);
-	//}
 	const FVector2D AxisValue = Value.Get<FVector2D>();
 
 	if (FMath::IsNearlyZero(AxisValue.X))
@@ -246,10 +244,21 @@ UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(UBaseItem* I
 
 	TObjectPtr < UItemDataFragment> Fragments = ItemDataAsset->GetItemDataFragmentOfClass(UHandEquipItemFragment::StaticClass());
 
-	if (Fragments)
+	return Cast<UHandEquipItemFragment>(Fragments);
+}
+
+UPlayerAnimationSLEDataFragment* UPlayerEquipComponent::GetPlayerAnimationSLEDataFragment(UBaseItem* Item)
+{
+	if (!Item || !UItemDataSubsystem::IsValidInstance())
 		return nullptr;
 
-	return Cast<UHandEquipItemFragment>(Fragments);
+	UItemDataAsset* ItemDataAsset = UItemDataSubsystem::GetPalItemDataAssetByName(Item->GetItemID());
+	if (!ItemDataAsset)
+		return nullptr;
+
+	TObjectPtr < UItemDataFragment> Fragments = ItemDataAsset->GetItemDataFragmentOfClass(UPlayerAnimationSLEDataFragment::StaticClass());
+
+	return Cast<UPlayerAnimationSLEDataFragment>(Fragments);
 }
 
 UWeaponeAssetUserData* UPlayerEquipComponent::GetWeaponAssetUserData(USkeletalMesh* Mesh)

@@ -1,4 +1,4 @@
-﻿#include "Resource/Actor/ResourceActor.h"
+#include "Resource/Actor/ResourceActor.h"
 #include "Item/Actor/ItemActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
@@ -9,7 +9,7 @@ AResourceActor::AResourceActor()
 	PrimaryActorTick.bCanEverTick = true;
 	ResourceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(ResourceMesh);
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Game/Pal/Model/Prop/MapMesh/Mesh/SK_Rock_A.SK_Rock_A"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(TEXT("/Game/Pal/Model/Prop/MapMesh/Mesh/SM_Rock_A.SM_Rock_A"));
 	if (MeshObj.Succeeded())
 	{
 		ResourceMesh->SetStaticMesh(MeshObj.Object);

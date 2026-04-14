@@ -48,6 +48,7 @@ public:
 
 private:
 	UHandEquipItemFragment* GetHandEquipFragment(UBaseItem* Item);
+	class UPlayerAnimationSLEDataFragment* GetPlayerAnimationSLEDataFragment(UBaseItem* Item);
 	UWeaponeAssetUserData* GetWeaponAssetUserData(USkeletalMesh* Mesh);
 	
 	//void SetEquipMesh(USkeletalMesh* NewMesh);

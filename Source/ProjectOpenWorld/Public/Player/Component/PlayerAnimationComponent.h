@@ -127,7 +127,7 @@ public:
 
 
 	void StartArchitecture();
-	void StartMining();
+	//void StartMining();
 	void ResetAnimationState();
 
 	UFUNCTION(BlueprintPure, Category = "Animation")

@@ -99,6 +99,7 @@ void UBuildingAssistComponent::BeginPlay()
 	{
 		BuildingInfo = Cast<UBuildingInfoWidget>(CreateWidget(GetWorld(), BuildingInfoClass));
 	}
+	EndBuilding();
 }
 
 void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

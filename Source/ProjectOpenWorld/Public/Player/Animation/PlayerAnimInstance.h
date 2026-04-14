@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameBase/Animation/BaseAnimInstance.h"
+#include "GameBase/Animation/AnimActionPlayType.h"
 #include "PlayerAnimInstance.generated.h"
 
 class ABasePlayer;
@@ -47,6 +48,22 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	EPlayerState CurrentPlayerState{};
 
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	EAnimationSectionType CurrentAnimationSection{};
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimSequence> StartAnim{};
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimSequence> LoopAnim{};
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimSequence> EndAnim{};
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimSequence> ArchitectStartAnim{};
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimSequence> ArchitectLoopAnim{};
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimSequence> ArchitectEndAnim{};
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -57,6 +74,30 @@ public:
 	void SetClimbSpeed(float Speed) {
 		ClimbSpeed = FMath::Clamp(Speed, 0.0f, 1.0f);
 	}
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool StartAnimSection();
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool EndAnimSection();
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool ResetAnimSection();
+
+protected:
+	UFUNCTION()
+	void AnimNotify_FinishAnimSection();
+	UFUNCTION()
+	void AnimNotify_LoopAnimSection();
+
+public:
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE EAnimationSectionType GetAnimSectionType() const {
+		return CurrentAnimationSection;
+	}
+
+	FORCEINLINE bool SetAnimationSequences(UAnimSequence* Start, UAnimSequence* Loop, UAnimSequence* End);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool SetArchitectAnimSequence();
 
 private:
 	UFUNCTION()

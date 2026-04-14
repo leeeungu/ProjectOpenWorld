@@ -4,8 +4,9 @@
 #include "Components/ActorComponent.h"
 #include "ItemUseComponent.generated.h"
 
-class UEquipmentComponent;
 class UBaseItem;
+class ABasePlayer;
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UItemUseComponent : public UActorComponent
@@ -14,8 +15,8 @@ class PROJECTOPENWORLD_API UItemUseComponent : public UActorComponent
 private:
 	bool (UItemUseComponent::* UseHandler[7])(UBaseItem*) {};
 
-	//UPROPERTY()
-	TObjectPtr<	UEquipmentComponent> EquipmentComponent{};
+	UPROPERTY()
+	TObjectPtr<	ABasePlayer> Player{};
 public:	
 	UItemUseComponent();
 
