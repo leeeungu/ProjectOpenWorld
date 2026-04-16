@@ -25,13 +25,13 @@ class ABasePlayerController;
 class UStatComponent_Level;
 class IMainWidgetInterface;
 class UPlayerGameOver;
-class UMonsterSpawnerComponent;
 class UPlayerMoveComponent;
 enum class EWeapone : uint8;
 class UUserWidget;
 class UPlayerEquipComponent;
 class UItemUseComponent;
 class UEquipmentComponent;
+class UPlayerEquipVisualComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -89,8 +89,14 @@ protected:
 	TObjectPtr < UPlayerAnimationComponent>	PlayerAnimationComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<UNavigationInvokerComponent> NavigationInvokerComp{};
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
-	TObjectPtr<UMonsterSpawnerComponent> MonsterSpawnerComponent{};
+	TObjectPtr<UPlayerEquipVisualComponent> RightHandEquipComponent{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<UPlayerEquipVisualComponent> LeftHandEquipComponent{};
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
+	//TObjectPtr<UMonsterSpawnerComponent> MonsterSpawnerComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr< UPlayerMoveComponent> PlayerMoveComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
@@ -208,10 +214,12 @@ public:
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
-	FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
+	//FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
 	FORCEINLINE UItemUseComponent* const GetPlayerItemUseComponent() const { return PlayerItemUseComponent; }
 	FORCEINLINE UEquipmentComponent* const GetPlayerEquipComponent() const;
 	FORCEINLINE class UPlayerAnimInstance* const GetPlayerAnimInstance() const;
+	FORCEINLINE  USkeletalMeshComponent* GetRightHandEquipComponent() const;
+	FORCEINLINE  USkeletalMeshComponent* GetLeftHandEquipComponent() const;
 	
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }

@@ -11,10 +11,6 @@
 UPlayerEquipComponent::UPlayerEquipComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	//EquipSocket.Add(EWeapone::Sword, TEXT("WeaponR_Sword"));
-	//EquipSocket.Add(EWeapone::Bow, TEXT("WeaponR_Bow"));
-	//EquipSocket.Add(EWeapone::Spear, TEXT("WeaponR_Spear"));
 }
 
 void UPlayerEquipComponent::BeginPlay()
@@ -45,29 +41,6 @@ void UPlayerEquipComponent::BeginPlay()
 
 bool UPlayerEquipComponent::EquipItem(UBaseItem* Item)
 {
-	//if (WeaponMesh && Item)
-	//{
-	//	FName ItemID = Item->GetItemID();
-	//	UItemDataAsset* ItemDataAsset =	UItemDataSubsystem::GetPalItemDataAssetByName(ItemID);
-	//	const TArray<TObjectPtr<UItemDataFragment>> HandEquipFragments =
-	//	ItemDataAsset->GetItemDataFragmentOfClass(UHandEquipItemFragment::StaticClass());
-
-	//	if (HandEquipFragments.Num() > 0)
-	//	{
-	//		UHandEquipItemFragment* WeaponeData = Cast<UHandEquipItemFragment>(HandEquipFragments[0]);
-	//		if (WeaponeData)
-	//		{
-	//			WeaponMesh->SetSkeletalMesh(WeaponeData->HandEquipMesh);
-	//			WeaponMesh->AttachToComponent(PlayerMesh, FAttachmentTransformRules::KeepRelativeTransform, WeaponeData->HandEquipSocket);
-	//			WeaponMesh->SetRelativeTransform(WeaponeData->HandEquipRelativeTransform);
-	//			CurrentEquipItem = Item;
-	//			//SetEquipMesh(WeaponeData->HandEquipMesh);
-	//			return true;
-	//		}
-	//	}
-	//}
-	//return false;
-
 	if (!Item || !WeaponMesh || !PlayerMesh)
 		return false;
 
@@ -128,25 +101,6 @@ bool UPlayerEquipComponent::EquipItem(UBaseItem* Item)
 
 bool UPlayerEquipComponent::UnequipItem(UBaseItem* Item)
 {
-	/*if (WeaponMesh && Item)
-	{
-		FName ItemID = Item->GetItemID();
-		UItemDataAsset* ItemDataAsset =	UItemDataSubsystem::GetPalItemDataAssetByName(ItemID);
-		const TArray<TObjectPtr<UItemDataFragment>> HandEquipFragments =
-		ItemDataAsset->GetItemDataFragmentOfClass(UHandEquipItemFragment::StaticClass());
-		if (HandEquipFragments.Num() > 0)
-		{
-			UHandEquipItemFragment* WeaponeData = Cast<UHandEquipItemFragment>(HandEquipFragments[0]);
-			if (WeaponeData)
-			{
-				WeaponMesh->SetSkeletalMesh(nullptr);
-				CurrentEquipItem = nullptr;
-				return true;
-			}
-		}
-	}
-	return false;*/
-
 	if (!Item || !WeaponMesh)
 		return false;
 

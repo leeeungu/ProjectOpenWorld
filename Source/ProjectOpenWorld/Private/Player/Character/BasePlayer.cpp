@@ -28,12 +28,13 @@
 #include "Sound/SoundWave.h"
 #include "Sound/SoundCue.h"
 #include "Building/BaseBuilding.h"
-#include "Player/Component/MonsterSpawnerComponent.h"
+//#include "Player/Component/MonsterSpawnerComponent.h"
 #include "Player/Component/PlayerMoveComponent.h"
 #include "Player/Component/PlayerEquipComponent.h"
 #include "Item/DataTable/WeaponeData.h"
 #include "Player/Widget/MainUI.h"
 #include "Item/Component/ItemUseComponent.h"
+#include "Player/Component/PlayerEquipVisualComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -109,6 +110,11 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 
 	PlayerEquipComponent = CreateDefaultSubobject<UPlayerEquipComponent>(TEXT("PlayerEquipComponent"));
 	PlayerItemUseComponent = CreateDefaultSubobject<UItemUseComponent>(TEXT("PlayerItemUseComponent"));
+
+	RightHandEquipComponent = CreateDefaultSubobject<UPlayerEquipVisualComponent>(TEXT("RightHandEquipComponent"));
+	RightHandEquipComponent->SetupAttachment(GetMesh());
+	LeftHandEquipComponent = CreateDefaultSubobject<UPlayerEquipVisualComponent>(TEXT("LeftHandEquipComponent"));
+	LeftHandEquipComponent->SetupAttachment(GetMesh());
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -205,6 +211,16 @@ UPlayerAnimInstance* const ABasePlayer::GetPlayerAnimInstance() const
 		return Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 	}
 	return nullptr;
+}
+
+USkeletalMeshComponent* ABasePlayer::GetRightHandEquipComponent() const
+{
+	return RightHandEquipComponent;
+}
+
+USkeletalMeshComponent* ABasePlayer::GetLeftHandEquipComponent() const
+{
+	return LeftHandEquipComponent;
 }
 
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
@@ -398,8 +414,8 @@ void ABasePlayer::ChangeEquipWidget(FName WeaponName, EWeapone NewEquip)
 
 void ABasePlayer::SetMonsterSpawner(bool bActive)
 {
-	if(MonsterSpawnerComponent)
-		MonsterSpawnerComponent->SetSpawnable(bActive);
+	//if(MonsterSpawnerComponent)
+	//	MonsterSpawnerComponent->SetSpawnable(bActive);
 }
 
 float ABasePlayer::GetAttackValue_Implementation() const
@@ -612,7 +628,11 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	
 		break;
 	case EInputKeyType::MouseL:
-		
+		if (CurrentPlayerState != EPlayerState::Battle)
+		{
+			if (GetPlayerAnimInstance())
+				GetPlayerAnimInstance()->StartAnimSection();
+		}
 		break;
 	case EInputKeyType::MouseWheel:
 		break;
@@ -743,6 +763,11 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 			{
 				PlayerAttackComponent->Attack(EPlayerAttackType::Default);
 			}
+		}
+		else
+		{
+			if(GetPlayerAnimInstance())
+				GetPlayerAnimInstance()->EndAnimSection();
 		}
 		break;
 	case EInputKeyType::MouseWheel:

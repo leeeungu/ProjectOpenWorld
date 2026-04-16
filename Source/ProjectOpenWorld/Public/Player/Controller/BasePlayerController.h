@@ -8,6 +8,8 @@
 class UInventoryComponent;
 class UUserWidget;
 class UPlayerInventoryWidget;
+class APlayerPreviewPawn;
+class UPlayerPreviewComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayerController : public APlayerController, public IGenericTeamAgentInterface
@@ -16,12 +18,14 @@ class PROJECTOPENWORLD_API ABasePlayerController : public APlayerController, pub
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
 	TObjectPtr<UInventoryComponent> InventoryComponent{};
-
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Inventory")
+	TObjectPtr <UPlayerPreviewComponent> PreviewComponent{};
 
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TObjectPtr<UPlayerInventoryWidget> InventoryWidget{};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TSubclassOf<UPlayerInventoryWidget> InventoryWidgetClass{};
+
 
 public:
 	ABasePlayerController();
@@ -34,4 +38,5 @@ public:
 
 	UUserWidget* GetInventoryWidget() const;
 	bool bIsInventoryOpen() const;
+
 };

@@ -2,6 +2,7 @@
 #include "Inventory/Component/InventoryComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Player/Widget/PlayerInventoryWidget.h"
+#include "Player/Component/PlayerPreviewComponent.h"
 
 ABasePlayerController::ABasePlayerController() : Super()
 {
@@ -12,6 +13,8 @@ ABasePlayerController::ABasePlayerController() : Super()
 	{
 		InventoryWidgetClass = InventoryWidgetBPClass.Class;
 	}
+
+	PreviewComponent = CreateDefaultSubobject<UPlayerPreviewComponent>(TEXT("PreviewComponent"));
 }
 
 void ABasePlayerController::BeginPlay()
@@ -51,3 +54,4 @@ bool ABasePlayerController::bIsInventoryOpen() const
 	}
 	return false;
 }
+
