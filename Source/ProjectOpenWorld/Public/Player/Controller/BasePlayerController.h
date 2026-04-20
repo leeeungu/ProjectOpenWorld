@@ -26,6 +26,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TSubclassOf<UPlayerInventoryWidget> InventoryWidgetClass{};
 
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
 
 public:
 	ABasePlayerController();
@@ -33,6 +35,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	FORCEINLINE UPlayerPreviewComponent* GetPreviewComponent() const { return PreviewComponent; }
 
 	virtual FGenericTeamId GetGenericTeamId() const { return FGenericTeamId(1); }
 

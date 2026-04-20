@@ -36,8 +36,9 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
-
-	void InitializePreview(ABasePlayer* InSourcePlayer, UTextureRenderTarget2D* InRenderTarget);
+	void InitializePreview(ABasePlayer* InSourcePlayer);
+	void StartPreview();
+	void EndPreview();
 	void RefreshFromSource();
 	void RotatePreview(float InYawDelta);
 

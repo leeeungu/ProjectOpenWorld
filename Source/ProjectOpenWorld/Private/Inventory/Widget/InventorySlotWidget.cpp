@@ -1,4 +1,4 @@
-﻿#include "Inventory/Widget/InventorySlotWidget.h"
+#include "Inventory/Widget/InventorySlotWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Item/System/ItemDataSubsystem.h"
@@ -6,7 +6,9 @@
 
 void UInventorySlotWidget::SetSlotData_Implementation(const FInventorySlot& Data)
 {
-	if (Data.isEmpthySlot || Data.ItemID == NAME_None)
+	FName ItemID = Data.GetItemID();
+	int32 ItemSlotCount = Data.GetItemCount();
+	if (!Data.ItemObject || ItemID == NAME_None)
 	{
 		if (ItemImage)
 		{
@@ -22,18 +24,18 @@ void UInventorySlotWidget::SetSlotData_Implementation(const FInventorySlot& Data
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalStaticItemDataStruct* ItemData{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(Data.ItemID, ItemData) && ItemData)
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemData) && ItemData)
 	{
 		if (ItemImage)
 		{
 			ItemImage->SetBrushFromTexture(UItemDataSubsystem::GetPalItemIconTextureByName(*ItemData->IconName));
 			ItemImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
-		float TotalWeight = ItemData->Weight * Data.ItemCount;
+		float TotalWeight = ItemData->Weight * ItemSlotCount;
 		if (ItemWeight)
 			ItemWeight->SetText(FText::AsNumber(TotalWeight));
 		if (ItemCount)
-			ItemCount->SetText(FText::AsNumber(Data.ItemCount));
+			ItemCount->SetText(FText::AsNumber(ItemSlotCount));
 	}
 
 }

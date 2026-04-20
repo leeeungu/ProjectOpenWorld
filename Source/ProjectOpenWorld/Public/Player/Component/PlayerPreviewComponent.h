@@ -7,7 +7,6 @@
 class ABasePlayer;
 class ABasePlayerController;
 class APlayerPreviewPawn;
-//class APlayerPreviewAnchor;
 class UTextureRenderTarget2D;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -16,25 +15,16 @@ class PROJECTOPENWORLD_API UPlayerPreviewComponent : public UActorComponent
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Preview")
-	TSubclassOf<APlayerPreviewPawn> PreviewPawnClass;
+	TSubclassOf<APlayerPreviewPawn> PreviewPawnClass{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Preview")
-	TObjectPtr<UTextureRenderTarget2D> PreviewRenderTarget;
+	TObjectPtr<UTextureRenderTarget2D> PreviewRenderTarget{};
 
-	//UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Preview")
-	//TObjectPtr<APlayerPreviewAnchor> PreviewAnchor;
+	UPROPERTY()
+	TWeakObjectPtr<APlayerPreviewPawn> PreviewPawn{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Preview")
-	FName PreviewAnchorTag = TEXT("PlayerPreview");
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Preview")
-	bool bDestroyPreviewPawnOnClose = false;
-
-	UPROPERTY(Transient)
-	TObjectPtr<APlayerPreviewPawn> PreviewPawn;
-
-	UPROPERTY(Transient)
-	TWeakObjectPtr<ABasePlayer> SourcePlayer;
+	UPROPERTY()
+	TWeakObjectPtr<ABasePlayer> SourcePlayer{};
 
 public:
 	UPlayerPreviewComponent();
@@ -45,7 +35,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Preview")
-	bool OpenPreview(ABasePlayer* InSourcePlayer = nullptr);
+	bool OpenPreview();
 
 	UFUNCTION(BlueprintCallable, Category = "Preview")
 	void ClosePreview();
@@ -57,28 +47,22 @@ public:
 	void RotatePreview(float InYawDelta);
 
 	UFUNCTION(BlueprintCallable, Category = "Preview")
-	void SetSourcePlayer(ABasePlayer* InSourcePlayer);
+	void SetSourcePlayer(ABasePlayer* InSourcePlayer = nullptr);
 
 	UFUNCTION(BlueprintPure, Category = "Preview")
-	APlayerPreviewPawn* GetPreviewPawn() const { return PreviewPawn; }
+	APlayerPreviewPawn* GetPreviewPawn() const;
 
 	UFUNCTION(BlueprintPure, Category = "Preview")
 	UTextureRenderTarget2D* GetPreviewRenderTarget() const { return PreviewRenderTarget; }
 
 	UFUNCTION(BlueprintPure, Category = "Preview")
-	ABasePlayer* GetSourcePlayer() const { return SourcePlayer.Get(); }
+	ABasePlayer* GetSourcePlayer() const;
 
 protected:
-	bool ResolveSourcePlayer();
-	bool ResolvePreviewAnchor();
-	bool SpawnPreviewPawnIfNeeded();
-	void DestroyPreviewPawn();
+	bool SetPreviewPawnIfNeeded();
 
 	ABasePlayerController* GetOwnerController() const;
 
 	void BindSourceDelegates();
 	void UnbindSourceDelegates();
-
-	UFUNCTION()
-	void HandleSourceAppearanceChanged();
 };

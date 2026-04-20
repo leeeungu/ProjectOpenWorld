@@ -6,11 +6,11 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/Pawn.h"
 #include "Player/Character/BasePlayer.h"
+#include "Player/Subsystem/PlayerWorldSubsystem.h"
 
 APlayerPreviewPawn::APlayerPreviewPawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	bReplicates = false;
 	AutoPossessPlayer = EAutoReceiveInput::Disabled;
 	AutoPossessAI = EAutoPossessAI::Disabled;
 
@@ -34,6 +34,8 @@ APlayerPreviewPawn::APlayerPreviewPawn()
 	SceneCapture->bCaptureEveryFrame = false;
 	SceneCapture->bCaptureOnMovement = false;
 	SceneCapture->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
+	SceneCapture->ProjectionType = ECameraProjectionMode::Orthographic;
+	SceneCapture->OrthoWidth = 210.0f;
 }
 
 void APlayerPreviewPawn::OnConstruction(const FTransform& Transform)
@@ -41,26 +43,48 @@ void APlayerPreviewPawn::OnConstruction(const FTransform& Transform)
 	Super::OnConstruction(Transform);
 	if (SceneCapture)
 	{
-		SceneCapture->ShowOnlyActors.Empty();
-		SceneCapture->ShowOnlyActors.Add(this);
+		SceneCapture->ShowOnlyComponents.Empty();
+		SceneCapture->ShowOnlyComponents.Add(PreviewMesh);
+		TArray<USceneComponent*> ChildComponents;
+		PreviewMesh->GetChildrenComponents(true, ChildComponents);
+		for (USceneComponent* ChildComponent : ChildComponents)
+		{
+			if (UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(ChildComponent))
+				SceneCapture->ShowOnlyComponents.Add(PrimitiveComponent);
+		}
 		SceneCapture->CaptureScene();
 	}
-
 }
 
 void APlayerPreviewPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	if (UPlayerWorldSubsystem* PlayerWorldSubsystem = GetWorld()->GetSubsystem<UPlayerWorldSubsystem>())
+	{
+		PlayerWorldSubsystem->RegisterPreviewActor(this);
+	}
 }
 
-void APlayerPreviewPawn::InitializePreview(ABasePlayer* InSourcePlayer, UTextureRenderTarget2D* InRenderTarget)
+void APlayerPreviewPawn::InitializePreview(ABasePlayer* InSourcePlayer)
 {
 	SourcePlayer = InSourcePlayer;
-	if (SceneCapture)
-	{
-		SceneCapture->TextureTarget = InRenderTarget;
-	}
+}
+
+void APlayerPreviewPawn::StartPreview()
+{
+	if (!SourcePlayer.IsValid())
+		return;
+
+	SetActorHiddenInGame(false);
 	RefreshFromSource();
+	SceneCapture->bCaptureEveryFrame = true;
+}
+
+void APlayerPreviewPawn::EndPreview()
+{
+	SetActorHiddenInGame(true);
+	SceneCapture->bCaptureEveryFrame = false;
+	SourcePlayer = nullptr;
 }
 
 void APlayerPreviewPawn::RefreshFromSource()
@@ -81,7 +105,7 @@ void APlayerPreviewPawn::RefreshFromSource()
 	{
 		return;
 	}
-
+	// Mesh와 하위 매쉬 설정
 	PreviewMesh->SetSkeletalMesh(SourceMesh->GetSkeletalMeshAsset());
 	PreviewMesh->SetAnimInstanceClass(SourceMesh->GetAnimClass());
 

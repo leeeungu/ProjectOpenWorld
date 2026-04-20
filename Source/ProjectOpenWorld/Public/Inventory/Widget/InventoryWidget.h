@@ -9,6 +9,7 @@ class UInventoryComponent;
 class UInventoryGirdSlotWidget;
 class UProgressBar;
 class UTextBlock;
+class UInventorySlotBase;
 
 UCLASS()
 class PROJECTOPENWORLD_API UInventoryWidget : public UUserWidget

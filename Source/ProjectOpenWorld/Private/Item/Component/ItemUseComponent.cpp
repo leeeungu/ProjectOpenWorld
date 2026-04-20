@@ -9,9 +9,13 @@ UItemUseComponent::UItemUseComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	UseHandler[static_cast<uint8>(EItemUseType::None)] = &UItemUseComponent::HandleDefault;
 	UseHandler[static_cast<uint8>(EItemUseType::HandEquip)] = &UItemUseComponent::HandleHandEquip;
-	UseHandler[static_cast<uint8>(EItemUseType::ArmorEquip)] = &UItemUseComponent::HandleArmorEquip;
+	UseHandler[static_cast<uint8>(EItemUseType::HeadEquip)] = &UItemUseComponent::HandleHaedEquip;
 	UseHandler[static_cast<uint8>(EItemUseType::Consume)] = &UItemUseComponent::HandleConsume;
-	UseHandler[static_cast<uint8>(EItemUseType::Throw)] = &UItemUseComponent::HandleThrow;
+
+	UnUseHandler[static_cast<uint8>(EItemUseType::None)] = &UItemUseComponent::UnHandleDefault;
+	UnUseHandler[static_cast<uint8>(EItemUseType::HandEquip)] = &UItemUseComponent::UnHandleHandEquip;
+	UnUseHandler[static_cast<uint8>(EItemUseType::HeadEquip)] = &UItemUseComponent::UnHandleHeadEquip;
+	UnUseHandler[static_cast<uint8>(EItemUseType::Consume)] = &UItemUseComponent::UnHandleConsume;
 }
 
 void UItemUseComponent::BeginPlay()
@@ -32,6 +36,18 @@ bool UItemUseComponent::UseItem(UBaseItem* Item)
 	return false;
 }
 
+bool UItemUseComponent::UnUseItem(UBaseItem* Item)
+{
+	if (Item && Player)
+	{
+		EItemUseType UseType = Item->GetUseType();
+		uint8 UseTypeValue = static_cast<uint8>(UseType);
+		if (UnUseHandler[UseTypeValue])
+			return (this->*UnUseHandler[UseTypeValue])(Item);
+	}
+	return false;
+}
+
 bool UItemUseComponent::HandleDefault(UBaseItem* Item)
 {
 	return false;
@@ -46,17 +62,44 @@ bool UItemUseComponent::HandleHandEquip(UBaseItem* Item)
 	return false;
 }
 
-bool UItemUseComponent::HandleArmorEquip(UBaseItem* Item)
+bool UItemUseComponent::HandleHaedEquip(UBaseItem* Item)
 {
 	return false;
 }
-
+bool UItemUseComponent::HandleBodyEquip(UBaseItem* Item)
+{
+	return false;
+}
 bool UItemUseComponent::HandleConsume(UBaseItem* Item)
 {
 	return false;
 }
 
-bool UItemUseComponent::HandleThrow(UBaseItem* Item)
+bool UItemUseComponent::UnHandleDefault(UBaseItem* Item)
+{
+	return false;
+}
+
+bool UItemUseComponent::UnHandleHandEquip(UBaseItem* Item)
+{
+	if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
+	{
+		return EquipmentComponent->UnequipItem(Item);
+	}
+	return false;
+}
+
+bool UItemUseComponent::UnHandleHeadEquip(UBaseItem* Item)
+{
+	return false;
+}
+
+bool UItemUseComponent::UnHandleBodyEquip(UBaseItem* Item)
+{
+	return false;
+}
+
+bool UItemUseComponent::UnHandleConsume(UBaseItem* Item)
 {
 	return false;
 }

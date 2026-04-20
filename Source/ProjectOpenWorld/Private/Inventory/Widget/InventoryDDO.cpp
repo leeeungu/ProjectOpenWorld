@@ -1,4 +1,4 @@
-﻿#include "Inventory/Widget/InventoryDDO.h"
+#include "Inventory/Widget/InventoryDDO.h"
 
 void UInventoryDDO::SetSlotData_Implementation(const FInventorySlot& Data)
 {

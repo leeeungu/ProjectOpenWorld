@@ -6,6 +6,7 @@
 
 class UAssetUserData;
 enum class EItemUseType : uint8;
+class UItemDataAsset;
 
 UCLASS(Blueprintable)
 class PROJECTOPENWORLD_API UBaseItem : public UObject //, public IInterface_AssetUserData
@@ -23,4 +24,7 @@ public:
 	FORCEINLINE FName GetItemID() const { return ItemID; }
 	FORCEINLINE void SetItemCount(int32 InItemCount) { ItemCount = FMath::Max(0, InItemCount); }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+
+	UItemDataAsset* GetPalItemDataAssetByName() const;
 };
+

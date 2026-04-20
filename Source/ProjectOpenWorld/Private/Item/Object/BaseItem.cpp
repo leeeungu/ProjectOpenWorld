@@ -12,3 +12,12 @@ EItemUseType UBaseItem::GetUseType() const
 	}
 	return EItemUseType();
 }
+
+UItemDataAsset* UBaseItem::GetPalItemDataAssetByName() const
+{
+	const FPalStaticItemDataStruct* Result{};
+	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, Result);
+	if(Result->ItemDataAssetSoft.IsValid())
+		return Result->ItemDataAssetSoft.LoadSynchronous();
+	return nullptr;
+}

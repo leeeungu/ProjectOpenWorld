@@ -2,8 +2,7 @@
 #include "Player/Character/BasePlayer.h"
 #include "Player/Controller/BasePlayerController.h"
 #include "Player/Character/PlayerPreviewPawn.h"
-//#include "Player/Preview/PlayerPreviewAnchor.h"
-#include "Engine/World.h"
+#include "Player/Subsystem/PlayerWorldSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 UPlayerPreviewComponent::UPlayerPreviewComponent()
@@ -14,83 +13,51 @@ UPlayerPreviewComponent::UPlayerPreviewComponent()
 void UPlayerPreviewComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	ResolveSourcePlayer();
-	ResolvePreviewAnchor();
 }
 
 void UPlayerPreviewComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UnbindSourceDelegates();
-	DestroyPreviewPawn();
-
 	Super::EndPlay(EndPlayReason);
 }
 
-bool UPlayerPreviewComponent::OpenPreview(ABasePlayer* InSourcePlayer)
+bool UPlayerPreviewComponent::OpenPreview()
 {
 	ABasePlayerController* OwnerController = GetOwnerController();
 	if (!IsValid(OwnerController) || !OwnerController->IsLocalController())
 	{
 		return false;
 	}
-
-	if (IsValid(InSourcePlayer))
-	{
-		SetSourcePlayer(InSourcePlayer);
-	}
-	else if (!ResolveSourcePlayer())
+	if (!SetPreviewPawnIfNeeded())
 	{
 		return false;
 	}
-
-	if (!SpawnPreviewPawnIfNeeded())
-	{
-		return false;
-	}
-
-	if (!IsValid(PreviewPawn) || !SourcePlayer.IsValid())
-	{
-		return false;
-	}
-
-	PreviewPawn->SetActorHiddenInGame(false);
-	PreviewPawn->SetActorEnableCollision(false);
-
-	PreviewPawn->InitializePreview(SourcePlayer.Get(), PreviewRenderTarget);
-
+	RefreshPreview();
 	return true;
 }
 
 void UPlayerPreviewComponent::ClosePreview()
 {
-	if (!IsValid(PreviewPawn))
+	if (!PreviewPawn.IsValid())
 	{
 		return;
 	}
-
-	if (bDestroyPreviewPawnOnClose)
-	{
-		DestroyPreviewPawn();
-		return;
-	}
-
-	PreviewPawn->SetActorHiddenInGame(true);
+	PreviewPawn->EndPreview();
+	PreviewPawn = nullptr;
 }
 
 void UPlayerPreviewComponent::RefreshPreview()
 {
-	if (!IsValid(PreviewPawn) || !SourcePlayer.IsValid())
+	if (!PreviewPawn.IsValid() || !SourcePlayer.IsValid())
 	{
 		return;
 	}
-
-	PreviewPawn->InitializePreview(SourcePlayer.Get(), PreviewRenderTarget);
+	PreviewPawn->InitializePreview(SourcePlayer.Get());
 }
 
 void UPlayerPreviewComponent::RotatePreview(float InYawDelta)
 {
-	if (!IsValid(PreviewPawn))
+	if (!PreviewPawn.IsValid())
 	{
 		return;
 	}
@@ -104,115 +71,32 @@ void UPlayerPreviewComponent::SetSourcePlayer(ABasePlayer* InSourcePlayer)
 	{
 		return;
 	}
-
-	UnbindSourceDelegates();
 	SourcePlayer = InSourcePlayer;
-	BindSourceDelegates();
-
-	if (IsValid(PreviewPawn) && SourcePlayer.IsValid())
-	{
-		PreviewPawn->InitializePreview(SourcePlayer.Get(), PreviewRenderTarget);
-	}
 }
 
-bool UPlayerPreviewComponent::ResolveSourcePlayer()
+APlayerPreviewPawn* UPlayerPreviewComponent::GetPreviewPawn() const
 {
-	if (SourcePlayer.IsValid())
+	if(PreviewPawn.IsValid())
+		return PreviewPawn.Get();
+	return nullptr;
+}
+
+ABasePlayer* UPlayerPreviewComponent::GetSourcePlayer() const
+{
+	return SourcePlayer.Get();
+}
+
+bool UPlayerPreviewComponent::SetPreviewPawnIfNeeded()
+{
+	if (PreviewPawn.IsValid())
 	{
 		return true;
 	}
-
-	ABasePlayerController* OwnerController = GetOwnerController();
-	if (IsValid(OwnerController))
+	if (UPlayerWorldSubsystem* PlayerWorldSubsystem = GetWorld()->GetSubsystem<UPlayerWorldSubsystem>())
 	{
-		if (ABasePlayer* Player = Cast<ABasePlayer>(OwnerController->GetPawn()))
-		{
-			SourcePlayer = Player;
-			return true;
-		}
+		PreviewPawn = PlayerWorldSubsystem->GetPreviewActor();
 	}
-
-	return false;
-}
-
-bool UPlayerPreviewComponent::ResolvePreviewAnchor()
-{
-	/*if (IsValid(PreviewAnchor))
-	{
-		return true;
-	}
-
-	UWorld* World = GetWorld();
-	if (!IsValid(World))
-	{
-		return false;
-	}
-
-	for (TActorIterator<APlayerPreviewAnchor> It(World); It; ++It)
-	{
-		APlayerPreviewAnchor* FoundAnchor = *It;
-		if (!IsValid(FoundAnchor))
-		{
-			continue;
-		}
-
-		if (PreviewAnchorTag.IsNone() || FoundAnchor->ActorHasTag(PreviewAnchorTag))
-		{
-			PreviewAnchor = FoundAnchor;
-			return true;
-		}
-	}*/
-
-	return false;
-}
-
-bool UPlayerPreviewComponent::SpawnPreviewPawnIfNeeded()
-{
-	if (IsValid(PreviewPawn))
-	{
-		return true;
-	}
-
-	UWorld* World = GetWorld();
-	if (!IsValid(World) || !PreviewPawnClass)
-	{
-		return false;
-	}
-
-	FTransform SpawnTransform = FTransform::Identity;
-
-	//if (ResolvePreviewAnchor() && IsValid(PreviewAnchor))
-	//{
-	//	SpawnTransform = PreviewAnchor->GetActorTransform();
-	//}
-	//else if (SourcePlayer.IsValid())
-	//{
-	//	SpawnTransform = SourcePlayer->GetActorTransform();
-	//	SpawnTransform.AddToTranslation(FVector(0.f, 0.f, -10000.f));
-	//}
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = GetOwner();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	PreviewPawn = World->SpawnActor<APlayerPreviewPawn>(
-		PreviewPawnClass,
-		SpawnTransform,
-		SpawnParams
-	);
-
-	return IsValid(PreviewPawn);
-}
-
-void UPlayerPreviewComponent::DestroyPreviewPawn()
-{
-	if (!IsValid(PreviewPawn))
-	{
-		return;
-	}
-
-	PreviewPawn->Destroy();
-	PreviewPawn = nullptr;
+	return PreviewPawn.IsValid();
 }
 
 ABasePlayerController* UPlayerPreviewComponent::GetOwnerController() const
@@ -248,9 +132,4 @@ void UPlayerPreviewComponent::UnbindSourceDelegates()
 	// ¿¹½Ã:
 	// SourcePlayer->OnAppearanceChanged.RemoveDynamic(this, &UPlayerPreviewComponent::HandleSourceAppearanceChanged);
 	// SourcePlayer->GetEquipmentComponent()->OnEquipmentChanged.RemoveAll(this);
-}
-
-void UPlayerPreviewComponent::HandleSourceAppearanceChanged()
-{
-	RefreshPreview();
 }

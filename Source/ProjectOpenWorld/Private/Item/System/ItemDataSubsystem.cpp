@@ -18,8 +18,6 @@ bool UItemDataSubsystem::GetPalStaticItemDataPtr(FName RowName, const FPalStatic
 	return false;
 }
 
-
-
 bool UItemDataSubsystem::GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data)
 {
 	if (const FPalItemRecipe* const* FoundData = SingletonInstance->PalItemRecipeDataTableStruct.ItemDataMap.Find(RowName))
@@ -317,7 +315,9 @@ UItemDataAsset* UItemDataSubsystem::GetPalItemDataAssetByName(FName RowName)
 {
 	const FPalStaticItemDataStruct* Result{};
 	GetPalStaticItemDataPtr(RowName, Result);
-	return Result->ItemDataAssetSoft.LoadSynchronous();
+	if(Result->ItemDataAssetSoft.IsValid())
+		return Result->ItemDataAssetSoft.LoadSynchronous();
+	return nullptr;
 }
 
 UTexture2D* UItemDataSubsystem::GetPalItemIconTextureByName(FName RowName) 

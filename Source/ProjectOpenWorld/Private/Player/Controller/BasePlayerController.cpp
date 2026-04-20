@@ -3,6 +3,16 @@
 #include "Blueprint/UserWidget.h"
 #include "Player/Widget/PlayerInventoryWidget.h"
 #include "Player/Component/PlayerPreviewComponent.h"
+#include "Player/Character/BasePlayer.h"
+
+void ABasePlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if (PreviewComponent)
+	{
+		PreviewComponent->SetSourcePlayer(Cast<ABasePlayer>(InPawn));
+	}
+}
 
 ABasePlayerController::ABasePlayerController() : Super()
 {

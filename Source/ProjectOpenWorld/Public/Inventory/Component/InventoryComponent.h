@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Inventory/Interface/InventorySlotInterface.h"
+#include "Item/DataTable/ItemSlotType.h"
 #include "InventoryComponent.generated.h"
 
 class ABasePlayer;
@@ -20,7 +21,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	TArray<FInventorySlot> inventoryArray{};
 
-	TArray<FInventorySlot*> inventoryViewArray{};
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
+	TArray < FInventorySlot> EquipSlot{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	float totalInventoryWeight{};
@@ -50,6 +52,7 @@ public:
 
 	//UFUNCTION(BlueprintCallable, CallInEditor, Category = "Inventory|Editor", meta = (DevelopmentOnly))
 	bool AddItem(FName NewItemID, int ItemCount = 1);
+	bool ReturnItemToInventory(UBaseItem* BaseItem);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool HasItem(FName SearchItemID, int SearchItemCount = 1) const;
@@ -59,6 +62,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool RemoveItemSlot(int Row, int Col, int RemoveItemCount = 1);
+	bool RemoveItem(const FInventorySlot* Slot, int RemoveItemCount = 1);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool DeleteItem(int Row, int Col);
@@ -69,10 +73,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UseItem(int Row, int Col);
 
+	bool UseItemSlot(const FInventorySlot* Slot);
+	bool IsInventorySlot(const FInventorySlot* Slot) const;
+
+	bool UnUseItemSlot(const FInventorySlot* pSrc);
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol);
 
-	bool GetInventorySlotData(int Row, int Col, const FInventorySlot*& SlotData);
+	FInventorySlot* GetInventorySlotData(int Row, int Col);
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE bool GetSlotData(int Row, int Col, FInventorySlot& SlotData) const;
@@ -92,6 +101,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE float GetInventoryMaxWeight() const { return maxInventoryWeight ? *maxInventoryWeight : 1.0f; }
 
+	bool SwapInventorySlot(FInventorySlot* Src, FInventorySlot* Dst);
+
+
+	const FInventorySlot* GetEquipSlot(EItemSlotType SlotType);
+	void SetEquipSlot(EItemSlotType SlotType, UBaseItem* Item);
 protected:
 	virtual void BeginPlay() override;
 

@@ -19,6 +19,6 @@ protected:
 
 public:
 	//UFUNCTION(BlueprintCallable, Category = "Equipment")
-	virtual bool EquipItem(UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::EquipItem, return false;);
-	virtual bool UnequipItem(UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::UnequipItem	, return false;);
+	virtual bool EquipItem(const UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::EquipItem, return false;);
+	virtual bool UnequipItem(const UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::UnequipItem	, return false;);
 };

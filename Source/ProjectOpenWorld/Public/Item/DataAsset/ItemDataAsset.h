@@ -3,18 +3,8 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Item/Object/ItemDataFragment.h"
+#include "Item/DataTable/ItemUseType.h"
 #include "ItemDataAsset.generated.h"
-
-UENUM(BlueprintType)
-enum class EItemUseType : uint8
-{
-	None		UMETA(DisplayName = "None"),
-	HandEquip	UMETA(DisplayName = "Hand Equip"),
-	ArmorEquip		UMETA(DisplayName = "Armor Equip"),
-	Consume		UMETA(DisplayName = "Consume"),
-	Throw		UMETA(DisplayName = "Throw"),
-	UseTypeEnumMax UMETA(Hidden)
-};
 
 UCLASS()
 class PROJECTOPENWORLD_API UItemDataAsset : public UDataAsset

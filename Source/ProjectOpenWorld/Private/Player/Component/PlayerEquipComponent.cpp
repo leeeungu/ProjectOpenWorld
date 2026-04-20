@@ -1,6 +1,7 @@
 #include "Player/Component/PlayerEquipComponent.h"
 #include "Item/DataTable/WeaponeData.h"
 #include "Player/Character/BasePlayer.h"
+#include "Inventory/Component/InventoryComponent.h"
 #include "Item/AssetUserData/WeaponeAssetUserData.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Object/BaseItem.h"
@@ -39,7 +40,7 @@ void UPlayerEquipComponent::BeginPlay()
 	WeaponMesh->SetSkeletalMesh(nullptr);
 }
 
-bool UPlayerEquipComponent::EquipItem(UBaseItem* Item)
+bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 {
 	if (!Item || !WeaponMesh || !PlayerMesh)
 		return false;
@@ -99,7 +100,7 @@ bool UPlayerEquipComponent::EquipItem(UBaseItem* Item)
 	return true;
 }
 
-bool UPlayerEquipComponent::UnequipItem(UBaseItem* Item)
+bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 {
 	if (!Item || !WeaponMesh)
 		return false;
@@ -127,13 +128,17 @@ bool UPlayerEquipComponent::UnequipItem(UBaseItem* Item)
 	CurrentEquipItem = nullptr;
 	CurrentWeapone = EWeapone::None;
 
-
 	if (UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
 	{
 		PlayerAnimInstance->ResetAnimSection();
 	}
 
 	return true;
+}
+
+bool UPlayerEquipComponent::UnEquipCurrent()
+{
+	return UnequipItem(CurrentEquipItem);
 }
 
 void UPlayerEquipComponent::StartEvent(const FInputActionValue& Value, EInputKeyType KeyType)
@@ -174,7 +179,7 @@ void UPlayerEquipComponent::TriggerEvent(const FInputActionValue& Value, EInputK
 
 	CurrentWeapone = static_cast<EWeapone>(NextWeaponIndex);
 
-	if (TObjectPtr<UBaseItem>* FoundItem = EquipItemMap.Find(CurrentWeapone))
+	if (const UBaseItem** FoundItem = EquipItemMap.Find(CurrentWeapone))
 	{
 		if (*FoundItem)
 		{
@@ -187,7 +192,7 @@ void UPlayerEquipComponent::CompleteEvent(const FInputActionValue& Value, EInput
 {
 }
 
-UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(UBaseItem* Item)
+UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(const UBaseItem* Item)
 {
 	if (!Item || !UItemDataSubsystem::IsValidInstance())
 		return nullptr;
@@ -201,7 +206,7 @@ UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(UBaseItem* I
 	return Cast<UHandEquipItemFragment>(Fragments);
 }
 
-UPlayerAnimationSLEDataFragment* UPlayerEquipComponent::GetPlayerAnimationSLEDataFragment(UBaseItem* Item)
+UPlayerAnimationSLEDataFragment* UPlayerEquipComponent::GetPlayerAnimationSLEDataFragment(const UBaseItem* Item)
 {
 	if (!Item || !UItemDataSubsystem::IsValidInstance())
 		return nullptr;

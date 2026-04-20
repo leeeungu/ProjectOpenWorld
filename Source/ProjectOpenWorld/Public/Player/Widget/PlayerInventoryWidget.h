@@ -5,13 +5,32 @@
 #include "Player/Interface/MainWidgetInterface.h"
 #include "PlayerInventoryWidget.generated.h"
 
+class UInventorySlotBase;
+
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerInventoryWidget : public UUserWidget, public IMainWidgetInterface
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr < UInventorySlotBase> WeaponeSlot{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr < UInventorySlotBase> AxeSlot{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr < UInventorySlotBase> PickAxeSlot{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr < UInventorySlotBase> HeadEquipSlot{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr < UInventorySlotBase> BodyEquipSlot{};
 public:
 	// IMainWidgetInterface interface
 	virtual bool SetMainWidget() override;
 	virtual void UnSetMainWidget() override;
+
+protected:
+	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
+	UFUNCTION()
+	void UpdatEquipSlot();
 };

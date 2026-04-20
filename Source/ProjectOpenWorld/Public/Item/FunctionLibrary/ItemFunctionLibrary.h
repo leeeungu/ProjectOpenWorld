@@ -7,6 +7,7 @@
 #include "ItemFunctionLibrary.generated.h"
 
 class UObject;
+struct FInventorySlot;
 
 UCLASS()
 class PROJECTOPENWORLD_API UItemFunctionLibrary : public UBlueprintFunctionLibrary
@@ -28,6 +29,11 @@ public:
 		TSubclassOf<UBaseItemObject> ItemObjectClass = UBaseItemObject::StaticClass(),
 		TSubclassOf<UBaseItem> ItemClass = UBaseItem::StaticClass()
 	);
+
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	static FName GetItemID(const FInventorySlot& Slot);
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	static int32 GetItemCount(const FInventorySlot& Slot);
 
 	//static UBaseItem* CreateItemObject(FName ItemID, int32 ItemCount, UClass* ItemClass = UBaseItem::StaticClass());
 };

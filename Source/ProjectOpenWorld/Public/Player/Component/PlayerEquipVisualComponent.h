@@ -6,7 +6,7 @@
 
 class UItemDataAsset;
 
-UCLASS()
+UCLASS(ClassGroup = (PlayerEquip), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UPlayerEquipVisualComponent : public USkeletalMeshComponent
 {
 	GENERATED_BODY()

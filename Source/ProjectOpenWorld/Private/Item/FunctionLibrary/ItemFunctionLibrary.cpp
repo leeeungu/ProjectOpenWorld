@@ -1,4 +1,5 @@
 #include "Item/FunctionLibrary/ItemFunctionLibrary.h"
+#include "Inventory/Interface/InventorySlotInterface.h"
 
 UBaseItem* UItemFunctionLibrary::CreateBaseItem(FName ItemId, int32 ItemCount,UObject* Outer, TSubclassOf<UBaseItem> ItemClass)
 {
@@ -51,4 +52,15 @@ UBaseItemObject* UItemFunctionLibrary::CreateBaseItemObject(UObject* Outer, FNam
 	}
 	NewItemObject->SetBaseItem(NewItem);
 	return NewItemObject;
+}
+
+
+FName UItemFunctionLibrary::GetItemID(const FInventorySlot& Slot)
+{
+	return Slot.ItemObject ? Slot.ItemObject->GetItemID() : FName{};
+}
+
+int32 UItemFunctionLibrary::GetItemCount(const FInventorySlot& Slot)
+{
+	return Slot.ItemObject ? Slot.ItemObject->GetItemCount() : 0;
 }

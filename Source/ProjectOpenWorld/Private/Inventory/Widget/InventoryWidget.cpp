@@ -1,9 +1,9 @@
-﻿#include "Inventory/Widget/InventoryWidget.h"
+#include "Inventory/Widget/InventoryWidget.h"
 #include "Inventory/Widget/InventorySlotWidget.h"
 #include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Inventory/Component/InventoryComponent.h"
-#include "GameFramework/PlayerController.h"
+#include "Player/Controller/BasePlayerController.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
@@ -17,7 +17,8 @@ void UInventoryWidget::NativePreConstruct()
 	UUserWidget::NativePreConstruct();
 	if (!inventoryGridPanel || !inventorySlotClass || !GetOwningPlayer())
 		return;
-	inventoryComponent = GetOwningPlayer()->GetComponentByClass<UInventoryComponent>();
+	ABasePlayerController* playerController = Cast<ABasePlayerController>(GetOwningPlayer());
+	inventoryComponent = playerController ? playerController->GetComponentByClass<UInventoryComponent>() : nullptr;
 	if (!inventoryComponent)
 	{
 		inventoryGridPanel->ClearChildren();
@@ -37,8 +38,7 @@ void UInventoryWidget::NativePreConstruct()
 		return;
 	}
 
-	inventoryComponent->onUpdateInventory.RemoveDynamic(this, &UInventoryWidget::UpdateAllInventorySlot);
-	inventoryComponent->onUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateAllInventorySlot);
+	inventoryComponent->onUpdateInventory.AddUniqueDynamic(this, &UInventoryWidget::UpdateAllInventorySlot);
 	inventoryGridPanel->ClearChildren();
 	for (int i = 0; i < inventoryComponent->GetInventoryRow(); i++)
 	{
@@ -52,6 +52,7 @@ void UInventoryWidget::NativePreConstruct()
 			}
 		}
 	}
+
 	UpdateInventoryWeight();
 }
 
@@ -65,14 +66,14 @@ void UInventoryWidget::UpdateInventorySlot(int Row, int Col)
 {
 	if (!inventoryComponent)
 		return;
-	const FInventorySlot* Data{};
-	if (inventoryComponent->GetInventorySlotData(Row, Col, Data))
+	if (const FInventorySlot * Data = inventoryComponent->GetInventorySlotData(Row, Col))
 	{
 		TScriptInterface<IInventorySlotInterface> SlotData = TScriptInterface< IInventorySlotInterface>(inventoryGridPanel->GetChildAt(Row* inventoryComponent ->GetInventoryCol() + Col));
 		if (SlotData && Data)
 		{
 			IInventorySlotInterface::Execute_SetSlotIndex(SlotData.GetObject(), Row, Col);
 			IInventorySlotInterface::Execute_SetSlotData(SlotData.GetObject(), *Data);
+			Cast< IInventorySlotInterface>(SlotData.GetObject())->SetSlotPtr(Data);
 		}
 	}
 }
