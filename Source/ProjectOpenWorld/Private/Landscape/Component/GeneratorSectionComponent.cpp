@@ -24,7 +24,7 @@ UGeneratorSectionComponent::UGeneratorSectionComponent() : UActorComponent{}
 	OnDeleteSection.Clear();
 	OnGenerateFinished.Clear();
 }
-
+#if WITH_EDITOR	
 void UGeneratorSectionComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	if (PropertyChangedEvent.HasArchetypeInstanceChanged(this))
@@ -82,7 +82,7 @@ void UGeneratorSectionComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
-
+#endif
 void UGeneratorSectionComponent::BeginPlay()
 {
 	Super::BeginPlay();

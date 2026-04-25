@@ -1,4 +1,4 @@
-#include "Player/Component/PlayerEquipComponent.h"
+ï»¿#include "Player/Component/PlayerEquipComponent.h"
 #include "Item/DataTable/WeaponeData.h"
 #include "Player/Character/BasePlayer.h"
 #include "Inventory/Component/InventoryComponent.h"
@@ -62,16 +62,10 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 				if (!UnequipItem(CurrentEquipItem))
 					return false;
 			}
-			WeaponMesh->SetSkeletalMesh(HandEquipData->HandEquipMesh);
-			WeaponMesh->AttachToComponent(
-				PlayerMesh,
-				FAttachmentTransformRules::KeepRelativeTransform,
-				HandEquipData->HandEquipSocket);
-			WeaponMesh->SetRelativeTransform(HandEquipData->HandEquipRelativeTransform);
 
 			const EWeapone NewWeaponType = NewWeaponData->GetWeaponeData();
 
-			// ÈÙ ÀüÈ¯¿ë µî·Ï Á¤º¸´Â À¯ÁöµÇ¾î¾ß ÇÏ¹Ç·Î Equip ½Ã °»½Å¸¸ ÇÑ´Ù.
+			// íœ  ì „í™˜ìš© ë“±ë¡ ì •ë³´ëŠ” ìœ ì§€ë˜ì–´ì•¼ í•˜ë¯€ë¡œ Equip ì‹œ ê°±ì‹ ë§Œ í•œë‹¤.
 			EquipItemMap.FindOrAdd(NewWeaponType) = Item;
 
 			CurrentEquipItem = Item;
@@ -79,6 +73,13 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 			Player->ChangePlayerState(NewWeaponData->GetEquipPlayerState());
 			Player->ChangeEquipWidget(NewWeaponData->GetWeaponeID(), NewWeaponType);
 		}
+
+		WeaponMesh->SetSkeletalMesh(HandEquipData->HandEquipMesh);
+		WeaponMesh->AttachToComponent(
+			PlayerMesh,
+			FAttachmentTransformRules::KeepRelativeTransform,
+			HandEquipData->HandEquipSocket);
+		WeaponMesh->SetRelativeTransform(HandEquipData->HandEquipRelativeTransform);
 	}
 
 	TObjectPtr < UPlayerAnimationSLEDataFragment> Fragment = GetPlayerAnimationSLEDataFragment(Item);
@@ -105,7 +106,7 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 	if (!Item || !WeaponMesh)
 		return false;
 
-	// ÇöÀç ¼Õ¿¡ µé°í ÀÖ´Â ¾ÆÀÌÅÛ¸¸ ÇØÁ¦ °¡´É
+	// í˜„ìž¬ ì†ì— ë“¤ê³  ìžˆëŠ” ì•„ì´í…œë§Œ í•´ì œ ê°€ëŠ¥
 	if (CurrentEquipItem != Item)
 		return false;
 
@@ -134,6 +135,20 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 	}
 
 	return true;
+}
+
+bool UPlayerEquipComponent::IsEquipSlot(const UBaseItem* Item) const
+{
+	if (!Item)
+		return false;
+	if (UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item))
+	{
+		if (UWeaponeAssetUserData* NewWeaponData = GetWeaponAssetUserData(HandEquipData->HandEquipMesh))
+		{
+			return EquipItemMap.Find(NewWeaponData->GetWeaponeData()) != nullptr;
+		}
+	}
+	return false;
 }
 
 bool UPlayerEquipComponent::UnEquipCurrent()
@@ -192,7 +207,7 @@ void UPlayerEquipComponent::CompleteEvent(const FInputActionValue& Value, EInput
 {
 }
 
-UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(const UBaseItem* Item)
+UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(const UBaseItem* Item) const
 {
 	if (!Item || !UItemDataSubsystem::IsValidInstance())
 		return nullptr;
@@ -206,7 +221,7 @@ UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(const UBaseI
 	return Cast<UHandEquipItemFragment>(Fragments);
 }
 
-UPlayerAnimationSLEDataFragment* UPlayerEquipComponent::GetPlayerAnimationSLEDataFragment(const UBaseItem* Item)
+UPlayerAnimationSLEDataFragment* UPlayerEquipComponent::GetPlayerAnimationSLEDataFragment(const UBaseItem* Item) const
 {
 	if (!Item || !UItemDataSubsystem::IsValidInstance())
 		return nullptr;
@@ -220,7 +235,7 @@ UPlayerAnimationSLEDataFragment* UPlayerEquipComponent::GetPlayerAnimationSLEDat
 	return Cast<UPlayerAnimationSLEDataFragment>(Fragments);
 }
 
-UWeaponeAssetUserData* UPlayerEquipComponent::GetWeaponAssetUserData(USkeletalMesh* Mesh)
+UWeaponeAssetUserData* UPlayerEquipComponent::GetWeaponAssetUserData(USkeletalMesh* Mesh) const
 {
 	if (!Mesh)
 		return nullptr;

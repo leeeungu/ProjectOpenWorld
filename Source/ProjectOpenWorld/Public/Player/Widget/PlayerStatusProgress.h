@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -47,16 +47,16 @@ protected:
 public:
 	//void SetStatusProgress(float* Value, float* MaxValue);
 
-	// IStatusUpdateInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
+	// IStatusUpdateInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
 	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void UpdateStatus() override;
 
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	FORCEINLINE FText GetStatusText() const;
+	FText GetStatusText() const;
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	FORCEINLINE FText GetMaxStatusText() const;
+	FText GetMaxStatusText() const;
 
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	FORCEINLINE float GetStatusPercent() const;
+	float GetStatusPercent() const;
 };
 		

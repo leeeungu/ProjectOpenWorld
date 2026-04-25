@@ -1,7 +1,7 @@
-#include "GameBase/Notify/AnimNotifyState_SetMovementMode.h"
+﻿#include "GameBase/Notify/AnimNotifyState_SetMovementMode.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#if WITH_EDITOR	
 void UAnimNotifyState_SetMovementMode::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)
 {
 	Super::OnAnimNotifyCreatedInEditor(ContainingAnimNotifyEvent);
@@ -12,6 +12,7 @@ void UAnimNotifyState_SetMovementMode::OnAnimNotifyCreatedInEditor(FAnimNotifyEv
 		//UE_LOG(LogTemp, Error, TEXT("EditorCreate %f"), ContainingAnimNotifyEvent.EndLink.GetLinkedSequence()->GetPlayLength());
 	}
 }
+#endif
 
 void UAnimNotifyState_SetMovementMode::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {

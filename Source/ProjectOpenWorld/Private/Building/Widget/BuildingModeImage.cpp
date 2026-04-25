@@ -1,9 +1,9 @@
-#include "Building/Widget/BuildingModeImage.h"
+﻿#include "Building/Widget/BuildingModeImage.h"
 #include "Building/Widget/BuildingModeWidget.h"
-#include "Components/Button.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
+#include "Styling/SlateBrush.h"
 
 UBuildingModeImage::UBuildingModeImage() : UButton{}
 {
@@ -38,11 +38,10 @@ void UBuildingModeImage::ChangeButtonImage()
 {
 	FButtonStyle style = GetStyle();
 	FSlateBrush Image{};
-	{
-		UTexture2D* IconTexture = UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(BuildObjectId);
-		Image.SetResourceObject(IconTexture);
-	}
-	Image.DrawAs = ESlateBrushDrawType::Type::Image;
+	UTexture2D* IconTexture = UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(BuildObjectId);
+	if (!IconTexture)
+		return;
+	Image.SetResourceObject(IconTexture);
 	style.SetNormal(Image);
 	style.SetHovered(Image);
 	style.SetPressed(Image);
@@ -76,10 +75,11 @@ void UBuildingModeImage::SetBuildingID(FName ID)
 	SetVisibility(ESlateVisibility::Visible);
 	ChangeButtonImage();
 }
-
+#if WITH_EDITOR	
 void UBuildingModeImage::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	UButton::PostEditChangeProperty(PropertyChangedEvent);
 	BuildingTexture = UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(BuildObjectId);
 	ChangeButtonImage();
 }
+#endif

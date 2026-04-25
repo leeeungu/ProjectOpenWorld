@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/Animation/BaseAnimInstance.h"
@@ -75,12 +75,12 @@ public:
 		ClimbSpeed = FMath::Clamp(Speed, 0.0f, 1.0f);
 	}
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool StartAnimSection();
+	 bool StartAnimSection();
 	
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool EndAnimSection();
+	 bool EndAnimSection();
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool ResetAnimSection();
+	 bool ResetAnimSection();
 
 protected:
 	UFUNCTION()
@@ -94,10 +94,10 @@ public:
 		return CurrentAnimationSection;
 	}
 
-	FORCEINLINE bool SetAnimationSequences(UAnimSequence* Start, UAnimSequence* Loop, UAnimSequence* End);
+	bool SetAnimationSequences(UAnimSequence* Start, UAnimSequence* Loop, UAnimSequence* End);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool SetArchitectAnimSequence();
+	bool SetArchitectAnimSequence();
 
 private:
 	UFUNCTION()

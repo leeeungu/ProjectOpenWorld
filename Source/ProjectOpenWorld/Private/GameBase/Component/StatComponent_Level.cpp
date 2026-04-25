@@ -1,4 +1,4 @@
-#include "GameBase/Component/StatComponent_Level.h"
+﻿#include "GameBase/Component/StatComponent_Level.h"
 
 
 void UStatComponent_Level::BeginPlay()
@@ -13,6 +13,7 @@ void UStatComponent_Level::BeginPlay()
 	}
 }
 
+#if WITH_EDITOR
 void UStatComponent_Level::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -38,6 +39,7 @@ void UStatComponent_Level::PostEditChangeProperty(FPropertyChangedEvent& Propert
 		}
 	}
 }
+#endif
 
 double UStatComponent_Level::AddCurrentStat(double Value)
 {

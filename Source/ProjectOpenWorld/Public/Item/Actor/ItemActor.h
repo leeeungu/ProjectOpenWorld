@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -60,11 +60,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	bool InitFromItem(UBaseItem* InItem);
 
-	// ÀÓ½Ã È£È¯¿ë. ÀüºÎ °¥¾ÆÅº µÚ Á¦°Å ±ÇÀå
+	// ì„ì‹œ í˜¸í™˜ìš©. ì „ë¶€ ê°ˆì•„íƒ„ ë’¤ ì œê±° ê¶Œì¥
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	void Init(FName NewItemID, int32 Count);
 
-	// ÀÎº¥Åä¸® Àü´Ş¿ë º¹Á¦º» »ı¼º
+	// ì¸ë²¤í† ë¦¬ ì „ë‹¬ìš© ë³µì œë³¸ ìƒì„±
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	UBaseItem* DuplicateItemFor(UObject* NewOuter) const;
 
@@ -72,10 +72,10 @@ public:
 	FORCEINLINE UBaseItem* GetItemInstance() const { return ItemInstance; }
 
 	UFUNCTION(BlueprintPure, Category = "Item")
-	FORCEINLINE FName GetItemID() const;
+	FName GetItemID() const;
 
 	UFUNCTION(BlueprintPure, Category = "Item")
-	FORCEINLINE int32 GetItemCount() const;
+	int32 GetItemCount() const;
 
 	virtual void OnBeginDetected_Implementation(ACharacter* pOther) override;
 	virtual void OnEndDetected_Implementation(ACharacter* pOther) override;
@@ -92,7 +92,7 @@ public:
 	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 
-	FORCEINLINE UPrimitiveComponent* GetItemCollision() const;
+	UPrimitiveComponent* GetItemCollision() const;
 
 private: 
 	void SetMeshAsset(class UItemVisibleDataFragment* VisibleDataFragment);

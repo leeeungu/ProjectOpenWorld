@@ -1,4 +1,4 @@
-#include "Inventory/Widget/InventorySlotToolTip.h"
+﻿#include "Inventory/Widget/InventorySlotToolTip.h"
 #include "Item/System/ItemDataSubsystem.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
@@ -26,7 +26,7 @@ void UInventorySlotToolTip::SetRecipeID(FName InRecipeID)
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalStaticItemDataStruct* Result{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, Result) && Result)
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, &Result) && Result)
 	{
 		if (ItemNameText)
 		{

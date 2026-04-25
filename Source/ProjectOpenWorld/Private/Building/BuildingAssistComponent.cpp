@@ -1,4 +1,4 @@
-#include "Building/BuildingAssistComponent.h"
+ï»¿#include "Building/BuildingAssistComponent.h"
 
 #include "Building/Component/BuildingPreviewComponent.h"
 #include "Building/BaseBuilding.h"
@@ -27,7 +27,7 @@ UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ¾È³» À§Á¬
+	// ì•ˆë‚´ ìœ„ì ¯
 	static ConstructorHelpers::FClassFinder<UUserWidget> BuildingWidgetObject(
 		TEXT("/Game/Building/Widget/WBP_BuildGuidInfo.WBP_BuildGuidInfo_C"));
 	if (BuildingWidgetObject.Succeeded())
@@ -35,7 +35,7 @@ UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 		BuildingInfoClass = BuildingWidgetObject.Class;
 	}
 
-	// ±âº» ºôµù Actor Å¬·¡½º
+	// ê¸°ë³¸ ë¹Œë”© Actor í´ë˜ìŠ¤
 	/*static ConstructorHelpers::FClassFinder<ABaseBuilding> BuildingBP(
 		TEXT("/Game/Building/Blueprints/Test/Bp_BuildingActor.Bp_BuildingActor_C"));
 	if (BuildingBP.Succeeded())
@@ -43,7 +43,7 @@ UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 		BuildingClass = BuildingBP.Class;
 	}*/
 
-	// Snap DataTable ·Îµù
+	// Snap DataTable ë¡œë”©
 	static ConstructorHelpers::FObjectFinder<UDataTable> MeshData(
 		TEXT("/Game/Building/Data/DT_SnapData.DT_SnapData"));
 	if (MeshData.Succeeded())
@@ -54,7 +54,7 @@ UBuildingAssistComponent::UBuildingAssistComponent() :Super()
 		}
 	}
 
-	// Trace¿ë ObjectTypes
+	// Traceìš© ObjectTypes
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	buildPointObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
@@ -81,7 +81,7 @@ void UBuildingAssistComponent::BeginPlay()
 
 	if (ownerPawn.IsValid())
 	{
-		// ÇÁ¸®ºä ÄÄÆ÷³ÍÆ® »ı¼º
+		// í”„ë¦¬ë·° ì»´í¬ë„ŒíŠ¸ ìƒì„±
 		buildingPreviewActor = Cast<UBuildingPreviewComponent>(
 			ownerPawn->AddComponentByClass(UBuildingPreviewComponent::StaticClass(), false, FTransform::Identity, false));
 
@@ -91,10 +91,10 @@ void UBuildingAssistComponent::BeginPlay()
 		}
 	}
 
-	// Trace Ignore: ¼ÒÀ¯ÀÚ
+	// Trace Ignore: ì†Œìœ ì
 	buildPointIgnore.Add(GetOwner());
 
-	// ºôµù ¾È³» À§Á¬ »ı¼º
+	// ë¹Œë”© ì•ˆë‚´ ìœ„ì ¯ ìƒì„±
 	if (BuildingInfoClass)
 	{
 		BuildingInfo = Cast<UBuildingInfoWidget>(CreateWidget(GetWorld(), BuildingInfoClass));
@@ -113,10 +113,10 @@ void UBuildingAssistComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		return;
 	}
 
-	// Ä«¸Ş¶ó Trace + ½º³À + Preview ÀÌµ¿
+	// ì¹´ë©”ë¼ Trace + ìŠ¤ëƒ… + Preview ì´ë™
 	if (UpdatePreview())
 	{
-		// PreviewComponent °¡ OnUpdateTransform ¿¡¼­ °ãÄ§ ÆÇÁ¤À» ³¡³Â´Ù°í °¡Á¤
+		// PreviewComponent ê°€ OnUpdateTransform ì—ì„œ ê²¹ì¹¨ íŒì •ì„ ëëƒˆë‹¤ê³  ê°€ì •
 		canBuilding = buildingPreviewActor->IsBuildable();
 	}
 	else
@@ -141,7 +141,7 @@ void UBuildingAssistComponent::SetBuildingStaticMesh(FName BuildingID, UStaticMe
 
 void UBuildingAssistComponent::StartBuilding()
 {
-	// Mesh ¼±ÅÃ ½Ã ÇöÀç ChildMesh ¿¡ ¸Â´Â SnapRuleµé¸¸ Ãß·ÁµÒ
+	// Mesh ì„ íƒ ì‹œ í˜„ì¬ ChildMesh ì— ë§ëŠ” SnapRuleë“¤ë§Œ ì¶”ë ¤ë‘ 
 	SnapRulesForChild.Reset();
 	for (FSnapRule* Row : SnapDataRows)
 	{
@@ -207,7 +207,7 @@ void UBuildingAssistComponent::SpawnBuilding()
 			if (UBuildingDataSubsystem::IsValidInstance())
 			{
 				const FPalBuildObjectData* BuildData = nullptr;
-				UBuildingDataSubsystem::GetPalBuildObjectData(CurrentBuildingID, BuildData);
+				UBuildingDataSubsystem::GetPalBuildObjectData(CurrentBuildingID, &BuildData);
 				if (BuildData)
 				{
 					BuildData->Materials;
@@ -215,7 +215,7 @@ void UBuildingAssistComponent::SpawnBuilding()
 					{
 						if (!Inventory->HasItem(Material.Material_Id, Material.Material_Count))
 						{
-							// Àç·á ºÎÁ·
+							// ì¬ë£Œ ë¶€ì¡±
 							return;
 						}
 					}
@@ -250,7 +250,7 @@ void UBuildingAssistComponent::SpawnBuilding()
 		}
 	}*/
 
-	// ÇÁ¸®ºä È¸Àü ÃÊ±âÈ­
+	// í”„ë¦¬ë·° íšŒì „ ì´ˆê¸°í™”
 	buildingPreviewActor->SetWorldRotation(FQuat::Identity);
 }
 
@@ -377,7 +377,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 
 	FTransform PreviewWorld = buildingPreviewActor->GetComponentTransform();
 
-	// ±âº» È¸ÀüÀº ±âÁ¸ ÇÁ¸®ºäÀÇ È¸Àü À¯Áö (RotateBuildingÀ¸·Î Á¶Àı)
+	// ê¸°ë³¸ íšŒì „ì€ ê¸°ì¡´ í”„ë¦¬ë·°ì˜ íšŒì „ ìœ ì§€ (RotateBuildingìœ¼ë¡œ ì¡°ì ˆ)
 	FRotator  CurrentRot = PreviewWorld.GetRotation().Rotator();
 	//FRotator TO FQUAT
 	CurrentRot.Yaw = YawRotation;
@@ -385,7 +385,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 
 	if (!bHit) // no hit
 	{
-		// ¾Æ¹« °Íµµ ¸ÂÁö ¾ÊÀ¸¸é TraceEnd¿¡ ÀÚÀ¯ ¹èÄ¡
+		// ì•„ë¬´ ê²ƒë„ ë§ì§€ ì•Šìœ¼ë©´ TraceEndì— ììœ  ë°°ì¹˜
 		PreviewWorld.SetLocation(TraceEnd);
 		PreviewWorld.SetRotation(CurrentRot.Quaternion());
 		PreviewWorld.SetScale3D(CurrentScale);
@@ -393,7 +393,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		buildingPreviewActor->SetWorldTransform(PreviewWorld, false, nullptr, ETeleportType::TeleportPhysics);
 		return true;
 	}
-	// HitµÈ Actor¿¡¼­ ParentMesh Ã£±â
+	// Hitëœ Actorì—ì„œ ParentMesh ì°¾ê¸°
 	UStaticMeshComponent* ParentMeshComp = nullptr;
 	if (AActor* HitActor = HitResult.GetActor())
 	{
@@ -411,7 +411,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 	}
 	const FVector ImpactPoint = HitResult.ImpactPoint - BottomTrans.GetLocation();
 
-	// ParentMesh°¡ ¾øÀ¸¸é ImpactPoint¿¡ ÀÚÀ¯ ¹èÄ¡
+	// ParentMeshê°€ ì—†ìœ¼ë©´ ImpactPointì— ììœ  ë°°ì¹˜
 	if (!ParentMeshComp || !BuildingMesh.IsValid() || SnapRulesForChild.Num() == 0) // NotSnap, hitPosition
 	{
 		PreviewWorld.SetLocation(ImpactPoint);
@@ -422,7 +422,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		return true;
 	}
 
-	// Parent StaticMesh ±âÁØÀ¸·Î ½º³À ·ê ÇÊÅÍ¸µ
+	// Parent StaticMesh ê¸°ì¤€ìœ¼ë¡œ ìŠ¤ëƒ… ë£° í•„í„°ë§
 	UStaticMesh* ParentStaticMesh = ParentMeshComp->GetStaticMesh();
 	if (!ParentStaticMesh) 
 	{
@@ -434,7 +434,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		return true;
 	}
 
-	// tick Áß hit µÈ ¸Ş½Ã¿¡ ´ëÇÑ ½º³À µ¥ÀÌÅÍ ¼±ÅÃ
+	// tick ì¤‘ hit ëœ ë©”ì‹œì— ëŒ€í•œ ìŠ¤ëƒ… ë°ì´í„° ì„ íƒ
 	const FSnapRule* MainRule{};
 	for (const FSnapRule* Rule : SnapRulesForChild)
 	{
@@ -445,7 +445,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		}
 	}
 
-	// ÀÌ Parent¿¡ ´ëÇÑ ½º³À ·êÀÌ ¾øÀ¸¸é ImpactPoint¿¡ ÀÚÀ¯ ¹èÄ¡
+	// ì´ Parentì— ëŒ€í•œ ìŠ¤ëƒ… ë£°ì´ ì—†ìœ¼ë©´ ImpactPointì— ììœ  ë°°ì¹˜
 	if (!MainRule) // !Snaped
 	{
 		PreviewWorld.SetLocation(ImpactPoint);
@@ -456,7 +456,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 		return true;
 	}
 
-	// °¡Àå °¡±î¿î ParentAnchorWorld Ã£±â
+	// ê°€ì¥ ê°€ê¹Œìš´ ParentAnchorWorld ì°¾ê¸°
 	const FTransform ParentWorld = ParentMeshComp->GetComponentTransform();
 	const float SnapDistSq = SnapDistance * SnapDistance;
 	const FSnapRule* BestRule = nullptr;
@@ -510,7 +510,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 	}
 	//UE_LOG(LogTemp, Warning, TEXT("%s"),  *Temp);
 
-	// Anchor°¡ ³Ê¹« ¸Ö¸é ½º³ÀÇÏÁö ¾Ê°í ImpactPoint·Î ÀÚÀ¯ ¹èÄ¡
+	// Anchorê°€ ë„ˆë¬´ ë©€ë©´ ìŠ¤ëƒ…í•˜ì§€ ì•Šê³  ImpactPointë¡œ ììœ  ë°°ì¹˜
 	if (!BestRule || BestDistSq > SnapDistSq)
 	{
 		PreviewWorld.SetLocation(ImpactPoint);
@@ -527,13 +527,13 @@ bool UBuildingAssistComponent::UpdatePreview()
 		FVector ParentOffset = FSnapRule::AnchorToOffset(Data.ParentAnchor, MainRule->ParentMesh->GetBoundingBox().GetSize());;
 		FVector ChildOffset = FSnapRule::AnchorToOffset(Data.ChildAnchor, MainRule->ChildMesh->GetBoundingBox().GetSize()) + Data.ChildOffset;
 
-		// È¸Àü Æ÷ÇÔ Parent Anchor World ÁÂÇ¥
+		// íšŒì „ í¬í•¨ Parent Anchor World ì¢Œí‘œ
 		const FVector ParentAnchorWorld = BestParentAnchorWorld.TransformPosition(ParentOffset * CurrentScale);
 
-		// È¸Àü º¸Á¤: ChildAnchorLocalÀ» Parent ±âÁØÀ¸·Î È¸Àü
+		// íšŒì „ ë³´ì •: ChildAnchorLocalì„ Parent ê¸°ì¤€ìœ¼ë¡œ íšŒì „
 		const FVector RotatedChildAnchor = BestParentAnchorWorld.GetRotation() * (ChildOffset * CurrentScale);
 
-		// ÃÖÁ¾ À§Ä¡ = ParentAnchorWorld - (È¸ÀüµÈ ChildAnchorLocal)
+		// ìµœì¢… ìœ„ì¹˜ = ParentAnchorWorld - (íšŒì „ëœ ChildAnchorLocal)
 		//const FVector ChildWorldPos = ParentAnchorWorld - RotatedChildAnchor;
 
 		PreviewWorld.SetLocation(ParentAnchorWorld - RotatedChildAnchor);
@@ -545,7 +545,7 @@ bool UBuildingAssistComponent::UpdatePreview()
 	}
 	else
 	{
-		// ½º³À: ChildWorld * ChildAnchorLocal = ParentAnchorWorld
+		// ìŠ¤ëƒ…: ChildWorld * ChildAnchorLocal = ParentAnchorWorld
 		const FTransform& ChildAnchorLocal = BestRule->ChildAnchorLocal;
 
 		const FQuat ParentAnchorWorldRot = BestParentAnchorWorld.GetRotation();

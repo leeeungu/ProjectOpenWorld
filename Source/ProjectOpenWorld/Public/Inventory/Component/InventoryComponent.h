@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -77,6 +77,7 @@ public:
 	bool IsInventorySlot(const FInventorySlot* Slot) const;
 
 	bool UnUseItemSlot(const FInventorySlot* pSrc);
+	bool HasEquipItem(UBaseItem* EquipItem) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol);
@@ -84,9 +85,9 @@ public:
 	FInventorySlot* GetInventorySlotData(int Row, int Col);
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
-	FORCEINLINE bool GetSlotData(int Row, int Col, FInventorySlot& SlotData) const;
+	bool GetSlotData(int Row, int Col, FInventorySlot& SlotData) const;
 
-	// µÂ∂¯/¿ÃµøøÎ
+	// ÎìúÎûç/Ïù¥ÎèôÏö©
 	UBaseItem* ExtractItemObject(int Row, int Col, int ExtractCount = 1, UObject* NewOuter = nullptr);
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")

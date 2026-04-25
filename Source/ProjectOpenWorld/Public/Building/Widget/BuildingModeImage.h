@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/Button.h"
@@ -40,5 +40,7 @@ public:
 	void SetSlotIndex(uint8 Index);
 
 	void SetBuildingID(FName ID);
+#if WITH_EDITOR	
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };

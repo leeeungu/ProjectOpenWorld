@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/Component/StatComponent.h"
@@ -34,7 +34,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Stat")
 	FOnLevelUp OnLevelUp{};
 
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 	virtual double AddCurrentStat(double Value) override;
 
 	UFUNCTION(BlueprintPure, Category = "Stat")

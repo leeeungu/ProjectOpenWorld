@@ -1,4 +1,4 @@
-#include "Building/Subsystem/BuildingDataSubsystem.h"
+﻿#include "Building/Subsystem/BuildingDataSubsystem.h"
 #include "Building/Actor/BuildingActor.h"
 
 UBuildingDataSubsystem* UBuildingDataSubsystem::SingletonInstance{};
@@ -19,37 +19,36 @@ void UBuildingDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	}
 }
 
-bool UBuildingDataSubsystem::GetPalBuildObjectData(FName RowName, const FPalBuildObjectData*& Data)
+bool UBuildingDataSubsystem::GetPalBuildObjectData(FName RowName, const FPalBuildObjectData** Data)
 {
 	if (!SingletonInstance)
 		return false;
 	if (const FPalBuildObjectData* const* FoundData = SingletonInstance->PalBuildObjectDataTable.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalBuildObjectDataTable.Dummy;
+	*Data = &SingletonInstance->PalBuildObjectDataTable.Dummy;
 	return false;
 }
 
-bool UBuildingDataSubsystem::GetPalBuildObjectIconData(FName RowName, const FPalBuildObjectIconData*& Data)
+bool UBuildingDataSubsystem::GetPalBuildObjectIconData(FName RowName, const FPalBuildObjectIconData** Data)
 {
 	if (!SingletonInstance)
 		return false;
 	if (const FPalBuildObjectIconData* const* FoundData = SingletonInstance->PalBuildObjectIconDataTable.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalBuildObjectIconDataTable.Dummy;
+	*Data = &SingletonInstance->PalBuildObjectIconDataTable.Dummy;
 	return false;
 }
 
 TSubclassOf<ABuildingActor> UBuildingDataSubsystem::GetPalBuildObjectBuildingClassByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->BuildingClass;
 	return TSubclassOf<ABuildingActor>();
 }
@@ -66,8 +65,7 @@ UStaticMesh* UBuildingDataSubsystem::GetPalBuildObjectBuildingMeshByName(FName R
 UTexture2D* UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(FName RowName)
 {
 	const FPalBuildObjectIconData* Result{};
-	GetPalBuildObjectIconData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectIconData(RowName, &Result))
 		return Result->SoftIcon;
 	return nullptr;
 }
@@ -75,8 +73,7 @@ UTexture2D* UBuildingDataSubsystem::GetPalBuildObjectIconTextureByName(FName Row
 FString UBuildingDataSubsystem::GetPalBuildObjectMapObjectIdByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->MapObjectId;
 	return FString();
 }
@@ -84,7 +81,7 @@ FString UBuildingDataSubsystem::GetPalBuildObjectMapObjectIdByName(FName RowName
 int32 UBuildingDataSubsystem::GetPalBuildObjectSortIdByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
+	GetPalBuildObjectData(RowName,& Result);
 	if (Result)
 		return Result->SortId;
 	return int32();
@@ -93,8 +90,7 @@ int32 UBuildingDataSubsystem::GetPalBuildObjectSortIdByName(FName RowName)
 int32 UBuildingDataSubsystem::GetPalBuildObjectBuildCapacityByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->BuildCapacity;
 	return int32();
 }
@@ -102,8 +98,7 @@ int32 UBuildingDataSubsystem::GetPalBuildObjectBuildCapacityByName(FName RowName
 float UBuildingDataSubsystem::GetPalBuildObjectRequiredBuildWorkAmountByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->RequiredBuildWorkAmount;
 	return 0.0f;
 }
@@ -111,8 +106,7 @@ float UBuildingDataSubsystem::GetPalBuildObjectRequiredBuildWorkAmountByName(FNa
 int32 UBuildingDataSubsystem::GetPalBuildObjectAssetValueByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->AssetValue;
 	return int32();
 }
@@ -120,7 +114,7 @@ int32 UBuildingDataSubsystem::GetPalBuildObjectAssetValueByName(FName RowName)
 TArray<FBuildMaterialData> UBuildingDataSubsystem::GetPalBuildObjectMaterialsByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
+	GetPalBuildObjectData(RowName,& Result);
 	if (Result)
 		return Result->Materials;
 	return TArray<FBuildMaterialData>();
@@ -129,8 +123,7 @@ TArray<FBuildMaterialData> UBuildingDataSubsystem::GetPalBuildObjectMaterialsByN
 float UBuildingDataSubsystem::GetPalBuildObjectInstallNeighborThresholdByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->InstallNeighborThreshold;
 	return 0.0f;
 }
@@ -138,8 +131,7 @@ float UBuildingDataSubsystem::GetPalBuildObjectInstallNeighborThresholdByName(FN
 bool UBuildingDataSubsystem::GetPalBuildObjectbIsInstallOnlyOnBaseByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->bIsInstallOnlyOnBase;
 	return false;
 }
@@ -147,8 +139,7 @@ bool UBuildingDataSubsystem::GetPalBuildObjectbIsInstallOnlyOnBaseByName(FName R
 bool UBuildingDataSubsystem::GetPalBuildObjectbIsInstallOnlyInDoorByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->bIsInstallOnlyInDoor;
 	return false;
 }
@@ -156,8 +147,7 @@ bool UBuildingDataSubsystem::GetPalBuildObjectbIsInstallOnlyInDoorByName(FName R
 bool UBuildingDataSubsystem::GetPalBuildObjectbIsInstallOnlyHubAroundByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->bIsInstallOnlyHubAround;
 	return false;
 }
@@ -165,8 +155,7 @@ bool UBuildingDataSubsystem::GetPalBuildObjectbIsInstallOnlyHubAroundByName(FNam
 int32 UBuildingDataSubsystem::GetPalBuildObjectInstallMaxNumInBaseCampByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->bIsInstallOnlyOnBase;
 	return int32();
 }
@@ -174,8 +163,7 @@ int32 UBuildingDataSubsystem::GetPalBuildObjectInstallMaxNumInBaseCampByName(FNa
 bool UBuildingDataSubsystem::GetPalBuildObjectbInstallableNoObstacleFromCameraByName(FName RowName)
 {
 	const FPalBuildObjectData* Result{};
-	GetPalBuildObjectData(RowName, Result);
-	if (Result)
+	if (GetPalBuildObjectData(RowName, &Result))
 		return Result->bInstallableNoObstacleFromCamera;
 	return false;
 }

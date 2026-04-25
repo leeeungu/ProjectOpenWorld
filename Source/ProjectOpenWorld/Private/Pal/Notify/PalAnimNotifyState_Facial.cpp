@@ -1,6 +1,6 @@
-#include "Pal/Notify/PalAnimNotifyState_Facial.h"
+﻿#include "Pal/Notify/PalAnimNotifyState_Facial.h"
 #include "Pal/FunctionLibrary/Function_PalFacial.h"
-
+#if WITH_EDITOR	
 void UPalAnimNotifyState_Facial::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)
 {
 	Super::OnAnimNotifyCreatedInEditor(ContainingAnimNotifyEvent);
@@ -14,7 +14,7 @@ void UPalAnimNotifyState_Facial::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& C
 		ContainingAnimNotifyEvent.SetDuration(ContainingAnimNotifyEvent.EndLink.GetLinkedMontage()->GetPlayLength());
 	}
 }
-
+#endif
 void UPalAnimNotifyState_Facial::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);

@@ -1,4 +1,4 @@
-#include "Landscape/Component/GenerateTerrainComponent.h"
+ï»¿#include "Landscape/Component/GenerateTerrainComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "NavigationSystem.h"
 
@@ -16,7 +16,7 @@ UGenerateTerrainComponent::UGenerateTerrainComponent() : Super()
 		EmpthyMeshComponent.Add(Mehs);
 	}
 }
-
+#if WITH_EDITOR	
 void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
@@ -30,7 +30,7 @@ void UGenerateTerrainComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
-
+#endif
 void UGenerateTerrainComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -63,7 +63,7 @@ void UGenerateTerrainComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 		if (!GenerateTerrain)
 			return;
 
-		// ºó UProceduralMeshComponent°¡ ÀÖÀ¸¸é ÇÏ³ªÀÇ Section¸¸ »ý¼º ¹× NavOctree  °»½Å
+		// ë¹ˆ UProceduralMeshComponentê°€ ìžˆìœ¼ë©´ í•˜ë‚˜ì˜ Sectionë§Œ ìƒì„± ë° NavOctree  ê°±ì‹ 
 		GenerateTerrain->CreateMeshSection(0, *SectionData.Vertices, *SectionData.Triangles,
 			*SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
 		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
@@ -78,7 +78,7 @@ void UGenerateTerrainComponent::DelGenerateWorld(const FGenerateSectionData& Sec
 {
 	if (TObjectPtr<UProceduralMeshComponent>* GenerateTerrain = SectionIDToMeshIndex.Find(SectionData.SectionID))
 	{
-		// ÇØ´ç ¼½¼ÇÀÌ ÀÖ´Ù¸é ¸Þ½¬ ¼½¼Ç »èÁ¦ ¹× Å¥¿¡ ÄÄÆ÷³ÍÆ® ¹Ý³³
+		// í•´ë‹¹ ì„¹ì…˜ì´ ìžˆë‹¤ë©´ ë©”ì‰¬ ì„¹ì…˜ ì‚­ì œ ë° íì— ì»´í¬ë„ŒíŠ¸ ë°˜ë‚©
 		if (*GenerateTerrain)
 		{
 			(*GenerateTerrain)->ClearAllMeshSections();

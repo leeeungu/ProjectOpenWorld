@@ -1,4 +1,4 @@
-#include "Landscape/Component/GenerateFoliageComponent.h"
+ï»¿#include "Landscape/Component/GenerateFoliageComponent.h"
 #include "FoliageType_InstancedStaticMesh.h"
 #include "FoliageInstancedStaticMeshComponent.h"
 #include "Landscape/Component/PalFoliageInstanceComponent.h"
@@ -29,7 +29,7 @@ UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{
 	}
 	FoliageCount = FoliageMeshData.Num();
 }
-
+#if WITH_EDITOR	
 void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
@@ -44,6 +44,7 @@ void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 	FoliageCount = FoliageMeshData.Num();
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
+#endif
 
 void UGenerateFoliageComponent::BeginPlay()
 {
@@ -123,7 +124,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 				FoliageSectionData* SectionData = &FoliageSectionDataMap.FindOrAdd(Data.SectionID);
 				if (SectionData)
 				{
-					// Section Á¦°Å Ã³¸®
+					// Section ì œê±° ì²˜ë¦¬
 					if (Data.bRemove)
 					{
 						//UE_LOG(LogTemp, Warning, TEXT("Update Foliage %d"), Data.bRemove);
@@ -147,7 +148,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 							UpdateData.Empty();
 							break;
 						}
-						// »ı¼º ÀÏ½Ã ¼³Ä¡ °¡´ÉÇÑ ÀÎ½ºÅÏ½º Ãß°¡
+						// ìƒì„± ì¼ì‹œ ì„¤ì¹˜ ê°€ëŠ¥í•œ ì¸ìŠ¤í„´ìŠ¤ ì¶”ê°€
 						FTransform NewTransform = Data.FoliageData[nUpdateTickIndex];
 						FVector Location = NewTransform.GetLocation();
 						FHitResult HitResult;
@@ -167,7 +168,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 								NewTransform.SetRotation(FQuat(FVector::ForwardVector.Rotation()));
 							}
 							NewTransform.SetLocation(Location);
-							// ³ôÀÌ ¹× °æ»çµµ Ã¼Å©
+							// ë†’ì´ ë° ê²½ì‚¬ë„ ì²´í¬
 							if (Data.FoliageMesh->Height.Contains(Location.Z))
 							{
 								TObjectPtr<UFoliageInstancedStaticMeshComponent>& MeshComponent =
@@ -186,7 +187,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 					}
 				}
 
-				// ¼½¼Ç ³» Æú¸®Áö µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® ¿Ï·á
+				// ì„¹ì…˜ ë‚´ í´ë¦¬ì§€ ë°ì´í„° ì—…ë°ì´íŠ¸ ì™„ë£Œ
 				if (!Data.FoliageData.IsValidIndex(nUpdateTickIndex))
 				{
 					nUpdateTickIndex = 0;
@@ -194,7 +195,7 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 				}
 			}
 
-			// ¼½¼Ç º°·Î ÀüÃ¼ ¼½¼Ç ¾÷µ¥ÀÌÆ® ¿Ï·á
+			// ì„¹ì…˜ ë³„ë¡œ ì „ì²´ ì„¹ì…˜ ì—…ë°ì´íŠ¸ ì™„ë£Œ
 			if (UpdateData.IsEmpty())
 			{
 				//UE_LOG(LogTemp, Warning, TEXT("Finish Update Foliage %f"), Time);
@@ -245,7 +246,7 @@ void UGenerateFoliageComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 	FoliageSectionData* FoliageSectionData = FoliageSectionDataMap.Find(SectionData.SectionID);
 	if (!FoliageSectionData)
 	{
-		// »õ·Î Ãß°¡µÈ »ö¼ÇÀÇ Data »ı¼º
+		// ìƒˆë¡œ ì¶”ê°€ëœ ìƒ‰ì…˜ì˜ Data ìƒì„±
 		FVector2D SectionID = SectionData.SectionID;
 		int SectionIndex = static_cast<int>(FMath::PerlinNoise2D(SectionID * 0.1)* 100000);
 		float RandomSeed = FoliageSeed * SectionIndex;
@@ -316,21 +317,21 @@ void FAsyncFoliageGenerater::DoWork()
 			FIntPoint SectionID = KeyArray.Last();
 			FoliageAddData& AddData = *AddMap.Find(SectionID);
 			KeyArray.Pop(false);
-			// »ö¼Ç Data
+			// ìƒ‰ì…˜ Data
 			if (const FoliageSectionData* SectionData = FoliageSectionDataMap.Find(SectionID))
 			{
 				FMath::RandInit(SectionData->RandomSeed);
 				int Rand = FMath::RandRange(FoliageGenerater->FoliageDataCreateRange.X, FoliageGenerater->FoliageDataCreateRange.Y);
 				FVector StartPos = AddData.StartPos;
 				FVector EndPos = AddData.EndPos;
-				// FFoliageDataTable  ¹üÀ§ ³» ÀÎ½ºÅÏ½º Á¶ÇÕ ·£´ı »ı¼º
+				// FFoliageDataTable  ë²”ìœ„ ë‚´ ì¸ìŠ¤í„´ìŠ¤ ì¡°í•© ëœë¤ ìƒì„±
 				for (int CurrentRnadIndex = 0; CurrentRnadIndex < Rand; CurrentRnadIndex++)
 				{
 					int32 CurrentInstanceIndex = FMath::Rand() % FoliageTypes.Num();
 					const FFoliageDataTable* FoliageDataTableStruct = FoliageTypes[CurrentInstanceIndex];
 					const TArray<FFoliageInstanceData>& FoliageInstanceArray = FoliageDataTableStruct->InstanceData;
 					FVector RandPos{ FMath::RandRange(StartPos.X, EndPos.X), FMath::RandRange(StartPos.Y, EndPos.Y),  0 };
-					// »ö¼Ç ³»ÀÇ ·£´ı À§Ä¡ ¼±ÅÃ
+					// ìƒ‰ì…˜ ë‚´ì˜ ëœë¤ ìœ„ì¹˜ ì„ íƒ
 					for (int InstanceIndex = 0; InstanceIndex < FoliageInstanceArray.Num(); InstanceIndex++)
 					{
 						// Data
@@ -353,8 +354,8 @@ void FAsyncFoliageGenerater::DoWork()
 							FVector Location = NewTransform.GetLocation();
 							Location += InstanceOffset;
 
-							// »ö¼Ç ¹ÛÀ¸·Î ³ª°¡¸é ÁöÇüÀº ¾ø´Âµ¥ instance´Â »ı±â°Ô µÇ´Ï Á¦°Å
-							// clamp ÇÏ¸é ³·Àº È®·ü·Î ¼½¼Ç °æ°è¿¡ instance°¡ ¸ğ¿©¼­ »ı±æ¼öµµ ÀÖÀ½
+							// ìƒ‰ì…˜ ë°–ìœ¼ë¡œ ë‚˜ê°€ë©´ ì§€í˜•ì€ ì—†ëŠ”ë° instanceëŠ” ìƒê¸°ê²Œ ë˜ë‹ˆ ì œê±°
+							// clamp í•˜ë©´ ë‚®ì€ í™•ë¥ ë¡œ ì„¹ì…˜ ê²½ê³„ì— instanceê°€ ëª¨ì—¬ì„œ ìƒê¸¸ìˆ˜ë„ ìˆìŒ
 							FBox SectionBox{ StartPos, EndPos };
 							bool bInSection = SectionBox.IsInsideOrOnXY(Location);
 							Location.Z += FMath::RandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max);

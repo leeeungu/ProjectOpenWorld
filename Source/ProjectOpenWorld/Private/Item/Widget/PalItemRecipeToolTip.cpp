@@ -1,4 +1,4 @@
-#include "Item/Widget/PalItemRecipeToolTip.h"
+﻿#include "Item/Widget/PalItemRecipeToolTip.h"
 #include "Item/Widget/PalItemRecipeMaterialWidget.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
@@ -29,7 +29,7 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalStaticItemDataStruct* Result{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, Result) && Result)
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, &Result) && Result)
 	{
 		if (RecipeNameText)
 		{
@@ -63,7 +63,7 @@ void UPalItemRecipeToolTip::SetRecipeID(FName InRecipeID)
 	{
 		int32 Count = MaterialList->GetChildrenCount();
 		const FPalItemRecipe* Recipe{};
-		UItemDataSubsystem::GetPalItemRecipeDataPtr(RecipeID, Recipe);
+		UItemDataSubsystem::GetPalItemRecipeDataPtr(RecipeID,&Recipe);
 		for (int32 i = 0; i < Count; i++)
 		{
 			UPalItemRecipeMaterialWidget* MaterialWidget = Cast<UPalItemRecipeMaterialWidget>(MaterialList->GetChildAt(i));

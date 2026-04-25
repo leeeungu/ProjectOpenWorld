@@ -29,7 +29,7 @@ void UPalBuildingRecipeMaterial::SetMaterialData(FName InMaterialId, int32 InMat
 		if (UItemDataSubsystem::IsValidInstance())
 		{
 			const FPalStaticItemDataStruct* ItemData{};
-			if (UItemDataSubsystem::GetPalStaticItemDataPtr(MaterialId, ItemData) && ItemData)
+			if (UItemDataSubsystem::GetPalStaticItemDataPtr(MaterialId, &ItemData) && ItemData)
 			{
 				MaterialIconImage->SetBrushFromTexture(UItemDataSubsystem::GetPalItemIconTextureByName(*ItemData->IconName));
 			}

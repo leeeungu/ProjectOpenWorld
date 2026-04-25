@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -22,7 +22,7 @@ class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManag
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
 	TObjectPtr<UPalBuildingStaticMeshComponent> PalBuildingStaticMeshComponent{};
-	// «ÿ¥Á ±‚¥…¿ª π≠æÓº≠ √≥∏Æ∏È ¡¡¿ªµÌ?
+	// Ìï¥Îãπ Í∏∞Îä•ÏùÑ Î¨∂Ïñ¥ÏÑú Ï≤òÎ¶¨Î©¥ Ï¢ãÏùÑÎìØ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
 	TObjectPtr<UBuildingActionWidgetComponent> BuildActionWidget{};
 
@@ -54,7 +54,7 @@ protected:
 	virtual void BeginPlay() override;
 public:
 	UFUNCTION(BlueprintPure, Category = "Building")
-	FORCEINLINE UStaticMeshComponent* GetBuildingMeshComponent() const;
+	UStaticMeshComponent* GetBuildingMeshComponent() const;
 	UFUNCTION(BlueprintPure, Category = "Building")
 	FORCEINLINE UPalBuildingStaticMeshComponent* GetBuildingProgress() const { return PalBuildingStaticMeshComponent; }
 };

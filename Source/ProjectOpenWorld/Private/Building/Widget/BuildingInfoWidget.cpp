@@ -1,4 +1,4 @@
-#include "Building/Widget/BuildingInfoWidget.h"
+﻿#include "Building/Widget/BuildingInfoWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
@@ -11,7 +11,7 @@ void UBuildingInfoWidget::SetBuildingInfoData(FName InBuildObjectId)
 	if (!UBuildingDataSubsystem::IsValidInstance())
 		return;
 	const FPalBuildObjectData* BuildObjectData{};
-	if (UBuildingDataSubsystem::GetPalBuildObjectData(BuildObjectId, BuildObjectData) && BuildObjectData)
+	if (UBuildingDataSubsystem::GetPalBuildObjectData(BuildObjectId, &BuildObjectData) && BuildObjectData)
 	{
 		if (BuildObjectIdText)
 		{

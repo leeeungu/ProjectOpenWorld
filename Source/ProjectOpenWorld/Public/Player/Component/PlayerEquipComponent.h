@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Item/Component/EquipmentComponent.h"
@@ -36,6 +36,7 @@ protected:
 public:	
 	virtual bool EquipItem(const UBaseItem* Item) override;
 	virtual bool UnequipItem(const UBaseItem* Item) override;
+	bool IsEquipSlot(const UBaseItem* Item) const;
 	bool UnEquipCurrent() ;
 
 	// 	IPlayerInputInterface implementation
@@ -44,7 +45,7 @@ public:
 	virtual void CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
 
 private:
-	UHandEquipItemFragment* GetHandEquipFragment(const UBaseItem* Item);
-	class UPlayerAnimationSLEDataFragment* GetPlayerAnimationSLEDataFragment(const UBaseItem* Item);
-	UWeaponeAssetUserData* GetWeaponAssetUserData(USkeletalMesh* Mesh);
+	UHandEquipItemFragment* GetHandEquipFragment(const UBaseItem* Item) const;
+	class UPlayerAnimationSLEDataFragment* GetPlayerAnimationSLEDataFragment(const UBaseItem* Item) const;
+	UWeaponeAssetUserData* GetWeaponAssetUserData(USkeletalMesh* Mesh) const;
 };

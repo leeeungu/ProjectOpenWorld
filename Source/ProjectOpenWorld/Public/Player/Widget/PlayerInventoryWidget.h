@@ -1,10 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Player/Interface/MainWidgetInterface.h"
 #include "PlayerInventoryWidget.generated.h"
 
+class UEquipSlotWidget;
 class UInventorySlotBase;
 
 UCLASS()
@@ -14,11 +15,11 @@ class PROJECTOPENWORLD_API UPlayerInventoryWidget : public UUserWidget, public I
 
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
-	TObjectPtr < UInventorySlotBase> WeaponeSlot{};
+	TObjectPtr < UEquipSlotWidget> WeaponeSlot{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
-	TObjectPtr < UInventorySlotBase> AxeSlot{};
+	TObjectPtr < UEquipSlotWidget> AxeSlot{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
-	TObjectPtr < UInventorySlotBase> PickAxeSlot{};
+	TObjectPtr < UEquipSlotWidget> PickAxeSlot{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr < UInventorySlotBase> HeadEquipSlot{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))

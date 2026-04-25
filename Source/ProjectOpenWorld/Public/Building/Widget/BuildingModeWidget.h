@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -40,7 +40,9 @@ protected:
 public:
 	void SetBuildingUI(TArray<FName> BuildingIDs);
 	void SelectBuilding(FName BuildingID);
+#if WITH_EDITOR	
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 	void StartViewWidget();
 	void EndViewWidget();

@@ -1,4 +1,4 @@
-#include "Building/Widget/BuildingModeWidget.h"
+﻿#include "Building/Widget/BuildingModeWidget.h"
 #include "Building/BuildingAssistComponent.h"
 #include "Player/Character/BasePlayer.h" 
 #include "Materials/MaterialInstance.h"
@@ -86,14 +86,14 @@ void UBuildingModeWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 }
-
+#if WITH_EDITOR	
 void UBuildingModeWidget::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (ButtonPanel)
 		ButtonPanel->PreConstruct();
 }
-
+#endif
 void UBuildingModeWidget::StartViewWidget()
 {
 	APlayerController* pc = GetOwningPlayer();

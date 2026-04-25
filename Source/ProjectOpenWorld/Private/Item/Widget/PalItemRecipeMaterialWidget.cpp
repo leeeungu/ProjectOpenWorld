@@ -1,4 +1,4 @@
-#include "Item/Widget/PalItemRecipeMaterialWidget.h"
+﻿#include "Item/Widget/PalItemRecipeMaterialWidget.h"
 #include "Item/DataTable/PalItemRecipe.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
@@ -25,7 +25,7 @@ void UPalItemRecipeMaterialWidget::SetMaterialData( FName InMaterialID, int InMa
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;	
 	const FPalStaticItemDataStruct* Result{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(Material_ID, Result))
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(Material_ID, &Result))
 	{
 		if (ItemNameText)
 		{

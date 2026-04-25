@@ -1,4 +1,4 @@
-#include "Item/Widget/PalItemRecipeWidget.h"
+ï»¿#include "Item/Widget/PalItemRecipeWidget.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/DataTable/PalItemRecipe.h"
@@ -148,11 +148,11 @@ void UPalItemRecipeWidget::SetItemRecipe( FName InItemRecipe)
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalItemRecipe* Recipe{};
-	if (!UItemDataSubsystem::GetPalItemRecipeDataPtr(ItemRecipe_ID, Recipe) || !Recipe)
+	if (!UItemDataSubsystem::GetPalItemRecipeDataPtr(ItemRecipe_ID, &Recipe) || !Recipe)
 		return;
 
 	const FPalStaticItemDataStruct* Result{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(ItemRecipe_ID, Result) && Result)
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(ItemRecipe_ID, &Result) && Result)
 	{
 		if (ItemNameText)
 		{
@@ -213,7 +213,7 @@ void UPalItemRecipeWidget::SetItemRecipe( FName InItemRecipe)
 		}
 		if (WorkingAmountText)
 		{
-			WorkingAmountText->SetText(FText::Format(FText::FromString("{0}"), FText::AsNumber(Recipe->WorkAmount / 100.0f))); // ÀÛ¾÷·®")));
+			WorkingAmountText->SetText(FText::Format(FText::FromString("{0}"), FText::AsNumber(Recipe->WorkAmount / 100.0f))); // ìž‘ì—…ëŸ‰")));
 		}
 	}
 }

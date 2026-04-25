@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -16,7 +16,7 @@ class PROJECTOPENWORLD_API UInventorySlotBase : public UUserWidget, public IInve
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidgetclass))
 	TObjectPtr<UCanvasPanel> inventorySlotCanvas{};
 
 	TSoftObjectPtr<UInventorySlotWidget> inventorySlotUW{};
@@ -43,7 +43,7 @@ public:
 	bool SwapSlot(UInventorySlotBase* OtherSlot);
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
-	FORCEINLINE UInventorySlotWidget* GetInventorySlotWidget() const;
+	UInventorySlotWidget* GetInventorySlotWidget() const;
 
 protected:
 
@@ -62,7 +62,6 @@ protected:
 	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 
 	UInventoryComponent* GetInventoryComponent() const;

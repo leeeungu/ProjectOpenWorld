@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/Notify/AnimNotify_Attack.h"
 #include "AttackNotify.generated.h"
 
-// ÄÄÆÄÀÏ ½Ã °æ°í¸¦ ¹ß»ı½ÃÄÑ »ç¿ëÀ» ÁÙÀÌµµ·Ï À¯µµ
+// ì»´íŒŒì¼ ì‹œ ê²½ê³ ë¥¼ ë°œìƒì‹œì¼œ ì‚¬ìš©ì„ ì¤„ì´ë„ë¡ ìœ ë„
 UCLASS(meta=(DisplayName="AttackNotify (Deprecated)"))
 class PROJECTOPENWORLD_API UAttackNotify : public UAnimNotify_Attack
 {
@@ -12,7 +12,7 @@ class PROJECTOPENWORLD_API UAttackNotify : public UAnimNotify_Attack
 
 public:
 #if WITH_EDITOR
-	// ¿¡µğÅÍÀÇ ¾Ö´Ï¸ŞÀÌ¼Ç ³ëÆ¼ Æ®·¢¿¡¼­ º¸ÀÌ´Â ÀÌ¸§À» º¯°æÇÏ¿© ¸íÈ®È÷ Ç¥½Ã
+	// ì—ë””í„°ì˜ ì• ë‹ˆë©”ì´ì…˜ ë…¸í‹° íŠ¸ë™ì—ì„œ ë³´ì´ëŠ” ì´ë¦„ì„ ë³€ê²½í•˜ì—¬ ëª…í™•íˆ í‘œì‹œ
 	virtual FString GetNotifyName_Implementation() const override
 	{
 		return TEXT("AttackNotify (Deprecated) - Do NOT use. Use UAnimNotify_Attack instead.");

@@ -1,4 +1,4 @@
-#include "Inventory/Widget/InventorySlotWidget.h"
+﻿#include "Inventory/Widget/InventorySlotWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Item/System/ItemDataSubsystem.h"
@@ -24,7 +24,7 @@ void UInventorySlotWidget::SetSlotData_Implementation(const FInventorySlot& Data
 	if (!UItemDataSubsystem::IsValidInstance())
 		return;
 	const FPalStaticItemDataStruct* ItemData{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemData) && ItemData)
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &ItemData) && ItemData)
 	{
 		if (ItemImage)
 		{

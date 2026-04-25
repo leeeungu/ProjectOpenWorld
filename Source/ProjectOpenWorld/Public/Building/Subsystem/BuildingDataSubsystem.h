@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -54,8 +54,8 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	static bool IsValidInstance() { return SingletonInstance != nullptr; }
-	static bool GetPalBuildObjectData(FName RowName, const FPalBuildObjectData*& Data);
-	static bool GetPalBuildObjectIconData(FName RowName, const FPalBuildObjectIconData*& Data);
+	static bool GetPalBuildObjectData(FName RowName, const FPalBuildObjectData** Data);
+	static bool GetPalBuildObjectIconData(FName RowName, const FPalBuildObjectIconData** Data);
 
 	//FString MapObjectId{};
 	//int32 SortId = 0;

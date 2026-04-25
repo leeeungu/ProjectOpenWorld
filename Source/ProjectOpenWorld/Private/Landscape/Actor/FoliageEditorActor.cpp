@@ -1,4 +1,4 @@
-#include "Landscape/Actor/FoliageEditorActor.h"
+﻿#include "Landscape/Actor/FoliageEditorActor.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"
 #include "FoliageType_InstancedStaticMesh.h"
 #include "FoliageInstancedStaticMeshComponent.h"
@@ -8,7 +8,7 @@ AFoliageEditorActor::AFoliageEditorActor()
 	PrimaryActorTick.bCanEverTick = false;
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent")));
 }
-
+#if WITH_EDITOR	
 void AFoliageEditorActor::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	if (FoliageDataTable)
@@ -74,7 +74,7 @@ void AFoliageEditorActor::PostEditChangeProperty(FPropertyChangedEvent& Property
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
-		
+#endif
 void AFoliageEditorActor::SetFoliageMeshComponent(TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp)
 {
 	if (FoliageMesh && MeshComp)

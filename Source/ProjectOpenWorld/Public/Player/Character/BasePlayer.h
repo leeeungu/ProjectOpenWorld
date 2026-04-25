@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -216,10 +216,10 @@ public:
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
 	//FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
 	FORCEINLINE UItemUseComponent* const GetPlayerItemUseComponent() const { return PlayerItemUseComponent; }
-	FORCEINLINE UEquipmentComponent* const GetPlayerEquipComponent() const;
-	FORCEINLINE class UPlayerAnimInstance* const GetPlayerAnimInstance() const;
-	FORCEINLINE  USkeletalMeshComponent* GetRightHandEquipComponent() const;
-	FORCEINLINE  USkeletalMeshComponent* GetLeftHandEquipComponent() const;
+	UEquipmentComponent* const GetPlayerEquipComponent() const;
+	class UPlayerAnimInstance* const GetPlayerAnimInstance() const;
+	USkeletalMeshComponent* GetRightHandEquipComponent() const;
+	USkeletalMeshComponent* GetLeftHandEquipComponent() const;
 	
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }

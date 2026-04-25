@@ -1,9 +1,10 @@
-#include "GameBase/Notify/AnimNotify_Attack.h"
+﻿#include "GameBase/Notify/AnimNotify_Attack.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h"
 #include "GameBase/Object/AttackObject.h"
 
+#if WITH_EDITOR	
 void UAnimNotify_Attack::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)
 {
 	Super::OnAnimNotifyCreatedInEditor(ContainingAnimNotifyEvent);
@@ -20,6 +21,7 @@ void UAnimNotify_Attack::PostEditChangeProperty(FPropertyChangedEvent& PropertyC
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
+#endif
 
 FCollisionShape UAnimNotify_Attack::GetAttackCollisionShape() const
 {

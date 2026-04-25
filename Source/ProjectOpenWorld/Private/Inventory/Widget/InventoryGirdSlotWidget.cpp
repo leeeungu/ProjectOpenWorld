@@ -1,6 +1,7 @@
 #include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
+#include "Inventory/Widget/InventoryDDO.h"
 
 
 FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -21,4 +22,13 @@ FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry&
 		UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 	}
 	return FReply::Handled();
+}
+
+bool UInventoryGirdSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
+	{
+		return  SwapSlot(Cast< UInventorySlotBase>(DDO->Payload));
+	}
+	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
 }

@@ -144,16 +144,16 @@ void UInventorySlotBase::NativeOnDragDetected(const FGeometry& InGeometry, const
 	OutOperation = DDO;
 }
 
-bool UInventorySlotBase::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
-{
-	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
-	{
-		const FInventorySlot* srcSlot= itemPointer;
-		bool bIsSameSlot = SwapSlot(Cast< UInventorySlotBase>(DDO->Payload));
-		return bIsSameSlot;
-	}
-	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
-}
+//bool UInventorySlotBase::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+//{
+//	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
+//	{
+//		const FInventorySlot* srcSlot= itemPointer;
+//		bool bIsSameSlot = SwapSlot(Cast< UInventorySlotBase>(DDO->Payload));
+//		return bIsSameSlot;
+//	}
+//	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
+//}
 
 UInventoryComponent* UInventorySlotBase::GetInventoryComponent() const
 {

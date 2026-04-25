@@ -1,9 +1,10 @@
-#include "Player/Widget/PlayerInventoryWidget.h"
+﻿#include "Player/Widget/PlayerInventoryWidget.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Player/Controller/BasePlayerController.h"
+#include "Inventory/Widget/EquipSlotWidget.h"
 #include "Inventory/Widget/InventorySlotBase.h"
 
 bool UPlayerInventoryWidget::SetMainWidget()

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -66,11 +66,11 @@ public:
 
 
 	static bool IsValidInstance() { return SingletonInstance != nullptr; }
-	static bool GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data) ;
-	static bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data) ;
-	static bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data) ;
-	static bool GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData*& Data);
-	static bool GetPalItemSlotDataPtr(FName RowName, const FPalItemSlotData*& Data);
+	static bool GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct** Data) ;
+	static bool GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe** Data) ;
+	static bool GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow** Data) ;
+	static bool GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData** Data);
+	static bool GetPalItemSlotDataPtr(FName RowName, const FPalItemSlotData** Data);
 
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
@@ -130,7 +130,7 @@ public:
 	static FString GetPalItemRecipeUnlockItemIDByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
-	static const TArray< FRecipeMaterialData>& GetPalItemRecipeMaterialsByName(FName RowName) ;
+	static const TArray< FRecipeMaterialData> GetPalItemRecipeMaterialsByName(FName RowName) ;
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static UItemDataAsset* GetPalItemDataAssetByName(FName RowName);

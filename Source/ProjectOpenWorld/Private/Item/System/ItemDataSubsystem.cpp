@@ -1,71 +1,71 @@
-#include "Item/System/ItemDataSubsystem.h"
+﻿#include "Item/System/ItemDataSubsystem.h"
 #include "Item/DataTable/WeaponeData.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Actor/ItemActor.h"
 
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
 
-bool UItemDataSubsystem::GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct*& Data)
+bool UItemDataSubsystem::GetPalStaticItemDataPtr(FName RowName, const FPalStaticItemDataStruct** Data)
 {
 	if (!SingletonInstance)
 		return false;
 	if (const FPalStaticItemDataStruct* const* FoundData = SingletonInstance->PalStaticItemDataTableStruct.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalStaticItemDataTableStruct.Dummy;
+	*Data = &SingletonInstance->PalStaticItemDataTableStruct.Dummy;
 	return false;
 }
 
-bool UItemDataSubsystem::GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe*& Data)
+bool UItemDataSubsystem::GetPalItemRecipeDataPtr(FName RowName, const FPalItemRecipe** Data)
 {
 	if (const FPalItemRecipe* const* FoundData = SingletonInstance->PalItemRecipeDataTableStruct.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalItemRecipeDataTableStruct.Dummy;
+	*Data = &SingletonInstance->PalItemRecipeDataTableStruct.Dummy;
 	return false;
 }
 
-bool UItemDataSubsystem::GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow*& Data)
+bool UItemDataSubsystem::GetPalItemIconDataPtr(FName RowName, const FPalEditorItemIconTableRow** Data)
 {
 	if (const FPalEditorItemIconTableRow* const* FoundData = SingletonInstance->PalItemIconDataTableStruct.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalItemIconDataTableStruct.Dummy;
+	*Data = &SingletonInstance->PalItemIconDataTableStruct.Dummy;
 	return false;
 }
 
-bool UItemDataSubsystem::GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData*& Data)
+bool UItemDataSubsystem::GetPalItemMeshDataPtr(FName RowName, const FPalItemMeshData** Data)
 {
 	if (const FPalItemMeshData* const* FoundData = SingletonInstance->PalItemMeshDataTableStruct.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalItemMeshDataTableStruct.Dummy;
+	*Data = &SingletonInstance->PalItemMeshDataTableStruct.Dummy;
 	return false;
 }
 
-bool UItemDataSubsystem::GetPalItemSlotDataPtr(FName RowName, const FPalItemSlotData*& Data)
+bool UItemDataSubsystem::GetPalItemSlotDataPtr(FName RowName, const FPalItemSlotData** Data)
 {
 	if (const FPalItemSlotData* const* FoundData = SingletonInstance->PalItemSlotDataTableStruct.ItemDataMap.Find(RowName))
 	{
-		Data = *FoundData;
+		*Data = *FoundData;
 		return true;
 	}
-	Data = &SingletonInstance->PalItemSlotDataTableStruct.Dummy;
+	*Data = &SingletonInstance->PalItemSlotDataTableStruct.Dummy;
 	return false;
 }
 
 int32 UItemDataSubsystem::GetPalItemSlotDataMaxStackCountByName(FName RowName)
 {
 	const FPalItemSlotData* Result{};
-	if (GetPalItemSlotDataPtr(RowName, Result))
+	if (GetPalItemSlotDataPtr(RowName, &Result))
 		return Result->MaxStackCount;
 	return int32();
 }
@@ -73,8 +73,7 @@ int32 UItemDataSubsystem::GetPalItemSlotDataMaxStackCountByName(FName RowName)
 FPalItemMeshData UItemDataSubsystem::GetPalItemMeshDataByName(FName RowName)
 {
 	const FPalItemMeshData* Result{};
-	GetPalItemMeshDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemMeshDataPtr(RowName, &Result))
 		return *Result;
 	return FPalItemMeshData();
 }
@@ -82,7 +81,7 @@ FPalItemMeshData UItemDataSubsystem::GetPalItemMeshDataByName(FName RowName)
 UStaticMesh* UItemDataSubsystem::GetItemMeshByName(FName RowName)
 {
 	const FPalItemMeshData* MeshData{};
-	if (GetPalItemMeshDataPtr(RowName, MeshData) && MeshData->ItemStaticMeshSoft)
+	if (GetPalItemMeshDataPtr(RowName, &MeshData) && MeshData->ItemStaticMeshSoft)
 	{
 		return MeshData->ItemStaticMeshSoft.LoadSynchronous();
 	}
@@ -141,8 +140,7 @@ void UItemDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 FPalStaticItemDataStruct UItemDataSubsystem::GetPalStaticItemDataByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return *Result;
 	return FPalStaticItemDataStruct{};
 }
@@ -150,8 +148,7 @@ FPalStaticItemDataStruct UItemDataSubsystem::GetPalStaticItemDataByName(FName Ro
 FPalItemRecipe UItemDataSubsystem::GetPalItemRecipeDataByName(FName RowName)
 {
 	const FPalItemRecipe* Result{};
-	GetPalItemRecipeDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemRecipeDataPtr(RowName, &Result))
 		return *Result;
 	return FPalItemRecipe();
 }
@@ -159,8 +156,7 @@ FPalItemRecipe UItemDataSubsystem::GetPalItemRecipeDataByName(FName RowName)
 FString UItemDataSubsystem::GetPalStaticItemOverrideNameByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->OverrideName;
 	return FString{};
 }
@@ -168,8 +164,7 @@ FString UItemDataSubsystem::GetPalStaticItemOverrideNameByName(FName RowName)
 FString UItemDataSubsystem::GetPalStaticItemOverrideDescriptionByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result); 
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->OverrideDescription;
 	return FString{};
 }
@@ -177,8 +172,7 @@ FString UItemDataSubsystem::GetPalStaticItemOverrideDescriptionByName(FName RowN
 FString UItemDataSubsystem::GetPalStaticItemIconNameByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result); 
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->IconName;
 	return FString{};
 }
@@ -186,8 +180,7 @@ FString UItemDataSubsystem::GetPalStaticItemIconNameByName(FName RowName)
 int32 UItemDataSubsystem::GetPalStaticItemMaxStackCountByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result); 
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->MaxStackCount;
 	return -1;
 }
@@ -195,8 +188,7 @@ int32 UItemDataSubsystem::GetPalStaticItemMaxStackCountByName(FName RowName)
 float UItemDataSubsystem::GetPalStaticItemWeightByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->Weight;
 	return 0.0f;
 }
@@ -204,8 +196,7 @@ float UItemDataSubsystem::GetPalStaticItemWeightByName(FName RowName)
 int32 UItemDataSubsystem::GetPalStaticItemPriceByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->Price;
 	return -1;
 }
@@ -213,8 +204,7 @@ int32 UItemDataSubsystem::GetPalStaticItemPriceByName(FName RowName)
 int32 UItemDataSubsystem::GetPalStaticItemSortIDByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 		return Result->SortID;
 	return 99999;
 }
@@ -222,8 +212,7 @@ int32 UItemDataSubsystem::GetPalStaticItemSortIDByName(FName RowName)
 TSubclassOf<AItemActor> UItemDataSubsystem::GetPalStaticItemVisualBlueprintClassSoftByName(FName RowName) 
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result && Result->VisualBlueprintClassSoft)
+	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->VisualBlueprintClassSoft)
 		return TSubclassOf<AItemActor>(Result->VisualBlueprintClassSoft);
 	return TSubclassOf<AItemActor>{};
 }
@@ -231,8 +220,7 @@ TSubclassOf<AItemActor> UItemDataSubsystem::GetPalStaticItemVisualBlueprintClass
 TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName)
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if (Result && Result->VisualBlueprintClassSoft)
+	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->VisualBlueprintClassSoft)
 		return TSubclassOf<UBaseItemObject>(Result->VisualBlueprintClassSoft);
 	return TSubclassOf<UBaseItemObject>();
 }
@@ -242,7 +230,10 @@ AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* Wor
 	if (WorldContextObject == nullptr)
 		return nullptr;
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(ItemID, Result);
+	if (!GetPalStaticItemDataPtr(ItemID, &Result))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UItemDataSubsystem::SpawnPalStaticItemVisualActorByName: No data found for ItemID '%s'."), *ItemID.ToString());
+	}
 	UWorld* World = WorldContextObject->GetWorld();
 	TSubclassOf<UObject> SpawnClass = Result->VisualBlueprintClassSoft;
 	if (World && Result->VisualBlueprintClassSoft == nullptr)
@@ -271,8 +262,7 @@ AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* Wor
 FString UItemDataSubsystem::GetPalItemRecipeProductIdByName(FName RowName)
 {
 	const FPalItemRecipe* Result{};
-	GetPalItemRecipeDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemRecipeDataPtr(RowName, &Result))
 		return Result->Product_Id;
 	return FString{};
 }
@@ -280,8 +270,7 @@ FString UItemDataSubsystem::GetPalItemRecipeProductIdByName(FName RowName)
 int32 UItemDataSubsystem::GetPalItemRecipeProductCountByName(FName RowName) 
 {
 	const FPalItemRecipe* Result{};
-	GetPalItemRecipeDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemRecipeDataPtr(RowName, &Result))
 		return Result->Product_Count;
 	return -1;
 }
@@ -289,8 +278,7 @@ int32 UItemDataSubsystem::GetPalItemRecipeProductCountByName(FName RowName)
 float UItemDataSubsystem::GetPalItemRecipeWorkAmountByName(FName RowName)
 {
 	const FPalItemRecipe* Result{};
-	GetPalItemRecipeDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemRecipeDataPtr(RowName, &Result))
 		return Result->WorkAmount;
 	return 0.0f;
 }
@@ -298,33 +286,33 @@ float UItemDataSubsystem::GetPalItemRecipeWorkAmountByName(FName RowName)
 FString UItemDataSubsystem::GetPalItemRecipeUnlockItemIDByName(FName RowName)
 {
 	const FPalItemRecipe* Result{};
-	GetPalItemRecipeDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemRecipeDataPtr(RowName, &Result))
 		return Result->UnlockItemID;
 	return FString{};
 }
 
-const TArray<FRecipeMaterialData>& UItemDataSubsystem::GetPalItemRecipeMaterialsByName(FName RowName)
+const TArray<FRecipeMaterialData> UItemDataSubsystem::GetPalItemRecipeMaterialsByName(FName RowName)
 {
 	const FPalItemRecipe* Result{};
-	GetPalItemRecipeDataPtr(RowName, Result);
-	return Result->Materials;
+	if (GetPalItemRecipeDataPtr(RowName, &Result))
+		return Result->Materials;
+	return TArray<FRecipeMaterialData>();
 }
 
 UItemDataAsset* UItemDataSubsystem::GetPalItemDataAssetByName(FName RowName)
 {
 	const FPalStaticItemDataStruct* Result{};
-	GetPalStaticItemDataPtr(RowName, Result);
-	if(Result->ItemDataAssetSoft.IsValid())
+	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->ItemDataAssetSoft.IsValid())
+	{
 		return Result->ItemDataAssetSoft.LoadSynchronous();
+	}
 	return nullptr;
 }
 
 UTexture2D* UItemDataSubsystem::GetPalItemIconTextureByName(FName RowName) 
 {
 	const FPalEditorItemIconTableRow* Result{};
-	GetPalItemIconDataPtr(RowName, Result);
-	if (Result)
+	if (GetPalItemIconDataPtr(RowName, &Result))
 		return Result->Icon;
 	return nullptr;
 }

@@ -1,4 +1,4 @@
-#include "Item/Widget/PalItemRecipeSlot.h"
+﻿#include "Item/Widget/PalItemRecipeSlot.h"
 #include "Item/Widget/PalItemRecipeToolTip.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -89,9 +89,9 @@ void UPalItemRecipeSlot::SetRecipeID(FName InRecipeID)
 		return;
 	const FPalItemRecipe* ItemRecipe{};
 	const FPalStaticItemDataStruct* Result{};
-	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, Result) && Result)
+	if (UItemDataSubsystem::GetPalStaticItemDataPtr(RecipeID, &Result) && Result)
 	{
-		if (UItemDataSubsystem::GetPalItemRecipeDataPtr(RecipeID, ItemRecipe) && ItemRecipe)
+		if (UItemDataSubsystem::GetPalItemRecipeDataPtr(RecipeID, &ItemRecipe) && ItemRecipe)
 		{
 			if (ItemIcon)
 			{

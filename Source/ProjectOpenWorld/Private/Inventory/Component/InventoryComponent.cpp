@@ -1,4 +1,4 @@
-#include "Inventory/Component/InventoryComponent.h"
+Ôªø#include "Inventory/Component/InventoryComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/Character/BasePlayer.h"
 #include "Item/DataTable/PalStaticItemDataStruct.h"
@@ -8,6 +8,7 @@
 #include "Item/Component/ItemUseComponent.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Object/Fragment/ItemDataSlotFragment.h"
+#include "Player/Component/PlayerEquipComponent.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -20,7 +21,7 @@ const FPalStaticItemDataStruct* UInventoryComponent::FindStaticItemData(FName It
 		return nullptr;
 
 	const FPalStaticItemDataStruct* ItemDataStruct = nullptr;
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, ItemDataStruct);
+	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &ItemDataStruct);
 	return ItemDataStruct;
 }
 
@@ -47,7 +48,7 @@ bool UInventoryComponent::CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rh
 	if (!Lhs || !Rhs)
 		return false;
 
-	// «ˆ¿Á √÷º“ ¡∂∞«
+	// ÌòÑÏû¨ ÏµúÏÜå Ï°∞Í±¥
 	if (Lhs->GetClass() != Rhs->GetClass())
 		return false;
 
@@ -55,7 +56,7 @@ bool UInventoryComponent::CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rh
 		return false;
 
 	const FPalItemSlotData* SlotData{};
-	UItemDataSubsystem::GetPalItemSlotDataPtr(Lhs->GetItemID(), SlotData);
+	UItemDataSubsystem::GetPalItemSlotDataPtr(Lhs->GetItemID(), &SlotData);
 	if (!SlotData)
 		return false;
 	
@@ -105,7 +106,7 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 	if (!EmptySlot)
 		return false;
 
-	// 3. ¿Œ∫•≈‰∏Æ º“¿Ø object∑Œ ∫π¡¶
+	// 3. Ïù∏Î≤§ÌÜ†Î¶¨ ÏÜåÏú† objectÎ°ú Î≥µÏ†ú
 	UBaseItem* StoredItem = DuplicateObject<UBaseItem>(NewItem, this);
 	if (!StoredItem)
 		return false;
@@ -363,8 +364,8 @@ void UInventoryComponent::UseItem(int Row, int Col)
 	if (ItemUseComponent->UseItem(SlotData->ItemObject))
 	{
 		// TODO:
-		// ¿Â∫Ò/∫Òº“∏«∞¿∫ ¡¶∞≈«œ∏È æ» µ»¥Ÿ.
-		// ¿Ã»ƒ UseResult ±∏¡∂√º≥™ ConsumeCount π›»Ø «¸≈¬∑Œ πŸ≤Ÿ¥¬ ∞‘ ∏¬¥Ÿ.
+		// Ïû•ÎπÑ/ÎπÑÏÜåÎ™®ÌíàÏùÄ Ï†úÍ±∞ÌïòÎ©¥ Ïïà ÎêúÎã§.
+		// Ïù¥ÌõÑ UseResult Íµ¨Ï°∞Ï≤¥ÎÇò ConsumeCount Î∞òÌôò ÌòïÌÉúÎ°ú Î∞îÍæ∏Îäî Í≤å ÎßûÎã§.
 		RemoveItemSlot(Row, Col, 1);
 	}
 }
@@ -396,6 +397,20 @@ bool UInventoryComponent::UnUseItemSlot(const FInventorySlot* pSrc)
 	if (ItemUseComponent)
 	{
 		return ItemUseComponent->UnUseItem(pSrc->ItemObject);
+	}
+	return false;
+}
+
+bool UInventoryComponent::HasEquipItem(UBaseItem* EquipItem) const
+{
+	if (!EquipItem)
+		return false;
+	if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
+	{
+		if (UPlayerEquipComponent* EquipmentComponent = Cast< UPlayerEquipComponent>(Player->GetPlayerEquipComponent()))
+		{
+			return EquipmentComponent->IsEquipSlot();
+		}
 	}
 	return false;
 }
@@ -435,7 +450,7 @@ bool UInventoryComponent::SwapInventorySlot(FInventorySlot* Src, FInventorySlot*
 {
 	if (Src == Dst || !Src || !Dst)
 		return false;
-	// Dst¿« æ∆¿Ã≈€ ≈∏¿‘¿Ã Src¿« ≈∏¿‘¿Ã∂˚ ∏¬¿∏∏È ±≥»Ø ∞°¥…
+	// DstÏùò ÏïÑÏù¥ÌÖú ÌÉÄÏûÖÏù¥ SrcÏùò ÌÉÄÏûÖÏù¥Îûë ÎßûÏúºÎ©¥ ÍµêÌôò Í∞ÄÎä•
 	EItemSlotType DstSlotType = EItemSlotType::None;
 
 	if (Dst->ItemObject)

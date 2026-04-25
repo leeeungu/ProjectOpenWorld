@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Item/Object/ItemDataFragment.h"
@@ -35,6 +35,6 @@ public:
 #endif
 
 	FORCEINLINE EItemVisibleMeshType GetVisibleMeshType() const { return VisibleMeshType; }
-	FORCEINLINE UStaticMesh* GetStaticMesh() const;
-	FORCEINLINE USkeletalMesh* GetSkeletalMesh() const;
+	UStaticMesh* GetStaticMesh() const;
+	USkeletalMesh* GetSkeletalMesh() const;
 };
