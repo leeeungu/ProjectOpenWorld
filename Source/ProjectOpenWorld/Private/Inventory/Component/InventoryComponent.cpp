@@ -43,80 +43,76 @@ void UInventoryComponent::BroadcastInventoryUpdated()
 	}
 }
 
+bool UInventoryComponent::CheckStackable(const UBaseItem* Item) const
+{
+	if (!Item)
+		return false;
+	const FPalItemSlotData* SlotData{};
+	if (!UItemDataSubsystem::GetPalItemSlotDataPtr(Item->GetItemID(), &SlotData))
+		return false;
+	return SlotData->bStackable;
+}
+
 bool UInventoryComponent::CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rhs) const
 {
 	if (!Lhs || !Rhs)
 		return false;
 
 	// 현재 최소 조건
-	if (Lhs->GetClass() != Rhs->GetClass())
-		return false;
-
 	if (Lhs->GetItemID() != Rhs->GetItemID())
 		return false;
 
-	const FPalItemSlotData* SlotData{};
-	UItemDataSubsystem::GetPalItemSlotDataPtr(Lhs->GetItemID(), &SlotData);
-	if (!SlotData)
-		return false;
-	
-	if (!SlotData->bStackable)
-		return false;
-	
-	if (SlotData->MaxStackCount <= 1)
-		return false;
-
-	return true;
+	return CheckStackable(Lhs);
 }
 
 bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 {
 	if (!NewItem || NewItem->GetItemID().IsNone() || NewItem->GetItemCount() <= 0)
 		return false;
-
-	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(NewItem->GetItemID());
+	FName NewItemID = NewItem->GetItemID();
+	int32 NewItemCount = NewItem->GetItemCount();
+	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(NewItemID);
 	if (!ItemDataStruct)
+		return false;
+	const FPalItemSlotData* SlotData{};
+	if (!UItemDataSubsystem::GetPalItemSlotDataPtr(NewItemID, &SlotData))
 		return false;
 
 	const float AddedWeight = ItemDataStruct->Weight * NewItem->GetItemCount();
 	if (maxInventoryWeight && (totalInventoryWeight + AddedWeight > *maxInventoryWeight))
 		return false;
 
-	FInventorySlot* EmptySlot{};
-	for (FInventorySlot& Slot : inventoryArray)
+	FInventorySlot* pStackSlot{};
+	if (CheckStackable(NewItem))
 	{
-		if (!EmptySlot && !Slot.ItemObject)
+		for (FInventorySlot& Slot : inventoryArray)
 		{
-			EmptySlot = &Slot;
+			if (SlotData->MaxStackCount - NewItemCount > Slot.GetItemCount())
+			{
+				pStackSlot = &Slot;
+				Slot.ItemObject->SetItemCount(Slot.ItemObject->GetItemCount() + NewItemCount);
+				RefreshSlotCache(Slot);
+				totalInventoryWeight += AddedWeight;
+				BroadcastInventoryUpdated();
+			}
+			return true;
 		}
-		if (!Slot.ItemObject)
-			continue;
+	}
+	if (FInventorySlot* EmptySlot = GetEmptyInventorySlot())
+	{
+		// 3. 인벤토리 소유 object로 복제
+		UBaseItem* StoredItem = DuplicateObject<UBaseItem>(NewItem, this);
+		if (!StoredItem)
+			return false;
 
-		if (!CanStackItem(Slot.ItemObject, NewItem))
-			continue;
-
-		Slot.ItemObject->SetItemCount(Slot.ItemObject->GetItemCount() + NewItem->GetItemCount());
-		RefreshSlotCache(Slot);
+		EmptySlot->ItemObject = StoredItem;
+		RefreshSlotCache(*EmptySlot);
 
 		totalInventoryWeight += AddedWeight;
 		BroadcastInventoryUpdated();
 		return true;
 	}
-
-	if (!EmptySlot)
-		return false;
-
-	// 3. 인벤토리 소유 object로 복제
-	UBaseItem* StoredItem = DuplicateObject<UBaseItem>(NewItem, this);
-	if (!StoredItem)
-		return false;
-
-	EmptySlot->ItemObject = StoredItem;
-	RefreshSlotCache(*EmptySlot);
-
-	totalInventoryWeight += AddedWeight;
-	BroadcastInventoryUpdated();
-	return true;
+	return false;
 }
 
 bool UInventoryComponent::AddItem(FName ItemID, int ItemCount)
@@ -389,32 +385,6 @@ bool UInventoryComponent::IsInventorySlot(const FInventorySlot* Slot) const
 	return inventoryArray.IsValidIndex(Slot->SlotIndex);
 }
 
-bool UInventoryComponent::UnUseItemSlot(const FInventorySlot* pSrc)
-{
-	if (!pSrc || !pSrc->ItemObject || !PlayerCharacter.IsValid())
-		return false;
-	UItemUseComponent* ItemUseComponent = PlayerCharacter->GetPlayerItemUseComponent();
-	if (ItemUseComponent)
-	{
-		return ItemUseComponent->UnUseItem(pSrc->ItemObject);
-	}
-	return false;
-}
-
-bool UInventoryComponent::HasEquipItem(UBaseItem* EquipItem) const
-{
-	if (!EquipItem)
-		return false;
-	/*if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
-	{
-		if (UPlayerEquipComponent* EquipmentComponent = Cast< UPlayerEquipComponent>(Player->GetPlayerEquipComponent()))
-		{
-			return EquipmentComponent->IsEquipSlot();
-		}
-	}*/
-	return false;
-}
-
 bool UInventoryComponent::SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol)
 {
 	const int32 SrcIndex = SrcRow * inventoryCol + SrcCol;
@@ -452,21 +422,17 @@ bool UInventoryComponent::SwapInventorySlot(FInventorySlot* Src, FInventorySlot*
 		return false;
 	// Dst의 아이템 타입이 Src의 타입이랑 맞으면 교환 가능
 	EItemSlotType DstSlotType = EItemSlotType::None;
-
+	bool bHaseFragment{};
 	if (Dst->ItemObject)
 	{
-		UItemDataAsset* DstDataAsset = Dst->ItemObject->GetPalItemDataAssetByName();
-		if (DstDataAsset)
+		if (UItemDataSlotFragment* DstSlotFragment = Cast< UItemDataSlotFragment>(Dst->ItemObject->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
 		{
-			UItemDataSlotFragment* DstSlotFragment = Cast< UItemDataSlotFragment>(DstDataAsset->GetItemDataFragmentOfClass(UItemDataSlotFragment::StaticClass()));
-			if (DstSlotFragment)
-			{
-				DstSlotType = DstSlotFragment->GetSlotType();
-			}
+			DstSlotType = DstSlotFragment->GetSlotType();
+			bHaseFragment = true;
 		}
 	}
-
-	if (Src->SlotType == EItemSlotType::None)
+	
+	if (Src->SlotType == EItemSlotType::None || (DstSlotType == Src->SlotType && bHaseFragment))
 	{
 		UBaseItem* TempSrcItem = Src->ItemObject;
 		Src->ItemObject = Dst->ItemObject;
@@ -477,29 +443,45 @@ bool UInventoryComponent::SwapInventorySlot(FInventorySlot* Src, FInventorySlot*
 		}
 		return true;
 	}
-	//else  if (DstSlotType == Src->SlotType)
-	//{
-	//	bool bUseItemSlot = UseItemSlot(Dst);
-	//	if (bUseItemSlot)
-	//	{
-	//		return RemoveItem(Dst, 1);
-	//	}
-	//}
 	return false;
 }
 
-const FInventorySlot* UInventoryComponent::GetEquipSlot(EItemSlotType SlotType)
+FInventorySlot* UInventoryComponent::GetEmptyInventorySlot()
+{
+	for (FInventorySlot& Slot : inventoryArray)
+	{
+		if (!Slot.ItemObject)
+		{
+			return &Slot;
+		}
+	}
+	return nullptr;
+}
+
+FInventorySlot* UInventoryComponent::GetStackableInventorySlot(const UBaseItem* NewItem)
+{
+	if (!NewItem)
+		return nullptr;
+	if (!CheckStackable(NewItem))
+		return nullptr;
+	FName NewItemID = NewItem->GetItemID();
+	for (FInventorySlot& Slot : inventoryArray)
+	{
+		if (Slot.GetItemID() == NewItemID)
+		{
+			return &Slot;
+		}
+	}
+	return nullptr;
+}
+
+const FInventorySlot* UInventoryComponent::GetEquipSlot(EItemSlotType SlotType) const
 {
 	if (EquipSlot.IsValidIndex(static_cast<uint8>(SlotType)))
 	{
 		return &EquipSlot[static_cast<uint8>(SlotType)];
 	}
 	return nullptr;
-}
-
-void UInventoryComponent::SetEquipSlot(EItemSlotType SlotType, UBaseItem* Item)
-{
-	EquipSlot[static_cast<uint8>(SlotType)].ItemObject = Item;
 }
 
 void UInventoryComponent::BeginPlay()

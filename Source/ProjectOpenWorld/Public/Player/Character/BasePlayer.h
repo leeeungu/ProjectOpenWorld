@@ -220,6 +220,7 @@ public:
 	class UPlayerAnimInstance* const GetPlayerAnimInstance() const;
 	USkeletalMeshComponent* GetRightHandEquipComponent() const;
 	USkeletalMeshComponent* GetLeftHandEquipComponent() const;
+	class UInventoryComponent* GetInventoryComponent() const;
 	
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }

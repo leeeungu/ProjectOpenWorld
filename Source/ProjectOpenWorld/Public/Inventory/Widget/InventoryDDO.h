@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Inventory/Interface/InventorySlotInterface.h"
@@ -21,7 +21,8 @@ public:
 	virtual void SetSlotData_Implementation(const FInventorySlot& Data) override;
 	virtual void SetSlotIndex_Implementation(int Row, int Col) override;
 
-	const FInventorySlot* GetSlotDataPtr() const { return SlotData; }
+	virtual void SetSlotPtr(const FInventorySlot* Data) override { SlotData = Data; }
+	virtual const FInventorySlot* GetSlotDataPtr() const override { return SlotData; }
 
 	UFUNCTION(BlueprintPure, Category = "InventoryDDO")
 	FInventorySlot GetSlotData() const { return *SlotData; }

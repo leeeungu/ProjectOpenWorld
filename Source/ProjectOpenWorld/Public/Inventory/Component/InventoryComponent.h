@@ -76,9 +76,6 @@ public:
 	bool UseItemSlot(const FInventorySlot* Slot);
 	bool IsInventorySlot(const FInventorySlot* Slot) const;
 
-	bool UnUseItemSlot(const FInventorySlot* pSrc);
-	bool HasEquipItem(UBaseItem* EquipItem) const;
-
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(int SrcRow, int SrcCol, int DstRow, int DstCol);
 
@@ -104,13 +101,14 @@ public:
 
 	bool SwapInventorySlot(FInventorySlot* Src, FInventorySlot* Dst);
 
-
-	const FInventorySlot* GetEquipSlot(EItemSlotType SlotType);
-	void SetEquipSlot(EItemSlotType SlotType, UBaseItem* Item);
+	FInventorySlot* GetEmptyInventorySlot();
+	FInventorySlot* GetStackableInventorySlot(const UBaseItem* NewItem);
+	const FInventorySlot* GetEquipSlot(EItemSlotType SlotType) const;
 protected:
 	virtual void BeginPlay() override;
 
 private:
+	bool CheckStackable(const UBaseItem* Item) const;
 	bool CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rhs) const;
 	void RefreshSlotCache(FInventorySlot& Slot);
 	const FPalStaticItemDataStruct* FindStaticItemData(FName ItemID) const;

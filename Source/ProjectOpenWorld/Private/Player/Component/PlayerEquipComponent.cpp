@@ -8,6 +8,8 @@
 #include "Item/Object/Fragment/PlayerAnimationDataFragment.h"
 #include "Item/System/ItemDataSubsystem.h"
 #include "Player/Animation/PlayerAnimInstance.h"
+#include "Item/Object/Fragment/ItemDataSlotFragment.h"
+
 
 UPlayerEquipComponent::UPlayerEquipComponent()
 {
@@ -81,6 +83,10 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 			HandEquipData->HandEquipSocket);
 		WeaponMesh->SetRelativeTransform(HandEquipData->HandEquipRelativeTransform);
 	}
+	/*if (UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
+	{
+		Player->GetInventoryComponent()->SetEquipSlot(SlotFragment->GetSlotType(), const_cast<UBaseItem*>(Item));
+	}*/
 
 	TObjectPtr < UPlayerAnimationSLEDataFragment> Fragment = GetPlayerAnimationSLEDataFragment(Item);
 	if (Fragment)
@@ -98,6 +104,7 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No PlayerAnimationSLEDataFragment found for item: %s"), *Item->GetItemID().ToString());
 	}
+
 	return true;
 }
 
@@ -128,6 +135,11 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 
 	CurrentEquipItem = nullptr;
 	CurrentWeapone = EWeapone::None;
+
+	//if (UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
+	//{
+	//	Player->GetInventoryComponent()->SetEquipSlot(SlotFragment->GetSlotType(), const_cast<UBaseItem*>(Item));
+	//}
 
 	if (UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
 	{

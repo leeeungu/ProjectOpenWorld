@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
@@ -48,4 +48,5 @@ public:
 	void SetSlotIndex(int Row, int Col);
 
 	virtual void SetSlotPtr(const FInventorySlot* Data) {}
+	virtual const FInventorySlot* GetSlotDataPtr() const { return nullptr; }
 };

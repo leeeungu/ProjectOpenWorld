@@ -1,4 +1,4 @@
-#include "Inventory/Widget/InventorySlotBase.h"
+﻿#include "Inventory/Widget/InventorySlotBase.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Inventory/Widget/InventorySlotWidget.h"
@@ -138,22 +138,20 @@ void UInventorySlotBase::NativeOnDragDetected(const FGeometry& InGeometry, const
 	{
 		DDO->Payload = this;
 		DDO->DefaultDragVisual = GetInventorySlotWidget();
-		IInventorySlotInterface::Execute_SetSlotData(DDO, *itemPointer);
+		DDO->SetSlotPtr(itemPointer);
 		IInventorySlotInterface::Execute_SetSlotIndex(DDO, inventoryRow, inventoryCol);
 	}
 	OutOperation = DDO;
 }
 
-//bool UInventorySlotBase::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
-//{
-//	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
-//	{
-//		const FInventorySlot* srcSlot= itemPointer;
-//		bool bIsSameSlot = SwapSlot(Cast< UInventorySlotBase>(DDO->Payload));
-//		return bIsSameSlot;
-//	}
-//	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
-//}
+bool UInventorySlotBase::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
+	{
+		return  SwapSlotPtr(DDO->GetSlotDataPtr());
+	}
+	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+}
 
 UInventoryComponent* UInventorySlotBase::GetInventoryComponent() const
 {

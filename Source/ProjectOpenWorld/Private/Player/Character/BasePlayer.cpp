@@ -25,16 +25,13 @@
 #include "Player/Controller/BasePlayerController.h"
 #include "Player/Interface/MainWidgetInterface.h"
 #include "GameBase/Widget/PlayerGameOver.h"
-#include "Sound/SoundWave.h"
-#include "Sound/SoundCue.h"
 #include "Building/BaseBuilding.h"
-//#include "Player/Component/MonsterSpawnerComponent.h"
 #include "Player/Component/PlayerMoveComponent.h"
 #include "Player/Component/PlayerEquipComponent.h"
-#include "Item/DataTable/WeaponeData.h"
 #include "Player/Widget/MainUI.h"
 #include "Item/Component/ItemUseComponent.h"
 #include "Player/Component/PlayerEquipVisualComponent.h"
+#include "Inventory/Component/InventoryComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -221,6 +218,14 @@ USkeletalMeshComponent* ABasePlayer::GetRightHandEquipComponent() const
 USkeletalMeshComponent* ABasePlayer::GetLeftHandEquipComponent() const
 {
 	return LeftHandEquipComponent;
+}
+class UInventoryComponent* ABasePlayer::GetInventoryComponent() const
+{
+	if (BasePlayerController)
+	{
+		return BasePlayerController->GetInventoryComponent();
+	}
+	return nullptr;
 }
 
 void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)

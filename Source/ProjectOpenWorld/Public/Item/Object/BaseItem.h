@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -7,6 +7,7 @@
 class UAssetUserData;
 enum class EItemUseType : uint8;
 class UItemDataAsset;
+class  UItemDataFragment;
 
 UCLASS(Blueprintable)
 class PROJECTOPENWORLD_API UBaseItem : public UObject //, public IInterface_AssetUserData
@@ -26,5 +27,7 @@ public:
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
 	UItemDataAsset* GetPalItemDataAssetByName() const;
+
+	UItemDataFragment* GetItemDataFragment(TSubclassOf<UItemDataFragment> FragClass) const;
 };
 

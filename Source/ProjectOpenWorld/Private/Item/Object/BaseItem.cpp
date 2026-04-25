@@ -1,7 +1,7 @@
 ﻿#include "Item/Object/BaseItem.h"
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/DataAsset/ItemDataAsset.h"
-
+#include "Item/Object/ItemDataFragment.h"
 
 EItemUseType UBaseItem::GetUseType() const
 {
@@ -16,8 +16,18 @@ EItemUseType UBaseItem::GetUseType() const
 UItemDataAsset* UBaseItem::GetPalItemDataAssetByName() const
 {
 	const FPalStaticItemDataStruct* Result{};
-	UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &Result);
-	if(Result->ItemDataAssetSoft.IsValid())
+	if(UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &Result) && Result->ItemDataAssetSoft.IsValid())
 		return Result->ItemDataAssetSoft.LoadSynchronous();
+	return nullptr;
+}
+
+UItemDataFragment* UBaseItem::GetItemDataFragment(TSubclassOf<UItemDataFragment> FragClass) const
+{
+	UE_LOG(LogTemp, Log, TEXT("GetItemDataFragment called with ItemID: %s and FragClass: %s"), *GetItemID().ToString(), *FragClass->GetName());
+	UItemDataAsset* ItemDataAsset = GetPalItemDataAssetByName();
+	if (ItemDataAsset)
+	{
+		return ItemDataAsset->GetItemDataFragmentOfClass(FragClass);
+	}
 	return nullptr;
 }

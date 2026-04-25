@@ -1,12 +1,10 @@
-#include "Inventory/Widget/InventoryGirdSlotWidget.h"
+﻿#include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
-#include "Inventory/Widget/InventoryDDO.h"
-
 
 FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+	Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) )
 	{
 		if (UInventoryComponent* inventoryComponent = GetInventoryComponent())
@@ -19,16 +17,6 @@ FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry&
 				}
 			}
 		}
-		UUIDataGameInstanceSubsystem::PlayButtonClickSound();
 	}
 	return FReply::Handled();
-}
-
-bool UInventoryGirdSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
-{
-	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
-	{
-		return  SwapSlot(Cast< UInventorySlotBase>(DDO->Payload));
-	}
-	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);;
 }
