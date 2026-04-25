@@ -1,4 +1,4 @@
-#include "Item/Notify/AnimNotify_ItemSpawnFromFoliage.h"
+﻿#include "Item/Notify/AnimNotify_ItemSpawnFromFoliage.h"
 #include "FoliageInstancedStaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Landscape/Component/PalFoliageInstanceComponent.h"
@@ -6,7 +6,7 @@
 void UAnimNotify_ItemSpawnFromFoliage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
-
+	FVector Center = MeshComp->GetSocketLocation(ShearchSocketName) + MeshComp->GetComponentRotation().Quaternion() * ShearchOffset;
 	UWorld* pWorld = MeshComp->GetWorld();
 	if (pWorld)
 	{
@@ -15,24 +15,16 @@ void UAnimNotify_ItemSpawnFromFoliage::Notify(USkeletalMeshComponent* MeshComp, 
 		FCollisionShape ShearchShape = FCollisionShape::MakeSphere(ShearchRadius);
 		FCollisionObjectQueryParams ObjectQueryParam{};
 		TArray<FHitResult> arHitResult{};
+		TSet<UPalFoliageInstanceComponent*> ProcessedFoliageComps{};
 
-		pWorld->SweepMultiByChannel(arHitResult,
-			MeshComp->GetSocketLocation(ShearchSocketName) + MeshComp->GetComponentRotation().Quaternion() * ShearchOffset,
-			MeshComp->GetSocketLocation(ShearchSocketName) + MeshComp->GetComponentRotation().Quaternion() * ShearchOffset,
-			FQuat::Identity,
-			ECollisionChannel::ECC_WorldStatic,
-			ShearchShape,
-			Param);
-		TSet<TSoftObjectPtr<UPalFoliageInstanceComponent>> ProcessedFoliageComps{};
+		pWorld->SweepMultiByChannel(arHitResult, Center, Center, FQuat::Identity,ECollisionChannel::ECC_WorldStatic, ShearchShape, Param);
 		for (const FHitResult& Hit : arHitResult)
 		{
 			UPalFoliageInstanceComponent* FoliageComp = Cast<UPalFoliageInstanceComponent>(Hit.GetComponent());
 			if (FoliageComp && !ProcessedFoliageComps.Find(FoliageComp))
 			{
 				ProcessedFoliageComps.Add(FoliageComp);
-				TArray<int32> InstanceIndexArray = FoliageComp->GetInstancesOverlappingSphere(
-						MeshComp->GetSocketLocation(ShearchSocketName) + MeshComp->GetComponentRotation().Quaternion() * ShearchOffset,
-						ShearchRadius);
+				TArray<int32> InstanceIndexArray = FoliageComp->GetInstancesOverlappingSphere(Center, ShearchRadius);
 				FoliageComp->RemoveInstances(FoliageComp->SpawnItem(InstanceIndexArray));
 			}
 		}
@@ -41,7 +33,7 @@ void UAnimNotify_ItemSpawnFromFoliage::Notify(USkeletalMeshComponent* MeshComp, 
 #if WITH_EDITOR	
 	if (pWorld  && !pWorld->HasBegunPlay())
 	{
-		FVector Start = MeshComp->GetSocketLocation(ShearchSocketName) + MeshComp->GetComponentRotation().Quaternion() * ShearchOffset;
+		FVector Start = Center;
 		FVector End = Start;
 		DrawDebugSphere(pWorld, Start, ShearchRadius, 12, FColor::Red, false, 0.5f);
 	}

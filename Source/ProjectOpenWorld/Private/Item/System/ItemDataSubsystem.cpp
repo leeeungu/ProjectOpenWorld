@@ -2,6 +2,7 @@
 #include "Item/DataTable/WeaponeData.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Actor/ItemActor.h"
+#include "Item/Object/BaseItemObject.h"
 
 UItemDataSubsystem* UItemDataSubsystem::SingletonInstance{};
 
@@ -214,7 +215,7 @@ TSubclassOf<AItemActor> UItemDataSubsystem::GetPalStaticItemVisualBlueprintClass
 	const FPalStaticItemDataStruct* Result{};
 	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->VisualBlueprintClassSoft)
 		return TSubclassOf<AItemActor>(Result->VisualBlueprintClassSoft);
-	return TSubclassOf<AItemActor>{};
+	return AItemActor::StaticClass();
 }
 
 TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName)
@@ -222,7 +223,7 @@ TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlu
 	const FPalStaticItemDataStruct* Result{};
 	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->VisualBlueprintClassSoft)
 		return TSubclassOf<UBaseItemObject>(Result->VisualBlueprintClassSoft);
-	return TSubclassOf<UBaseItemObject>();
+	return UBaseItemObject::StaticClass();
 }
 
 AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count)

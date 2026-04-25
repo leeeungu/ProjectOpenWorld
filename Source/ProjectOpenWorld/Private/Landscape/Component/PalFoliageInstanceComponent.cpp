@@ -5,6 +5,7 @@
 #include "Resource/Interface/ResourceInterface.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "Resource/AssetUserData/ResourceEndEvent.h"
+#include "Resource/AssetUserData/HarvestableAssetUserData.h"
 
 void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 {
@@ -113,6 +114,11 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 		FActorSpawnParameters SpawnParam{};
 		SpawnParam.Owner = GetOwner();
 		SpawnParam.bNoFail = true;
+		bool bDestory = false;
+		bool bHitted = false;
+		FTransform HitTransform{};
+		FTransform DestroyTransform{};
+
 
 		for (int i = 0; i < InstanceIndices.Num(); i++)
 		{
@@ -120,42 +126,40 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 			FName ItemName = SpawnData.ItemName;
 
 			FTransform InstanceTransform{};
-			GetInstanceTransform(InstanceIndices[i], InstanceTransform,  true);
+			GetInstanceTransform(InstanceIndices[i], InstanceTransform, true);
 			int32& Count = ItemSpawnMap.FindOrAdd(InstanceTransform.GetLocation(), ItemSpawnListAssetUserDataPtr->GetMaxSpawnCount());
 			Count--;
 			TSubclassOf<AItemActor> SpawnClass = UItemDataSubsystem::GetPalStaticItemVisualBlueprintClassSoftByName(ItemName);
-			UE_LOG(LogTemp, Warning, TEXT("UPalFoliageInstanceComponent::SpawnItem : Spawning Item %s at Location %s, Remaining Count %d"),
-				*ItemName.ToString(),
-				*InstanceTransform.GetLocation().ToString(),
-				Count);
 			if (SpawnClass)
 			{
 				FVector NewLocation = InstanceTransform.GetLocation();
 				NewLocation += FVector(0, 0, 200); // Spawn above ground
-				AActor* SpawnedActor = GetWorld()->SpawnActor
-					(
-						SpawnClass.Get(), 
-						&NewLocation, {}, SpawnParam
-					);
+				AActor* SpawnedActor = GetWorld()->SpawnActor(SpawnClass.Get(), &NewLocation, {}, SpawnParam);
 				if (AItemActor* ItemActor = Cast<AItemActor>(SpawnedActor))
 				{
+					if (!bHitted)
+					{
+						bHitted = true;
+						HitTransform = InstanceTransform;
+					}
+
 					ItemActor->Init(ItemName, SpawnData.SpawnRandomCount);
-					FVector RandomDir = FVector
-					(
-						FMath::FRandRange(-1.0f, 1.0f),
-						FMath::FRandRange(-1.0f, 1.0f),
-						0.5f
-					).GetSafeNormal();
+					FVector RandomDir = FVector( FMath::FRandRange(-1.0f, 1.0f), FMath::FRandRange(-1.0f, 1.0f), FMath::FRandRange(0.5f, 0.9f));
+					RandomDir = RandomDir.GetSafeNormal();
 					ItemActor->GetItemCollision()->AddImpulse(RandomDir * 300.0f, NAME_None, true);
 				}
-				
+
 			}
 			if (Count <= 0)
 			{
+				if (!bDestory)
+				{
+					bDestory = true;
+					DestroyTransform = InstanceTransform;
+				}
 				float ReSpawnTimeSec = 15;
 				if (UResourceEndEvent* ResourceEndEvent = Cast<UResourceEndEvent>(GetStaticMesh()->GetAssetUserDataOfClass(UResourceEndEvent::StaticClass())))
 				{
-					ResourceEndEvent->ResourceEndEvent(this, InstanceTransform);
 					ReSpawnTimeSec = ResourceEndEvent->GetRandomReSpawnTime();
 				}
 				Count = 0;
@@ -164,13 +168,27 @@ TArray<int32> UPalFoliageInstanceComponent::SpawnItem(const TArray<int32>& Insta
 				PendingSpawnItemQueue.Enqueue(InstanceTransform);
 				FTimerHandle TimerHandle{};
 				GetOwner()->GetWorldTimerManager().SetTimer(TimerHandle,
-					this, 
-					& UPalFoliageInstanceComponent::ResetItemSpawnMap,
+					this,
+					&UPalFoliageInstanceComponent::ResetItemSpawnMap,
 					0,
 					false,
 					ReSpawnTimeSec);
-
-				///FTimerManager::get::SetTimer()
+			}
+		}
+		UStaticMesh* FoliageMesh = GetStaticMesh();
+		if (FoliageMesh  && !InstanceIndices.IsEmpty())
+		{
+			if (UHarvestableAssetUserData* HarvestableAssetUserData =
+				Cast< UHarvestableAssetUserData>(FoliageMesh->GetAssetUserDataOfClass(UHarvestableAssetUserData::StaticClass())))
+			{
+				if (bHitted)
+				{
+					HarvestableAssetUserData->PlayHarvestHitSound(this, HitTransform);
+				}
+				if (bDestory)
+				{
+					HarvestableAssetUserData->PlayHarvestDestroySound(this, DestroyTransform);
+				}
 			}
 		}
 	}

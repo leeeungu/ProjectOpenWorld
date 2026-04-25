@@ -405,13 +405,13 @@ bool UInventoryComponent::HasEquipItem(UBaseItem* EquipItem) const
 {
 	if (!EquipItem)
 		return false;
-	if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
+	/*if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
 	{
 		if (UPlayerEquipComponent* EquipmentComponent = Cast< UPlayerEquipComponent>(Player->GetPlayerEquipComponent()))
 		{
 			return EquipmentComponent->IsEquipSlot();
 		}
-	}
+	}*/
 	return false;
 }
 

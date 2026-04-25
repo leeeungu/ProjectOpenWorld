@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/AssetUserData.h"
@@ -17,10 +17,6 @@ protected:
 	float MinReSpawnTimeSec = 15.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Resource")
 	float MaxReSpawnTimeSec = 15.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Resource")
-	TEnumAsByte < EEffectSoundType> ResourceEndSound{};
-
 public:
 	float GetRandomReSpawnTime() const { return FMath::FRandRange(MinReSpawnTimeSec, MaxReSpawnTimeSec); }
-	virtual void ResourceEndEvent(UMeshComponent* OwnerComponent, FTransform MeshTransform);
 };
