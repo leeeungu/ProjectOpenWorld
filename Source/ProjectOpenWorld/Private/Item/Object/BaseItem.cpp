@@ -16,14 +16,15 @@ EItemUseType UBaseItem::GetUseType() const
 UItemDataAsset* UBaseItem::GetPalItemDataAssetByName() const
 {
 	const FPalStaticItemDataStruct* Result{};
-	if(UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &Result) && Result->ItemDataAssetSoft.IsValid())
-		return Result->ItemDataAssetSoft.LoadSynchronous();
+	if(UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &Result) && Result->ItemDataAssetSoft)
+		return Result->ItemDataAssetSoft;
 	return nullptr;
 }
 
 UItemDataFragment* UBaseItem::GetItemDataFragment(TSubclassOf<UItemDataFragment> FragClass) const
 {
-	UE_LOG(LogTemp, Log, TEXT("GetItemDataFragment called with ItemID: %s and FragClass: %s"), *GetItemID().ToString(), *FragClass->GetName());
+	if(FragClass)
+		UE_LOG(LogTemp, Log, TEXT("GetItemDataFragment called with ItemID: %s and FragClass: %s"), *GetItemID().ToString(), *FragClass->GetName());
 	UItemDataAsset* ItemDataAsset = GetPalItemDataAssetByName();
 	if (ItemDataAsset)
 	{

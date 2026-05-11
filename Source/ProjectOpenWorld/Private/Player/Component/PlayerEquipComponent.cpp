@@ -54,34 +54,25 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 		return false;
 
 	UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
-	if (HandEquipData && HandEquipData->HandEquipMesh)
+	UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
+	if (HandEquipData && HandEquipData->GetHandEquipMesh() && SlotFragment)
 	{
-		UWeaponeAssetUserData* NewWeaponData = GetWeaponAssetUserData(HandEquipData->HandEquipMesh);
-		if (NewWeaponData)
-		{
-			if (CurrentEquipItem && CurrentEquipItem != Item)
-			{
-				if (!UnequipItem(CurrentEquipItem))
-					return false;
-			}
+		const EWeapone NewWeaponType = SlotFragment->GetWeaponeData();
 
-			const EWeapone NewWeaponType = NewWeaponData->GetWeaponeData();
+		// 휠 전환용 등록 정보는 유지되어야 하므로 Equip 시 갱신만 한다.
+		EquipItemMap.FindOrAdd(NewWeaponType) = Item;
 
-			// 휠 전환용 등록 정보는 유지되어야 하므로 Equip 시 갱신만 한다.
-			EquipItemMap.FindOrAdd(NewWeaponType) = Item;
+		CurrentEquipItem = Item;
+		CurrentWeapone = NewWeaponType;
+		Player->ChangePlayerState(SlotFragment->GetEquipPlayerState());
+		Player->ChangeEquipWidget(SlotFragment->GetWeaponeID(), NewWeaponType);
 
-			CurrentEquipItem = Item;
-			CurrentWeapone = NewWeaponType;
-			Player->ChangePlayerState(NewWeaponData->GetEquipPlayerState());
-			Player->ChangeEquipWidget(NewWeaponData->GetWeaponeID(), NewWeaponType);
-		}
-
-		WeaponMesh->SetSkeletalMesh(HandEquipData->HandEquipMesh);
+		WeaponMesh->SetSkeletalMesh(HandEquipData->GetHandEquipMesh());
 		WeaponMesh->AttachToComponent(
 			PlayerMesh,
 			FAttachmentTransformRules::KeepRelativeTransform,
-			HandEquipData->HandEquipSocket);
-		WeaponMesh->SetRelativeTransform(HandEquipData->HandEquipRelativeTransform);
+			HandEquipData->GetHandEquipSocket());
+		WeaponMesh->SetRelativeTransform(HandEquipData->GetHandEquipRelativeTransform());
 	}
 	/*if (UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
 	{
@@ -122,11 +113,10 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 		return false;
 
 	USkeletalMesh* CurrentMesh = WeaponMesh->GetSkeletalMeshAsset();
-	UWeaponeAssetUserData* CurrentWeaponData = GetWeaponAssetUserData(CurrentMesh);
-
-	if (CurrentWeaponData)
+	UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
+	if (SlotFragment)
 	{
-		Player->ChangePlayerState(CurrentWeaponData->GetUnEquipPlayerState());
+		Player->ChangePlayerState(SlotFragment->GetUnEquipPlayerState());
 		Player->ChangeEquipWidget(NAME_None, EWeapone::None);
 	}
 
@@ -136,11 +126,6 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 	CurrentEquipItem = nullptr;
 	CurrentWeapone = EWeapone::None;
 
-	//if (UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
-	//{
-	//	Player->GetInventoryComponent()->SetEquipSlot(SlotFragment->GetSlotType(), const_cast<UBaseItem*>(Item));
-	//}
-
 	if (UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
 	{
 		PlayerAnimInstance->ResetAnimSection();
@@ -149,16 +134,66 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 	return true;
 }
 
+bool UPlayerEquipComponent::RegisterItem(const UBaseItem* Item)
+{
+	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
+	if (!Item || !WeaponMesh || !PlayerMesh || !Player)
+		return false;
+
+	UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
+	UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
+	if (HandEquipData)
+	{
+		const EWeapone NewWeaponType = SlotFragment->GetWeaponeData();
+
+		const UBaseItem*& RegisterItem = EquipItemMap.FindOrAdd(NewWeaponType, nullptr);
+		if (RegisterItem && Player->GetInventoryComponent() && SlotFragment)
+		{
+			FInventorySlot* EmpthySlot = Player->GetInventoryComponent()->GetEmptyInventorySlot();
+			const FInventorySlot* EquipSlot = Player->GetInventoryComponent()->GetEquipSlot(SlotFragment->GetSlotType());
+			Player->GetInventoryComponent()->SwapEquipSlot(EquipSlot, EmpthySlot);
+			UE_LOG(LogTemp, Warning, TEXT("RegisterItem: Swapped item from equip slot to inventory slot"));
+		}
+		if (RegisterItem)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PreRegistered item: %s to weapon type: %d"), *RegisterItem->GetItemID().ToString(), static_cast<uint8>(NewWeaponType));
+		}
+		RegisterItem = Item;
+		UE_LOG(LogTemp, Warning, TEXT("Registered item: %s to weapon type: %d"), *RegisterItem->GetItemID().ToString(), static_cast<uint8>(NewWeaponType));
+		if (Player->GetInventoryComponent() && SlotFragment)
+		{
+			Player->GetInventoryComponent()->SetEquipSlot(SlotFragment->GetSlotType(), const_cast<UBaseItem*>(Item));
+		}
+	}
+	return true;
+}
+
+bool UPlayerEquipComponent::UnRegisterItem(const UBaseItem* Item)
+{
+	if (!Item)
+		return false;
+	UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
+	UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
+	if (HandEquipData && SlotFragment)
+	{
+		const EWeapone NewWeaponType = SlotFragment->GetWeaponeData();
+		const UBaseItem*& RegisterItem = EquipItemMap.FindOrAdd(NewWeaponType, nullptr);
+		if (RegisterItem)
+		{
+			RegisterItem = nullptr;
+		}
+		return true;
+	}
+	return false;
+}
+
 bool UPlayerEquipComponent::IsEquipSlot(const UBaseItem* Item) const
 {
 	if (!Item)
 		return false;
-	if (UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item))
+	if (UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
 	{
-		if (UWeaponeAssetUserData* NewWeaponData = GetWeaponAssetUserData(HandEquipData->HandEquipMesh))
-		{
-			return EquipItemMap.Find(NewWeaponData->GetWeaponeData()) != nullptr;
-		}
+			return EquipItemMap.Find(SlotFragment->GetWeaponeData()) != nullptr;
 	}
 	return false;
 }

@@ -1,4 +1,4 @@
-#include "Item/Component/ItemUseComponent.h"
+﻿#include "Item/Component/ItemUseComponent.h"
 #include "Player/Character/BasePlayer.h"
 #include "Item/Component/EquipmentComponent.h"
 #include "Item/Object/BaseItem.h"
@@ -57,7 +57,7 @@ bool UItemUseComponent::HandleHandEquip(UBaseItem* Item)
 {
 	if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
 	{
-		return EquipmentComponent->EquipItem(Item);
+		return EquipmentComponent->RegisterItem(Item);
 	}
 	return false;
 }
@@ -82,10 +82,11 @@ bool UItemUseComponent::UnHandleDefault(UBaseItem* Item)
 
 bool UItemUseComponent::UnHandleHandEquip(UBaseItem* Item)
 {
-	if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
+	//UEquipmentComponent
+	/*if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
 	{
 		return EquipmentComponent->UnequipItem(Item);
-	}
+	}*/
 	return false;
 }
 

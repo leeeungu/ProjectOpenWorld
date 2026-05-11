@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -9,9 +9,9 @@ UCLASS(Abstract, BlueprintType, EditInlineNew, DefaultToInstanced)
 class PROJECTOPENWORLD_API UItemDataFragment : public UObject
 {
 	GENERATED_BODY()
-// DatatAsset¿¡ instance ¹è¿­¾È¿¡´Â Å¬·¡½º ´ç  ÇÏ³ª¸¸ µé¾î °¥ ¼ö ÀÖµµ·Ï ÇÏ·Á°í ÇßÀ½
-// UHandEquipItemFragment°¡ ±× ´ë»óÀÌ¶ó »ı°¢ÇßÀ½ => °°Àº ¼Õ¿¡ Mesh°¡ ¿©·¯°³ °É¸®¸é °ï¶õÇÏ´Ï±ñ
-// ±Ùµ¥ ±×·¯¸é ¾ç¼Õ ¹«±â´Â?(ÇÏ³ªÀÇ mesh°¡ ¾Æ´Ñµ¥?) => ÇØ°áÀÌ ¾î·Á¿ö Áö´Ï Æó±â
+// DatatAssetì— instance ë°°ì—´ì•ˆì—ëŠ” í´ë˜ìŠ¤ ë‹¹  í•˜ë‚˜ë§Œ ë“¤ì–´ ê°ˆ ìˆ˜ ìˆë„ë¡ í•˜ë ¤ê³  í–ˆìŒ
+// UHandEquipItemFragmentê°€ ê·¸ ëŒ€ìƒì´ë¼ ìƒê°í–ˆìŒ => ê°™ì€ ì†ì— Meshê°€ ì—¬ëŸ¬ê°œ ê±¸ë¦¬ë©´ ê³¤ë€í•˜ë‹ˆê¹
+// ê·¼ë° ê·¸ëŸ¬ë©´ ì–‘ì† ë¬´ê¸°ëŠ”?(í•˜ë‚˜ì˜ meshê°€ ì•„ë‹Œë°?) => í•´ê²°ì´ ì–´ë ¤ì›Œ ì§€ë‹ˆ íê¸°
 //protected:
 //	bool bIsDuplicatable{ false };
 };
@@ -22,9 +22,9 @@ UCLASS()
 class UHandEquipItemFragment : public UItemDataFragment
 {
 	GENERATED_BODY()
-public:
+protected:
 	UPROPERTY(EditAnywhere, Category = "HandEquip")
-	TObjectPtr<USkeletalMesh> HandEquipMesh{};
+	TSoftObjectPtr<USkeletalMesh> HandEquipMesh{};
 
 	UPROPERTY(EditAnywhere, Category = "HandEquip")
 	FName HandEquipSocket{};
@@ -33,6 +33,9 @@ public:
 	FTransform HandEquipRelativeTransform{};
 
 public:
+	USkeletalMesh* GetHandEquipMesh() const;
+	FName GetHandEquipSocket() const { return HandEquipSocket; }
+	FTransform GetHandEquipRelativeTransform() const { return HandEquipRelativeTransform; }
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif

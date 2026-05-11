@@ -1,4 +1,4 @@
-#include "Item/Object/Fragment/ItemVisibleDataFragment.h"
+﻿#include "Item/Object/Fragment/ItemVisibleDataFragment.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/SkeletalMesh.h"
 
@@ -51,7 +51,7 @@ UStaticMesh* UItemVisibleDataFragment::GetStaticMesh() const
 	{
 		return nullptr;
 	}
-	return Cast<UStaticMesh>(MeshAsset);
+	return Cast<UStaticMesh>(MeshAsset.LoadSynchronous());
 }
 USkeletalMesh* UItemVisibleDataFragment::GetSkeletalMesh() const
 {
@@ -59,5 +59,5 @@ USkeletalMesh* UItemVisibleDataFragment::GetSkeletalMesh() const
 	{
 		return nullptr;
 	}
-	return Cast<USkeletalMesh>(MeshAsset);
+	return Cast<USkeletalMesh>(MeshAsset.LoadSynchronous());
 }

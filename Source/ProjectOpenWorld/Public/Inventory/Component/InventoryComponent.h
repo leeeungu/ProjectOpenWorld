@@ -104,13 +104,14 @@ public:
 	FInventorySlot* GetEmptyInventorySlot();
 	FInventorySlot* GetStackableInventorySlot(const UBaseItem* NewItem);
 	const FInventorySlot* GetEquipSlot(EItemSlotType SlotType) const;
+	bool SwapEquipSlot(const FInventorySlot* SrcEquip, const FInventorySlot* DstInventory);
+	bool SetEquipSlot(EItemSlotType SlotType, UBaseItem* NewItem);
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	bool CheckStackable(const UBaseItem* Item) const;
 	bool CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rhs) const;
-	void RefreshSlotCache(FInventorySlot& Slot);
 	const FPalStaticItemDataStruct* FindStaticItemData(FName ItemID) const;
 	void BroadcastInventoryUpdated();
 };

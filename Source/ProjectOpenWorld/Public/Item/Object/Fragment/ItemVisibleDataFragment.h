@@ -26,7 +26,7 @@ protected:
 	EItemVisibleMeshType VisibleMeshType{ EItemVisibleMeshType::None };
 
 	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "Visible", meta = (AllowedClasses = "/Script/Engine.StaticMesh,/Script/Engine.SkeletalMesh"))
-	TObjectPtr<	UStreamableRenderAsset> MeshAsset{};
+	TSoftObjectPtr<	UStreamableRenderAsset> MeshAsset{};
 public:
 	UItemVisibleDataFragment();
 

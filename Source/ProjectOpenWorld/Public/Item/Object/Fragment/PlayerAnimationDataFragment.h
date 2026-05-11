@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Item/Object/ItemDataFragment.h"
@@ -19,13 +19,13 @@ class PROJECTOPENWORLD_API UPlayerAnimationSLEDataFragment : public UPlayerAnima
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere, Category = "Animation")
-	TObjectPtr<UAnimSequence> StartAnim{};
+	TSoftObjectPtr<UAnimSequence> StartAnim{};
 	UPROPERTY(EditAnywhere, Category = "Animation")
-	TObjectPtr<UAnimSequence> LoopAnim{};
+	TSoftObjectPtr<UAnimSequence> LoopAnim{};
 	UPROPERTY(EditAnywhere, Category = "Animation")
-	TObjectPtr<UAnimSequence> EndAnim{};
+	TSoftObjectPtr<UAnimSequence> EndAnim{};
 public:
-	FORCEINLINE UAnimSequence* GetStartAnim() const { return StartAnim.Get(); }
-	FORCEINLINE UAnimSequence* GetLoopAnim() const { return LoopAnim.Get(); }
-	FORCEINLINE UAnimSequence* GetEndAnim() const { return EndAnim.Get(); }
+	UAnimSequence* GetStartAnim() const;
+	UAnimSequence* GetLoopAnim() const;
+	UAnimSequence* GetEndAnim() const;
 };

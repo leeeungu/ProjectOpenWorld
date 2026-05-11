@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -21,4 +21,7 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Equipment")
 	virtual bool EquipItem(const UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::EquipItem, return false;);
 	virtual bool UnequipItem(const UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::UnequipItem	, return false;);
+
+	virtual bool RegisterItem(const UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::RegisterItem, return false;);
+	virtual bool UnRegisterItem(const UBaseItem* Item) PURE_VIRTUAL(UEquipmentComponent::UnRegisterItem, return false;);
 };

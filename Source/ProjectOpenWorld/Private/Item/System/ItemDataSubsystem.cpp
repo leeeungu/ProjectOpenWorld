@@ -303,9 +303,9 @@ const TArray<FRecipeMaterialData> UItemDataSubsystem::GetPalItemRecipeMaterialsB
 UItemDataAsset* UItemDataSubsystem::GetPalItemDataAssetByName(FName RowName)
 {
 	const FPalStaticItemDataStruct* Result{};
-	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->ItemDataAssetSoft.IsValid())
+	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->ItemDataAssetSoft)
 	{
-		return Result->ItemDataAssetSoft.LoadSynchronous();
+		return Result->ItemDataAssetSoft;
 	}
 	return nullptr;
 }

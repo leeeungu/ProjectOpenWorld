@@ -1,6 +1,11 @@
-#include "Item/Object/ItemDataFragment.h"
+﻿#include "Item/Object/ItemDataFragment.h"
 #include "Item/AssetUserData/WeaponeAssetUserData.h"
 #include "Engine/SkeletalMesh.h"
+
+USkeletalMesh* UHandEquipItemFragment::GetHandEquipMesh() const
+{
+	return HandEquipMesh.LoadSynchronous();
+}
 
 #if WITH_EDITOR
 void UHandEquipItemFragment::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -9,9 +14,9 @@ void UHandEquipItemFragment::PostEditChangeProperty(FPropertyChangedEvent& Prope
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UHandEquipItemFragment, HandEquipMesh))
 	{
-		if (HandEquipMesh)
+		if (HandEquipMesh.IsValid())
 		{
-			USkeletalMesh* Mesh = HandEquipMesh;
+			USkeletalMesh* Mesh = HandEquipMesh.Get();
 			UWeaponeAssetUserData* Data = Cast< UWeaponeAssetUserData>(Mesh->GetAssetUserDataOfClass(UWeaponeAssetUserData::StaticClass()));
 			if (Data)
 			{

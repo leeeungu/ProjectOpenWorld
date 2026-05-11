@@ -36,6 +36,9 @@ protected:
 public:	
 	virtual bool EquipItem(const UBaseItem* Item) override;
 	virtual bool UnequipItem(const UBaseItem* Item) override;
+	virtual bool RegisterItem(const UBaseItem* Item) override;
+	virtual bool UnRegisterItem(const UBaseItem * Item) override;
+
 	bool IsEquipSlot(const UBaseItem* Item) const;
 	bool UnEquipCurrent() ;
 

@@ -240,6 +240,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerState")
 	void ChangePlayerState(EPlayerState NewState);
 	void ChangePlayerEquip(FName WeaponName, EWeapone NewEquip);
+	// 좌하단 장비 UI
 	void ChangeEquipWidget(FName WeaponName, EWeapone NewEquip);
 
 	void SetMonsterSpawner(bool bActive);

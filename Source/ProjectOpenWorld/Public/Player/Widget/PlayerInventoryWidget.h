@@ -29,6 +29,7 @@ public:
 	virtual bool SetMainWidget() override;
 	virtual void UnSetMainWidget() override;
 
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;

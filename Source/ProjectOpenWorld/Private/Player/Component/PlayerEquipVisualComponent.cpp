@@ -1,4 +1,4 @@
-#include "Player/Component/PlayerEquipVisualComponent.h"
+﻿#include "Player/Component/PlayerEquipVisualComponent.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "GameFramework/Character.h"
 
@@ -29,12 +29,12 @@ void UPlayerEquipVisualComponent::PostEditChangeProperty(FPropertyChangedEvent& 
 				TObjectPtr < UItemDataFragment> Fragments = EquipDataAsset->GetItemDataFragmentOfClass(UHandEquipItemFragment::StaticClass());
 				if (UHandEquipItemFragment* HandEquipFragment = Cast<UHandEquipItemFragment>(Fragments))
 				{
-					SetSkeletalMesh(HandEquipFragment->HandEquipMesh);
+					SetSkeletalMesh(HandEquipFragment->GetHandEquipMesh());
 					AttachToComponent(
 						Player->GetMesh(),
 						FAttachmentTransformRules::KeepRelativeTransform,
-						HandEquipFragment->HandEquipSocket);
-					SetRelativeTransform(HandEquipFragment->HandEquipRelativeTransform);
+						HandEquipFragment->GetHandEquipSocket());
+					SetRelativeTransform(HandEquipFragment->GetHandEquipRelativeTransform());
 				}
 			}
 			else

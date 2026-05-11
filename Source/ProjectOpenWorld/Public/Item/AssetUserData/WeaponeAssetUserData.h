@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/AssetUserData.h"
@@ -24,8 +24,8 @@ protected:
 	FName WeaponeID{};
 public:
 	FName GetSocketName() const { return SocketName; }
-	EWeapone GetWeaponeData() const { return WeaponeData; }
-	EPlayerState GetEquipPlayerState() const { return EquipPlayerState; }
-	EPlayerState GetUnEquipPlayerState() const { return UnEquipPlayerState; }
-	FName GetWeaponeID() const { return WeaponeID; }
+	//EWeapone GetWeaponeData() const { return WeaponeData; }
+	//EPlayerState GetEquipPlayerState() const { return EquipPlayerState; }
+	//EPlayerState GetUnEquipPlayerState() const { return UnEquipPlayerState; }
+	//FName GetWeaponeID() const { return WeaponeID; }
 };

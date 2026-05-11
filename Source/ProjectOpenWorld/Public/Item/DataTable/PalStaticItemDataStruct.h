@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -106,7 +106,7 @@ public:
 	int64 Editor_RowNameHash{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalStaticItemDataStruct")
-	TSoftObjectPtr< UItemDataAsset> ItemDataAssetSoft{};
+	TObjectPtr<UItemDataAsset> ItemDataAssetSoft{};
 };
 
 USTRUCT(BlueprintType)
@@ -119,5 +119,5 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PalItemMeshData")
 	//TSoftObjectPtr<USkeletalMesh> ItemSkeletalMeshSoft{};
 };
-// LOCTEXT ¿¡ »ç¿ëÇÒ ³×ÀÓ½ºÆäÀÌ½º Á¤ÀÇ
-	// ´ÜÀÏ ÆÄÀÏ ¾È¿¡¼­¸¸ À¯È¿ÇÏ¸ç, ÆÄÀÏÀÌ ³¡³ª±â Àü Á¤ÀÇÇØ¾ß ÇÕ´Ï´Ù.
+// LOCTEXT ì— ì‚¬ìš©í•  ë„¤ì„ìŠ¤í˜ì´ìŠ¤ ì •ì˜
+	// ë‹¨ì¼ íŒŒì¼ ì•ˆì—ì„œë§Œ ìœ íš¨í•˜ë©°, íŒŒì¼ì´ ëë‚˜ê¸° ì „ ì •ì˜í•´ì•¼ í•©ë‹ˆë‹¤.

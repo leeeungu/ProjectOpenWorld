@@ -25,10 +25,6 @@ const FPalStaticItemDataStruct* UInventoryComponent::FindStaticItemData(FName It
 	return ItemDataStruct;
 }
 
-void UInventoryComponent::RefreshSlotCache(FInventorySlot& Slot)
-{
-//Slot.RefreshFromObject();
-}
 
 void UInventoryComponent::BroadcastInventoryUpdated()
 {
@@ -87,15 +83,14 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 	{
 		for (FInventorySlot& Slot : inventoryArray)
 		{
-			if (SlotData->MaxStackCount - NewItemCount > Slot.GetItemCount())
+			if (Slot.GetItemID()== NewItemID && SlotData->MaxStackCount - NewItemCount > Slot.GetItemCount())
 			{
 				pStackSlot = &Slot;
 				Slot.ItemObject->SetItemCount(Slot.ItemObject->GetItemCount() + NewItemCount);
-				RefreshSlotCache(Slot);
 				totalInventoryWeight += AddedWeight;
 				BroadcastInventoryUpdated();
+				return true;
 			}
-			return true;
 		}
 	}
 	if (FInventorySlot* EmptySlot = GetEmptyInventorySlot())
@@ -106,7 +101,6 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 			return false;
 
 		EmptySlot->ItemObject = StoredItem;
-		RefreshSlotCache(*EmptySlot);
 
 		totalInventoryWeight += AddedWeight;
 		BroadcastInventoryUpdated();
@@ -147,7 +141,6 @@ bool UInventoryComponent::ReturnItemToInventory(UBaseItem* BaseItem)
 			continue;
 
 		Slot.ItemObject->SetItemCount(Slot.ItemObject->GetItemCount() + BaseItem->GetItemCount());
-		RefreshSlotCache(Slot);
 
 		BroadcastInventoryUpdated();
 		return true;
@@ -161,7 +154,6 @@ bool UInventoryComponent::ReturnItemToInventory(UBaseItem* BaseItem)
 		return false;
 
 	EmptySlot->ItemObject = StoredItem;
-	RefreshSlotCache(*EmptySlot);
 
 	BroadcastInventoryUpdated();
 	return true;
@@ -213,10 +205,6 @@ bool UInventoryComponent::RemoveItem(FName RemoveItemID, int RemoveItemCount)
 		{
 			Slot.Clear();
 		}
-		else
-		{
-			RefreshSlotCache(Slot);
-		}
 
 		if (RemainingCount <= 0)
 			break;
@@ -260,11 +248,6 @@ bool UInventoryComponent::RemoveItemSlot(int Row, int Col, int RemoveItemCount)
 	{
 		SlotData->Clear();
 	}
-	else
-	{
-		RefreshSlotCache(*SlotData);
-	}
-
 	BroadcastInventoryUpdated();
 	return true;
 }
@@ -484,6 +467,47 @@ const FInventorySlot* UInventoryComponent::GetEquipSlot(EItemSlotType SlotType) 
 	return nullptr;
 }
 
+bool UInventoryComponent::SwapEquipSlot(const FInventorySlot* SrcEquip, const FInventorySlot* DstInventory) 
+{
+	if (!SrcEquip || !DstInventory)
+		return false;
+	FInventorySlot* Src = &EquipSlot[SrcEquip->SlotIndex];
+	FInventorySlot* Dst = &inventoryArray[DstInventory->SlotIndex];
+	if (!Src || !Dst)
+		return false;
+	UBaseItem* TempSrcItem = Src->ItemObject;
+	Src->ItemObject = Dst->ItemObject;
+	Dst->ItemObject = TempSrcItem;
+	BroadcastInventoryUpdated();
+	return true;
+}
+
+bool UInventoryComponent::SetEquipSlot(EItemSlotType SlotType, UBaseItem* NewItem)
+{
+	if (!NewItem || NewItem->GetItemID().IsNone() || NewItem->GetItemCount() <= 0 || !EquipSlot.IsValidIndex(static_cast<uint8>(SlotType)))
+		return false;
+	FInventorySlot* SrcEquip = &EquipSlot[static_cast<uint8>(SlotType)];
+	FName NewItemID = NewItem->GetItemID();
+	int32 NewItemCount = NewItem->GetItemCount();
+	const FPalStaticItemDataStruct* ItemDataStruct = FindStaticItemData(NewItemID);
+	if (!ItemDataStruct)
+		return false;
+
+	const float AddedWeight = ItemDataStruct->Weight * NewItem->GetItemCount();
+	if (maxInventoryWeight && (totalInventoryWeight + AddedWeight > *maxInventoryWeight))
+		return false;
+
+	UBaseItem* StoredItem = DuplicateObject<UBaseItem>(NewItem, this);
+	if (StoredItem)
+	{
+		SrcEquip->ItemObject = StoredItem;
+		totalInventoryWeight += AddedWeight;
+		BroadcastInventoryUpdated();
+		return true;
+	}
+	return false;
+}
+
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -500,6 +524,7 @@ void UInventoryComponent::BeginPlay()
 	for (int i = 0; i < SlotTypeMax; ++i)
 	{
 		EquipSlot[i].SlotType = static_cast<EItemSlotType>(i);
+		EquipSlot[i].SlotIndex = i;
 	}
 
 	if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
