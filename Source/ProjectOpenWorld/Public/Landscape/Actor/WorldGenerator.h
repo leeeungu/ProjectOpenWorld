@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -9,6 +9,7 @@ class UGeneratorSectionComponent;
 class UGenerateTerrainComponent;
 class UGenerateFoliageComponent;
 class UGemerateStaticObjectComponent;
+class UGenerateMonsterComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AWorldGenerator : public AActor
@@ -24,7 +25,8 @@ protected:
 	TObjectPtr<UInstancedStaticMeshComponent> TreeInstancedMeshComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGenerateFoliageComponent> FoliageGenerator{};
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	TObjectPtr<UGenerateMonsterComponent> MonsterGenerator{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGemerateStaticObjectComponent> StaticObjectGenerator{};
 	

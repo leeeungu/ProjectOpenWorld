@@ -1,6 +1,6 @@
-#include "Pal/Component/Work/PalWorkComponent_Mining.h"
-
+﻿#include "Pal/Component/Work/PalWorkComponent_Mining.h"
 #include "Interaction/Component/InteractionComponent.h"	
+#include "Pal/Component/PalAIMoveComponent.h"
 
 UPalWorkComponent_Mining::UPalWorkComponent_Mining() : Super()
 {
@@ -25,7 +25,7 @@ void UPalWorkComponent_Mining::WorkStart(const FPalCommand& Command)
 	bIsArrive = true;
 	bIsWorkEnd = false;
 	if (OwnerController)
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command.pTarget.Get());
 }
 
 void UPalWorkComponent_Mining::WorkEvent(const FPalCommand& Command)

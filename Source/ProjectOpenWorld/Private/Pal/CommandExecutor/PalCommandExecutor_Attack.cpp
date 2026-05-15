@@ -3,6 +3,7 @@
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 
 void UPalCommandExecutor_Attack::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -36,7 +37,7 @@ bool UPalCommandExecutor_Attack::StartCommand(const FPalCommand& Command)
 		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
 		AttackComponent->SetAttackData(AttackType);
 		AttackComponent->SetAttackTarget(Command.pTarget.Get());
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command.pTarget.Get()); //SetBBTargetActor(Command.pTarget.Get());
 		IsCommandStarted = true;
 		return true;
 	}
@@ -64,7 +65,7 @@ void UPalCommandExecutor_Attack::Abort()
 	}
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }
 
@@ -84,8 +85,8 @@ void UPalCommandExecutor_Attack::WorkCommand()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Executor_Attack :: WorkCommand Set Target %s "), *OwnerPal->GetName());
 		AttackComponent->SetAttackTarget(Command.pTarget.Get());
-		OwnerController->ResetMove();
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command.pTarget.Get());
 	}
 	else if (!AttackComponent->IsSetAttackData())
 	{
@@ -134,8 +135,8 @@ void UPalCommandExecutor_Attack::EndAttack()
 		//AttackType = (ESubAttackType)(FMath::Rand() % (uint8)ESubAttackType::Max_AttackType);
 		AttackComponent->SetAttackData(AttackType);
 		AttackComponent->SetAttackTarget(Command->pTarget.Get());
-		OwnerController->ResetMove();
-		OwnerController->SetBBTargetActor(Command->pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command->pTarget.Get());
 		IsCommandStarted = true;
 		return;
 	}

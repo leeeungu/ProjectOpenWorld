@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "NavMesh/NavMeshBoundsVolume.h"
+//#include "GameFramework/Actor.h"
 #include "Pal/DataTable/PalMonsterData.h"
 #include "GameBase/Interface/GenerateWorldInterface.h"
 #include "PalMonsterSpawner.generated.h"
@@ -24,7 +25,7 @@ public:
 
 class UDataTable;
 UCLASS()
-class PROJECTOPENWORLD_API APalMonsterSpawner : public AActor
+class PROJECTOPENWORLD_API APalMonsterSpawner : public ANavMeshBoundsVolume
 {
 	GENERATED_BODY()
 protected:
@@ -41,7 +42,7 @@ protected:
 
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Spawner")
-	float StaticRadius = 1000.0f;
+	float StaticRadius = 3000.0f;
 
 	float SpawnerSeed = 0.0f;
 public:	

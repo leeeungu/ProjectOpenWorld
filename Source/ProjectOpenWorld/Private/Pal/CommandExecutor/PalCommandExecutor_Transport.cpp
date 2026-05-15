@@ -6,6 +6,8 @@
 #include "Pal/Interface/CommanderManageable.h"
 #include "Item/Interface/TransportInterface.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
+
 
 void UPalCommandExecutor_Transport::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -48,7 +50,7 @@ bool UPalCommandExecutor_Transport::StartCommand(const FPalCommand& Command)
 
 	if (OwnerController)
 	{
-		OwnerController->SetBBTargetLocation(Command.TargetLocation);
+		OwnerController->GetPalAIMoveComponent()->SetTargetLocation(Command.TargetLocation);
 		IsCommandStarted = true;
 		return true;
 	}
@@ -74,7 +76,7 @@ void UPalCommandExecutor_Transport::Abort()
 	}
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }
 

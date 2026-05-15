@@ -3,6 +3,7 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalCommandComponent.h"
 #include "Interaction/Component/InteractionComponent.h"	
+#include "Pal/Component/PalAIMoveComponent.h"
 
 void UPalCommandExecutor_Mining::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -44,7 +45,7 @@ bool UPalCommandExecutor_Mining::StartCommand(const FPalCommand& Command)
 		//InteractionComp->SetInteractionTarget(Command.pTarget.Get());
 		//UE_LOG(LogTemp, Error, TEXT("Mining :: Start Move To Target %s Change  APalAIController::SetBBTargetLocation"), *OwnerPal->GetName());
 		bStartedMining = true;
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command.pTarget.Get());
 		IsCommandStarted = true;
 		return true;
 	}
@@ -65,7 +66,7 @@ void UPalCommandExecutor_Mining::Abort()
 	}
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 		//OwnerController->ReceiveMoveCompleted.RemoveDynamic(this, &UPalCommandExecutor_Mining::FinishMove);
 	}
 }

@@ -1,6 +1,7 @@
-#include "Pal/Component/Work/PalWorkComponent_Architecture.h"
+﻿#include "Pal/Component/Work/PalWorkComponent_Architecture.h"
 #include "Building/BaseBuilding.h"
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 
 UPalWorkComponent_Architecture::UPalWorkComponent_Architecture() : Super()
 {
@@ -19,7 +20,7 @@ void UPalWorkComponent_Architecture::WorkStart(const FPalCommand& Command)
 	if (OwnerController && TargetBuilding.IsValid())
 	{
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		OwnerController->SetBBTargetLocation(Target);
+		OwnerController->GetPalAIMoveComponent()->SetTargetLocation(Target);
 	}
 }
 

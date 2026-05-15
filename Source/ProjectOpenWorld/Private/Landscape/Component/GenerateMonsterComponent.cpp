@@ -3,7 +3,7 @@
 
 UGenerateMonsterComponent::UGenerateMonsterComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UGenerateMonsterComponent::BeginPlay()
@@ -11,9 +11,13 @@ void UGenerateMonsterComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UGenerateMonsterComponent::StartGenerateWorld(bool bEditor)
+{
+}
+
 void UGenerateMonsterComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
 {
-	if (SectionData.Vertices->Num() <= 1)
+	if (SectionData.Vertices->Num() <= 1 && !GetWorld()->HasBegunPlay())
 		return;
 	FVector2D SectionID = SectionData.SectionID;
 	TArray<TObjectPtr<APalMonsterSpawner>>& SpawnerSet =	SpawnedMonsterSpawnerSet.FindOrAdd(SectionID);
@@ -45,11 +49,14 @@ void UGenerateMonsterComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 		{
 			SpawnPos.Z += HitResult.ImpactPoint.Z;
 		}
-		APalMonsterSpawner* Spawner = Cast< APalMonsterSpawner>(GetWorld()->SpawnActor(APalMonsterSpawner::StaticClass(), &SpawnPos));
-		if (Spawner)
+		if (SpawnPos.Z >= 0)
 		{
-			Spawner->SetSpawnList(RandomSeed);
-			SpawnerSet.Add(Spawner);
+			APalMonsterSpawner* Spawner = Cast< APalMonsterSpawner>(GetWorld()->SpawnActor(APalMonsterSpawner::StaticClass(), &SpawnPos));
+			if (Spawner)
+			{
+				Spawner->SetSpawnList(RandomSeed);
+				SpawnerSet.Add(Spawner);
+			}
 		}
 	}
 }
@@ -57,6 +64,8 @@ void UGenerateMonsterComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 
 void UGenerateMonsterComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
+	if(GetWorld()->HasBegunPlay())
+		return;
 	FVector2D SectionID = SectionData.SectionID;
 	if (TArray<TObjectPtr<APalMonsterSpawner>>* SpawnerSet = SpawnedMonsterSpawnerSet.Find(SectionID))
 	{

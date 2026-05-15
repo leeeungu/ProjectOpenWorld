@@ -4,6 +4,7 @@
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 
 void UPalCommandExecutor_MonsterAttack::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -47,7 +48,7 @@ void UPalCommandExecutor_MonsterAttack::Abort()
 	bStartedAttacking = false;
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }
 
@@ -60,7 +61,7 @@ void UPalCommandExecutor_MonsterAttack::WorkCommand()
 	IsCommandStarted = true;
 	if (AttackComponent->IsSetTarget() || !IsInRange)
 	{
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command.pTarget.Get());
 	}
 }
 

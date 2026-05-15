@@ -1,6 +1,7 @@
 ﻿#include "Landscape/Component/GenerateTerrainComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "NavigationSystem.h"
+#include "Components/ChildActorComponent.h"
 
 UGenerateTerrainComponent::UGenerateTerrainComponent() : Super()
 {

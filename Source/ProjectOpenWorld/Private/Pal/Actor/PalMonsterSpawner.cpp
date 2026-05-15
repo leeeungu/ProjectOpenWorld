@@ -1,14 +1,13 @@
-#include "Pal/Actor/PalMonsterSpawner.h"
+﻿#include "Pal/Actor/PalMonsterSpawner.h"
 #include "NavigationSystem.h"
 #include "NavigationInvokerComponent.h"
 #include "Creature/Character/BaseMonster.h"
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+#include "Components/BrushComponent.h"
 
-APalMonsterSpawner::APalMonsterSpawner()
+APalMonsterSpawner::APalMonsterSpawner() : Super{}
 {
 	PrimaryActorTick.bCanEverTick = false;
-	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
 	///Script/Engine.DataTable'/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData'
 	ConstructorHelpers::FObjectFinder<UDataTable> DTMonster(TEXT("/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData"));
@@ -21,19 +20,26 @@ APalMonsterSpawner::APalMonsterSpawner()
 void APalMonsterSpawner::BeginPlay()
 {
 	Super::BeginPlay();
+	//SetActorScale3D(FVector(StaticRadius, StaticRadius, StaticRadius));
+	GetBrushComponent()->Bounds.BoxExtent = FVector(StaticRadius, StaticRadius, StaticRadius);
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	if (GIsEditor && NavSys)
+	{
+		NavSys->OnNavigationBoundsUpdated(this);
+	}
 }
 
 void APalMonsterSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	for (auto& SpawnSet : SpawnedMonsters)
-	{
-		for (AActor* Monster : SpawnSet.Value)
-		{
-			Monster->Destroy();
-		}
-		SpawnSet.Value.Reset();
-	}
+	//for (auto& SpawnSet : SpawnedMonsters)
+	//{
+	//	for (AActor* Monster : SpawnSet.Value)
+	//	{
+	//		Monster->Destroy();
+	//	}
+	//	SpawnSet.Value.Reset();
+	//}
 	SpawnedMonsters.Reset();
 	for (auto& SpawnMap : PalMonsterDataMap)
 	{
@@ -75,9 +81,11 @@ void APalMonsterSpawner::OnSpawnMonster(FName MonsterName)
 	{
 		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 		FNavLocation SpawnLocation{};
-		while (SpawnLocation.Location.Z <= 0)
+		NavSys->GetRandomReachablePointInRadius(GetActorLocation(), StaticRadius, SpawnLocation);
+		if (SpawnLocation.Location.Z <= 0)
 		{
-			NavSys->GetRandomReachablePointInRadius(GetActorLocation(), StaticRadius, SpawnLocation);
+			UE_LOG(LogTemp, Warning, TEXT("Failed to find spawn location for %s"), *MonsterName.ToString());
+			return;
 		}
 		FRotator SpawnRotation = GetActorRotation();
 		SpawnLocation.Location.Z += 300.0f;

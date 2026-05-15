@@ -1,7 +1,8 @@
-#include "Pal/Component/Work/PalWorkComponent_Attack.h"
+ï»¿#include "Pal/Component/Work/PalWorkComponent_Attack.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Creature/Character/BaseMonster.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 
 UPalWorkComponent_Attack::UPalWorkComponent_Attack() : Super()
 {
@@ -48,13 +49,13 @@ void UPalWorkComponent_Attack::WorkStart(const FPalCommand& Command)
 		if (AttackComponent->TargetIsInRange()) 
 		{
 			bIsWorking = true;
-			OwnerController->ResetMove();
+			OwnerController->GetPalAIMoveComponent()->ResetMove();
 			AttackComponent->StartAttack();
 			return;
 		}
 		if (OwnerController)
 		{
-			OwnerController->SetBBTargetActor(TargetCharacter.Get(), AttackComponent->GetAttackDistance());
+			OwnerController->GetPalAIMoveComponent()->SetTargetActor(TargetCharacter.Get(), AttackComponent->GetAttackDistance());
 		}
 	}
 }
@@ -65,11 +66,11 @@ void UPalWorkComponent_Attack::WorkEvent(const FPalCommand& Command)
 		return;
 	if (!IAttackInterface::Execute_IsDead(TargetCharacter.Get()))
 	{
-		//if (AttackComponent->TargetIsInRange()) // ¿Ö ¹üÀ§ °Ë»ç °¡ °è¼Ó Á¤È®È÷°¡ ¾Æ´Ò±î...
+		//if (AttackComponent->TargetIsInRange()) // ì™œ ë²”ìœ„ ê²€ì‚¬ ê°€ ê³„ì† ì •í™•ížˆê°€ ì•„ë‹ê¹Œ...
 		if (!AttackComponent->IsAttacking())
 		{
 			bIsWorking = true;
-			OwnerController->ResetMove();
+			OwnerController->GetPalAIMoveComponent()->ResetMove();
 			AttackComponent->StartAttack();
 			return;
 		}
@@ -112,13 +113,13 @@ void UPalWorkComponent_Attack::WorkCancel()
 		AttackComponent->SetAttackData(CurrentSubAttackType);
 		if (AttackComponent->TargetIsInRange())
 		{
-			OwnerController->ResetMove();
+			OwnerController->GetPalAIMoveComponent()->ResetMove();
 			bIsWorking = true;
 			AttackComponent->StartAttack();
 			return;
 		}
 		if (OwnerController)
-			OwnerController->SetBBTargetActor(TargetCharacter.Get(), AttackComponent->GetAttackDistance());
+			OwnerController->GetPalAIMoveComponent()->SetTargetActor(TargetCharacter.Get(), AttackComponent->GetAttackDistance());
 		return;
 	}
 

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -7,14 +7,14 @@
 class APalMonsterSpawner;
 
 /*
- ¼¼¼Ç º°·Î ¸ó½ºÅÍ¸¦ »ı¼ºÇÏµµ·Ï ÇÏ·Á ÇßÁö¸¸ ³Ê¹« ¸Õ ¼¼¼Ç¿¡µµ °úµµÇÏ°Ô character°¡ »ı¼ºµÇ¾î ·º ¹ß»ı
-ÇöÀç ¸ÊÀÇ Å©±â¸¦ »ı°¢ÇÏ¸é ³Ê¹« °úµµÇÏ°Ô »ı¼ºµÇ¾î Æó±â
-=> »ı°¢ÀÇ ÀüÈ¯À¸·Î Player°¡ ½ºÆ÷³Ê¸¦ °¡Áö°í ÀÖ°Ô ÇÏ¸é ÀÚµ¿À¸·Î ±ÙÃ³¿¡¸¸ »ı¼ºµÉ °ÍÀÌ°í 
-   player¿Í ¾î´ÀÁ¤µµ ¸Ö¾îÁö¸é ¸ó½ºÅÍ¸¦ Á¦°ÅÇÏµµ·Ï ÇÏ¸é ÃæºĞÈ÷ ÃÖÀûÈ­ µÉ °ÍÀ¸·Î »ı°¢µÊ
+ ì„¸ì…˜ ë³„ë¡œ ëª¬ìŠ¤í„°ë¥¼ ìƒì„±í•˜ë„ë¡ í•˜ë ¤ í–ˆì§€ë§Œ ë„ˆë¬´ ë¨¼ ì„¸ì…˜ì—ë„ ê³¼ë„í•˜ê²Œ characterê°€ ìƒì„±ë˜ì–´ ë ‰ ë°œìƒ
+í˜„ì¬ ë§µì˜ í¬ê¸°ë¥¼ ìƒê°í•˜ë©´ ë„ˆë¬´ ê³¼ë„í•˜ê²Œ ìƒì„±ë˜ì–´ íê¸°
+=> ìƒê°ì˜ ì „í™˜ìœ¼ë¡œ Playerê°€ ìŠ¤í¬ë„ˆë¥¼ ê°€ì§€ê³  ìˆê²Œ í•˜ë©´ ìë™ìœ¼ë¡œ ê·¼ì²˜ì—ë§Œ ìƒì„±ë  ê²ƒì´ê³  
+   playerì™€ ì–´ëŠì •ë„ ë©€ì–´ì§€ë©´ ëª¬ìŠ¤í„°ë¥¼ ì œê±°í•˜ë„ë¡ í•˜ë©´ ì¶©ë¶„íˆ ìµœì í™” ë  ê²ƒìœ¼ë¡œ ìƒê°ë¨
 
-   => UMonsterSpawnerComponent·Î ±â´É ÀÌÀü (°íÁ¤ ½ºÆùÀº Èûµé¼öµµ..)
+   => UMonsterSpawnerComponentë¡œ ê¸°ëŠ¥ ì´ì „ (ê³ ì • ìŠ¤í°ì€ í˜ë“¤ìˆ˜ë„..)
 */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) , Abstract, NotBlueprintable)
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UGenerateMonsterComponent : public UGenerateWorldComponent
 {
 	GENERATED_BODY()
@@ -33,6 +33,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void StartGenerateWorld(bool bEditor = false) override;
 	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) override;
 	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) override;
 

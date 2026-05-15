@@ -1,8 +1,8 @@
-#include "Pal/Component/PalCommandComponent.h"
+﻿#include "Pal/Component/PalCommandComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/Character.h"
-
+#include "Pal/Component/PalAIMoveComponent.h"
 #include "Pal/Component/Work/PalWorkComponent_Attack.h"
 #include "Pal/Component/Work/PalWorkComponent_Architecture.h"
 #include "Pal/Component/Work/PalWorkComponent_Location.h"
@@ -141,7 +141,7 @@ void UPalCommandComponent::FinishMove(FAIRequestID RequestID, EPathFollowingResu
 			APalAIController* OwnerController = Cast<APalAIController>(OwnerPal->GetController());
 			if (OwnerController)
 			{
-				OwnerController->ResetMove();
+				OwnerController->GetPalAIMoveComponent()->ResetMove();
 			}
 		}
 	}

@@ -2,6 +2,8 @@
 #include "GameFramework/Character.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
+
 
 void UPalCommandExecutor_MoveActor::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -18,7 +20,7 @@ bool UPalCommandExecutor_MoveActor::StartCommand(const FPalCommand& Command)
 {
 	if (OwnerController && Command.pTarget.IsValid())
 	{
-		OwnerController->SetBBTargetActor(Command.pTarget.Get());
+		OwnerController->GetPalAIMoveComponent()->SetTargetActor(Command.pTarget.Get());
 		return true;
 	}
 	IsCommandStarted = true;
@@ -45,6 +47,6 @@ void UPalCommandExecutor_MoveActor::Abort()
 {
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }

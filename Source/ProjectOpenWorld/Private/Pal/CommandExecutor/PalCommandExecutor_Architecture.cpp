@@ -1,10 +1,11 @@
-#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
+﻿#include "Pal/CommandExecutor/PalCommandExecutor_Architecture.h"
 #include "Building/BaseBuilding.h"
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Creature/Character/BaseCreature.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 #include "Engine/StaticMeshSocket.h"
 
 DEFINE_LOG_CATEGORY(ArchitectureCommand);
@@ -34,7 +35,7 @@ bool UPalCommandExecutor_Architecture::StartCommand(const FPalCommand& Command)
 	{
 		
 		FVector Target = TargetBuilding->GetBuildingMeshComponent()->GetSocketLocation(TEXT("Bottom"));
-		OwnerController->SetBBTargetLocation(Target);
+		OwnerController->GetPalAIMoveComponent()->SetTargetLocation(Target);
 		IsCommandStarted = true;
 		return true;
 	}
@@ -55,7 +56,7 @@ void UPalCommandExecutor_Architecture::Abort()
 	}
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }
 

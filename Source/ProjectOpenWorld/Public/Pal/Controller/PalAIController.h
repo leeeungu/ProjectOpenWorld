@@ -6,6 +6,7 @@
 #include "PalAIController.generated.h"
 
 class ABaseCharacter;
+class UPalAIMoveComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API APalAIController : public AAIController
@@ -13,56 +14,19 @@ class PROJECTOPENWORLD_API APalAIController : public AAIController
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PalAIMove")
+	TObjectPtr<UPalAIMoveComponent> AIMoveComponent{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UBehaviorTree> BTree{};
-
-	bool bIsMove{};
-
 	UPROPERTY()
 	TObjectPtr < ABaseCharacter> OwnerPal{};
-	float AcceptanceRadius{};
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
-private:
-	EPathFollowingRequestResult::Type Resut{};
-
-protected:
-	bool FindLandscapeBelow(FVector StartLocation, FVector EndLocation, FVector& Result);
 public:
 	APalAIController();
 
-	EPathFollowingRequestResult::Type MoveToActor(AActor* TargetActor, float fAcceptanceRadius = 40.0f);
-	EPathFollowingRequestResult::Type MoveToLocation(FVector TargetLocation, float fAcceptanceRadius = 400.0f);
-
 	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	bool GetMoveResult() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
-	void SetBBTargetActor(AActor* TargetActor, float fAcceptanceRadius = 200.0f);
-	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
-	void SetBBTargetLocation(FVector TargetLocation, float fAcceptanceRadius = 200.0f);
-
-	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
-	void ResetMove();
-	
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	bool IsMoving() const { return bIsMove; }
-
-	/*UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
-	bool MoveToActor();
-	UFUNCTION(BlueprintCallable, Category = "Pal AI Controller")
-	bool MoveToLocation();*/
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	float GetAcceptanceRadius() const { return AcceptanceRadius; }
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	AActor* GetBBTargetActor() const;
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	FVector GetBBTargetLocation() const;
-
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	FORCEINLINE FName GetBBTargetLocationName()  const{ return FName("TargetLocation"); }
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
-	FORCEINLINE FName GetBBTargetActorName()  const{ return FName("TargetActor"); }
+	FORCEINLINE UPalAIMoveComponent* GetPalAIMoveComponent() const { return AIMoveComponent; }
 };

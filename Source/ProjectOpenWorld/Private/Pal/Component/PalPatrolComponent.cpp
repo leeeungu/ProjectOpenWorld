@@ -1,4 +1,4 @@
-#include "Pal/Component/PalPatrolComponent.h"
+﻿#include "Pal/Component/PalPatrolComponent.h"
 #include "Pal/DataTable/PalMonsterData.h"
 #include "NavigationSystem.h"
 #include "BrainComponent.h"
@@ -8,7 +8,7 @@
 
 UPalPatrolComponent::UPalPatrolComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 

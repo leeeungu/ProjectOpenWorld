@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Landscape/Component/GenerateWorldComponent.h"
@@ -9,9 +9,9 @@ class UProceduralMeshComponent;
 
 //UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 //TObjectPtr<UProceduralMeshComponent> TargetTerrain{}; 
-// °ü¸®»óÀÇ ¹®Á¦·Î ´õºí ½º¿Ò Æó±â
-// radius ^2 À» °è¼Ó ¾÷µ¥ÀÌÆ® Çß´Âµ¥ foliageÇÒ ¶§ ³Ê¹« ´ÜÁ¡ÀÌ Ä¿¼­
-// °»½Å »èÁ¦¸¸ À¸·Î ·ÎÁ÷ º¯°æ ±× °úÁ¤¿¡¼­ ´õºí ½º¿ÒÀº ¿ÀÈ÷·Á º¹Àâ¼º¸¸ Áõ°¡ ½ÃÅ´
+// ê´€ë¦¬ìƒì˜ ë¬¸ì œë¡œ ë”ë¸” ìŠ¤ì™‘ íê¸°
+// radius ^2 ì„ ê³„ì† ì—…ë°ì´íŠ¸ í–ˆëŠ”ë° foliageí•  ë•Œ ë„ˆë¬´ ë‹¨ì ì´ ì»¤ì„œ
+// ê°±ì‹  ì‚­ì œë§Œ ìœ¼ë¡œ ë¡œì§ ë³€ê²½ ê·¸ ê³¼ì •ì—ì„œ ë”ë¸” ìŠ¤ì™‘ì€ ì˜¤íˆë ¤ ë³µì¡ì„±ë§Œ ì¦ê°€ ì‹œí‚´
 
 //UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 //TObjectPtr<UProceduralMeshComponent> GenerateTerrain{};
@@ -28,6 +28,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr< UMaterialInterface> TerrainMaterial{};
 	TMap<FIntPoint, TObjectPtr<UProceduralMeshComponent>> SectionIDToMeshIndex{};
+
 	TArray<TObjectPtr<UProceduralMeshComponent>> EmpthyMeshComponent{};
 
 	float Time{};

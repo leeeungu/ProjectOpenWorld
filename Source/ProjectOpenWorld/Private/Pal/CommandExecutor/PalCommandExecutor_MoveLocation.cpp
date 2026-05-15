@@ -2,6 +2,7 @@
 #include "GameFramework/Character.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/Component/PalCommandComponent.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 
 void UPalCommandExecutor_MoveLocation::Initialize(UPalCommandComponent* CommandComp)
 {
@@ -18,7 +19,7 @@ bool UPalCommandExecutor_MoveLocation::StartCommand(const FPalCommand& Command)
 {
 	if (OwnerController)
 	{
-		OwnerController->SetBBTargetLocation(Command.TargetLocation);
+		OwnerController->GetPalAIMoveComponent()->SetTargetLocation(Command.TargetLocation);
 		return true;
 	}
 	IsCommandStarted = true;
@@ -29,7 +30,7 @@ void UPalCommandExecutor_MoveLocation::Abort()
 {
 	if (OwnerController)
 	{
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }
 

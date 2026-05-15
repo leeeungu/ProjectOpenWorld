@@ -1,4 +1,5 @@
-#include "Pal/Component/Work/PalWorkComponent_Location.h"
+﻿#include "Pal/Component/Work/PalWorkComponent_Location.h"
+#include "Pal/Component/PalAIMoveComponent.h"
 
 UPalWorkComponent_Location::UPalWorkComponent_Location()
 {
@@ -22,7 +23,7 @@ void UPalWorkComponent_Location::WorkStart(const FPalCommand& Command)
 	bIsWorkEnd = false;
 	if (OwnerController)
 	{
-		OwnerController->SetBBTargetLocation(Command.TargetLocation);
+		OwnerController->GetPalAIMoveComponent()->SetTargetLocation(Command.TargetLocation);
 	}
 }
 
@@ -45,6 +46,6 @@ void UPalWorkComponent_Location::WorkCancel()
 	if (OwnerController)
 	{
 		UE_LOG(LogTemp, Log, TEXT("UPalWorkComponent_Location :: WorkEvent %s"), * OwnerController->GetName());
-		OwnerController->ResetMove();
+		OwnerController->GetPalAIMoveComponent()->ResetMove();
 	}
 }
