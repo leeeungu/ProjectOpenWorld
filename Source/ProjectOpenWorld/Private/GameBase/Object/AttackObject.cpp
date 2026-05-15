@@ -1,14 +1,15 @@
-#include "GameBase/Object/AttackObject.h"
+Ôªø#include "GameBase/Object/AttackObject.h"
 #include "GameFramework/Character.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GenericTeamAgentInterface.h"
+#include "Pal/Component/PalHitHandlerComponent.h"
 
 void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
 {
-	// Character∏¶ ≥ÀπÈ Ω√≈∞¥¬ «‘ºˆ
+	// CharacterÎ•º ÎÑâÎ∞± ÏãúÌÇ§Îäî Ìï®Ïàò
 	AActor* AttackTarget = HitData.GetActor();
 	if (AttackTarget)
 	{
@@ -74,25 +75,25 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
-		// ∞≈∏Æ ∞ËªÍ
+		// Í±∞Î¶¨ Í≥ÑÏÇ∞
 		float Distance = FVector::Dist(TargetCharacter->GetActorLocation(), NewLocation);
 
 		if (AttackRadius > 0)
 		{
-			// ∞≈∏Æ ∫Ò¿≤ ∞ËªÍ (Distance / AttackRadius¿« ¡¶∞ˆ)
+			// Í±∞Î¶¨ ÎπÑÏú® Í≥ÑÏÇ∞ (Distance / AttackRadiusÏùò Ï†úÍ≥±)
 			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
 
-			// ∞≈∏Æ∫∞ »˚ ∞ËªÍ (∫Ò¿≤¿ª π›øµ)
+			// Í±∞Î¶¨Î≥Ñ Ìûò Í≥ÑÏÇ∞ (ÎπÑÏú®ÏùÑ Î∞òÏòÅ)
 			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 
-			// »˚ ∫§≈Õ ∞ËªÍ
+			// Ìûò Î≤°ÌÑ∞ Í≥ÑÏÇ∞
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
 			//LaunchDirection.X *= 3;
 			//LaunchDirection.Y *= 3;
 			LaunchDirection.Z = abs(LaunchDirection.Z);
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
-			// »˚ ¿˚øÎ
+			// Ìûò Ï†ÅÏö©
 			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
 			if (OtherAttack)
@@ -127,9 +128,20 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 		return;
 	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+
+	IAttackInterface* AttackInterfacePtr = Cast<IAttackInterface>(CauserCharacter);
+	IAttackInterface* HitInterfacePtr = Cast<IAttackInterface>(HitData.GetActor());
+	if (AttackInterfacePtr && HitInterfacePtr)
+	{
+		FPalDamagePayload DamagePayload{};
+		DamagePayload.BaseDamage = IAttackInterface::Execute_GetAttackValue(CauserCharacter);
+		DamagePayload.Instigator = CauserCharacter;
+		DamagePayload.HitResult = &HitData;
+		HitInterfacePtr->GetHitHandlerComponent()->TakeDamage(DamagePayload);
+	}
 	if (OtherAttack)
 	{
-		IAttackInterface::Execute_DamagedCharacter(HitData.GetActor(), AttackInterface);
+		//IAttackInterface::Execute_DamagedCharacter(HitData.GetActor(), AttackInterface);
 	}
 }
 

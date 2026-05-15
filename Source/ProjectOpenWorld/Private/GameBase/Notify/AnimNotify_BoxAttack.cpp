@@ -1,5 +1,6 @@
-#include "GameBase/Notify/AnimNotify_BoxAttack.h"
+﻿#include "GameBase/Notify/AnimNotify_BoxAttack.h"
 #include "kismet/KismetSystemLibrary.h"
+#include "Pal/Data/PalDamageType.h"
 
 FCollisionShape UAnimNotify_BoxAttack::GetAttackCollisionShape() const
 {
@@ -20,7 +21,7 @@ bool UAnimNotify_BoxAttack::CollisionAttackResult(USkeletalMeshComponent* MeshCo
 {
 	return UKismetSystemLibrary::BoxTraceMultiForObjects(
 		MeshComp->GetWorld(), GetStartLocation(MeshComp), GetEndLocation(MeshComp),
-		GetAttackCollisionShape().GetBox() * 0.5f, BoxRotation, {UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel4)}, false, {MeshComp->GetOwner()},
+		GetAttackCollisionShape().GetBox() * 0.5f, BoxRotation, {UEngineTypes::ConvertToObjectType(PalDamage::GetDamageCollisionChannel())}, false, {MeshComp->GetOwner()},
 		EDrawDebugTrace::ForDuration, HitResult, true,
 		FLinearColor::Blue, FLinearColor::Green, 1.0f);
 }

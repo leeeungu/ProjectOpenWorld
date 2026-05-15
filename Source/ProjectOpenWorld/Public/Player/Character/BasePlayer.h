@@ -148,10 +148,6 @@ protected:
 	TSubclassOf<UUserWidget> MainWidgetClass{};
 	TObjectPtr<UUserWidget> MainWidget{};
 public:
-
-	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
-	FOnDamageedDelegate OnDamagedDelegate{};
-
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PlayerState")
 	FOnPlayerStateChange OnStateChangeDelegate{};
 	bool TopDownMode{};

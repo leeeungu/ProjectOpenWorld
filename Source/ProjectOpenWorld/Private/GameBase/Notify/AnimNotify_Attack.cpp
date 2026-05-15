@@ -41,7 +41,7 @@ FVector UAnimNotify_Attack::GetEndLocation(USkeletalMeshComponent* MeshComp) con
 bool UAnimNotify_Attack::CollisionAttackResult(USkeletalMeshComponent* MeshComp, TArray<FHitResult>& HitResult)
 {
 	return  MeshComp->GetWorld()->SweepMultiByObjectType(HitResult, GetStartLocation(MeshComp), GetEndLocation(MeshComp)
-		, FQuat::Identity, ECollisionChannel::ECC_Pawn,
+		, FQuat::Identity, PalDamage::GetDamageCollisionChannel(),
 		GetAttackCollisionShape(), {});
 }
 
@@ -80,12 +80,14 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 				}
 			}
 		}
-		//if (arResult.IsEmpty())
-		//{
-		//	UE_LOG(LogTemp, Log, TEXT("UAnimNotify_Attack :: Notify Attacked Count : %d"), Attacked.Num());
-		//}
+		if (arResult.IsEmpty())
+		{
+			UE_LOG(LogTemp, Log, TEXT("UAnimNotify_Attack :: Notify Attacked Count : %d"), Attacked.Num());
+		}
 	}
+#if WITH_EDITOR	
 	AttackEventObjectDebug(MeshComp);
+#endif
 }
 
 void UAnimNotify_Attack::AttackEventObjectDebug(USkeletalMeshComponent* MeshComp)

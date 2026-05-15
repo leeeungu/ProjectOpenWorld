@@ -1,4 +1,4 @@
-#include "Pal/Character/BossMonster_Anubis.h"
+﻿#include "Pal/Character/BossMonster_Anubis.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -9,7 +9,7 @@
 void ABossMonster_Anubis::BeginPlay()
 {
 	Super::BeginPlay();
-	OnDamagedDelegate.AddUniqueDynamic(this, &ABossMonster_Anubis::OnCustomModeDamaged);
+	//OnDamagedDelegate.AddUniqueDynamic(this, &ABossMonster_Anubis::OnCustomModeDamaged);
 	PatternWidget->SetVisibility(false);
 }
 

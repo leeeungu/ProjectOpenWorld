@@ -12,6 +12,7 @@ class UPalAttackComponent;
 struct FPalMonsterLevelData;
 class UWidgetComponent;
 class ABasePlayer;
+class UPalHitHandlerComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalCommandInterface, public ICommanderManageable, public IPlayerDetectInterface
@@ -29,6 +30,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr < UPalHitHandlerComponent> HitHandlerComponent{};
+	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr <UWidgetComponent> HpWidgetComponent{};	
 	bool bActionStarted{};
@@ -55,8 +59,6 @@ public:
 	void SpawnItem();
 
 public:
-	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
-	FOnDamageedDelegate OnDamagedDelegate{};
 	void SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData);
 
 public:
@@ -70,7 +72,7 @@ public:
 	virtual void  RetAttackValue_Implementation() override;
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 	virtual bool IsDead_Implementation() const;
-
+	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const { return HitHandlerComponent; }
 
 	virtual EPalCommandKind GetCommandKind_Implementation() override;
 	virtual uint8 GetSubCommandType_Implementation() override;

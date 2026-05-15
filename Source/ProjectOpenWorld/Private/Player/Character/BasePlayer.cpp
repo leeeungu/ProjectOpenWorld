@@ -452,10 +452,10 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
 	//GetStatus(EStatusType::Hp, Hp);
 	Damage = HPStat->AddCurrentStat(-Damage);
-	if (OnDamagedDelegate.IsBound())
+	/*if (OnDamagedDelegate.IsBound())
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
-	}
+	}*/
 	if (HPStat->GetCurrentStat() <= 0.f)
 	{
 		PlayerAttackComponent->StopAttack();

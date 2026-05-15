@@ -24,6 +24,9 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
+
+	UFUNCTION()
+	void RecieveDamage(const struct FPalDamagePayload& DamagePayload);
 public:
 	APalAIController();
 

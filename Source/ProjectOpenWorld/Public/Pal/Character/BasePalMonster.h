@@ -18,4 +18,5 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	FORCEINLINE UPalPatrolComponent* GetPalPatrolComponent() const { return PalPatrolComponent; }
 	
+
 };

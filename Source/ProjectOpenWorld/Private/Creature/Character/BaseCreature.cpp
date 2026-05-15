@@ -1,4 +1,4 @@
-#include "Creature/Character/BaseCreature.h"
+﻿#include "Creature/Character/BaseCreature.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Pal/Component/PalCommandComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -102,10 +102,10 @@ bool ABaseCreature::DamagedCharacter_Implementation(const TScriptInterface<IAtta
 	//	//UE_LOG(LogTemp, Log, TEXT("ABaseMonster :: Attack"), Hp);
 	//	CommandComponent->PushCommand(UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	//}
-	if (OnDamagedDelegate.IsBound())
+	/*if (OnDamagedDelegate.IsBound())
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
-	}
+	}*/
 
 	if (HPStat->GetCurrentStat() <= 0.f)
 	{

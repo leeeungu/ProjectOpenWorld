@@ -1,4 +1,4 @@
-#include "GameBase/Animation/BaseAnimInstance.h"
+﻿#include "GameBase/Animation/BaseAnimInstance.h"
 #include "GameBase/MetaData/AMDLoop.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -87,9 +87,8 @@ void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bI
 					ChangeEvent->EndEvent(this);
 				}
 			}
-			PlayMontage();
 		}
-		return;
+			PlayMontage();
 	}
 }
 

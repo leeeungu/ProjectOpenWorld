@@ -15,16 +15,17 @@
 #include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Pal/Component/PalHitHandlerComponent.h"
 
 
-
-ABaseMonster::ABaseMonster() :
-	ABaseCharacter{}
+ABaseMonster::ABaseMonster() : ABaseCharacter{}
 {
 	AIControllerClass = APalMonsterController::StaticClass();
 	PalCommand = CreateDefaultSubobject<UPalCommandComponent>(TEXT("PalCommandComponent"));
 	AttackComponent = CreateDefaultSubobject<UPalAttackComponent>(TEXT("AttackComponent"));
 	HpWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpWidgetComponent"));
+	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
+
 	//Script/UMGEditor.WidgetBlueprint'/Game/Pal/Widget/WBP_PalMonsterHP.WBP_PalMonsterHP'
 	static ConstructorHelpers::FClassFinder<UPalHpWidget_MonsterDefault> HpWidgetClass(TEXT("/Game/Pal/Widget/WBP_PalMonsterHP"));
 	if (HpWidgetClass.Succeeded())
@@ -155,10 +156,10 @@ bool ABaseMonster::DamagedCharacter_Implementation(const TScriptInterface<IAttac
 		PalCommand->ResetCommandQue();
 		IPalCommandInterface::Execute_ReceiveCommand(this, UPalCommandFunctionLibrary::CommandAttack(this, pOther, ESubAttackType::Default));
 	}
-	if (OnDamagedDelegate.IsBound())
-	{
-		OnDamagedDelegate.Broadcast(pOther, Damage);
-	}
+	//if (OnDamagedDelegate.IsBound())
+	//{
+	//	OnDamagedDelegate.Broadcast(pOther, Damage);
+	//}
 	if (HPStat->GetCurrentStat() <= 0.f)
 	{
 		if (GetMesh())

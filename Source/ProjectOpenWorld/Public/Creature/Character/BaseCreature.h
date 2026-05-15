@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/BaseCharacter.h"
@@ -41,10 +41,7 @@ protected:
 	bool bActionStarted{};
 protected:
 	virtual void BeginPlay() override;
-public:
 
-	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Damaged")
-	FOnDamageedDelegate OnDamagedDelegate{};
 public:
 	ABaseCreature();
 	virtual bool ReceiveCommand_Implementation(FPalCommand Command) override;

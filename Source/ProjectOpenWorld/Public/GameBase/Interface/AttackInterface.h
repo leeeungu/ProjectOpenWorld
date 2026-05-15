@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Pal/Data/PalDamageType.h"
 #include "AttackInterface.generated.h"
 
 UINTERFACE(MinimalAPI, BlueprintType)
@@ -11,7 +12,7 @@ class UAttackInterface : public UInterface
 };
 
 class AActor;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamageedDelegate, AActor*, Other, float , Damaage);
+class UPalHitHandlerComponent;
 
 class IAttackInterface
 {
@@ -37,4 +38,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	bool IsDead() const;
+
+	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const { return nullptr; }
 };
