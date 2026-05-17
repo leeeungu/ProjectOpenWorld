@@ -7,7 +7,7 @@
 
 class ABaseCharacter;
 class UPalAIMoveComponent;
-
+enum class EPalAIMonsterState : uint8;
 UCLASS()
 class PROJECTOPENWORLD_API APalAIController : public AAIController
 {
@@ -25,11 +25,13 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
 
-	UFUNCTION()
-	void RecieveDamage(const struct FPalDamagePayload& DamagePayload);
 public:
 	APalAIController();
 
-	UFUNCTION(BlueprintPure, Category = "Pal AI Controller")
+	UFUNCTION(BlueprintPure, Category = "PalAIController")
 	FORCEINLINE UPalAIMoveComponent* GetPalAIMoveComponent() const { return AIMoveComponent; }
+	
+	
+
+
 };

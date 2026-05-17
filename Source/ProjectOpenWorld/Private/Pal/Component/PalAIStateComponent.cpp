@@ -2,16 +2,32 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Enum.h"
 
-void UPalAIStateComponent::SetBBValue(EPalAIMonsterState NewState)
+void UPalAIStateComponent::BeginPlay()
 {
 	if (AAIController* OwnerAIController = Cast<AAIController>(GetOwner()))
 	{
-		if (UBlackboardComponent* BlackboardComp = OwnerAIController->GetBlackboardComponent())
+		BlackboardComponent = OwnerAIController->GetBlackboardComponent();
+	}
+	Super::BeginPlay();
+}
+
+void UPalAIStateComponent::SetBBValue(EPalAIMonsterState NewState)
+{
+	if (!BlackboardComponent.IsValid())
+	{
+		if (AAIController* OwnerAIController = Cast<AAIController>(GetOwner()))
 		{
-			BlackboardComp->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBMonsterStateKey(), static_cast<uint8>(NewState));
+			BlackboardComponent = OwnerAIController->GetBlackboardComponent();
 		}
 	}
+
+	if (BlackboardComponent.IsValid())
+	{
+		BlackboardComponent->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBMonsterStateKey(), static_cast<uint8>(NewState));
+	}
+	CurrentState = NewState;
 }
 
 void UPalAIStateComponent::SetState(EPalAIMonsterState NewState)
@@ -27,13 +43,12 @@ void UPalAIStateComponent::SetState(EPalAIMonsterState NewState)
 
 EPalAIMonsterState UPalAIStateComponent::GetState() const
 {
-	if (AAIController* OwnerAIController = Cast<AAIController>(GetOwner()))
+	if (BlackboardComponent.IsValid())
 	{
-		if (UBlackboardComponent* BlackboardComp = OwnerAIController->GetBlackboardComponent())
-		{
-			uint8 StateValue = BlackboardComp->GetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBMonsterStateKey());
-			return static_cast<EPalAIMonsterState>(StateValue);
-		}
+		uint8 StateValue = BlackboardComponent->GetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBMonsterStateKey());
+		if(StateValue == UBlackboardKeyType_Enum::InvalidValue)
+			return EPalAIMonsterState::None;
+		return static_cast<EPalAIMonsterState>(StateValue);
 	}
-	return EPalAIMonsterState::Idle;
+	return EPalAIMonsterState::None;
 }

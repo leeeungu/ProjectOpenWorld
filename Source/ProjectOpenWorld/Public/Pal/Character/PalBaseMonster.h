@@ -1,0 +1,78 @@
+﻿#pragma once
+
+#include "CoreMinimal.h"
+#include "Pal/Character/PalBaseCharacter.h"
+#include "Player/Interface/PlayerDetectInterface.h"
+#include "GameBase/Interface/AttackInterface.h"
+#include "PalBaseMonster.generated.h"
+
+class UPalPatrolComponent;
+class UPalCommandComponent;
+class UPalAttackComponent;
+struct FPalMonsterLevelData;
+class UWidgetComponent;
+class ABasePlayer;
+class UPalHitHandlerComponent;
+class UStatComponent;
+class UPalMonsterCombatComponent;
+
+UCLASS()
+class PROJECTOPENWORLD_API APalBaseMonster : public APalBaseCharacter, 
+	public IAttackInterface, public IPlayerDetectInterface
+{
+	GENERATED_BODY()
+protected:
+	UPROPERTY(EditAnywhere, Category = "Monster")
+	FName MonsterName{};
+	UPROPERTY(EditAnywhere, Category = "Monster")
+	int Level{};
+
+	//hp, attack defend 같은 statut 관련 component
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	TObjectPtr< UStatComponent> StatComponent{};
+
+	// attack관련 componnet 공격 타입 관리 공격 중 관리
+	UPROPERTY( VisibleAnywhere)
+	TObjectPtr < UPalAttackComponent> AttackComponent{};
+
+	// hit 관련 component
+	UPROPERTY( VisibleAnywhere)
+	TObjectPtr < UPalHitHandlerComponent> HitHandlerComponent{};
+
+	UPROPERTY( VisibleAnywhere)
+	TObjectPtr <UPalMonsterCombatComponent> MonsterCombatComponent{};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pal|Component")
+	TObjectPtr<UPalPatrolComponent> PalPatrolComponent{};
+public:
+	APalBaseMonster();
+	UFUNCTION(BlueprintPure, Category = "Pal|Component")
+	FORCEINLINE UPalPatrolComponent* GetPalPatrolComponent() const { return PalPatrolComponent; }
+	UFUNCTION(BlueprintPure, Category = "Pal|Component")
+	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
+	UFUNCTION(BlueprintPure, Category = "Pal|Component")
+	int GetMonsterLevel() const { return Level; }
+	UFUNCTION(BlueprintPure, Category = "Pal|Component")
+	FName GetMonsterName() const { return MonsterName; }
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
+	// iattackinterface
+	virtual float GetAttackValue_Implementation() const override;
+	virtual bool IsDead_Implementation() const override;
+	virtual void  SetAttackValue_Implementation(float NewValue) override {}
+	virtual void  RetAttackValue_Implementation() override {}
+	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override { return true; }
+	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const override { return HitHandlerComponent; }
+
+
+	// IPlayerDetectInterface
+	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override;
+	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override;
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void HPChanged(double PreCurrentStat, double CurrentStat);
+};

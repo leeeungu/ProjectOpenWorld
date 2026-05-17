@@ -17,4 +17,12 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
     static FName GetBBMonsterStateKey();
+
+    UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
+    static FName GetBBJobType();
+    UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
+    static FName GetBBJobTarget();
+    UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
+    static FName GetBBJobLocation();
+
 };

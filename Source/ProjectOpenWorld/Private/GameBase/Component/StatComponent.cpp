@@ -1,95 +1,147 @@
-#include "GameBase/Component/StatComponent.h"
+﻿#include "GameBase/Component/StatComponent.h"
+#include "Pal/Data/PalDamageType.h"
 
-UStatComponent::UStatComponent() : Super()
+void FStatusValue::SetValue(double NewValue)
 {
-	PrimaryComponentTick.bCanEverTick = false;
-}
-
-void UStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void UStatComponent::SetCurrentStat(double Value)
-{
-	double PreCurrentStat = CurrentStat;
-	CurrentStat = Value;
-	if (OnStatChanged.IsBound())
+	double PreValue = Value;
+	Value = NewValue;
+	if (OnChanged.IsBound())
 	{
-		OnStatChanged.Broadcast(PreCurrentStat, MaxStat);
+		OnChanged.Broadcast(PreValue, Value);
 	}
 }
 
-void UStatComponent::SetMaxStat(double Value)
+double FStatusValue::AddValue(double DeltaValue)
 {
-	double PreMaxStat = MaxStat;
-	MaxStat = Value;
-	if (OnStatChanged.IsBound())
+	double AddValue = DeltaValue;
+	if (DeltaValue > 0)
 	{
-		OnStatChanged.Broadcast(CurrentStat, PreMaxStat);
-	}
-}
-
-double UStatComponent::AddCurrentStat(double Value)
-{
-	double AddValue = Value;
-	if (Value)
-	{
-		double Max = MaxStat - Value;
-		if (Max <= CurrentStat)
-		{
-			AddValue = MaxStat - CurrentStat;
-		}
-	}
-	else
-	{
-		if (CurrentStat + Value <= 0)
-		{
-			AddValue = -CurrentStat;
-		}
-	}
-	double PreCurrentStat = CurrentStat;
-	CurrentStat += AddValue;
-	if (OnStatChanged.IsBound())
-	{
-		OnStatChanged.Broadcast(PreCurrentStat, MaxStat);
-	}
-	return AddValue;
-}
-
-double UStatComponent::AddMaxStat(double Value)
-{
-	double AddValue = Value;
-	if (Value)
-	{
-		double Max = std::numeric_limits<double>::max() - Value;
-		if (Max <= MaxStat)
+		double Max = std::numeric_limits<double>::max() - DeltaValue;
+		if (Max <= Value)
 		{
 			AddValue = std::numeric_limits<double>::max() - Value;
 		}
 	}
 	else
 	{
-		if (MaxStat + Value <= 0)
+		if (Value + DeltaValue <= 0)
 		{
-			AddValue = -MaxStat;
+			AddValue = -Value;
 		}
 	}
-	double PreMaxStat = MaxStat;
-	MaxStat += AddValue;
-	if (OnStatChanged.IsBound())
+	double PreValue = Value;
+	Value += AddValue;
+	if (OnChanged.IsBound())
 	{
-		OnStatChanged.Broadcast(CurrentStat, PreMaxStat);
+		OnChanged.Broadcast(PreValue, Value);
 	}
 	return AddValue;
 }
 
-double UStatComponent::GetStatPercent() const
+void FStatusData::BeginPlay()
 {
-	if (MaxStat <= 0.0 || CurrentStat < 0)
-	{
-		return 0.0;
-	}
-	return CurrentStat / MaxStat;
+	CurrentStatValue.SetValue(MaxStatValue.GetValue());
 }
 
+void UStatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	for(auto& Stat : StatusMap)
+	{
+		Stat.Value.BeginPlay();
+	}
+}
+
+FOnStatChanged* UStatComponent::GetCurrentOnStatChanged(EStatusType StatName)
+{
+	if (FStatusData* Stat = StatusMap.Find(StatName))
+	{
+		return &Stat->CurrentStatValue.OnChanged;
+	}
+	return nullptr;
+}
+
+FOnStatChanged* UStatComponent::GetMaxOnStatChanged(EStatusType StatName)
+{
+	if (FStatusData* Stat = StatusMap.Find(StatName))
+	{
+		return &Stat->MaxStatValue.OnChanged;
+	}
+	return nullptr;
+}
+
+void UStatComponent::SetCurrentStat(double Value, EStatusType StatName)
+{
+	FStatusData* Stat = StatusMap.Find(StatName);
+	if (!Stat)
+	{
+		return;
+	}
+	Stat->CurrentStatValue.SetValue(Value);
+}
+
+void UStatComponent::SetMaxStat(double Value, EStatusType StatName)
+{
+	FStatusData* Stat = StatusMap.Find(StatName);
+	if (!Stat)
+	{
+		return;
+	}
+	Stat->MaxStatValue.SetValue(Value);
+}
+
+double UStatComponent::AddCurrentStat(double Value, EStatusType StatName)
+{
+	FStatusData* Stat = StatusMap.Find(StatName);
+	if (!Stat)
+	{
+		return 0.0f;
+	}
+	return Stat->CurrentStatValue.AddValue(Value);
+}
+
+double UStatComponent::AddMaxStat(double Value, EStatusType StatName)
+{
+	FStatusData* Stat = StatusMap.Find(StatName);
+	if (!Stat)
+	{
+		return 0.0f;
+	}
+	return Stat->MaxStatValue.AddValue(Value);
+}
+
+double UStatComponent::GetCurrentStat(EStatusType StatName) const
+{
+	if (const FStatusData* Stat = StatusMap.Find(StatName))
+	{
+		return Stat->CurrentStatValue.GetValue();
+	}
+	return 0.0;
+}
+double UStatComponent::GetMaxStat(EStatusType StatName) const
+{
+	if (const FStatusData* Stat = StatusMap.Find(StatName))
+	{
+		return Stat->MaxStatValue.GetValue();
+	}
+	return 0.0;
+}
+
+double UStatComponent::GetStatPercent(EStatusType StatName) const
+{
+	if (const FStatusData* Stat = StatusMap.Find(StatName))
+	{
+		if (Stat->MaxStatValue.GetValue() <= 0.0 || Stat->CurrentStatValue.GetValue() < 0)
+		{
+			return 0.0;
+		}
+		return Stat->CurrentStatValue.GetValue() / Stat->MaxStatValue.GetValue();
+	}
+	return 0.0;
+
+}
+
+void UStatComponent::ReceiveDamage(const FPalDamagePayload& DamagePayload)
+{
+	AddCurrentStat(-DamagePayload.BaseDamage, EStatusType::HP);
+}

@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -12,7 +12,6 @@ class UAnimSequence;
 class UAnimMontage;
 class APalAIController;
 struct FAIRequestID;
-class ABaseCharacter;
 class UDataAsset;
 namespace EPathFollowingResult { enum Type : int; }
 
@@ -46,7 +45,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PalAttackData")
 	TWeakObjectPtr<AActor> TargetActor{};
 	UPROPERTY()
-	TObjectPtr< ABaseCharacter> OwnerCharacter{};
+	TObjectPtr< UBaseAnimInstance> OwnerAnimInstance{};
 	UPROPERTY()
 	TObjectPtr<APalAIController> Controller{};
 
@@ -105,7 +104,7 @@ public:
 
 	bool IsTargetNotDead() const;
 	bool IsCoolDown(ESubAttackType Type) const;
-	//// IMontageQueueInterface¿ª(∏¶) ≈Î«ÿ ªÛº”µ 
+	//// IMontageQueueInterfaceÏùÑ(Î•º) ÌÜµÌï¥ ÏÉÅÏÜçÎê®
 	//UAnimMontage* GetMontage() const override;
 	//void MontageStartEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage) override;
 	//void MontageBlendingEvent(UBaseAnimInstance* BaseAnim, UAnimMontage* Montage, bool bInterrupted) override;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
@@ -30,7 +30,12 @@ public:
 public:
 	UPalBuildingStaticMeshComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+protected:
 	virtual void BeginPlay() override;
+	//virtual void EndPlay() override;
+
+public:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
@@ -46,6 +51,11 @@ public:
 	void StartBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator);
 	UFUNCTION(BlueprintCallable, Category = "Building")
 	void StopBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator);
+
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	void StartBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator);
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	void StopBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator);
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
 	void StopAll();

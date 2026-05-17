@@ -1,4 +1,4 @@
-#include "Building/BaseBuilding.h"
+﻿#include "Building/BaseBuilding.h"
 #include "Components/StaticMeshComponent.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
@@ -123,4 +123,25 @@ void ABaseBuilding::NoCollision()
 		Nav->AddDirtyArea(PalBuildingStaticMeshComponent->GetStaticMesh()->GetBounds().GetBox(), 0);
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
+}
+
+void ABaseBuilding::ResiterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass)
+{
+	if (PalBuildingStaticMeshComponent)
+	{
+		PalBuildingStaticMeshComponent->StartBuilding_V2(WorkerClass);
+	}
+}
+
+void ABaseBuilding::UnregisterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass)
+{
+	if (PalBuildingStaticMeshComponent)
+	{
+		PalBuildingStaticMeshComponent->StopBuilding_V2(WorkerClass);
+	}
+}
+
+bool ABaseBuilding::IsWorkable() const
+{	
+	return !PalBuildingStaticMeshComponent->IsBuildingEnd();
 }

@@ -1,4 +1,4 @@
-#include "Pal/Factory/PalCommandFunctionLibrary.h"
+﻿#include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 FPalCommand UPalCommandFunctionLibrary::CommandMoveToLocation(AActor* pInstigator, FVector TargetLocation, float MoveDistance)
 {
@@ -71,4 +71,48 @@ FPalCommand UPalCommandFunctionLibrary::CommandAttack(AActor* pInstigator, AActo
 	command.pInstigatorActor = pInstigator;
 	return command;
 
+}
+
+FPalWorkCommand UPalCommandFunctionLibrary::WorkArchitecture(AActor* pInstigator, AActor* pTargetActor)
+{
+	if (!pTargetActor)
+		return FPalWorkCommand();
+	FPalWorkCommand Work{};
+	Work.JobType = EPalJobType::Architecture;
+	Work.pTarget = pTargetActor;
+	Work.pInstigatorActor = pInstigator;
+	return Work;
+}
+
+FPalWorkCommand UPalCommandFunctionLibrary::WorkTransport(AActor* pInstigator, AActor* pTargetActor, AActor* pDestination)
+{
+	if (!pTargetActor)
+		return FPalWorkCommand();
+	FPalWorkCommand Work{};
+	Work.JobType = EPalJobType::Transport;
+	Work.pTarget = pTargetActor;
+	Work.pInstigatorActor = pDestination;
+	return Work;
+}
+
+FPalWorkCommand UPalCommandFunctionLibrary::WorkMining(AActor* pInstigator, AActor* pTargetActor)
+{
+	if (!pTargetActor)
+		return FPalWorkCommand();
+	FPalWorkCommand Work{};
+	Work.JobType = EPalJobType::Mining;
+	Work.pTarget = pTargetActor;
+	Work.pInstigatorActor = pInstigator;
+	return Work;
+}
+
+FPalWorkCommand UPalCommandFunctionLibrary::WorkAttack(AActor* pInstigator, AActor* pTargetActor)
+{
+	if (!pTargetActor)
+		return FPalWorkCommand();
+	FPalWorkCommand Work{};
+	Work.JobType = EPalJobType::Attack;
+	Work.pTarget = pTargetActor;
+	Work.pInstigatorActor = pInstigator;
+	return Work;
 }

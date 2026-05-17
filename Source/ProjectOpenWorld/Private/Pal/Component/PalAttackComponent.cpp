@@ -1,6 +1,6 @@
-#include "Pal/Component/PalAttackComponent.h"
+﻿#include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Controller/PalAIController.h"
-#include "GameBase/BaseCharacter.h"
+#include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameBase/Interface/AttackInterface.h"
 #include "GameBase/Animation/BaseAnimInstance.h"
@@ -17,20 +17,20 @@ UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 void UPalAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
+	if (ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()))
 	{
+		OwnerAnimInstance = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 		Controller = Cast< APalAIController>(OwnerCharacter->GetController());
-		UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
-		if (Anim)
+		if (OwnerAnimInstance)
 		{
-			Anim->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
+			OwnerAnimInstance->OnMontageQueueEnd.AddUniqueDynamic(this, &UPalAttackComponent::EndAttack);
 		}
 	}
-	if (!Controller)
-	{
-		GetOwner()->Destroy();
-		return;
-	}
+	//if (!Controller)
+	//{
+	//	GetOwner()->Destroy();
+	//	return;
+	//}
 }
 
 void UPalAttackComponent::ResetAttackData()
@@ -124,11 +124,10 @@ void UPalAttackComponent::StartAttack()
 	{
 		CoolDownArray[Index] = true;
 
-		UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
-		if (Anim)
+		if (OwnerAnimInstance)
 		{
-			Anim->ChangeMontageArray(AttackData.AttackData);
-			Anim->PlayMontageQueue();
+			OwnerAnimInstance->ChangeMontageArray(AttackData.AttackData);
+			OwnerAnimInstance->PlayMontageQueue();
 		}
 		bAttacking = true;
 		FTimerHandle Handle{};
@@ -164,18 +163,17 @@ void  UPalAttackComponent::EndAttack()
 
 void UPalAttackComponent::StopAttack()
 {
-	UBaseAnimInstance* Anim = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
-	if(Anim)
+	if(OwnerAnimInstance)
 	{
-		Anim->StopMontageQueue();
+		OwnerAnimInstance->StopMontageQueue();
 	}
 }
 
 bool UPalAttackComponent::TargetIsInRange() const
 {
-	if (TargetActor.IsValid() && OwnerCharacter)
+	if (TargetActor.IsValid() )
 	{
-		const double Distance = FVector::DistSquared(OwnerCharacter->GetActorLocation(), TargetActor->GetActorLocation());
+		const double Distance = FVector::DistSquared(GetOwner()->GetActorLocation(), TargetActor->GetActorLocation());
 		UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: TargetIsInRange Distance : %f"), *GetOwner()->GetName(), Distance);
 		return Distance <= AttackData.AttackDistance * AttackData.AttackDistance;
 	}

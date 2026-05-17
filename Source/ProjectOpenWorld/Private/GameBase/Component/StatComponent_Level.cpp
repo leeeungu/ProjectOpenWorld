@@ -1,6 +1,5 @@
 ﻿#include "GameBase/Component/StatComponent_Level.h"
 
-
 void UStatComponent_Level::BeginPlay()
 {
 	Super::BeginPlay();
@@ -41,7 +40,7 @@ void UStatComponent_Level::PostEditChangeProperty(FPropertyChangedEvent& Propert
 }
 #endif
 
-double UStatComponent_Level::AddCurrentStat(double Value)
+double UStatComponent_Level::AddCurrentStat(double Value, EStatusType StatName)
 {
 	double Result = Super::AddCurrentStat(Value);
 	if (GetMaxStat() <= GetCurrentStat())
@@ -56,7 +55,7 @@ double UStatComponent_Level::AddCurrentStat(double Value)
 			}
 			SetMaxStat(MaxExp);
 			SetCurrentStat(0);
-			if(Value - Result > 0)
+			if (Value - Result > 0)
 				Result += AddCurrentStat(Value - Result);
 		}
 		else if (!LevelStatDataArray.IsEmpty())

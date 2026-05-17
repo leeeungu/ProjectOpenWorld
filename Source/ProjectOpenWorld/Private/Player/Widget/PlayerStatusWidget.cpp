@@ -1,4 +1,4 @@
-#include "Player/Widget/PlayerStatusWidget.h"
+﻿#include "Player/Widget/PlayerStatusWidget.h"
 #include "Player/Widget/PlayerStatusProgress.h"
 #include "Player/Widget/PlayerStatusSlot.h"
 #include "Player/Character/BasePlayer.h"
@@ -52,7 +52,7 @@ void UPlayerStatusWidget::NativeConstruct()
 	if (!Player)
 		return;
 
-	TPair<EStatusSlotType, EStatusType> arSlot[6] =
+	/*TPair<EStatusSlotType, EStatusType> arSlot[6] =
 	{
 		{EStatusSlotType::MaxHp, EStatusType::MaxHp},
 		{EStatusSlotType::Stamina, EStatusType::Stamina},
@@ -75,5 +75,5 @@ void UPlayerStatusWidget::NativeConstruct()
 	for (TTuple<EStatusProgressType, EStatusType, EStatusType >& Type : arProgress)
 	{
 		SetStatusProgress(Type.Get<0>(), *(Player->GetStatusRef(Type.Get<1>())), *(Player->GetStatusRef(Type.Get<2>())));
-	}
+	}*/
 }

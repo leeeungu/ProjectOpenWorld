@@ -1,4 +1,4 @@
-#include "Player/Widget/PlayerStatusProgress.h"
+﻿#include "Player/Widget/PlayerStatusProgress.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Player/Character/BasePlayer.h"
@@ -36,60 +36,60 @@ void UPlayerStatusProgress::NativePreConstruct()
 
 void UPlayerStatusProgress::NativeConstruct()
 {
-	Super::NativeConstruct();
-	if (ABasePlayer* Player = GetOwningPlayerPawn<ABasePlayer>())
-	{
-		switch (StatusType)
-		{
-		case EStatusType::None:
-			break;
-		case EStatusType::Hp:
-		{
-			StatComponent = Player->GetHPStat();
-			break;
-		}
-		case EStatusType::MaxHp:
-		{
-			StatComponent = Player->GetHPStat();
-			break;
-		}
-		case EStatusType::Shield:
-			break;
-		case EStatusType::MaxShield:
-			break;
-		case EStatusType::Health:
-			break;
-		case EStatusType::MaxHealth:
-			break;
-		case EStatusType::Stamina:
-			break;
-		case EStatusType::Attack:
-		{
-			StatComponent = Player->GetAttackStat();
-			break;
-		}
-		case EStatusType::Defense:
-		{
-			StatComponent = Player->GetDefendStat();
-			break;
-		}
-		case EStatusType::WorkSpeed:
-			break;
-		case EStatusType::MaxWeight:
-			break;
-		case EStatusType::EnumMax:
-			break;
-		default:
-		{
-			break;
-		}
-		}
-		if (StatComponent)
-		{
-			StatComponent->OnStatChanged.AddUniqueDynamic(this, &UPlayerStatusProgress::UpdateStatusData);
-		}
-		//SetStatusProgress(Player->GetStatusRef(StatusType), Player->GetStatusRef(MaxStatusType));
-	}
+	//Super::NativeConstruct();
+	//if (ABasePlayer* Player = GetOwningPlayerPawn<ABasePlayer>())
+	//{
+	//	switch (StatusType)
+	//	{
+	//	case EStatusType::None:
+	//		break;
+	//	case EStatusType::Hp:
+	//	{
+	//		StatComponent = Player->GetHPStat();
+	//		break;
+	//	}
+	//	case EStatusType::MaxHp:
+	//	{
+	//		StatComponent = Player->GetHPStat();
+	//		break;
+	//	}
+	//	case EStatusType::Shield:
+	//		break;
+	//	case EStatusType::MaxShield:
+	//		break;
+	//	case EStatusType::Health:
+	//		break;
+	//	case EStatusType::MaxHealth:
+	//		break;
+	//	case EStatusType::Stamina:
+	//		break;
+	//	case EStatusType::Attack:
+	//	{
+	//		StatComponent = Player->GetAttackStat();
+	//		break;
+	//	}
+	//	case EStatusType::Defense:
+	//	{
+	//		StatComponent = Player->GetDefendStat();
+	//		break;
+	//	}
+	//	case EStatusType::WorkSpeed:
+	//		break;
+	//	case EStatusType::MaxWeight:
+	//		break;
+	//	case EStatusType::EnumMax:
+	//		break;
+	//	default:
+	//	{
+	//		break;
+	//	}
+	//	}
+	//	if (StatComponent)
+	//	{
+	//		StatComponent->OnStatChanged.AddUniqueDynamic(this, &UPlayerStatusProgress::UpdateStatusData);
+	//	}
+	//	//SetStatusProgress(Player->GetStatusRef(StatusType), Player->GetStatusRef(MaxStatusType));
+	//}
 	UpdateStatus();
 }
 

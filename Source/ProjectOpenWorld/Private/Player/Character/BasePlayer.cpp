@@ -74,7 +74,7 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	BuildAssistComponent = CreateDefaultSubobject<UBuildingAssistComponentV2>(TEXT("BuildingAssist"));
 
 	PlayerAnimationComponent = CreateDefaultSubobject<UPlayerAnimationComponent>(TEXT("PlayerAnimationComponent"));
-	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
+//	StatusArray.Init(0, (uint8)EStatusType::EnumMax);
 	//PlayerMoveFunc = &ABasePlayer::MoveTravel;
 
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
@@ -112,6 +112,8 @@ ABasePlayer::ABasePlayer() : ABaseCharacter()
 	RightHandEquipComponent->SetupAttachment(GetMesh());
 	LeftHandEquipComponent = CreateDefaultSubobject<UPlayerEquipVisualComponent>(TEXT("LeftHandEquipComponent"));
 	LeftHandEquipComponent->SetupAttachment(GetMesh());
+
+	PlayerStatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("PlayerStatComponent"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -146,14 +148,14 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 
 void ABasePlayer::UpdateWeight(float InventoryWeight)
 {
-	if (*GetStatusRef(EStatusType::MaxWeight) > InventoryWeight)
+	/*if (*GetStatusRef(EStatusType::MaxWeight) > InventoryWeight)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 	}
 	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 50.0f;
-	}
+	}*/
 }
 
 
@@ -167,8 +169,8 @@ void ABasePlayer::BeginPlay()
 	}
 
 	//SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
-	HPStat->SetCurrentStat(*GetStatusRef(EStatusType::MaxHp));
-	HPStat->SetMaxStat(*GetStatusRef(EStatusType::MaxHp));
+	//HPStat->SetCurrentStat(*GetStatusRef(EStatusType::MaxHp));
+	//HPStat->SetMaxStat(*GetStatusRef(EStatusType::MaxHp));
 	StatComponent_Level->OnLevelUp.AddUniqueDynamic(this, &ABasePlayer::OnLevelUpEvent);
 
 	SetInputInterface(EInputKeyType::WASD, PlayerMoveComponent);
@@ -188,12 +190,12 @@ void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
 {
 	if (IsMaxLevel)
 		return;
-	float MaxHp = *GetStatusRef(EStatusType::MaxHp);
-	float NewMaxHp = MaxHp + 50;
-	SetStatus(EStatusType::MaxHp, NewMaxHp);
-	HPStat->SetMaxStat(NewMaxHp);
-	HPStat->SetCurrentStat(NewMaxHp);
-	AttackStat->AddCurrentStat(20.0f);
+	//float MaxHp = *GetStatusRef(EStatusType::MaxHp);
+	//float NewMaxHp = MaxHp + 50;
+	////SetStatus(EStatusType::MaxHp, NewMaxHp);
+	//HPStat->SetMaxStat(NewMaxHp);
+	//HPStat->SetCurrentStat(NewMaxHp);
+	//AttackStat->AddCurrentStat(20.0f);
 }
 
 UEquipmentComponent* const ABasePlayer::GetPlayerEquipComponent() const
@@ -255,7 +257,9 @@ void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 
 bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 {
-	switch (StatusType)
+	Result =  PlayerStatComponent->GetCurrentStat(StatusType);
+	return true;
+	/*switch (StatusType)
 	{
 	case EStatusType::None:
 		break;
@@ -287,8 +291,8 @@ bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 		}
 		break;
 	}
-	
-	return false;
+	*/
+	//return false;
 }
 
 void ABasePlayer::ChangePlayerState(EPlayerState NewState)

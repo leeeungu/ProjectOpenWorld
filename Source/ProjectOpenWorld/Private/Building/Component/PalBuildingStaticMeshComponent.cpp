@@ -1,7 +1,8 @@
-#include "Building/Component/PalBuildingStaticMeshComponent.h"
+﻿#include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Building/Actor/BuildingActor.h"
 #include "Building/Subsystem/BuildingDataSubsystem.h"
 #include "UObject/ObjectSaveContext.h"
+#include "Pal/Interface/PalWorkerInterface.h"
 
 UPalBuildingStaticMeshComponent::UPalBuildingStaticMeshComponent(const FObjectInitializer& ObjectInitializer ) : Super(ObjectInitializer)
 {
@@ -49,6 +50,11 @@ void UPalBuildingStaticMeshComponent::BeginPlay()
 	curentPercent = 0.0f;
 	isBuilding = false;
 	SetBuildingPercent(curentPercent);
+}
+
+void UPalBuildingStaticMeshComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 #if WITH_EDITOR
@@ -105,13 +111,82 @@ void UPalBuildingStaticMeshComponent::StopBuilding(TScriptInterface<IArchitectur
 		DeActiveBuildingNav();
 	}
 }
+void UPalBuildingStaticMeshComponent::StartBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator)
+{
+	if (curentPercent >= 1.0f)
+	{
+		buildSpeed = 0;
+		return;
+	}
+	if (InstigatorList.Find(OtherInstigator.GetObject()))
+	{
+		return;
+	}
+	IPalWorkerInterface* Worker = Cast<IPalWorkerInterface>(OtherInstigator.GetObject());
+	if (Worker && OtherInstigator.GetObject())
+	{
+		InstigatorList.Add(OtherInstigator.GetObject());
+		float Speed = 1;
+		buildSpeed += Speed;
+		if (!isBuilding)
+		{
+			isBuilding = true;
+			SetComponentTickEnabled(true);
+		}
+		if (Worker)
+		{
+			Worker->StartWorking();
+		}
+	}
+	else
+		UE_LOG(LogTemp, Error, TEXT("UPalBuildingStaticMeshComponent::StartBuilding NonInterface"));
+}
+
+void UPalBuildingStaticMeshComponent::StopBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator)
+{
+	if (curentPercent >= 1.0f)
+	{
+		buildSpeed = 0;
+		return;
+	}
+	if (OtherInstigator && OtherInstigator.GetObject())
+	{
+		if (InstigatorList.Find(OtherInstigator.GetObject()))
+		{
+			float Speed = 1; 
+			buildSpeed -= 1;
+			SetComponentTickEnabled(false);
+			isBuilding = false;
+			IPalWorkerInterface* Worker = Cast<IPalWorkerInterface>(OtherInstigator.GetObject());
+			if (Worker)
+			{
+				Worker->StopWorking();
+			}
+			InstigatorList.Remove(OtherInstigator.GetObject());
+		}
+	}
+	if (InstigatorList.IsEmpty())
+	{
+		DeActiveBuildingNav();
+	}
+
+	
+}
 void UPalBuildingStaticMeshComponent::StopAll()
 {
 	for (TWeakObjectPtr<UObject>& Other : InstigatorList)
 	{
 		if (Other.IsValid())
 		{
-			IArchitectureInterface::Execute_StopArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
+			if (Other->Implements<UArchitectureInterface>())
+			{
+				IArchitectureInterface::Execute_StopArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
+			}
+			IPalWorkerInterface* Worker = Cast<IPalWorkerInterface>(Other.Get());
+			if (Worker)
+			{
+				Worker->StopWorking();
+			}
 		}
 	}
 	DeActiveBuildingNav();
@@ -168,7 +243,15 @@ void UPalBuildingStaticMeshComponent::EndBuilding()
 	{
 		if (Other.IsValid())
 		{
-			IArchitectureInterface::Execute_EndArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
+			if (Other->Implements<UArchitectureInterface>())
+			{
+				IArchitectureInterface::Execute_StopArchitect(Other.Get(), Cast<ABaseBuilding >(GetOwner()));
+			}
+			IPalWorkerInterface* Worker = Cast<IPalWorkerInterface>(Other.Get());
+			if (Worker)
+			{
+				Worker->EndWorking(true);
+			}
 		}
 	}
 	InstigatorList.Empty(0);

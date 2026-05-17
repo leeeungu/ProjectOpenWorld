@@ -47,23 +47,6 @@ enum class EPlayerState : uint8
 	EnumMax UMETA(Hidden)
 };
 
-UENUM(BlueprintType)
-enum class EStatusType : uint8
-{
-	None UMETA(Hidden),
-	Hp,
-	MaxHp,
-	Shield,
-	MaxShield,
-	Health,
-	MaxHealth,
-	Stamina,
-	Attack,
-	Defense,
-	WorkSpeed,
-	MaxWeight,
-	EnumMax UMETA(Hidden)
-};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerStateChange, EPlayerState, NewPlayerState, EPlayerState, PrePlayerState);
 
@@ -83,6 +66,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr <UStatComponent_Level> StatComponent_Level{};
+	UPROPERTY(VisibleAnywhere,  Category = Camera)
+	TObjectPtr< UStatComponent> PlayerStatComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building)
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)

@@ -530,14 +530,14 @@ void UInventoryComponent::BeginPlay()
 	if (ABasePlayer* Player = Cast<ABasePlayer>(GetOwner()))
 	{
 		PlayerCharacter = Player;
-		maxInventoryWeight = Player->GetStatusRef(EStatusType::MaxWeight);
+		//maxInventoryWeight = Player->GetStatusRef(EStatusType::MaxWeight);
 	}
 	else if (APlayerController* Controller = Cast<APlayerController>(GetOwner()))
 	{
 		if (ABasePlayer* PawnPlayer = Cast<ABasePlayer>(Controller->GetPawn()))
 		{
 			PlayerCharacter = PawnPlayer;
-			maxInventoryWeight = PawnPlayer->GetStatusRef(EStatusType::MaxWeight);
+			//maxInventoryWeight = PawnPlayer->GetStatusRef(EStatusType::MaxWeight);
 		}
 	}
 }

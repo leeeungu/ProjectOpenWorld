@@ -37,7 +37,7 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
-	virtual double AddCurrentStat(double Value) override;
+	virtual double AddCurrentStat(double Value = 0.0, EStatusType StatName = EStatusType::None) override;
 
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	int32 GetCurrentLevel() const { return CurrentLevel; }

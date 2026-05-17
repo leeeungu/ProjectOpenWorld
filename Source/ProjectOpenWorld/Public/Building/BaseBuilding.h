@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Pal/Interface/CommanderManageable.h"
+#include "Pal/Interface/PalWorkable.h"
 #include "GameBase/Interface/GenerateWorldInterface.h"
 #include "BaseBuilding.generated.h"
 
@@ -14,9 +15,10 @@ class UBuildingProgress;
 class UNavModifierComponent;
 class UPalBuildingStaticMeshComponent;
 class UBuildingActionWidgetComponent;
+class UPalWorkerInterface;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
-class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManageable, public IGenerateWorldInterface
+class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManageable, public IGenerateWorldInterface, public IPalWorkable
 {
 	GENERATED_BODY()
 protected:
@@ -50,6 +52,13 @@ public:
 
 	void UpdateModifier();
 	void NoCollision();
+
+
+	// IPalWorkableInterface
+	virtual void ResiterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass) override;
+	virtual void UnregisterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass) override;
+	virtual bool IsWorkable() const override;
+
 protected:
 	virtual void BeginPlay() override;
 public:

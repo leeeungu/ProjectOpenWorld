@@ -1,12 +1,6 @@
 ﻿#include "Pal/Controller/PalAIController.h"
 #include "GameBase/BaseCharacter.h"
 #include "Pal/Component/PalAIMoveComponent.h"
-#include "GameBase/Interface/AttackInterface.h"
-#include "Pal/Component/PalHitHandlerComponent.h"
-#include "Pal/Data/PalDamageType.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
-#include "Pal/Data/PalAIMonsterState.h"
 
 APalAIController::APalAIController() : Super{}
 {
@@ -15,31 +9,17 @@ APalAIController::APalAIController() : Super{}
 
 void APalAIController::BeginPlay()
 {
-	Super::BeginPlay();
 	if (BTree)
 		RunBehaviorTree(BTree);
+	Super::BeginPlay();
 }
+
 void APalAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	OwnerPal = Cast<ABaseCharacter>(InPawn);
-	if (IAttackInterface* Attack = Cast< IAttackInterface>(OwnerPal))
-	{
-		if (UPalHitHandlerComponent* HitHandler = Attack->GetHitHandlerComponent())
-		{
-			HitHandler->OnDamageTaken.AddUniqueDynamic(this, &APalAIController::RecieveDamage);
-		}
-	}
 }
 
-void APalAIController::RecieveDamage(const FPalDamagePayload& DamagePayload)
-{
-	if (DamagePayload.Instigator && GetBlackboardComponent())
-	{
-		GetBlackboardComponent()->SetValueAsObject(UPalAIBlackboardKeysLibrary::GetBBTargetActorKey(), DamagePayload.Instigator);
-		GetBlackboardComponent()->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBMonsterStateKey(), static_cast<uint8>(EPalAIMonsterState::Chase));
-	}
-}
 
 //
 //
