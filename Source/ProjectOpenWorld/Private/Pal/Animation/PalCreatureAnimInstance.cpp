@@ -52,9 +52,9 @@ void UPalCreatureAnimInstance::OnChangeWorkCommand(const FPalWorkCommand& Job)
 
 void UPalCreatureAnimInstance::OnStartWork()
 {
-	bActionStarted = true;
 	if (WorkAnimation)
 	{
+		bActionStarted = true;
 		UPalChangeToolMesh* ToolMesh = Cast< UPalChangeToolMesh>(WorkAnimation->GetAssetUserDataOfClass(UPalChangeToolMesh::StaticClass()));
 		if (!ToolMesh)
 		{
@@ -67,7 +67,10 @@ void UPalCreatureAnimInstance::OnStartWork()
 
 void UPalCreatureAnimInstance::OnEndWork()
 {
-	bActionStarted = false;
-	WorkAnimation = nullptr;
-	OnToolMeshChanged.Broadcast(nullptr, NAME_None, FTransform{});
+	if (bActionStarted)
+	{
+		bActionStarted = false;
+		WorkAnimation = nullptr;
+		OnToolMeshChanged.Broadcast(nullptr, NAME_None, FTransform{});
+	}
 }

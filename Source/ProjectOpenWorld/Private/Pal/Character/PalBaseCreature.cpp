@@ -40,6 +40,11 @@ float APalBaseCreature::GetAttackValue_Implementation() const
 	return StatComponent->GetCurrentStat(EStatusType::Attack);
 }
 
+float APalBaseCreature::GetAttackDistance() const
+{
+	return AttackComponent->GetAttackDistance();
+}
+
 bool APalBaseCreature::IsDead_Implementation() const
 {
 	if (!StatComponent)
@@ -83,6 +88,14 @@ void APalBaseCreature::SetTransportWorkMoveSpeed(float MaxMoveSpeed)
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+	}
+}
+
+void APalBaseCreature::OnAttackEnd()
+{
+	if (JobComponent && JobComponent->GetCurrentJobType() == EPalJobType::Attack)
+	{
+		JobComponent->EndWorking(true);
 	}
 }
 
@@ -158,6 +171,11 @@ void APalBaseCreature::BeginPlay()
 			JobComponent->OnWorkStart.AddUniqueDynamic(this, &APalBaseCreature::OnStartTransport);
 			JobComponent->OnWorkEnd.AddUniqueDynamic(this, &APalBaseCreature::OnEndTransport);
 		}
+	}
+
+	if (AttackComponent)
+	{
+		AttackComponent->OnPalAttackEnd.AddUniqueDynamic(this, &APalBaseCreature::OnAttackEnd);
 	}
 }
 

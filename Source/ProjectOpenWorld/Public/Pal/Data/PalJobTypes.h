@@ -25,6 +25,7 @@ enum class EPalWorkCapability : uint8
 	Mining = 1 << 1,
 	Lumbering = 1 << 2,
 	Transport = 1 << 3,
+	Attack = 1 << 4,
 };
 ENUM_CLASS_FLAGS(EPalWorkCapability);
 

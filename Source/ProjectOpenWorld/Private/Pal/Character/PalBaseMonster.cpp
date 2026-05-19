@@ -37,6 +37,11 @@ bool APalBaseMonster::IsDead_Implementation() const
 	return StatComponent->GetCurrentStat(EStatusType::HP) <= 0;
 }
 
+float APalBaseMonster::GetAttackDistance() const
+{
+	return AttackComponent->GetAttackDistance();
+}
+
 void APalBaseMonster::OnDetectBeginEvent_Implementation(ABasePlayer* Player)
 {
 }

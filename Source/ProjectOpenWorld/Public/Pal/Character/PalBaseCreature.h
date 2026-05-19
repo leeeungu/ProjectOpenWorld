@@ -57,12 +57,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	FName GetPalName() const { return PalName; }
 
-
-
-
-
 	// iattackinterface
 	virtual float GetAttackValue_Implementation() const override;
+	virtual float GetAttackDistance() const override;
 	virtual bool IsDead_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override {}
 	virtual void  RetAttackValue_Implementation() override {}
@@ -77,6 +74,8 @@ public:
 	virtual float GetWorkSpeed(EPalJobType JobType) override;
 protected:
 	void SetTransportWorkMoveSpeed(float MaxMoveSpeed);
+	UFUNCTION()
+	void OnAttackEnd();
 	UFUNCTION()
 	void OnStartTransport();
 	UFUNCTION()

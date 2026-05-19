@@ -5,14 +5,15 @@
 #include "Pal/Data/PalDamageType.h"
 #include "AttackInterface.generated.h"
 
+class AActor;
+class UPalHitHandlerComponent;
+class UPalAttackComponent;
+
 UINTERFACE(MinimalAPI, BlueprintType)
 class UAttackInterface : public UInterface
 {
 	GENERATED_BODY()
 };
-
-class AActor;
-class UPalHitHandlerComponent;
 
 class IAttackInterface
 {
@@ -20,6 +21,7 @@ class IAttackInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	float GetAttackValue() const;
+	virtual float GetAttackDistance() const { return 100.0f; }
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void  SetAttackValue(float NewValue);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")

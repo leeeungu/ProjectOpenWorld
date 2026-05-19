@@ -16,6 +16,7 @@ namespace PalJobUtils
         case EPalJobType::Mining:       return EPalWorkCapability::Mining;
         case EPalJobType::Lumbering:    return EPalWorkCapability::Lumbering;
         case EPalJobType::Transport:    return EPalWorkCapability::Transport;
+        case EPalJobType::Attack:    return EPalWorkCapability::Attack;
         default:                        return (EPalWorkCapability)0;
         }
     }
@@ -222,6 +223,8 @@ void UPalJobComponent::ChangeTransportTarget()
 // ─── Validation ──────────────────────────────────────────
 bool UPalJobComponent::IsCommandStillValid(const FPalWorkCommand& Command) const
 {
+    if (Command.JobType == EPalJobType::Attack)
+        return true;
     if (Command.pTarget.IsValid())
     {
         IPalWorkable* Workable = Cast<IPalWorkable>(Command.pTarget.Get());

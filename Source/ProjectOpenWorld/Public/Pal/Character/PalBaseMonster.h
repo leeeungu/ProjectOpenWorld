@@ -61,6 +61,7 @@ public:
 	// iattackinterface
 	virtual float GetAttackValue_Implementation() const override;
 	virtual bool IsDead_Implementation() const override;
+	virtual float GetAttackDistance() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override {}
 	virtual void  RetAttackValue_Implementation() override {}
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override { return true; }
