@@ -16,15 +16,6 @@ void UPalCreatureAnimInstance::NativeInitializeAnimation()
 void UPalCreatureAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-	if (!OwnerPalCreature || !JobComponent)
-	{
-		return;
-	}
-
-	if (CurrenJobType == EPalJobType::Transport)
-	{
-		MoveSpeed = FMath::Clamp(MoveSpeed, 0.0f, 0.46f);
-	}
 }
 
 void UPalCreatureAnimInstance::OnChangeWorkCommand(const FPalWorkCommand& Job)

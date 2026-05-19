@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Animation/PalCreatureAnimInstance.h"
+#include "Pal/Data/PalSocketProfile.h"
 
 APalBaseCreature::APalBaseCreature() : Super{}
 {
@@ -77,6 +78,50 @@ float APalBaseCreature::GetWorkSpeed(EPalJobType JobType)
 	return StatComponent->GetCurrentStat(PalStatus::GetJobWorkSpeedStatus(JobType));
 }
 
+void APalBaseCreature::SetTransportWorkMoveSpeed(float MaxMoveSpeed)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+	}
+}
+
+void APalBaseCreature::OnStartTransport()
+{
+	if (!JobComponent || JobComponent->GetCurrentJobType() != EPalJobType::Transport || !GetCharacterMovement() || !StatComponent)
+		return;
+	double Speed = GetCharacterMovement()->MaxWalkSpeed * StatComponent->GetCurrentStat(EStatusType::TransportSpeed);
+	SetTransportWorkMoveSpeed(Speed);
+	AActor* Actor = JobComponent->GetTransportActor();
+	if (Actor)
+	{
+		UPrimitiveComponent* OtherRoot = Cast< UPrimitiveComponent>(Actor->GetRootComponent());
+		if (OtherRoot)
+		{
+			OtherRoot->SetSimulatePhysics(false);
+		}
+		Actor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, PalSocketProfile::GetPalTransportSocekt());
+	}
+}
+
+void APalBaseCreature::OnEndTransport()
+{
+	if (!JobComponent || JobComponent->GetCurrentJobType() != EPalJobType::Transport || !GetCharacterMovement() || !StatComponent)
+		return;
+	double Speed = GetCharacterMovement()->MaxWalkSpeed / StatComponent->GetCurrentStat(EStatusType::TransportSpeed);
+	SetTransportWorkMoveSpeed(Speed);
+	AActor* Actor = JobComponent->GetTransportActor();
+	if (Actor)
+	{
+		UPrimitiveComponent* OtherRoot = Cast< UPrimitiveComponent>(Actor->GetRootComponent());
+		if (OtherRoot)
+		{
+			OtherRoot->SetSimulatePhysics(true);
+		}
+		Actor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	}
+}
+
 void APalBaseCreature::OnWorkMeshChanged(UStaticMesh* NewMesh, FName SocketName, FTransform SocketTransform)
 {
 	if (!JobToolComponent)
@@ -109,6 +154,9 @@ void APalBaseCreature::BeginPlay()
 			JobComponent->OnWorkStart.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnStartWork);
 			JobComponent->OnWorkEnd.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnEndWork);
 			JobComponent->OnJobAssigned.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnChangeWorkCommand);
+
+			JobComponent->OnWorkStart.AddUniqueDynamic(this, &APalBaseCreature::OnStartTransport);
+			JobComponent->OnWorkEnd.AddUniqueDynamic(this, &APalBaseCreature::OnEndTransport);
 		}
 	}
 }

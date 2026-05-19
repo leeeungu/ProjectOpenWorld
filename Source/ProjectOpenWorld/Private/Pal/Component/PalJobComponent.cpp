@@ -46,6 +46,13 @@ bool UPalJobComponent::HasCapabilityFor(EPalJobType JobType) const
     return Bit != (EPalWorkCapability)0 && (CapabilityMask & (uint8)Bit) != 0;
 }
 
+AActor* UPalJobComponent::GetTransportActor() const
+{
+    if (CurrentJob.JobType != EPalJobType::Transport)
+        return nullptr;
+    return CurrentJob.pTarget.Get();
+}
+
 // ─── Push ────────────────────────────────────────────────
 bool UPalJobComponent::TryPushJob(const FPalWorkCommand& Command)
 {
@@ -167,37 +174,46 @@ void UPalJobComponent::UnRegisterWorker()
 
 void UPalJobComponent::StartWorking()
 {
-    bWorking = true;
-    if (OnWorkStart.IsBound())
+    if (!bWorking)
     {
-        OnWorkStart.Broadcast();
+        bWorking = true;
+        if (OnWorkStart.IsBound())
+        {
+            OnWorkStart.Broadcast();
+        }
     }
  }
 
 void UPalJobComponent::StopWorking()
 {
-	bWorking = false;
-    if (OnWorkStop.IsBound())
+    if (bWorking)
     {
-        OnWorkStop.Broadcast();
+        bWorking = false;
+        if (OnWorkStop.IsBound())
+        {
+            OnWorkStop.Broadcast();
+        }
     }
 }
 
 void UPalJobComponent::EndWorking(bool bSuccess)
 {
-    bWorking = false;
-    if (OnWorkEnd.IsBound())
+    if (bWorking)
     {
-        OnWorkEnd.Broadcast();
+        bWorking = false;
+        if (OnWorkEnd.IsBound())
+        {
+            OnWorkEnd.Broadcast();
+        }
+        WorkFinished(bSuccess);
     }
-    WorkFinished(bSuccess);
 }
 
 void UPalJobComponent::ChangeTransportTarget()
 {
     if (CurrentJob.JobType == EPalJobType::Transport && CurrentJob.pInstigatorActor.IsValid())
     {
-        CachedBlackboard->SetValueAsObject(UPalAIBlackboardKeysLibrary::GetBBJobTarget(), CurrentJob.pInstigatorActor.Get());
+        CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.pInstigatorActor->GetActorLocation());
         OnWorkTargetChange.Broadcast(CurrentJob.pInstigatorActor.Get());
     }
 

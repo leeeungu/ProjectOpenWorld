@@ -15,6 +15,7 @@ enum class EStatusType :uint8
 	None UMETA(DisplayName = "None"),
 	HP UMETA(DisplayName = "HP"),
 	MP UMETA(DisplayName = "MP"),
+	MoveSpeed UMETA(DisplayName = "MoveSpeed"),
 	Stamina UMETA(DisplayName = "Stamina"),
 	Attack UMETA(DisplayName = "Attack"),
 	Defense UMETA(DisplayName = "Defense"),
@@ -22,7 +23,7 @@ enum class EStatusType :uint8
 	Architecture UMETA(DisplayName = "Architecture"),
 	Mining UMETA(DisplayName = "Mining"),
 	Lumbering UMETA(DisplayName = "Lumbering"),
-	Transport UMETA(DisplayName = "Transport"),
+	TransportSpeed UMETA(DisplayName = "TransportSpeed"),
 };
 
 namespace PalStatus
@@ -70,6 +71,10 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 public:	
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+
 	FOnStatChanged* GetCurrentOnStatChanged(EStatusType StatName);
 	FOnStatChanged* GetMaxOnStatChanged(EStatusType StatName);
 

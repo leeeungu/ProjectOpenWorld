@@ -1,7 +1,6 @@
 ﻿#include "Pal/Data/PalCollisionFactory.h"
 #include "Engine/EngineTypes.h"
 
-
 ECollisionChannel PalDamage::GetDamageCollisionChannel()
 {
 	return  ECollisionChannel::ECC_GameTraceChannel4;

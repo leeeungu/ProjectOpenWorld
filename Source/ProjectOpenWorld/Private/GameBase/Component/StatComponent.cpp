@@ -1,6 +1,8 @@
 ﻿#include "GameBase/Component/StatComponent.h"
 #include "Pal/Data/PalDamageType.h"
 #include "Pal/Data/PalJobTypes.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 EStatusType PalStatus::GetJobWorkSpeedStatus(EPalJobType JobType)
@@ -17,7 +19,7 @@ EStatusType PalStatus::GetJobWorkSpeedStatus(EPalJobType JobType)
 		return EStatusType::Lumbering;
 		break;
 	case EPalJobType::Transport:
-		return EStatusType::Transport;
+		return EStatusType::TransportSpeed;
 		break;
 	case EPalJobType::Attack:
 		return EStatusType::Attack;
@@ -77,6 +79,47 @@ void UStatComponent::BeginPlay()
 		Stat.Value.BeginPlay();
 	}
 }
+#if WITH_EDITOR
+void UStatComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+
+	const FName MemberName = PropertyChangedEvent.MemberProperty
+		? PropertyChangedEvent.MemberProperty->GetFName()
+		: NAME_None;
+
+	if (MemberName == GET_MEMBER_NAME_CHECKED(UStatComponent, StatusMap))
+	{
+		// 1) 키가 추가되었는지 판별
+		if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ArrayAdd)
+		{
+			// 2) 추가된 엔트리의 인덱스 획득
+			const int32 NewIndex = PropertyChangedEvent.GetArrayIndex(MemberName.ToString());
+
+			// 3) FScriptMapHelper로 해당 키/값 포인터 추출
+			if (FMapProperty* MapProp = CastField<FMapProperty>(PropertyChangedEvent.MemberProperty))
+			{
+				FScriptMapHelper MapHelper(MapProp, MapProp->ContainerPtrToValuePtr<void>(this));
+				if (MapHelper.IsValidIndex(NewIndex))
+				{
+					const EStatusType* AddedKey =
+						reinterpret_cast<const EStatusType*>(MapHelper.GetKeyPtr(NewIndex));
+					FStatusData* AddedValue =
+						reinterpret_cast<FStatusData*>(MapHelper.GetValuePtr(NewIndex));
+					if (ACharacter* OwnerCharacter = Cast< ACharacter>(GetOwner()))
+					{
+						if (AddedKey && *AddedKey == EStatusType::MoveSpeed && OwnerCharacter->GetCharacterMovement())
+						{
+							AddedValue->MaxStatValue.SetValue(OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed);
+						}
+					}
+					// 이 시점의 AddedKey가 '추가된 키'
+				}
+			}
+		}
+	}
+}
+#endif
 
 FOnStatChanged* UStatComponent::GetCurrentOnStatChanged(EStatusType StatName)
 {

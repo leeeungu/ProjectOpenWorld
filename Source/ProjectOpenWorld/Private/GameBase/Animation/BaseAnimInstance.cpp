@@ -88,7 +88,7 @@ void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bI
 				}
 			}
 		}
-			PlayMontage();
+		PlayMontage();
 	}
 }
 

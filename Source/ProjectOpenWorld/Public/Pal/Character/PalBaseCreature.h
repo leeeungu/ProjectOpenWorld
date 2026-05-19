@@ -59,6 +59,8 @@ public:
 
 
 
+
+
 	// iattackinterface
 	virtual float GetAttackValue_Implementation() const override;
 	virtual bool IsDead_Implementation() const override;
@@ -74,6 +76,11 @@ public:
 	virtual void EndWorking(bool bSuccess) override;
 	virtual float GetWorkSpeed(EPalJobType JobType) override;
 protected:
+	void SetTransportWorkMoveSpeed(float MaxMoveSpeed);
+	UFUNCTION()
+	void OnStartTransport();
+	UFUNCTION()
+	void OnEndTransport();
 	UFUNCTION()
 	void OnWorkMeshChanged(UStaticMesh* NewMesh, FName SocketName, FTransform SocketTransform);
 	virtual void BeginPlay() override;

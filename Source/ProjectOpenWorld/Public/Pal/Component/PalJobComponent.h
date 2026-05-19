@@ -61,8 +61,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Pal|Job")
     void UnRegisterWorker();
 
+    UFUNCTION(BlueprintCallable, Category = "Pal|Job")
     void StartWorking() ;
+    UFUNCTION(BlueprintCallable, Category = "Pal|Job")
     void StopWorking() ;
+    UFUNCTION(BlueprintCallable, Category = "Pal|Job")
     void EndWorking(bool bSuccess) ;
 
     UFUNCTION(BlueprintCallable, Category = "Pal|Job")
@@ -70,6 +73,8 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Pal|Job")
     bool HasCapabilityFor(EPalJobType JobType) const;
+
+    AActor* GetTransportActor() const;
 
     UFUNCTION(BlueprintPure, Category = "Pal|Job")
     bool HasCurrentJob() const { return CurrentJob.JobType != EPalJobType::None; }

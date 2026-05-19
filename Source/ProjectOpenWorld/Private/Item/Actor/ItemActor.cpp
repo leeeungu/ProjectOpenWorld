@@ -240,8 +240,6 @@ void AItemActor::ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass
 
 void AItemActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
-	if(WorkerClass)
-		WorkerClass->EndWorking(true);
 }
 
 bool AItemActor::IsWorkable() const
