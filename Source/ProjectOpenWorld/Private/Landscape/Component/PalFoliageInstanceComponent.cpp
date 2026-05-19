@@ -249,3 +249,65 @@ void UPalFoliageInstanceComponent::OnInteractionEnd_Implementation(ACharacter* p
 	if (pOther && pOther->Implements<UResourceInterface>())
 	IResourceInterface::Execute_StopResource(pOther, nullptr);
 }
+
+void UPalFoliageInstanceComponent::OnHarvestEvent(FHarvestEventData EventData)
+{
+	if (!EventData.Hit || !ItemSpawnListAssetUserDataPtr.IsValid())
+		return;
+	FTransform InstanceTransform{};
+	if (!GetInstanceTransform(EventData.Hit->Item, InstanceTransform, true))
+		return;
+
+	FItemSpawnRateData SpawnData = ItemSpawnListAssetUserDataPtr->GetRandomItem();
+	FName ItemName = SpawnData.ItemName;
+	FActorSpawnParameters SpawnParam{};
+	SpawnParam.Owner = GetOwner();
+	SpawnParam.bNoFail = true;
+
+	int32& rCount = ItemSpawnMap.FindOrAdd(InstanceTransform.GetLocation(), ItemSpawnListAssetUserDataPtr->GetMaxSpawnCount());
+	rCount--;
+	FVector NewLocation = EventData.Hit->Location;
+	NewLocation += FVector(0, 0, 10); // Spawn above ground
+
+	UHarvestableAssetUserData* HarvestableAssetUserData =
+		Cast< UHarvestableAssetUserData>(GetStaticMesh()->GetAssetUserDataOfClass(UHarvestableAssetUserData::StaticClass()));
+	AItemActor* ItemActor = UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemName, FTransform(NewLocation));
+	if (ItemActor)
+	{
+		ItemActor->Init(ItemName, SpawnData.SpawnRandomCount);
+		FVector RandomDir = FVector(FMath::FRandRange(-1.0f, 1.0f), FMath::FRandRange(-1.0f, 1.0f), FMath::FRandRange(0.5f, 0.9f));
+		RandomDir = RandomDir.GetSafeNormal();
+		ItemActor->GetItemCollision()->AddImpulse(RandomDir * 300.0f, NAME_None, true);
+	}
+	if (HarvestableAssetUserData)
+	{
+		if (rCount <= 0)
+		{
+			HarvestableAssetUserData->PlayHarvestDestroySound(this, InstanceTransform);
+		}
+		else
+		{
+			HarvestableAssetUserData->PlayHarvestHitSound(this, InstanceTransform);
+		}
+	}
+	if (rCount <= 0)
+	{
+		
+		float ReSpawnTimeSec = 15;
+		if (UResourceEndEvent* ResourceEndEvent = Cast<UResourceEndEvent>(GetStaticMesh()->GetAssetUserDataOfClass(UResourceEndEvent::StaticClass())))
+		{
+			ReSpawnTimeSec = ResourceEndEvent->GetRandomReSpawnTime();
+		}
+		rCount = 0;
+		ItemSpawnMap.Remove(InstanceTransform.GetLocation());
+		PendingSpawnItemQueue.Enqueue(InstanceTransform);
+		FTimerHandle TimerHandle{};
+		GetOwner()->GetWorldTimerManager().SetTimer(TimerHandle,
+			this,
+			&UPalFoliageInstanceComponent::ResetItemSpawnMap,
+			0,
+			false,
+			ReSpawnTimeSec);
+		RemoveInstance(EventData.Hit->Item);
+	}
+}

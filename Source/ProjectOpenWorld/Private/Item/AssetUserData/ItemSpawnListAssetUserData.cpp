@@ -1,4 +1,4 @@
-#include "Item/AssetUserData/ItemSpawnListAssetUserData.h"
+﻿#include "Item/AssetUserData/ItemSpawnListAssetUserData.h"
 
 FItemSpawnRateData UItemSpawnListAssetUserData::GetRandomItem() const
 {
@@ -25,10 +25,8 @@ void UItemSpawnListAssetUserData::PostEditChangeOwner()
 	Super::PostEditChangeOwner();
 	if (ItemSpawnDTListName != NAME_None)
 	{
-		UDataTable* DataTable = nullptr;
 		//Script/Engine.DataTable'/Game/Item/DataTable/DT_ItemSpawnListUserData.DT_ItemSpawnListUserData'
-		DataTable = LoadObject<UDataTable>(nullptr, *StaticGetDataTablePath());
-		if (DataTable)
+		if (UDataTable* DataTable = LoadObject<UDataTable>(nullptr, *StaticGetDataTablePath()))
 		{
 			FItemSpawnListDataTableRow* Data = DataTable->FindRow<FItemSpawnListDataTableRow>(ItemSpawnDTListName, TEXT("UItemSpawnListAssetUserData::PostEditChangeOwner"));
 			if (Data)

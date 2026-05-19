@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Pal/Character/PalBaseCharacter.h"
 #include "GameBase/Interface/AttackInterface.h"
+#include "Pal/Interface/PalWorkerInterface.h"
 #include "PalBaseCreature.generated.h"
 
 class UPalPatrolComponent;
@@ -10,9 +11,10 @@ class UPalCommandComponent;
 class UPalAttackComponent;
 class UPalHitHandlerComponent;
 class UStatComponent;
+class UStaticMeshComponent;
 
 UCLASS(Category = "PalCreature")
-class PROJECTOPENWORLD_API APalBaseCreature : public APalBaseCharacter, public IAttackInterface
+class PROJECTOPENWORLD_API APalBaseCreature : public APalBaseCharacter, public IAttackInterface, public IPalWorkerInterface
 {
 	GENERATED_BODY()
 protected:
@@ -36,6 +38,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "PalCreature")
 	TObjectPtr < UPalJobComponent> JobComponent{};
 
+	UPROPERTY(VisibleAnywhere, Category = "PalCreature")
+	TObjectPtr< UStaticMeshComponent> JobToolComponent{};
 public:
 	APalBaseCreature();
 
@@ -45,6 +49,8 @@ public:
 	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	FORCEINLINE UPalJobComponent* GetJobComponent() const { return JobComponent; }
+	UFUNCTION(BlueprintPure, Category = "Pal|Component")
+	FORCEINLINE UStaticMeshComponent* GetPalToolMeshComponent() const { return JobToolComponent; }
 	
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	int GetPalLevel() const { return Level; }
@@ -61,7 +67,15 @@ public:
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override { return true; }
 	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const override { return HitHandlerComponent; }
 
+
+	// IPalWorkerInterface
+	virtual void StartWorking() override;
+	virtual void StopWorking() override;
+	virtual void EndWorking(bool bSuccess) override;
+	virtual float GetWorkSpeed(EPalJobType JobType) override;
 protected:
+	UFUNCTION()
+	void OnWorkMeshChanged(UStaticMesh* NewMesh, FName SocketName, FTransform SocketTransform);
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

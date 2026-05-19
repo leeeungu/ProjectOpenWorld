@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 using UnrealBuildTool.Rules;
@@ -19,9 +19,10 @@ public class ProjectOpenWorld : ModuleRules
             PrivateDependencyModuleNames.AddRange(
                 new string[]
                 {
-                    "UnrealEd",             // GEditor, ¿¡µğÅÍ °ü·Ã
+                    "UnrealEd",             // GEditor, ì—ë””í„° ê´€ë ¨
                     "EditorSubsystem",      // UEditorAssetSubsystem
-                  //  "EditorScriptingUtilities" // ÇÊ¿ä ½Ã
+                    "AnimationEditor"
+                  //  "EditorScriptingUtilities" // í•„ìš” ì‹œ
                 }
             );
         }

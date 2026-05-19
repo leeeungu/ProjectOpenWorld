@@ -1,5 +1,6 @@
 ﻿#include "Pal/Data/PalJobTypes.h"
 #include "Pal/Interface/PalWorkable.h"
+#include "Engine/EngineTypes.h"
 
 bool FPalWorkCommand::IsValidWork() const
 {

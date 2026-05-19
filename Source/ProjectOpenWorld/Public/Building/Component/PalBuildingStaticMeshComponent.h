@@ -53,9 +53,9 @@ public:
 	void StopBuilding(TScriptInterface<IArchitectureInterface> OtherInstigator);
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
-	void StartBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator);
+	void StartBuilding_V2(TScriptInterface<IPalWorkerInterface> OtherInstigator);
 	UFUNCTION(BlueprintCallable, Category = "Building")
-	void StopBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator);
+	void StopBuilding_V2(TScriptInterface<IPalWorkerInterface> OtherInstigator);
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
 	void StopAll();

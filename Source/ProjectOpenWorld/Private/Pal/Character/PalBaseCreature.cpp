@@ -7,6 +7,8 @@
 #include "GameBase/Component/StatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Pal/Animation/PalCreatureAnimInstance.h"
 
 APalBaseCreature::APalBaseCreature() : Super{}
 {
@@ -21,6 +23,8 @@ APalBaseCreature::APalBaseCreature() : Super{}
 	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
 	JobComponent = CreateDefaultSubobject<UPalJobComponent>(TEXT("JobComponent"));
 
+	JobToolComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PalToolMesh"));
+	JobToolComponent->SetupAttachment(GetMesh());
 }
 
 void APalBaseCreature::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -42,6 +46,46 @@ bool APalBaseCreature::IsDead_Implementation() const
 	return StatComponent->GetCurrentStat(EStatusType::HP) <= 0;
 }
 
+void APalBaseCreature::StartWorking()
+{
+	if (JobComponent)
+	{
+		JobComponent->StartWorking();
+	}
+}
+
+void APalBaseCreature::StopWorking()
+{
+	if (JobComponent)
+	{
+		JobComponent->StopWorking();
+	}
+}
+
+void APalBaseCreature::EndWorking(bool bSuccess)
+{
+	if (JobComponent)
+	{
+		JobComponent->EndWorking(bSuccess);
+	}
+}
+
+float APalBaseCreature::GetWorkSpeed(EPalJobType JobType)
+{
+	if(!StatComponent)
+		return 0.0f;
+	return StatComponent->GetCurrentStat(PalStatus::GetJobWorkSpeedStatus(JobType));
+}
+
+void APalBaseCreature::OnWorkMeshChanged(UStaticMesh* NewMesh, FName SocketName, FTransform SocketTransform)
+{
+	if (!JobToolComponent)
+		return;
+	JobToolComponent->SetStaticMesh(NewMesh);
+	JobToolComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
+	JobToolComponent->SetRelativeTransform(SocketTransform);
+}
+
 void APalBaseCreature::BeginPlay()
 {
 	Super::BeginPlay();
@@ -56,14 +100,23 @@ void APalBaseCreature::BeginPlay()
 	{
 		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &APalBaseCreature::HPChanged);
 	}
+	if (JobComponent && GetMesh())
+	{
+		if (UPalCreatureAnimInstance* Anim = Cast<UPalCreatureAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			//JobComponent->OnJobAssigned.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnChangeWork);
+			Anim->OnToolMeshChanged.AddUniqueDynamic(this, &APalBaseCreature::OnWorkMeshChanged);
+			JobComponent->OnWorkStart.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnStartWork);
+			JobComponent->OnWorkEnd.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnEndWork);
+			JobComponent->OnJobAssigned.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnChangeWorkCommand);
+		}
+	}
 }
 
 void APalBaseCreature::HPChanged(double PreCurrentStat, double CurrentStat)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HP Changed: %f -> %f"), PreCurrentStat, CurrentStat);
 	if (CurrentStat <= 0)
 	{
-		//bDead = true;
 		AttackComponent->StopAttack();
 		if (GetMesh())
 		{

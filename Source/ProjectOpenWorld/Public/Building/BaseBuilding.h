@@ -55,8 +55,8 @@ public:
 
 
 	// IPalWorkableInterface
-	virtual void ResiterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass) override;
-	virtual void UnregisterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass) override;
+	virtual void ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass) override;
+	virtual void UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass) override;
 	virtual bool IsWorkable() const override;
 
 protected:

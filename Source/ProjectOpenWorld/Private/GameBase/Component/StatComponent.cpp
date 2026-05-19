@@ -1,5 +1,31 @@
 ﻿#include "GameBase/Component/StatComponent.h"
 #include "Pal/Data/PalDamageType.h"
+#include "Pal/Data/PalJobTypes.h"
+
+
+EStatusType PalStatus::GetJobWorkSpeedStatus(EPalJobType JobType)
+{
+	switch (JobType)
+	{
+	case EPalJobType::Architecture:
+		return EStatusType::Architecture;
+		break;
+	case EPalJobType::Mining:
+		return EStatusType::Mining;
+		break;
+	case EPalJobType::Lumbering:
+		return EStatusType::Lumbering;
+		break;
+	case EPalJobType::Transport:
+		return EStatusType::Transport;
+		break;
+	case EPalJobType::Attack:
+		return EStatusType::Attack;
+		break;
+	}
+	return EStatusType::None;
+}
+
 
 void FStatusValue::SetValue(double NewValue)
 {

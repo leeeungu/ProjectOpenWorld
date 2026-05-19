@@ -25,13 +25,6 @@
 //    Lightning,
 //};
 
-enum ECollisionChannel : int;
-
-namespace PalDamage
-{
-    ECollisionChannel GetDamageCollisionChannel();
-}
-
 USTRUCT(BlueprintType)
 struct FPalDamagePayload
 {

@@ -3,12 +3,13 @@
 #include "CoreMinimal.h"
 #include "FoliageInstancedStaticMeshComponent.h"
 #include "Interaction/InteractionInterface.h"
+#include "Pal/Interface/PalHarvestable.h"
 #include "PalFoliageInstanceComponent.generated.h"
 
 class UItemSpawnListAssetUserData;
 
 UCLASS()
-class PROJECTOPENWORLD_API UPalFoliageInstanceComponent : public UFoliageInstancedStaticMeshComponent
+class PROJECTOPENWORLD_API UPalFoliageInstanceComponent : public UFoliageInstancedStaticMeshComponent, public IPalHarvestable
 	, public IInteractionInterface // PAL 작업 때문에 상속됨
 {
 	GENERATED_BODY()
@@ -33,4 +34,7 @@ public:
 	virtual void OnInteraction_Implementation(ACharacter* pOther) override;
 	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override;
 	virtual void OnInteractionCanceled_Implementation(ACharacter* pOther) override {}
+
+	// IPalHarvestable
+	virtual void OnHarvestEvent(FHarvestEventData EventData) override;
 };

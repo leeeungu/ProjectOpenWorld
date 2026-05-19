@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h"
 #include "GameBase/Object/AttackObject.h"
+#include "Pal/Data/PalCollisionFactory.h"
 
 #if WITH_EDITOR	
 void UAnimNotify_Attack::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)

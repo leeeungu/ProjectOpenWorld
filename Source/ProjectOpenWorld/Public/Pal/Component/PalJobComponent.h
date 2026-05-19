@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalJobTypes.h"
-#include "Pal/Interface/PalWorkerInterface.h"
 #include "PalJobComponent.generated.h"
 
 
@@ -14,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobAssigned, const FPalWorkCom
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPalJobFinished, const FPalWorkCommand&, Job, bool, bSuccess);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class PROJECTOPENWORLD_API UPalJobComponent : public UActorComponent, public IPalWorkerInterface
+class PROJECTOPENWORLD_API UPalJobComponent : public UActorComponent
 {
     GENERATED_BODY()
 private:
@@ -60,9 +59,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Pal|Job")
     void UnRegisterWorker();
 
-    virtual void StartWorking() override;
-    virtual void StopWorking() override;
-    virtual void EndWorking(bool bSuccess) override;
+    void StartWorking() ;
+    void StopWorking() ;
+    void EndWorking(bool bSuccess) ;
 
     UFUNCTION(BlueprintPure, Category = "Pal|Job")
     bool HasCapabilityFor(EPalJobType JobType) const;

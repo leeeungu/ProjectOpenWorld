@@ -28,6 +28,7 @@ enum class EPalWorkCapability : uint8
 };
 ENUM_CLASS_FLAGS(EPalWorkCapability);
 
+
 USTRUCT(BlueprintType)
 struct FPalWorkCommand
 {

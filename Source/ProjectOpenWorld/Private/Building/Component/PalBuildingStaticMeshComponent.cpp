@@ -111,7 +111,7 @@ void UPalBuildingStaticMeshComponent::StopBuilding(TScriptInterface<IArchitectur
 		DeActiveBuildingNav();
 	}
 }
-void UPalBuildingStaticMeshComponent::StartBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator)
+void UPalBuildingStaticMeshComponent::StartBuilding_V2(TScriptInterface<IPalWorkerInterface> OtherInstigator)
 {
 	if (curentPercent >= 1.0f)
 	{
@@ -126,42 +126,36 @@ void UPalBuildingStaticMeshComponent::StartBuilding_V2(TScriptInterface<UPalWork
 	if (Worker && OtherInstigator.GetObject())
 	{
 		InstigatorList.Add(OtherInstigator.GetObject());
-		float Speed = 1;
+		float Speed = Worker->GetWorkSpeed(EPalJobType::Architecture);
 		buildSpeed += Speed;
 		if (!isBuilding)
 		{
 			isBuilding = true;
 			SetComponentTickEnabled(true);
 		}
-		if (Worker)
-		{
-			Worker->StartWorking();
-		}
+		Worker->StartWorking();
 	}
 	else
 		UE_LOG(LogTemp, Error, TEXT("UPalBuildingStaticMeshComponent::StartBuilding NonInterface"));
 }
 
-void UPalBuildingStaticMeshComponent::StopBuilding_V2(TScriptInterface<UPalWorkerInterface> OtherInstigator)
+void UPalBuildingStaticMeshComponent::StopBuilding_V2(TScriptInterface<IPalWorkerInterface> OtherInstigator)
 {
 	if (curentPercent >= 1.0f)
 	{
 		buildSpeed = 0;
 		return;
 	}
-	if (OtherInstigator && OtherInstigator.GetObject())
+	IPalWorkerInterface* Worker = Cast<IPalWorkerInterface>(OtherInstigator.GetObject());
+	if (OtherInstigator.GetObject() && Worker)
 	{
 		if (InstigatorList.Find(OtherInstigator.GetObject()))
 		{
-			float Speed = 1; 
-			buildSpeed -= 1;
+			float Speed = Worker->GetWorkSpeed(EPalJobType::Architecture);
+			buildSpeed -= Speed;
 			SetComponentTickEnabled(false);
 			isBuilding = false;
-			IPalWorkerInterface* Worker = Cast<IPalWorkerInterface>(OtherInstigator.GetObject());
-			if (Worker)
-			{
-				Worker->StopWorking();
-			}
+			Worker->StopWorking();
 			InstigatorList.Remove(OtherInstigator.GetObject());
 		}
 	}
@@ -169,9 +163,8 @@ void UPalBuildingStaticMeshComponent::StopBuilding_V2(TScriptInterface<UPalWorke
 	{
 		DeActiveBuildingNav();
 	}
-
-	
 }
+
 void UPalBuildingStaticMeshComponent::StopAll()
 {
 	for (TWeakObjectPtr<UObject>& Other : InstigatorList)

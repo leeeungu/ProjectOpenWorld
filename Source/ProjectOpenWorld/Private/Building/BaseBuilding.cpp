@@ -125,7 +125,7 @@ void ABaseBuilding::NoCollision()
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
 }
 
-void ABaseBuilding::ResiterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass)
+void ABaseBuilding::ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
 	if (PalBuildingStaticMeshComponent)
 	{
@@ -133,7 +133,7 @@ void ABaseBuilding::ResiterWorker(TScriptInterface<UPalWorkerInterface> WorkerCl
 	}
 }
 
-void ABaseBuilding::UnregisterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass)
+void ABaseBuilding::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
 	if (PalBuildingStaticMeshComponent)
 	{

@@ -5,6 +5,7 @@
 #include "StatComponent.generated.h"
 
 struct FPalDamagePayload;
+enum class EPalJobType : uint8;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, double, PreCurrentStat, double, CurrentStat);
 
@@ -18,7 +19,16 @@ enum class EStatusType :uint8
 	Attack UMETA(DisplayName = "Attack"),
 	Defense UMETA(DisplayName = "Defense"),
 	Speed UMETA(DisplayName = "Speed"),
+	Architecture UMETA(DisplayName = "Architecture"),
+	Mining UMETA(DisplayName = "Mining"),
+	Lumbering UMETA(DisplayName = "Lumbering"),
+	Transport UMETA(DisplayName = "Transport"),
 };
+
+namespace PalStatus
+{
+	EStatusType GetJobWorkSpeedStatus(EPalJobType JobType);
+}
 
 USTRUCT()
 struct FStatusValue

@@ -1,7 +1,6 @@
 ﻿#include "Item/Notify/AnimNotify_ItemSpawnFromFoliage.h"
-#include "FoliageInstancedStaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Landscape/Component/PalFoliageInstanceComponent.h"
+#include "Pal/Interface/PalHarvestable.h"
 
 void UAnimNotify_ItemSpawnFromFoliage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
@@ -11,22 +10,27 @@ void UAnimNotify_ItemSpawnFromFoliage::Notify(USkeletalMeshComponent* MeshComp, 
 	if (pWorld)
 	{
 		FCollisionQueryParams Param{};
-		FCollisionResponseParams ResponseParam{};
 		FCollisionShape ShearchShape = FCollisionShape::MakeSphere(ShearchRadius);
-		FCollisionObjectQueryParams ObjectQueryParam{};
 		TArray<FHitResult> arHitResult{};
-		TSet<UPalFoliageInstanceComponent*> ProcessedFoliageComps{};
+		TSet<UActorComponent*> ProcessedFoliageComps{};
 
 		pWorld->SweepMultiByChannel(arHitResult, Center, Center, FQuat::Identity,ECollisionChannel::ECC_WorldStatic, ShearchShape, Param);
-		for (const FHitResult& Hit : arHitResult)
+		for (const FHitResult& Hit : arHitResult) //Hit.Item 가 UPalFoliageInstanceComponent에 충돌된 instance의 index도 알려줌
 		{
-			UPalFoliageInstanceComponent* FoliageComp = Cast<UPalFoliageInstanceComponent>(Hit.GetComponent());
-			if (FoliageComp && !ProcessedFoliageComps.Find(FoliageComp))
+			TScriptInterface<IPalHarvestable> Harvestable = Hit.GetComponent();
+			if (Harvestable && !ProcessedFoliageComps.Find(Hit.GetComponent())) // bool operator 호출
 			{
-				ProcessedFoliageComps.Add(FoliageComp);
-				TArray<int32> InstanceIndexArray = FoliageComp->GetInstancesOverlappingSphere(Center, ShearchRadius);
-				FoliageComp->RemoveInstances(FoliageComp->SpawnItem(InstanceIndexArray));
+				ProcessedFoliageComps.Add(Hit.GetComponent());
+				Harvestable->OnHarvestEvent(FHarvestEventData{ MeshComp->GetOwner(),&Hit });
 			}
+
+			//UPalFoliageInstanceComponent* FoliageComp = Cast<UPalFoliageInstanceComponent>(Hit.GetComponent());
+			//if (FoliageComp && !ProcessedFoliageComps.Find(FoliageComp))
+			//{
+			//	ProcessedFoliageComps.Add(FoliageComp);
+			//	TArray<int32> InstanceIndexArray = FoliageComp->GetInstancesOverlappingSphere(Center, ShearchRadius);
+			//	FoliageComp->RemoveInstances(FoliageComp->SpawnItem(InstanceIndexArray));
+			//}
 		}
 	}
 

@@ -18,9 +18,9 @@ class IPalWorkable
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable, Category = "Pal|Workable")
-	virtual void ResiterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass) {}
+	virtual void ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass) {}
 	UFUNCTION(BlueprintCallable, Category = "Pal|Workable")
-	virtual void UnregisterWorker(TScriptInterface<UPalWorkerInterface> WorkerClass) {}
+	virtual void UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass) {}
 	UFUNCTION(BlueprintCallable, Category = "Pal|Workable")
 	virtual bool IsWorkable() const { return false; }
 };

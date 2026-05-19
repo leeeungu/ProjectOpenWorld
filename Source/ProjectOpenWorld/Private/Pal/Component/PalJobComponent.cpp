@@ -4,6 +4,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
 #include "Pal/Interface/PalWorkable.h"
+#include "Pal/Interface/PalWorkerInterface.h"
 
 namespace PalJobUtils
 {
@@ -146,7 +147,7 @@ void UPalJobComponent::RegisterWorker()
     IPalWorkable* Workable = Cast<IPalWorkable>(CurrentJob.pTarget.Get());
     if (Workable)
     {
-        Workable->ResiterWorker(this);
+        Workable->ResiterWorker(GetOwner());
     }
 }
 
@@ -157,7 +158,7 @@ void UPalJobComponent::UnRegisterWorker()
         IPalWorkable* Workable = Cast<IPalWorkable>(CurrentJob.pTarget.Get());
         if (Workable)
         {
-            Workable->UnregisterWorker(this);
+            Workable->UnregisterWorker(GetOwner());
         }
     }
 }
@@ -202,7 +203,7 @@ bool UPalJobComponent::IsCommandStillValid(const FPalWorkCommand& Command) const
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("not Interface:: UPalJobComponentr %s"), *UEnum::GetValueAsString(Command.JobType));
+            UE_LOG(LogTemp, Warning, TEXT("UPalJobComponent::IsCommandStillValid : not Interface %s"), *Command.pTarget->GetClass()->GetName());
         }
     }
     return false;

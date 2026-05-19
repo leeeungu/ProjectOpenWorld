@@ -1,6 +1,7 @@
 ﻿#include "GameBase/Notify/AnimNotify_BoxAttack.h"
 #include "kismet/KismetSystemLibrary.h"
 #include "Pal/Data/PalDamageType.h"
+#include "Pal/Data/PalCollisionFactory.h"
 
 FCollisionShape UAnimNotify_BoxAttack::GetAttackCollisionShape() const
 {
