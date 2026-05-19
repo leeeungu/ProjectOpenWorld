@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Interaction/InteractionInterface.h"
 #include "Item/Interface/TransportInterface.h"
+#include "Pal/Interface/PalWorkable.h"
 #include "GameBase/Interface/GenerateWorldInterface.h"
 #include "ItemActor.generated.h"
 
@@ -16,7 +17,9 @@ class UStaticMeshComponent;
 enum EEffectSoundType : uint8;
 
 UCLASS()
-class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface, public IGenerateWorldInterface{
+class PROJECTOPENWORLD_API AItemActor : public AActor, public IInteractionInterface, public ITransportInterface, public IGenerateWorldInterface
+	, public IPalWorkable
+{
 	GENERATED_BODY()
 
 protected:
@@ -93,6 +96,11 @@ public:
 	virtual void DelGenerateWorldEvent(const FGenerateSectionData& SectionData) override;
 
 	UPrimitiveComponent* GetItemCollision() const;
+
+
+	virtual void ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)  override;
+	virtual void UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)  override;
+	virtual bool IsWorkable() const override;
 
 private: 
 	void SetMeshAsset(class UItemVisibleDataFragment* VisibleDataFragment);

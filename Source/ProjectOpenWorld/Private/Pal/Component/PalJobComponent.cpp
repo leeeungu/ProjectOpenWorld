@@ -103,6 +103,8 @@ bool UPalJobComponent::PullNext()
         {
             CurrentJob = Next;
             SyncToBlackboard();
+            OnWorkTargetChange.Broadcast(CurrentJob.pTarget.Get());
+            // todo => OnJobAssigned에 할당된 bb 변경을 OnWorkTargetChange로 변경해야함 + bb 변경도 여기가 아니라 다른곳으로 이전 해야할듯?
             OnJobAssigned.Broadcast(CurrentJob);
             return true;
         }
@@ -189,6 +191,16 @@ void UPalJobComponent::EndWorking(bool bSuccess)
         OnWorkEnd.Broadcast();
     }
     WorkFinished(bSuccess);
+}
+
+void UPalJobComponent::ChangeTransportTarget()
+{
+    if (CurrentJob.JobType == EPalJobType::Transport && CurrentJob.pInstigatorActor.IsValid())
+    {
+        CachedBlackboard->SetValueAsObject(UPalAIBlackboardKeysLibrary::GetBBJobTarget(), CurrentJob.pInstigatorActor.Get());
+        OnWorkTargetChange.Broadcast(CurrentJob.pInstigatorActor.Get());
+    }
+
 }
 
 // ─── Validation ──────────────────────────────────────────

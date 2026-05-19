@@ -7,8 +7,10 @@
 
 
 class UBlackboardComponent;
+class AActor;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalWorkTargetChange, AActor*, NewTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobAssigned, const FPalWorkCommand&, Job);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPalJobFinished, const FPalWorkCommand&, Job, bool, bSuccess);
 
@@ -63,6 +65,9 @@ public:
     void StopWorking() ;
     void EndWorking(bool bSuccess) ;
 
+    UFUNCTION(BlueprintCallable, Category = "Pal|Job")
+    void ChangeTransportTarget();
+
     UFUNCTION(BlueprintPure, Category = "Pal|Job")
     bool HasCapabilityFor(EPalJobType JobType) const;
 
@@ -88,6 +93,8 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
     FOnWorkEvent OnWorkEnd{};
 
+    UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
+    FOnPalWorkTargetChange OnWorkTargetChange{};
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
     FOnPalJobAssigned OnJobAssigned{};
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job") 

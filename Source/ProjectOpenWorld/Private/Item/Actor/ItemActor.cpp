@@ -1,4 +1,4 @@
-#include "Item/Actor/ItemActor.h"
+﻿#include "Item/Actor/ItemActor.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -15,6 +15,7 @@
 #include "Item/Object/BaseItem.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Object/Fragment/ItemVisibleDataFragment.h"
+#include "Pal/Interface/PalWorkerInterface.h"
 
 AItemActor::AItemActor() : Super()
 {
@@ -95,7 +96,7 @@ bool AItemActor::InitFromItem(UBaseItem* InItem)
 
 void AItemActor::Init(FName NewItemID, int32 Count)
 {
-	// �ӽ� ȣȯ��
+	// 임시 호환용
 	UBaseItem* NewItem = UItemFunctionLibrary::CreateBaseItem(NewItemID, Count, this);
 	//NewObject<UBaseItem>(this);
 	if (!NewItem)
@@ -229,6 +230,23 @@ void AItemActor::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 UPrimitiveComponent* AItemActor::GetItemCollision() const
 {
 	return ItemCollision;
+}
+
+void AItemActor::ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
+{
+	if(WorkerClass)
+		WorkerClass->StartWorking();
+}
+
+void AItemActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
+{
+	if(WorkerClass)
+		WorkerClass->EndWorking(true);
+}
+
+bool AItemActor::IsWorkable() const
+{
+	return 	TransportState == ETransportState::NotTransport;
 }
 
 void AItemActor::SetMeshAsset(UItemVisibleDataFragment* VisibleDataFragment)
