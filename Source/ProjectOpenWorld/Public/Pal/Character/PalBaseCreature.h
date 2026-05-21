@@ -72,6 +72,8 @@ public:
 	virtual void StopWorking() override;
 	virtual void EndWorking(bool bSuccess) override;
 	virtual float GetWorkSpeed(EPalJobType JobType) override;
+	virtual UPalJobComponent* GetPalJobComponent() const { return JobComponent; }
+
 protected:
 	void SetTransportWorkMoveSpeed(float MaxMoveSpeed);
 	UFUNCTION()

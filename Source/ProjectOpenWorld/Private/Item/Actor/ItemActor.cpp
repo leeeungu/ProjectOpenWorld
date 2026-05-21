@@ -16,6 +16,7 @@
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Object/Fragment/ItemVisibleDataFragment.h"
 #include "Pal/Interface/PalWorkerInterface.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 AItemActor::AItemActor() : Super()
 {
@@ -245,6 +246,12 @@ void AItemActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerCl
 bool AItemActor::IsWorkable() const
 {
 	return 	TransportState == ETransportState::NotTransport;
+}
+
+FPalWorkCommand AItemActor::GetWorkCommand(AActor* InstigatorActor, AActor* Target) const
+{
+	UE_LOG(LogTemp, Warning, TEXT("Instigator : %s , target : %s"), *InstigatorActor->GetName(), *Target->GetName());
+	return UPalCommandFunctionLibrary::WorkTransport(InstigatorActor, Target, InstigatorActor);
 }
 
 void AItemActor::SetMeshAsset(UItemVisibleDataFragment* VisibleDataFragment)

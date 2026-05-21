@@ -156,12 +156,12 @@ void APalBaseCreature::BeginPlay()
 		{
 			//JobComponent->OnJobAssigned.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnChangeWork);
 			Anim->OnToolMeshChanged.AddUniqueDynamic(this, &APalBaseCreature::OnWorkMeshChanged);
-			JobComponent->OnWorkStart.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnStartWork);
-			JobComponent->OnWorkEnd.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnEndWork);
+			JobComponent->OnWorkStart.AddUObject(Anim, &UPalCreatureAnimInstance::OnStartWork);
+			JobComponent->OnWorkEnd.AddUObject(Anim, &UPalCreatureAnimInstance::OnEndWork);
 			JobComponent->OnJobAssigned.AddUniqueDynamic(Anim, &UPalCreatureAnimInstance::OnChangeWorkCommand);
 
-			JobComponent->OnWorkStart.AddUniqueDynamic(this, &APalBaseCreature::OnStartTransport);
-			JobComponent->OnWorkEnd.AddUniqueDynamic(this, &APalBaseCreature::OnEndTransport);
+			JobComponent->OnWorkStart.AddUObject(this, &APalBaseCreature::OnStartTransport);
+			JobComponent->OnWorkEnd.AddUObject(this, &APalBaseCreature::OnEndTransport);
 		}
 	}
 

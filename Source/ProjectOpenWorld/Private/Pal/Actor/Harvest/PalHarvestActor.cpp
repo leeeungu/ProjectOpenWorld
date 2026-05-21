@@ -1,5 +1,6 @@
 ﻿#include "Pal/Actor/Harvest/PalHarvestActor.h"
 #include "Pal/Component/Harvest/PalHarvestSMComponent.h"
+#include "Pal/Factory/PalCommandFunctionLibrary.h"
 
 APalHarvestActor::APalHarvestActor()
 {
@@ -21,4 +22,9 @@ void APalHarvestActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> Wo
 bool APalHarvestActor::IsWorkable() const
 {
 	return MeshComponent->IsWorkable();
+}
+
+FPalWorkCommand APalHarvestActor::GetWorkCommand(AActor* InstigatorActor, AActor* Target) const
+{
+	return UPalCommandFunctionLibrary::WorkMining(InstigatorActor, Target);
 }

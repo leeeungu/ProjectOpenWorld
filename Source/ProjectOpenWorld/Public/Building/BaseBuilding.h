@@ -58,7 +58,8 @@ public:
 	virtual void ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass) override;
 	virtual void UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass) override;
 	virtual bool IsWorkable() const override;
-
+	virtual EPalJobType GetWorkJobType() const { return EPalJobType::Architecture; }
+	virtual FPalWorkCommand GetWorkCommand(AActor* InstigatorActor, AActor* Target) const override;
 protected:
 	virtual void BeginPlay() override;
 public:

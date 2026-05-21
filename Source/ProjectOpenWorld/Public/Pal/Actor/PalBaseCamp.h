@@ -1,7 +1,6 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "Building/Actor/BuildingActor.h"
 #include "PalBaseCamp.generated.h"
 

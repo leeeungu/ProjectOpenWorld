@@ -20,11 +20,12 @@ void APalAIlyController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 	if (APalBaseCreature* Creature = Cast< APalBaseCreature>(InPawn))
 	{
-		if (UPalJobComponent* JobComponent = Creature->GetJobComponent())
+		if (UPalJobComponent* JobComponent = Creature->GetPalJobComponent())
 		{
 			JobComponent->OnJobAssigned.AddUniqueDynamic(this, &APalAIlyController::OnJobAssigned);
 			JobComponent->OnJobFinished.AddUniqueDynamic(this, &APalAIlyController::OnJobFinished);
 			JobComponent->OnJobLocationChange.AddUniqueDynamic(this, &APalAIlyController::OnJobLocationChange);
+			JobComponent->OnJobTargetChange.AddUniqueDynamic(this, &APalAIlyController::OnJobTargetChange);
 		}
 	}
 }
@@ -46,4 +47,9 @@ void APalAIlyController::OnJobFinished(const FPalWorkCommand& Job, bool bSuccess
 void APalAIlyController::OnJobLocationChange(FVector NewLocation)
 {
 	SetBBLocation(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), NewLocation);
+}
+
+void APalAIlyController::OnJobTargetChange(AActor* NewActor)
+{
+	SetBBActor(UPalAIBlackboardKeysLibrary::GetBBJobTarget(), NewActor);
 }

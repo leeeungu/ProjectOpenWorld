@@ -5,6 +5,7 @@
 #include "Pal/Data/PalJobTypes.h"
 #include "PalWorkerInterface.generated.h"
 
+class UPalJobComponent;
 
 UINTERFACE(MinimalAPI, Meta = (CannotImplementInterfaceInBlueprint))
 class UPalWorkerInterface : public UInterface
@@ -24,4 +25,6 @@ public:
 	virtual void EndWorking(bool bSuccess) {}
 	UFUNCTION(BlueprintCallable, Category = "Pal|Worker")
 	virtual float GetWorkSpeed(EPalJobType JobType) { return 1.0f; }
+	virtual UPalJobComponent* GetPalJobComponent() const { return nullptr; }
+	
 };

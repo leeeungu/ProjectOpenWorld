@@ -40,7 +40,7 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void EndBuilding();
 public:
 	//UFUNCTION(BlueprintCallable, Category = "Building")

@@ -145,3 +145,8 @@ bool ABaseBuilding::IsWorkable() const
 {	
 	return !PalBuildingStaticMeshComponent->IsBuildingEnd();
 }
+
+FPalWorkCommand ABaseBuilding::GetWorkCommand(AActor* InstigatorActor, AActor* Target) const
+{
+	return UPalCommandFunctionLibrary::WorkArchitecture(InstigatorActor, Target);
+}

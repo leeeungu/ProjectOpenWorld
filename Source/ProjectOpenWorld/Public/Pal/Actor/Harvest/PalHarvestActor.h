@@ -23,4 +23,6 @@ public:
 	virtual void ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)  override;
 	virtual void UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)  override;
 	virtual bool IsWorkable() const override;
+	virtual EPalJobType GetWorkJobType() const { return EPalJobType::Mining; }
+	virtual FPalWorkCommand GetWorkCommand(AActor* InstigatorActor, AActor* Target) const override;
 };

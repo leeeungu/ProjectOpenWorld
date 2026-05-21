@@ -1,6 +1,5 @@
 ﻿#include "Pal/Animation/PalCreatureAnimInstance.h"
 #include "Pal/Character/PalBaseCreature.h"
-#include "Pal/Component/PalJobComponent.h"
 #include "Pal/Data/PalJobTypes.h"
 #include "Pal/AssetUserData/PalChangeToolMesh.h"
 
@@ -8,9 +7,6 @@ void UPalCreatureAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 	OwnerPalCreature = Cast<APalBaseCreature>(TryGetPawnOwner());
-	if (!OwnerPalCreature)
-		return;
-	JobComponent = OwnerPalCreature->GetJobComponent();
 }
 
 void UPalCreatureAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -20,9 +16,9 @@ void UPalCreatureAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UPalCreatureAnimInstance::OnChangeWorkCommand(const FPalWorkCommand& Job)
 {
-	if (!JobComponent)
+	if (CurrenJobType == Job.JobType)
 		return;
-	CurrenJobType = JobComponent->GetCurrentJobType();
+	CurrenJobType = Job.JobType;
 	switch (CurrenJobType)
 	{
 	case EPalJobType::Architecture:

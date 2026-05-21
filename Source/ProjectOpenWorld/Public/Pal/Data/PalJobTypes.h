@@ -29,6 +29,10 @@ enum class EPalWorkCapability : uint8
 };
 ENUM_CLASS_FLAGS(EPalWorkCapability);
 
+namespace PalJobUtils
+{
+	EPalWorkCapability ToCapability(EPalJobType Type);
+}
 
 USTRUCT(BlueprintType)
 struct FPalWorkCommand

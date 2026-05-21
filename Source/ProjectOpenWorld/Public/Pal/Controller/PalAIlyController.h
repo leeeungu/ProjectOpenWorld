@@ -24,4 +24,6 @@ protected:
 	void OnJobFinished(const FPalWorkCommand& Job, bool bSuccess);
 	UFUNCTION()
 	void OnJobLocationChange(FVector NewLocation);
+	UFUNCTION()
+	void OnJobTargetChange(AActor* NewActor);
 };

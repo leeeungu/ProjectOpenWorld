@@ -7,7 +7,7 @@
 
 class AActor;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkEvent);
+DECLARE_MULTICAST_DELEGATE(FOnWorkEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobTargetChange, AActor*, NewTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobLocationChange, FVector, NewLocation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobAssigned, const FPalWorkCommand&, Job);
@@ -84,13 +84,12 @@ public:
     UFUNCTION(BlueprintPure, Category = "Pal|Job")
     int32 GetPendingCount() const { return PendingQueue.Num(); }
 
+    uint8 GetWorkCapability() const { return CapabilityMask; }
+
     // ─── Events ────────────────────────────────────────────
 
-    UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
     FOnWorkEvent OnWorkStart{};
-    UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
     FOnWorkEvent OnWorkStop{};
-    UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
     FOnWorkEvent OnWorkEnd{};
 
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
@@ -109,6 +108,5 @@ protected:
 
     bool PullNext();
     bool IsCommandStillValid(const FPalWorkCommand& Command) const;
-    void SyncToBlackboard();
     void ClearCurrent();
 };

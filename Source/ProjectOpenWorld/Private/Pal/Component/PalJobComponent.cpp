@@ -1,25 +1,6 @@
 ﻿#include "Pal/Component/PalJobComponent.h"
-//#include "AIController.h"
-//#include "GameFramework/Pawn.h"
-//#include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
 #include "Pal/Interface/PalWorkable.h"
 #include "Pal/Interface/PalWorkerInterface.h"
-
-namespace PalJobUtils
-{
-    inline EPalWorkCapability ToCapability(EPalJobType Type)
-    {
-        switch (Type)
-        {
-        case EPalJobType::Architecture: return EPalWorkCapability::Architecture;
-        case EPalJobType::Mining:       return EPalWorkCapability::Mining;
-        case EPalJobType::Lumbering:    return EPalWorkCapability::Lumbering;
-        case EPalJobType::Transport:    return EPalWorkCapability::Transport;
-        case EPalJobType::Attack:    return EPalWorkCapability::Attack;
-        default:                        return (EPalWorkCapability)0;
-        }
-    }
-}
 
 UPalJobComponent::UPalJobComponent()
 {
@@ -29,7 +10,6 @@ UPalJobComponent::UPalJobComponent()
 void UPalJobComponent::BeginPlay()
 {
     Super::BeginPlay();
-
     //if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
     //{
     //    if (AAIController* AIC = Cast<AAIController>(OwnerPawn->GetController()))
@@ -211,10 +191,17 @@ void UPalJobComponent::EndWorking(bool bSuccess)
 
 void UPalJobComponent::ChangeTransportTarget()
 {
-    if (CurrentJob.JobType == EPalJobType::Transport && CurrentJob.pInstigatorActor.IsValid())
+    if (CurrentJob.JobType == EPalJobType::Transport )
     {
-        //CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.pInstigatorActor->GetActorLocation());
-        OnJobLocationChange.Broadcast(CurrentJob.pInstigatorActor->GetActorLocation());
+        if (CurrentJob.pInstigatorActor.IsValid())
+        {
+            OnJobLocationChange.Broadcast(CurrentJob.pInstigatorActor->GetActorLocation());
+            OnJobTargetChange.Broadcast(CurrentJob.pInstigatorActor.Get());
+        }
+        else
+        {
+            EndWorking(false);
+        }
     }
 
 }
@@ -240,24 +227,10 @@ bool UPalJobComponent::IsCommandStillValid(const FPalWorkCommand& Command) const
 }
 
 // ─── BB sync ─────────────────────────────────────────────
-void UPalJobComponent::SyncToBlackboard()
-{
-  /* 
-    if (!CachedBlackboard.IsValid())
-        return;
-  CachedBlackboard->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBJobType(), (uint8)CurrentJob.JobType);
-    CachedBlackboard->SetValueAsObject(UPalAIBlackboardKeysLibrary::GetBBJobTarget(), CurrentJob.pTarget.Get());
-    CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.TargetLocation);*/
-}
 
 void UPalJobComponent::ClearCurrent()
 {
     CurrentJob.Reset();
-   /* if (CachedBlackboard.IsValid())
-    {
-        CachedBlackboard->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBJobType(), (uint8)EPalJobType::None);
-        CachedBlackboard->ClearValue(UPalAIBlackboardKeysLibrary::GetBBJobTarget());
-    }*/
 }
 
 // ─── 우선순위 비교 (max-heap: 큰 Priority가 먼저) ────────
