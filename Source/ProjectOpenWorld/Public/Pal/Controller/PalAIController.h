@@ -24,7 +24,15 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
-
+	
+	UFUNCTION(BlueprintCallable, Category = "BB")
+	void SetBBActor(FName BBKey, AActor* NewTarget);
+	UFUNCTION(BlueprintCallable, Category = "BB")
+	void SetBBLocation(FName BBKey, FVector NewLocation);
+	UFUNCTION(BlueprintCallable, Category = "BB")
+	void SetBBEnum(FName BBKey, uint8 NewEnum);
+	UFUNCTION(BlueprintCallable, Category = "BB")
+	void ClearBBValue(FName BBKey);
 public:
 	APalAIController();
 

@@ -5,12 +5,11 @@
 #include "Pal/Data/PalJobTypes.h"
 #include "PalJobComponent.generated.h"
 
-
-class UBlackboardComponent;
 class AActor;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalWorkTargetChange, AActor*, NewTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobTargetChange, AActor*, NewTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobLocationChange, FVector, NewLocation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPalJobAssigned, const FPalWorkCommand&, Job);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPalJobFinished, const FPalWorkCommand&, Job, bool, bSuccess);
 
@@ -25,10 +24,6 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Pal|Job")
     FPalWorkCommand CurrentJob{};
-
-    UPROPERTY(Transient)
-    TWeakObjectPtr<UBlackboardComponent> CachedBlackboard{};
-
 protected:
     UPROPERTY(EditAnywhere, Category = "Pal|Job", meta = (Bitmask, BitmaskEnum = "/Script/ProjectOpenWorld.EPalWorkCapability"))
     uint8 CapabilityMask = 0;
@@ -99,7 +94,9 @@ public:
     FOnWorkEvent OnWorkEnd{};
 
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
-    FOnPalWorkTargetChange OnWorkTargetChange{};
+    FOnPalJobTargetChange OnJobTargetChange{};
+    UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
+    FOnPalJobLocationChange OnJobLocationChange{};
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job")
     FOnPalJobAssigned OnJobAssigned{};
     UPROPERTY(BlueprintAssignable, Category = "Pal|Job") 

@@ -1,8 +1,7 @@
 ﻿#include "Pal/Component/PalJobComponent.h"
-#include "AIController.h"
-#include "GameFramework/Pawn.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
+//#include "AIController.h"
+//#include "GameFramework/Pawn.h"
+//#include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
 #include "Pal/Interface/PalWorkable.h"
 #include "Pal/Interface/PalWorkerInterface.h"
 
@@ -31,13 +30,13 @@ void UPalJobComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
-    {
-        if (AAIController* AIC = Cast<AAIController>(OwnerPawn->GetController()))
-        {
-            CachedBlackboard = AIC->GetBlackboardComponent();
-        }
-    }
+    //if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
+    //{
+    //    if (AAIController* AIC = Cast<AAIController>(OwnerPawn->GetController()))
+    //    {
+    //        CachedBlackboard = AIC->GetBlackboardComponent();
+    //    }
+    //}
 }
 
 // ─── Capability ──────────────────────────────────────────
@@ -77,7 +76,6 @@ bool UPalJobComponent::TryPushJob(const FPalWorkCommand& Command)
         PendingQueue.HeapPush(CurrentJob, &UPalJobComponent::ComparePriority);
 
         CurrentJob = Command;
-        SyncToBlackboard();
         OnJobAssigned.Broadcast(CurrentJob);
         return true;
     }
@@ -110,8 +108,7 @@ bool UPalJobComponent::PullNext()
         if (IsCommandStillValid(Next))
         {
             CurrentJob = Next;
-            SyncToBlackboard();
-            OnWorkTargetChange.Broadcast(CurrentJob.pTarget.Get());
+            OnJobTargetChange.Broadcast(CurrentJob.pTarget.Get());
             // todo => OnJobAssigned에 할당된 bb 변경을 OnWorkTargetChange로 변경해야함 + bb 변경도 여기가 아니라 다른곳으로 이전 해야할듯?
             OnJobAssigned.Broadcast(CurrentJob);
             return true;
@@ -130,6 +127,8 @@ void UPalJobComponent::WorkFinished(bool bSuccess)
 
     const FPalWorkCommand Finished = CurrentJob;
     ClearCurrent();
+    CurrentJob.Reset();
+
     OnJobFinished.Broadcast(Finished, bSuccess);
     PullNext();
 }
@@ -175,7 +174,7 @@ void UPalJobComponent::UnRegisterWorker()
 
 void UPalJobComponent::StartWorking()
 {
-    if (!bWorking)
+    if (!bWorking && HasCurrentJob())
     {
         bWorking = true;
         if (OnWorkStart.IsBound())
@@ -187,7 +186,7 @@ void UPalJobComponent::StartWorking()
 
 void UPalJobComponent::StopWorking()
 {
-    if (bWorking)
+    if (bWorking && HasCurrentJob())
     {
         bWorking = false;
         if (OnWorkStop.IsBound())
@@ -199,7 +198,7 @@ void UPalJobComponent::StopWorking()
 
 void UPalJobComponent::EndWorking(bool bSuccess)
 {
-    if (bWorking)
+    if (bWorking && HasCurrentJob())
     {
         bWorking = false;
         if (OnWorkEnd.IsBound())
@@ -214,8 +213,8 @@ void UPalJobComponent::ChangeTransportTarget()
 {
     if (CurrentJob.JobType == EPalJobType::Transport && CurrentJob.pInstigatorActor.IsValid())
     {
-        CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.pInstigatorActor->GetActorLocation());
-        OnWorkTargetChange.Broadcast(CurrentJob.pInstigatorActor.Get());
+        //CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.pInstigatorActor->GetActorLocation());
+        OnJobLocationChange.Broadcast(CurrentJob.pInstigatorActor->GetActorLocation());
     }
 
 }
@@ -243,21 +242,22 @@ bool UPalJobComponent::IsCommandStillValid(const FPalWorkCommand& Command) const
 // ─── BB sync ─────────────────────────────────────────────
 void UPalJobComponent::SyncToBlackboard()
 {
+  /* 
     if (!CachedBlackboard.IsValid())
         return;
-    CachedBlackboard->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBJobType(), (uint8)CurrentJob.JobType);
+  CachedBlackboard->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBJobType(), (uint8)CurrentJob.JobType);
     CachedBlackboard->SetValueAsObject(UPalAIBlackboardKeysLibrary::GetBBJobTarget(), CurrentJob.pTarget.Get());
-    CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.TargetLocation);
+    CachedBlackboard->SetValueAsVector(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), CurrentJob.TargetLocation);*/
 }
 
 void UPalJobComponent::ClearCurrent()
 {
     CurrentJob.Reset();
-    if (CachedBlackboard.IsValid())
+   /* if (CachedBlackboard.IsValid())
     {
         CachedBlackboard->SetValueAsEnum(UPalAIBlackboardKeysLibrary::GetBBJobType(), (uint8)EPalJobType::None);
         CachedBlackboard->ClearValue(UPalAIBlackboardKeysLibrary::GetBBJobTarget());
-    }
+    }*/
 }
 
 // ─── 우선순위 비교 (max-heap: 큰 Priority가 먼저) ────────

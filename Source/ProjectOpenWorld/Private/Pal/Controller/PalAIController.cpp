@@ -1,6 +1,7 @@
 ﻿#include "Pal/Controller/PalAIController.h"
 #include "GameBase/BaseCharacter.h"
 #include "Pal/Component/PalAIMoveComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 APalAIController::APalAIController() : Super{}
 {
@@ -18,6 +19,38 @@ void APalAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	OwnerPal = Cast<ABaseCharacter>(InPawn);
+}
+
+void APalAIController::SetBBActor(FName BBKey, AActor* NewTarget)
+{
+	if (GetBlackboardComponent())
+	{
+		GetBlackboardComponent()->SetValueAsObject(BBKey, NewTarget);
+	}
+}
+
+void APalAIController::SetBBLocation(FName BBKey, FVector NewLocation)
+{
+	if (GetBlackboardComponent())
+	{
+		GetBlackboardComponent()->SetValueAsVector(BBKey, NewLocation);
+	}
+}
+
+void APalAIController::SetBBEnum(FName BBKey, uint8 NewEnum)
+{
+	if (GetBlackboardComponent())
+	{
+		GetBlackboardComponent()->SetValueAsEnum(BBKey, NewEnum);
+	}
+}
+
+void APalAIController::ClearBBValue(FName BBKey)
+{
+	if (GetBlackboardComponent())
+	{
+		GetBlackboardComponent()->ClearValue(BBKey);
+	}
 }
 
 

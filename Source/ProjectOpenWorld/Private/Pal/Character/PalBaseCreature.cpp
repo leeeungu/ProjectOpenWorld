@@ -91,14 +91,6 @@ void APalBaseCreature::SetTransportWorkMoveSpeed(float MaxMoveSpeed)
 	}
 }
 
-void APalBaseCreature::OnAttackEnd()
-{
-	if (JobComponent && JobComponent->GetCurrentJobType() == EPalJobType::Attack)
-	{
-		JobComponent->EndWorking(true);
-	}
-}
-
 void APalBaseCreature::OnStartTransport()
 {
 	if (!JobComponent || JobComponent->GetCurrentJobType() != EPalJobType::Transport || !GetCharacterMovement() || !StatComponent)
@@ -173,10 +165,10 @@ void APalBaseCreature::BeginPlay()
 		}
 	}
 
-	if (AttackComponent)
-	{
-		AttackComponent->OnPalAttackEnd.AddUniqueDynamic(this, &APalBaseCreature::OnAttackEnd);
-	}
+	//if (AttackComponent)
+	//{
+	//	AttackComponent->OnPalAttackEnd.AddUniqueDynamic(this, &APalBaseCreature::OnAttackEnd);
+	//}
 }
 
 void APalBaseCreature::HPChanged(double PreCurrentStat, double CurrentStat)

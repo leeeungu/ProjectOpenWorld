@@ -75,8 +75,6 @@ public:
 protected:
 	void SetTransportWorkMoveSpeed(float MaxMoveSpeed);
 	UFUNCTION()
-	void OnAttackEnd();
-	UFUNCTION()
 	void OnStartTransport();
 	UFUNCTION()
 	void OnEndTransport();

@@ -24,6 +24,6 @@ void UPalMonsterCombatComponent::ReceiveDamage(const FPalDamagePayload& DamagePa
 		if (MonsterController)
 			MonsterController->SetTargetActor(DamagePayload.Instigator);
 		if (AIStateComponent)
-			AIStateComponent->SetState(EPalAIMonsterState::Chase);
+			AIStateComponent->SetState(EPalAIMonsterState::Combat);
 	}
 }
