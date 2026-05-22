@@ -1,5 +1,6 @@
-#include "Inventory/Interface/InventorySlotInterface.h"
+﻿#include "Inventory/Interface/InventorySlotInterface.h"
 #include "Item/Object/BaseItem.h"
+#include "Item/DataTable/ItemSlotType.h"
 
 FName FInventorySlot::GetItemID() const
 {

@@ -17,6 +17,9 @@
 #include "Item/Object/Fragment/ItemVisibleDataFragment.h"
 #include "Pal/Interface/PalWorkerInterface.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
+#include "Pal/Component/PalJobComponent.h"
+#include "Pal/Component/PalInventory.h"
+#include "Pal/Actor/PalBaseCamp_V2.h"
 
 AItemActor::AItemActor() : Super()
 {
@@ -241,18 +244,41 @@ UPrimitiveComponent* AItemActor::GetItemCollision() const
 
 void AItemActor::ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
-	if (WorkerClass)
+	if (WorkerClass && !WorkHandle.IsValid())
 	{
 		WorkerClass->StartWorking();
 		Transport = Cast<AActor>(WorkerClass.GetObject());
 		TransportState = ETransportState::Transport;
+		if(WorkerClass->GetPalJobComponent())
+			WorkHandle =  WorkerClass->GetPalJobComponent()->OnWorkEnd.AddUObject(this, &AItemActor::OnEndWork, WorkerClass);
 	}
 }
 
 void AItemActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
-	TransportState = ETransportState::NotTransport;
-	Transport = nullptr;
+}
+
+void AItemActor::OnEndWork(TScriptInterface<IPalWorkerInterface> WorkerClass)
+{
+	if (!WorkerClass)
+		return;
+	if (WorkerClass->GetPalJobComponent())
+	{
+		WorkerClass->GetPalJobComponent()->OnWorkEnd.Remove(WorkHandle);
+		WorkHandle.Reset();
+		if (APalBaseCamp_V2* InstigatorActor = Cast<APalBaseCamp_V2>(WorkerClass->GetPalJobComponent()->GetInsigatorActor()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AItemActor::OnEndWork"));
+			if (InstigatorActor->GetPalInventory()->AddItem(ItemInstance))
+			{
+				//USoundGameInstanceSubsystem::PlayEffectSound(PickUpSound, GetActorLocation());
+				Destroy();
+			}
+			else if (ItemInstance)
+				UE_LOG(LogTemp, Warning, TEXT("AItemActor:: Slot None %s"), *ItemInstance->GetItemID().ToString());
+
+		}
+	}
 }
 
 bool AItemActor::IsWorkable() const

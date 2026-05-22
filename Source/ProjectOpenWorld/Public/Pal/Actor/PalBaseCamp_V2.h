@@ -8,6 +8,7 @@
 
 class UPalWorkableSearchComponent;
 class UPalWorkCommander;
+class UPalInventory;
 
 UCLASS()
 class PROJECTOPENWORLD_API APalBaseCamp_V2 : public ABuildingActor
@@ -18,10 +19,15 @@ protected:
 	TObjectPtr<UPalWorkableSearchComponent> PalWorkableSearchComponent{};
 	UPROPERTY(VisibleAnywhere, Category = "PalWork")
 	TObjectPtr<UPalWorkCommander> PalWorkCommander{};
+	UPROPERTY(VisibleAnywhere, Category = "PalWork")
+	TObjectPtr<UPalInventory> PalInventory{};
+	
 public:
 	APalBaseCamp_V2();
 	UFUNCTION(BlueprintPure)
 	UPalWorkCommander* GetPalWorkCommander() const { return PalWorkCommander; }
+	UFUNCTION(BlueprintPure)
+	UPalInventory* GetPalInventory() const { return PalInventory; }
 protected:
 	virtual void BeginPlay() override;
 };

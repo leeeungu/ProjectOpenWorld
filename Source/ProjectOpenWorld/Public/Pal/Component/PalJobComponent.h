@@ -70,6 +70,7 @@ public:
     bool HasCapabilityFor(EPalJobType JobType) const;
 
     AActor* GetTransportActor() const;
+    AActor* GetInsigatorActor() const;
 
     UFUNCTION(BlueprintPure, Category = "Pal|Job")
     bool HasCurrentJob() const { return CurrentJob.JobType != EPalJobType::None; }

@@ -49,16 +49,17 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AActor> Transport{};
-
 	ETransportState TransportState{ ETransportState::NotTransport };
 
+	FDelegateHandle WorkHandle{};
 public:
 	AItemActor();
 
 protected:
 	virtual void BeginPlay() override;
 	void RefreshVisualFromItem();
-
+	UFUNCTION()
+	void OnEndWork(TScriptInterface<IPalWorkerInterface> WorkerClass);
 public:
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	bool InitFromItem(UBaseItem* InItem);

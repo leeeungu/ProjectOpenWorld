@@ -33,6 +33,13 @@ AActor* UPalJobComponent::GetTransportActor() const
     return CurrentJob.pTarget.Get();
 }
 
+AActor* UPalJobComponent::GetInsigatorActor() const
+{
+    if (CurrentJob.pInstigatorActor.IsValid())
+        return CurrentJob.pInstigatorActor.Get();
+    return nullptr;
+}
+
 // ─── Push ────────────────────────────────────────────────
 bool UPalJobComponent::TryPushJob(const FPalWorkCommand& Command)
 {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Building/Widget/BaseBuildingAction.h"
@@ -11,6 +11,7 @@ class UPalInventoryWidget;
 class UPalInfomation;
 class UPalBoxSpawnWidget;
 class AActor;
+class UPalItemInventoryWidget;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction
@@ -30,6 +31,9 @@ protected:
 	TObjectPtr < UPalBoxSpawnWidget> PalBoxSpawnWidget{};
 	TWeakObjectPtr<ABaseCreature> CurrentSelectedPal{};
 
+	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
+	TObjectPtr < UPalItemInventoryWidget> PalItemInventoryWidget{};
+	
 public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
@@ -50,6 +54,8 @@ public:
 	void SpawnSlotFromInventory(int FromIndex, int ToIndex);
 	void SwapSpawnInventory(int FromIndex, int ToIndex);
 	void DespawnSlotToInventory(int FromIndex, int ToIndex);
+
+	UPalItemInventoryWidget* GetPalItemInventoryWidget() const { return PalItemInventoryWidget; }
 	//OnWidgetAdded
 protected:
 	//DECLARE_EVENT_TwoParams(UGameViewportSubsystem, FWidgetAddedEvent, UWidget*, ULocalPlayer*);

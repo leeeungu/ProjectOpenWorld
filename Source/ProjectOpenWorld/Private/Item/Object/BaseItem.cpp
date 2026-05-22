@@ -2,6 +2,7 @@
 #include "Item/System/ItemDataSubsystem.h"
 #include "Item/DataAsset/ItemDataAsset.h"
 #include "Item/Object/ItemDataFragment.h"
+#include "Item/Object/Fragment/ItemDataSlotFragment.h"
 
 EItemUseType UBaseItem::GetUseType() const
 {
@@ -11,6 +12,28 @@ EItemUseType UBaseItem::GetUseType() const
 		return ItemDataAsset->GetItemUseType();
 	}
 	return EItemUseType();
+}
+
+int32 UBaseItem::AddItemCount(int32 Count)
+{
+	int32 AddValue = Count;
+	if (Count > 0)
+	{
+		int32 Max = std::numeric_limits<int32>::max() - Count;
+		if (Max <= ItemCount)
+		{
+			AddValue = std::numeric_limits<int32>::max() - ItemCount;
+		}
+	}
+	else
+	{
+		if (ItemCount + Count <= 0)
+		{
+			AddValue = -ItemCount;
+		}
+	}
+	ItemCount += AddValue;
+	return AddValue;
 }
 
 UItemDataAsset* UBaseItem::GetPalItemDataAssetByName() const
