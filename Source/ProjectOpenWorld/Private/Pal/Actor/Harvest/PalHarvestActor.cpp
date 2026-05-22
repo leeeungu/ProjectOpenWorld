@@ -2,7 +2,7 @@
 #include "Pal/Component/Harvest/PalHarvestSMComponent.h"
 #include "Pal/Factory/PalCommandFunctionLibrary.h"
 
-APalHarvestActor::APalHarvestActor()
+APalHarvestActor::APalHarvestActor() :Super{}
 {
 	PrimaryActorTick.bCanEverTick = false;
 	MeshComponent = CreateDefaultSubobject< UPalHarvestSMComponent>(TEXT("HarvestMesh"));
@@ -11,16 +11,20 @@ APalHarvestActor::APalHarvestActor()
 
 void APalHarvestActor::ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
-	MeshComponent->ResiterWorker(WorkerClass);
+	if(MeshComponent)
+		MeshComponent->ResiterWorker(WorkerClass);
 }
 
 void APalHarvestActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
-	MeshComponent->UnregisterWorker(WorkerClass);
+	if(MeshComponent)
+		MeshComponent->UnregisterWorker(WorkerClass);
 }
 
 bool APalHarvestActor::IsWorkable() const
 {
+	if (!MeshComponent)
+		return false;
 	return MeshComponent->IsWorkable();
 }
 

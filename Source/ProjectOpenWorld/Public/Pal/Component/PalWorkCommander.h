@@ -50,7 +50,6 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void Work();
-	void InitializeWorkable(TArray<AActor*> InitWorkable);
 
 	void RegisterWorker(AActor* WorkerActor);
 	void UnRegisterWorker(AActor* WorkerActor);

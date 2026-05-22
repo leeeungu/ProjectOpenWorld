@@ -88,9 +88,13 @@ bool UPalJobComponent::PullNext()
         if (IsCommandStillValid(Next))
         {
             CurrentJob = Next;
-            OnJobTargetChange.Broadcast(CurrentJob.pTarget.Get());
-            // todo => OnJobAssigned에 할당된 bb 변경을 OnWorkTargetChange로 변경해야함 + bb 변경도 여기가 아니라 다른곳으로 이전 해야할듯?
             OnJobAssigned.Broadcast(CurrentJob);
+            OnJobTargetChange.Broadcast(CurrentJob.pTarget.Get());
+            if (CurrentJob.pTarget.IsValid())
+            {
+                OnJobLocationChange.Broadcast(CurrentJob.pTarget->GetActorLocation());
+            }
+            // todo => OnJobAssigned에 할당된 bb 변경을 OnWorkTargetChange로 변경해야함 + bb 변경도 여기가 아니라 다른곳으로 이전 해야할듯?
             return true;
         }
     }
@@ -154,6 +158,11 @@ void UPalJobComponent::UnRegisterWorker()
 
 void UPalJobComponent::StartWorking()
 {
+    //if (!IsCommandStillValid(CurrentJob))
+    //{
+    //    WorkFinished(false);
+    //    return;
+    //}
     if (!bWorking && HasCurrentJob())
     {
         bWorking = true;
@@ -173,6 +182,7 @@ void UPalJobComponent::StopWorking()
         {
             OnWorkStop.Broadcast();
         }
+        WorkFinished(false);
     }
 }
 

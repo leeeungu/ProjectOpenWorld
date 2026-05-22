@@ -3,15 +3,6 @@
 #include "Pal/Interface/PalWorkerInterface.h"
 #include "Pal/Component/PalJobComponent.h"
 
-void UPalWorkCommander::InitializeWorkable(TArray<AActor*> InitWorkable)
-{
-	for (AActor* OtherActor : InitWorkable)
-	{
-		RegisterWorker(OtherActor);
-		RegisterWorkable(OtherActor);
-	}
-}
-
 void UPalWorkCommander::RegisterWorker(AActor* WorkerActor)
 {
 	if (TScriptInterface<IPalWorkerInterface> Worker = WorkerActor)
@@ -21,6 +12,7 @@ void UPalWorkCommander::RegisterWorker(AActor* WorkerActor)
 		if (!WorkData.WorkEndHandle.IsValid() && Com)
 		{
 			WorkData.WorkEndHandle = Com->OnWorkEnd.AddUObject(this, &UPalWorkCommander::OnCreatureWorkFinished, WorkerActor);
+			WorkData.WorkEndHandle = Com->OnWorkStop.AddUObject(this, &UPalWorkCommander::OnCreatureWorkFinished, WorkerActor);
 		}
 		if (Com && !Com->IsWorking())
 		{
@@ -32,7 +24,6 @@ void UPalWorkCommander::RegisterWorker(AActor* WorkerActor)
 				const EPalWorkCapability Bit = PalJobUtils::ToCapability(JobType);
 				if (EnumHasAnyFlags(WorkCapability, Bit))
 				{
-					UE_LOG(LogTemp, Warning, TEXT("PalWorkCommander::RegisterWorker %s"), *UEnum::GetValueAsString(JobType));
 					WorkersByJob[i].FindOrAdd(WorkerActor);
 				}
 			}
@@ -43,7 +34,6 @@ void UPalWorkCommander::RegisterWorker(AActor* WorkerActor)
 
 void UPalWorkCommander::UnRegisterWorker(AActor* WorkerActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("PalWorkCommander::UnRegisterWorker"));
 	if (TScriptInterface<IPalWorkerInterface> Worker = WorkerActor)
 	{
 		UPalJobComponent* Com = Worker->GetPalJobComponent();
@@ -95,7 +85,6 @@ void UPalWorkCommander::BeginPlay()
 
 void UPalWorkCommander::OnCreatureWorkFinished(AActor* WorkerActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("PalWorkCommander::OnCreatureWorkFinished"));
 	if (TScriptInterface<IPalWorkerInterface> Worker = WorkerActor)
 	{
 		RegisterWorker(WorkerActor);
@@ -107,19 +96,42 @@ AActor* UPalWorkCommander::FindBestWorkableFor(EPalJobType JobType)  const
 {
 	if (WorkablesByJob[(uint8)JobType].IsEmpty())
 		return nullptr;
-	return WorkablesByJob[(uint8)JobType].begin()->Get();
+	TArray<TWeakObjectPtr<AActor>> WorkerArray = WorkablesByJob[(uint8)JobType].Array();
+	AActor* Workerctor{};
+	for (TWeakObjectPtr<AActor> Worker: WorkerArray)
+	{
+		Workerctor = Worker.Get();
+		IPalWorkerInterface* IWorkable = Cast< IPalWorkerInterface>(Workerctor);
+		if (IWorkable && !IWorkable->GetPalJobComponent()->IsWorking())
+		{
+			break;
+		}
+	}
+	return Workerctor;
 }
 
 void UPalWorkCommander::RemoveWorkable(AActor* WorkableActor, EPalJobType JobType)
 {
 	WorkablesByJob[(uint8)JobType].Remove(WorkableActor);
+	WorkableRegister.Remove(WorkableActor);
 }
 
 AActor* UPalWorkCommander::FindBestWorkerFor(EPalJobType JobType) const
 {
 	if (WorkersByJob[(uint8)JobType].IsEmpty())
 		return nullptr;
-	return WorkersByJob[(uint8)JobType].begin()->Get();
+	TArray<TWeakObjectPtr<AActor>> WorkableArray = WorkersByJob[(uint8)JobType].Array();
+	AActor* WorkableActor{};
+	for (TWeakObjectPtr<AActor> Workable: WorkableArray)
+	{
+		WorkableActor = Workable.Get();
+		IPalWorkable* IWorkable = Cast< IPalWorkable>(WorkableActor);
+		if(IWorkable && IWorkable->IsWorkable())
+		{
+			break;
+		}
+	}
+	return WorkableActor;
 }
 
 void UPalWorkCommander::RemoveWorker(AActor* WorkerActor)
@@ -133,9 +145,9 @@ void UPalWorkCommander::RemoveWorker(AActor* WorkerActor)
 
 void UPalWorkCommander::Work()
 {
-	for (int32 i = 0; i < JobTypeCount; ++i)
+	for (int32 i = 1; i < JobTypeCount; ++i)
 	{
-		EPalJobType JobType = static_cast<EPalJobType>(i);
+		EPalJobType JobType = (EPalJobType)i;
 		AActor* WorkableActor = FindBestWorkableFor(JobType);
 		AActor* WorkerActor = FindBestWorkerFor(JobType);
 		IPalWorkable* Workable = Cast< IPalWorkable>(WorkableActor);
@@ -147,20 +159,15 @@ void UPalWorkCommander::Work()
 			{
 				if (Com && Com->TryPushJob(Workable->GetWorkCommand(GetOwner(), WorkableActor)))
 				{
+					//UE_LOG(LogTemp, Warning, TEXT("PalWorkCommander::OnCreatureWorkFinished %s"), *WorkerActor->GetName());
 					RemoveWorker(WorkerActor);
+					RemoveWorkable(WorkableActor, JobType);
 				}
-			}
-			else
-			{
-				RemoveWorkable(WorkableActor, JobType);
 			}
 		}
 		else if (!Worker)
 		{
-			for (int32 k = 0; k < JobTypeCount; ++k)
-			{
-				WorkersByJob[k].Remove(WorkerActor);
-			}
+			RemoveWorker(WorkerActor);
 		}
 		else if (!Workable)
 		{
@@ -171,12 +178,16 @@ void UPalWorkCommander::Work()
 
 void UPalWorkCommander::OnBeginSearch(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (GetOwner() == OtherActor)
+		return;
 	RegisterWorker(OtherActor);
 	RegisterWorkable(OtherActor);
 }
 
 void UPalWorkCommander::OnEndSearch(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (GetOwner() == OtherActor)
+		return;
 	UnRegisterWorker(OtherActor);
 	UnRegisterWorkable(OtherActor);
 }

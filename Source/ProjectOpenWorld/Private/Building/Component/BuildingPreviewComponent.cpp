@@ -1,4 +1,4 @@
-#include "Building/Component/BuildingPreviewComponent.h"
+ï»¿#include "Building/Component/BuildingPreviewComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/StaticMesh.h"
@@ -6,16 +6,16 @@
 UBuildingPreviewComponent::UBuildingPreviewComponent(const FObjectInitializer& ObjectInitializer)
 	: UStaticMeshComponent(ObjectInitializer)
 {
-	// ÀÌµ¿ ÀÚÃ¼´Â Assist ÄÄÆ÷³ÍÆ®°¡ ´ã´çÇÏ¹Ç·Î TickÀº »ç½Ç»ó ÇÊ¿ä ¾øÀ½
+	// ì´ë™ ìì²´ëŠ” Assist ì»´í¬ë„ŒíŠ¸ê°€ ë‹´ë‹¹í•˜ë¯€ë¡œ Tickì€ ì‚¬ì‹¤ìƒ í•„ìš” ì—†ìŒ
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ÇÁ¸®ºä´Â Ãæµ¹Ã¼·Î µ¿ÀÛÇÏÁö ¾ÊÀ½ (°ãÄ§ ÆÇÁ¤Àº OnUpdateTransform¿¡¼­ º°µµ Trace·Î Ã³¸®)
+	// í”„ë¦¬ë·°ëŠ” ì¶©ëŒì²´ë¡œ ë™ì‘í•˜ì§€ ì•ŠìŒ (ê²¹ì¹¨ íŒì •ì€ OnUpdateTransformì—ì„œ ë³„ë„ Traceë¡œ ì²˜ë¦¬)
 	SetCollisionProfileName(TEXT("NoCollision"));
 	SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetGenerateOverlapEvents(false);
 	SetSimulatePhysics(false);
 
-	// ÇÁ¸®ºä¿ë ¸ÓÆ¼¸®¾ó ·Îµù
+	// í”„ë¦¬ë·°ìš© ë¨¸í‹°ë¦¬ì–¼ ë¡œë”©
 	static ConstructorHelpers::FObjectFinder<UMaterial> PreviewMat(
 		TEXT("/Game/Building/Mesh/Material/M_BuildingPreview.M_BuildingPreview"));
 	if (PreviewMat.Succeeded())
@@ -37,11 +37,11 @@ void UBuildingPreviewComponent::BeginPlay()
 		buildingPreview = UMaterialInstanceDynamic::Create(buildingPreviewMat.Get(), this);
 	}
 
-	// ¿ùµå »ó ºÎ¸ğ¿Í ºĞ¸®, ±âÁØÀº ¿ùµå Identity
+	// ì›”ë“œ ìƒ ë¶€ëª¨ì™€ ë¶„ë¦¬, ê¸°ì¤€ì€ ì›”ë“œ Identity
 	DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	SetWorldTransform(FTransform::Identity);
 
-	// ½ÃÀÛ ½ÃÁ¡¿¡ ¼³Á¤µÈ ¸Ş½¬°¡ ÀÖ´Ù¸é Àû¿ë
+	// ì‹œì‘ ì‹œì ì— ì„¤ì •ëœ ë©”ì‰¬ê°€ ìˆë‹¤ë©´ ì ìš©
 	if (TargetBuildingMesh)
 	{
 		SetBuildingMsh(TargetBuildingMesh.Get());
@@ -54,7 +54,7 @@ void UBuildingPreviewComponent::TickComponent(
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	// ÀÌµ¿Àº Assist ÄÄÆ÷³ÍÆ®°¡ ´ã´çÇÏ¹Ç·Î ¿©±â¼­´Â ¾Æ¹« °Íµµ ÇÏÁö ¾ÊÀ½
+	// ì´ë™ì€ Assist ì»´í¬ë„ŒíŠ¸ê°€ ë‹´ë‹¹í•˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ì•„ë¬´ ê²ƒë„ í•˜ì§€ ì•ŠìŒ
 }
 
 void UBuildingPreviewComponent::StartPreView()
@@ -80,7 +80,7 @@ void UBuildingPreviewComponent::SetBuildingMsh(UStaticMesh* NewMesh)
 	SetStaticMesh(TargetBuildingMesh.Get());
 
 	BottomTrans = GetSocketTransform(TEXT("Bottom"), ERelativeTransformSpace::RTS_Component);
-	// ¸ğµç ¸ÓÆ¼¸®¾ó ½½·Ô¿¡ ÇÁ¸®ºä¿ë µ¿Àû ¸ÓÆ¼¸®¾ó Àû¿ë
+	// ëª¨ë“  ë¨¸í‹°ë¦¬ì–¼ ìŠ¬ë¡¯ì— í”„ë¦¬ë·°ìš© ë™ì  ë¨¸í‹°ë¦¬ì–¼ ì ìš©
 	if (buildingPreview)
 	{
 		const int32 NumMats = GetMaterials().Num();
@@ -97,7 +97,7 @@ void UBuildingPreviewComponent::SetBuildable(bool bValue)
 
 	if (buildingPreview)
 	{
-		// ¸ÓÆ¼¸®¾ó ÆÄ¶ó¹ÌÅÍ: 1ÀÌ¸é »¡°­(ºÒ°¡), 0ÀÌ¸é ÃÊ·Ï(°¡´É) ½ÄÀ¸·Î »ç¿ë ÁßÀÌ¾ú´Ù°í °¡Á¤
+		// ë¨¸í‹°ë¦¬ì–¼ íŒŒë¼ë¯¸í„°: 1ì´ë©´ ë¹¨ê°•(ë¶ˆê°€), 0ì´ë©´ ì´ˆë¡(ê°€ëŠ¥) ì‹ìœ¼ë¡œ ì‚¬ìš© ì¤‘ì´ì—ˆë‹¤ê³  ê°€ì •
 		buildingPreview->SetScalarParameterValue(TEXT("Buildable"), !bValue);
 	}
 }
@@ -110,14 +110,13 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 		return;
 	}
 
-	// ÇöÀç À§Ä¡¿¡¼­ÀÇ °ãÄ§(¹èÄ¡ °¡´É ¿©ºÎ)¸¸ ÆÇÁ¤
+	// í˜„ì¬ ìœ„ì¹˜ì—ì„œì˜ ê²¹ì¹¨(ë°°ì¹˜ ê°€ëŠ¥ ì—¬ë¶€)ë§Œ íŒì •
 
-	// °ãÄ§ °Ë»ç ´ë»ó ObjectTypes
+	// ê²¹ì¹¨ ê²€ì‚¬ ëŒ€ìƒ ObjectTypes
 	TArray<TEnumAsByte<EObjectTypeQuery>> BuildCheckObjectTypes;
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
-	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 	BuildCheckObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 	
 	TArray<AActor*> IgnoreActors;
@@ -128,7 +127,7 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 	FVector HalfSize = TargetBuildingMesh->GetBoundingBox().GetSize() * 0.5f;
 	HalfSize.Z = (TargetBuildingMesh->GetBoundingBox().GetSize().Z - BottomTrans.GetLocation().Z)  * 0.5f;
 
-	// ÇÁ¸®ºä Áß½É À§Ä¡(»ìÂ¦ À§·Î ¿Ã·Á¼­ ¹Ú½º Áß½É Á¤·Ä)
+	// í”„ë¦¬ë·° ì¤‘ì‹¬ ìœ„ì¹˜(ì‚´ì§ ìœ„ë¡œ ì˜¬ë ¤ì„œ ë°•ìŠ¤ ì¤‘ì‹¬ ì •ë ¬)
 	const FVector Start = GetComponentLocation() + FVector(0.f, 0.f, HalfSize.Z) + FVector{0, 0, BottomTrans.GetLocation().Z};
 	const FVector End = Start;
 
@@ -147,7 +146,7 @@ void UBuildingPreviewComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTr
 	{
 		for (const FHitResult& Hit : PenetratingHits)
 		{
-			// PenetrationDepth °ª ¹®Á¦·Î Áßº¹ ¼³Ä¡°¡ µÇ´Â ¹®Á¦°¡ ÀÖÀ½
+			// PenetrationDepth ê°’ ë¬¸ì œë¡œ ì¤‘ë³µ ì„¤ì¹˜ê°€ ë˜ëŠ” ë¬¸ì œê°€ ìˆìŒ
 			if (Hit.bStartPenetrating &&
 				Hit.PenetrationDepth > 80.f &&
 				Hit.GetComponent() != this)

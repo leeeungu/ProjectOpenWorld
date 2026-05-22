@@ -182,6 +182,12 @@ void AItemActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	// if (Inventory->AddItemObject(DuplicateItemFor(Inventory)))
 
 	USoundGameInstanceSubsystem::PlayEffectSound(PickUpSound, GetActorLocation());
+
+	if (TScriptInterface<IPalWorkerInterface> WorkerClass = Transport)
+	{
+		WorkerClass->EndWorking(false);
+		Transport = nullptr;
+	}
 	Destroy();
 }
 
@@ -235,12 +241,18 @@ UPrimitiveComponent* AItemActor::GetItemCollision() const
 
 void AItemActor::ResiterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
-	if(WorkerClass)
+	if (WorkerClass)
+	{
 		WorkerClass->StartWorking();
+		Transport = Cast<AActor>(WorkerClass.GetObject());
+		TransportState = ETransportState::Transport;
+	}
 }
 
 void AItemActor::UnregisterWorker(TScriptInterface<IPalWorkerInterface> WorkerClass)
 {
+	TransportState = ETransportState::NotTransport;
+	Transport = nullptr;
 }
 
 bool AItemActor::IsWorkable() const

@@ -2,6 +2,7 @@
 #include "Item/AssetUserData/ItemSpawnListAssetUserData.h"
 #include "Pal/Interface/PalWorkerInterface.h"
 #include "Item/System/ItemDataSubsystem.h"
+#include "Pal/Actor/PalBaseCamp_V2.h"
 
 void UPalHarvestSMComponent::Respawn()
 {
@@ -18,7 +19,7 @@ void UPalHarvestSMComponent::OnHarvestEvent(FHarvestEventData EventData)
 		SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetVisibility(false);
 		FTimerHandle Timer{};
-		GetOwner()->GetWorldTimerManager().SetTimer(Timer, this, &UPalHarvestSMComponent::Respawn, 3, false, 3);
+		GetOwner()->GetWorldTimerManager().SetTimer(Timer, this, &UPalHarvestSMComponent::Respawn, RespawnTime, false, RespawnTime);
 		for (auto& Worker : Workers)
 		{
 			if (Worker)

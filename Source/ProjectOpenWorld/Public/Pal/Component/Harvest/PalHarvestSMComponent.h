@@ -14,11 +14,12 @@ class PROJECTOPENWORLD_API UPalHarvestSMComponent : public UStaticMeshComponent,
 protected:
 	UPROPERTY(EditAnywhere, Category = "Harvest")
 	int HarvestMaxCount = 1;
+	UPROPERTY(EditAnywhere, Category = "Harvest")
+	float RespawnTime = 3.0f;
 	UPROPERTY(VisibleAnywhere, Category = "Harvest")
-	int HarvestCurCoun{};
+	int HarvestCurCount{};
 
 	TSet<TScriptInterface<IPalWorkerInterface>> Workers{};
-
 	UFUNCTION()
 	void Respawn();
 public:
