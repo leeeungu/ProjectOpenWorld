@@ -40,4 +40,6 @@ public:
 	FName GetItemID() const;
 	int32 GetItemCount() const;
 	void Clear();
+
+	bool Swap(FInventorySlot* Dst);
 };

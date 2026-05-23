@@ -50,6 +50,28 @@ void UPalItemInventoryWidget::OnSlotSwapEvent(UWidget* pSrc, UWidget* pDst)
 		return;
 	int32 Src = inventoryGridPanel->GetChildIndex(pSrc);
 	int32 Dst = inventoryGridPanel->GetChildIndex(pDst);
-	UE_LOG(LogTemp, Warning, TEXT("UPalItemInventoryWidget :: OnSlotSwapEvent %d %d"), Src, Dst);
 	OnSlotSwap.Broadcast(Src, Dst);
+}
+
+void UPalItemInventoryWidget::OnSlotUpdateEvent(UWidget* pChild)
+{
+	if (inventoryGridPanel && pChild)
+	{
+		OnSlotUpdate.Broadcast(inventoryGridPanel->GetChildIndex(pChild));
+	}
+}
+
+void UPalItemInventoryWidget::OnSlotRemoveEvent(UWidget* pChild)
+{
+	if (inventoryGridPanel && pChild)
+	{
+		OnSlotRemove.Broadcast(inventoryGridPanel->GetChildIndex(pChild));
+	}
+}
+
+bool UPalItemInventoryWidget::OnAddItemEvent(UBaseItem* ItemData)
+{
+	if (!OnAddItem.IsBound())
+		return false;
+	return OnAddItem.Execute(ItemData);
 }

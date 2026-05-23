@@ -46,4 +46,10 @@ public:
 	void OnOpenUI();
 	UFUNCTION()
 	void OnSwapSlots(int32 Src, int32 Dst);
+	UFUNCTION()
+	void OnSlotUpdate(int32 Index);
+	UFUNCTION()
+	void OnRemoveItem(int32 Index);
+	//UFUNCTION()
+	//bool OnAddItemEvent(UBaseItem* ItemSlot);
 };

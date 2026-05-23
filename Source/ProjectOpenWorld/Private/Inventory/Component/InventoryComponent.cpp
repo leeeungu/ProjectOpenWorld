@@ -415,11 +415,8 @@ bool UInventoryComponent::SwapInventorySlot(FInventorySlot* Src, FInventorySlot*
 		}
 	}
 	
-	if (Src->SlotType == EItemSlotType::None || (DstSlotType == Src->SlotType && bHaseFragment))
+	if (Src->Swap(Dst))
 	{
-		UBaseItem* TempSrcItem = Src->ItemObject;
-		Src->ItemObject = Dst->ItemObject;
-		Dst->ItemObject = TempSrcItem;
 		if (onUpdateInventory.IsBound())
 		{
 			onUpdateInventory.Broadcast();

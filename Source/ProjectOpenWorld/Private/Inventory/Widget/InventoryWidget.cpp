@@ -1,4 +1,4 @@
-#include "Inventory/Widget/InventoryWidget.h"
+﻿#include "Inventory/Widget/InventoryWidget.h"
 #include "Inventory/Widget/InventorySlotWidget.h"
 #include "Inventory/Widget/InventoryGirdSlotWidget.h"
 #include "Components/UniformGridPanel.h"
@@ -18,7 +18,7 @@ void UInventoryWidget::NativePreConstruct()
 	if (!inventoryGridPanel || !inventorySlotClass || !GetOwningPlayer())
 		return;
 	ABasePlayerController* playerController = Cast<ABasePlayerController>(GetOwningPlayer());
-	inventoryComponent = playerController ? playerController->GetComponentByClass<UInventoryComponent>() : nullptr;
+	inventoryComponent = playerController ? playerController->GetInventoryComponent() : nullptr;
 	if (!inventoryComponent)
 	{
 		inventoryGridPanel->ClearChildren();

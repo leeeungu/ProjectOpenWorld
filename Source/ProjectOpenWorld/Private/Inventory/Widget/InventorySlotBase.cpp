@@ -10,7 +10,7 @@
 #include "Components/Image.h"
 #include "Player/Controller/BasePlayerController.h"
 #include "Item/DataTable/ItemSlotType.h"
-
+#include "Pal/Widget/Item/PalItemGridSlot.h"
 
 UInventorySlotBase::UInventorySlotBase(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget{ ObjectInitializer }
@@ -69,6 +69,13 @@ bool UInventorySlotBase::SwapSlotPtr(const FInventorySlot* Dst)
 	return inventoryComponent->SwapInventorySlot(pSrc, pDst);
 }
 
+void UInventorySlotBase::OnSlotRemoveEvent(UDragDropOperation* Operation)
+{
+	if (Operation && !Cast< UInventorySlotBase>(Operation->Payload))
+	{
+		GetInventoryComponent()->RemoveItem(itemPointer, itemPointer->GetItemCount());
+	}
+}
 UInventorySlotWidget* UInventorySlotBase::GetInventorySlotWidget() const
 {
 	return inventorySlotUW.Get();
@@ -122,7 +129,7 @@ FReply UInventorySlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InGeo
 
 FReply UInventorySlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && itemPointer)
+	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && itemPointer && itemPointer->ItemObject)
 	{
 		return UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton).NativeReply;
 	}
@@ -139,6 +146,7 @@ void UInventorySlotBase::NativeOnDragDetected(const FGeometry& InGeometry, const
 		DDO->Payload = this;
 		DDO->DefaultDragVisual = GetInventorySlotWidget();
 		DDO->SetSlotPtr(itemPointer);
+		DDO->OnDrop.AddUniqueDynamic(this, &UInventorySlotBase::OnSlotRemoveEvent);
 		IInventorySlotInterface::Execute_SetSlotIndex(DDO, inventoryRow, inventoryCol);
 	}
 	OutOperation = DDO;
@@ -146,9 +154,24 @@ void UInventorySlotBase::NativeOnDragDetected(const FGeometry& InGeometry, const
 
 bool UInventorySlotBase::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	if (UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation))
+	UInventoryDDO* DDO = Cast< UInventoryDDO>(InOperation);
+	UInventorySlotBase * Other = Cast< UInventorySlotBase>(InOperation->Payload);
+	if (Other)
 	{
-		return  SwapSlotPtr(DDO->GetSlotDataPtr());
+		return SwapSlotPtr(DDO->GetSlotDataPtr());
+	}
+	else 
+	{
+		UPalItemGridSlot* OtherGrid = Cast< UPalItemGridSlot>(InOperation->Payload);
+		UInventoryComponent* Inven = GetInventoryComponent();
+		if (Inven && OtherGrid && OtherGrid->GetSlotPtr())
+		{
+			if (Inven->AddItem(OtherGrid->GetSlotPtr()))
+			{
+				InOperation->Payload = this;
+				return true;
+			}
+		}
 	}
 	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 }

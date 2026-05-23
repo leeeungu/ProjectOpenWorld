@@ -1,42 +1,20 @@
 ﻿#include "Pal/Widget/Item/PalItemGridSlot.h"
 #include "Item/DataTable/ItemSlotType.h"
-#include "Item/System/ItemDataSubsystem.h"
 #include "Components/Image.h"
-#include "Components/TextBlock.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Pal/Widget/Item/PalItemInventoryWidget.h"
+#include "Inventory/Widget/InventorySlotWidget.h"
+#include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
+#include "Inventory/Widget/InventorySlotBase.h"
+#include "Inventory/Component/InventoryComponent.h"
 
 void UPalItemGridSlot::UpdateSlot(const FInventorySlot& ItemSlot)
 {
-	FName ItemID = ItemSlot.GetItemID();
-	UTexture2D* ItemTexture = UItemDataSubsystem::GetPalItemIconTextureByName(ItemID);
-	if (ItemTexture)
+	ItemObj = ItemSlot.ItemObject;
+	if (InventorySlotWidget)
 	{
-		if (ItemImage)
-		{
-			ItemImage->SetBrushFromTexture(ItemTexture);
-			ItemImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		if (ItemCount)
-		{
-			ItemCount->SetText(FText::AsNumber(ItemSlot.GetItemCount()));
-			ItemCount->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
+		IInventorySlotInterface::Execute_SetSlotData(InventorySlotWidget.Get(), ItemSlot);
 	}
-	else
-	{
-		if (ItemImage)
-		{
-			ItemImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			ItemImage->SetVisibility(ESlateVisibility::Hidden);	
-		}
-		if (ItemCount)
-		{
-			ItemCount->SetText(FText::AsNumber(ItemSlot.GetItemCount()));
-			ItemCount->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-
 	bHasItem = nullptr != ItemSlot.ItemObject;
 }
 
@@ -45,12 +23,47 @@ void UPalItemGridSlot::InitializeSlot(UPalItemInventoryWidget* Widget)
 	OwnerWidget = Widget;
 }
 
+bool UPalItemGridSlot::AddItemToInventory(const FInventorySlot& ItemSlot)
+{
+	return false;
+}
+
+void UPalItemGridSlot::OnSlotRemoveEvent(UDragDropOperation* Operation)
+{
+	if (Operation && OwnerWidget && !Cast< UPalItemGridSlot>(Operation->Payload))
+	{
+		OwnerWidget->OnSlotRemoveEvent(this);
+	}
+}
+
+void UPalItemGridSlot::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+}
+
+void UPalItemGridSlot::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+}
+
+void UPalItemGridSlot::NativeConstruct()
+{
+	Super::NativeConstruct();
+}
+
 void UPalItemGridSlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	if (IsHovered())
+	{
+		UUIDataGameInstanceSubsystem::PlayUIHoverSound();
+		SlotFrame->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
 }
 
 void UPalItemGridSlot::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
+	Super::NativeOnMouseLeave(InMouseEvent);
+	SlotFrame->SetVisibility(ESlateVisibility::Hidden);
 }
 
 FReply UPalItemGridSlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -65,12 +78,12 @@ FReply UPalItemGridSlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
 void UPalItemGridSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
-
-	OutOperation= Cast< UDragDropOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UDragDropOperation::StaticClass()));
+	OutOperation = UWidgetBlueprintLibrary::CreateDragDropOperation(UDragDropOperation::StaticClass());
 	if (OutOperation && bHasItem)
 	{
 		OutOperation->Payload = this;
-		//OutOperation->DefaultDragVisual = GetInventorySlotWidget();
+		OutOperation->DefaultDragVisual = InventorySlotWidget;
+		OutOperation->OnDrop.AddUniqueDynamic(this, &UPalItemGridSlot::OnSlotRemoveEvent);
 	}
 }
 
@@ -78,9 +91,19 @@ bool UPalItemGridSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDrop
 {
 	if (OwnerWidget && InOperation && InOperation->Payload)
 	{
-		if (UPalItemGridSlot* Other = Cast< UPalItemGridSlot>(InOperation->Payload))
+		UPalItemGridSlot* OtherGrid = Cast< UPalItemGridSlot>(InOperation->Payload);
+		if (OtherGrid)
 		{
-			OwnerWidget->OnSlotSwapEvent(this, Other);
+			OwnerWidget->OnSlotSwapEvent(this, OtherGrid);
+		}
+		UInventorySlotBase* Other = Cast< UInventorySlotBase>(InOperation->Payload);
+		if (Other && Other->GetSlotDataPtr() && Other->GetSlotDataPtr()->ItemObject)
+		{
+			if (OwnerWidget->OnAddItemEvent(Other->GetSlotDataPtr()->ItemObject))
+			{
+				InOperation->Payload = this;
+				return true;
+			}
 		}
 	}
 	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);

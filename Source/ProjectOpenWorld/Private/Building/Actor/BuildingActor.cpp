@@ -1,4 +1,4 @@
-#include "Building/Actor/BuildingActor.h"
+ï»¿#include "Building/Actor/BuildingActor.h"
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Subsystem/BuildingWidgetSubsystem.h"
 #include "Player/Character/BasePlayer.h"
@@ -7,6 +7,7 @@
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Building/Widget/BaseBuildingAction.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
+#include "Pal/Component/ActionWidget/PalActionWidgetComponent.h"
 
 void ABuildingActor::BeginPlay()
 {
@@ -35,7 +36,7 @@ void ABuildingActor::OnBeginDetected_Implementation(ACharacter* pOther)
 	if (!pPlayer || !pPlayer->GetLocalPlayer())
 		return;
 	Player = pPlayer;
-	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystemê°€ Mapì—ì„œ ì°¾ìœ¼ë‹ˆ ê´œì°®ì€ ë“¯
 	{
 		BuildingWidgetSubsystem->SetBuildingWidgetProperty(GetBuildingProgress());
 		if (!GetBuildingProgress()->IsBuildingEnd())
@@ -68,9 +69,10 @@ void ABuildingActor::OnInteractionStart_Implementation(ACharacter* pOther)
 	}
 	else if (ABasePlayer* pPlayer = Cast<ABasePlayer>(pOther))
 	{
-		if (!pPlayer->AddToViewPort(BuildActionWidget->GetWidget()))
+		BuildActionWidgetCom->CreateActionWidget();
+		if (!pPlayer->AddToViewPort(BuildActionWidgetCom->GetActionWidget()))
 		{
-			pPlayer->RemoveFromViewPort(BuildActionWidget->GetWidget());
+			pPlayer->RemoveFromViewPort(BuildActionWidgetCom->GetActionWidget());
 		}
 	}
 }
@@ -97,7 +99,7 @@ void ABuildingActor::OnInteractionCanceled_Implementation(ACharacter* pOther)
 	APlayerController* pPlayer = Cast< APlayerController>(pOther->GetController());
 	if (!pPlayer)
 		return;
-	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystem°¡ Map¿¡¼­ Ã£À¸´Ï ±¦ÂúÀº µí
+	if (UBuildingWidgetSubsystem* BuildingWidgetSubsystem = pPlayer->GetLocalPlayer()->GetSubsystem<UBuildingWidgetSubsystem>()) // GetSubsystemê°€ Mapì—ì„œ ì°¾ìœ¼ë‹ˆ ê´œì°®ì€ ë“¯
 	{
 		BuildingWidgetSubsystem->SetBuildingWidgetProperty(nullptr);
 		BuildingWidgetSubsystem->RemoveBuildTimeWidget();

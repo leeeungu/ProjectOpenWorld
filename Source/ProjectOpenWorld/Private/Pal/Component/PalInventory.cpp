@@ -138,3 +138,24 @@ void UPalInventory::OnSwapSlots(int32 Src, int32 Dst)
 		OnSlotChanged.Broadcast(Dst, Slots[Dst]);
 	}
 }
+
+void UPalInventory::OnSlotUpdate(int32 Index)
+{
+	if (Slots.IsValidIndex(Index))
+	{
+		OnSlotChanged.Broadcast(Index, Slots[Index]);
+	}
+}
+
+void UPalInventory::OnRemoveItem(int32 Index)
+{
+	if (Slots.IsValidIndex(Index))
+	{
+		RemoveItem(Index, Slots[Index].GetItemCount());
+	}
+}
+
+//bool UPalInventory::OnAddItemEvent(UBaseItem* ItemSlot);
+//{
+//
+//}

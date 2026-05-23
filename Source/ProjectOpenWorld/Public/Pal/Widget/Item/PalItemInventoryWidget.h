@@ -7,9 +7,12 @@
 class UUniformGridPanel;
 struct FInventorySlot;
 class UPalItemGridSlot;
+class UBaseItem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWidgetOpen);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotSwap, int32, Src, int32, Dst);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSlotUpdate, int32, Index);
+DECLARE_DELEGATE_RetVal_OneParam(bool, FOnAddItem, UBaseItem*);
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalItemInventoryWidget : public UUserWidget
@@ -28,6 +31,9 @@ protected:
 public:
 	FOnWidgetOpen OnWidgetOpen{};
 	FOnSlotSwap OnSlotSwap{};
+	FOnSlotUpdate OnSlotUpdate{};
+	FOnSlotUpdate OnSlotRemove{};
+	FOnAddItem OnAddItem{};
 
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;
@@ -36,4 +42,7 @@ public:
 	UFUNCTION()
 	void OnUpdateSlot(int32 Index, const FInventorySlot& ItemSlot);
 	void OnSlotSwapEvent(UWidget* pSrc, UWidget* pDst);
+	void OnSlotUpdateEvent(UWidget* pChild);
+	void OnSlotRemoveEvent(UWidget* pChild);
+	bool OnAddItemEvent(UBaseItem* ItemData);
 };

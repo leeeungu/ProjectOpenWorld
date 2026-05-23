@@ -38,15 +38,17 @@ public:
 	virtual void SetSlotData_Implementation(const FInventorySlot& Data) override;
 	virtual void SetSlotPtr(const FInventorySlot* Data) override;
 	virtual void SetSlotIndex_Implementation(int Row, int Col) override;
-
+	virtual const FInventorySlot* GetSlotDataPtr() const { return itemPointer; }
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool SwapSlot(UInventorySlotBase* OtherSlot);
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	UInventorySlotWidget* GetInventorySlotWidget() const;
 
+	UInventoryComponent* GetInventoryComponent() const;
 protected:
-
+	UFUNCTION()
+	void OnSlotRemoveEvent(UDragDropOperation* Operation);
 	const FInventorySlot* GetInventorySlotData() const
 	{
 		return itemPointer;
@@ -64,5 +66,4 @@ protected:
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
-	UInventoryComponent* GetInventoryComponent() const;
 };

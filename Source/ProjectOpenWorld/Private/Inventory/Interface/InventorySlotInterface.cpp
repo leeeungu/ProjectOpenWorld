@@ -12,12 +12,3 @@ int32 FInventorySlot::GetItemCount() const
 	return ItemObject ? ItemObject->GetItemCount() : 0;
 }
 
-void FInventorySlot::Clear()
-{
-	ItemObject = nullptr;
-}
-
-bool FInventorySlot::operator==(const FInventorySlot& sDst) const
-{
-	return GetItemID() == sDst.GetItemID();
-}

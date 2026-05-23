@@ -3,6 +3,7 @@
 #include "Building/Component/BuildingProgress.h"
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Building/Component/BuildingActionWidgetComponent.h"
+#include "Pal/Component/ActionWidget/PalActionWidgetComponent.h"
 #include "NavModifierComponent.h"
 #include "NavAreas/NavArea_Obstacle.h"
 #include "NavAreas/NavArea_Default.h"
@@ -23,13 +24,13 @@ ABaseBuilding::ABaseBuilding() :Super()
 	PalBuildingStaticMeshComponent->SetGenerateOverlapEvents(true);
 	
 	//buildingProgressComponent = CreateDefaultSubobject<UBuildingProgress>(TEXT("BuildingProgress"));
-	BuildActionWidget = CreateDefaultSubobject<UBuildingActionWidgetComponent>(TEXT("BuildActionWidget"));
-	if (BuildActionWidget)
-	{
+	BuildActionWidgetCom = CreateDefaultSubobject<UPalActionWidgetComponent>(TEXT("PalActionWidgetComponent"));
+	//if (BuildActionWidget)
+	//{
 
-		BuildActionWidget->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-		BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
-	}
+	//	BuildActionWidget->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	//	BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
+	//}
 
 	
 	NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
@@ -116,7 +117,7 @@ void ABaseBuilding::UpdateModifier()
 
 void ABaseBuilding::NoCollision()
 {
-	BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
+	//BuildActionWidget->SetCollisionProfileName(TEXT("NoCollision"));
 	PalBuildingStaticMeshComponent->SetCanEverAffectNavigation(false);
 	UNavigationSystemV1* Nav = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 	if (Nav && PalBuildingStaticMeshComponent->GetStaticMesh())

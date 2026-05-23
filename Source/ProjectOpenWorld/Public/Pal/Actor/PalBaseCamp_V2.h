@@ -9,6 +9,7 @@
 class UPalWorkableSearchComponent;
 class UPalWorkCommander;
 class UPalInventory;
+class ACharacter;
 
 UCLASS()
 class PROJECTOPENWORLD_API APalBaseCamp_V2 : public ABuildingActor
@@ -28,6 +29,11 @@ public:
 	UPalWorkCommander* GetPalWorkCommander() const { return PalWorkCommander; }
 	UFUNCTION(BlueprintPure)
 	UPalInventory* GetPalInventory() const { return PalInventory; }
+	virtual void OnInteractionStart_Implementation(ACharacter* pOther) override;
+	virtual void OnInteractionEnd_Implementation(ACharacter* pOther) override;
+
 protected:
+	UFUNCTION()
+	void OnDelActionWidget(UUserWidget* ActionWidget);
 	virtual void BeginPlay() override;
 };

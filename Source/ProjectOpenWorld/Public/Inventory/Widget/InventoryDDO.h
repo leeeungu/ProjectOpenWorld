@@ -5,6 +5,7 @@
 #include "Blueprint/DragDropOperation.h"
 #include "InventoryDDO.generated.h"
 
+struct FInventorySlot;
 UCLASS()
 class PROJECTOPENWORLD_API UInventoryDDO : public UDragDropOperation, public IInventorySlotInterface
 {
@@ -25,7 +26,7 @@ public:
 	virtual const FInventorySlot* GetSlotDataPtr() const override { return SlotData; }
 
 	UFUNCTION(BlueprintPure, Category = "InventoryDDO")
-	FInventorySlot GetSlotData() const { return *SlotData; }
+	FInventorySlot GetSlotData() const;
 	UFUNCTION(BlueprintPure, Category = "InventoryDDO")
 	int GetSlotRow() const { return SlotRow; }
 	UFUNCTION(BlueprintPure, Category = "InventoryDDO")

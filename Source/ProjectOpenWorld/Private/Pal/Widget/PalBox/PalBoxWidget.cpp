@@ -6,6 +6,16 @@
 #include "Pal/Actor/PalBaseCamp.h"
 #include "Blueprint/GameViewportSubsystem.h"
 #include "Creature/Character/BaseCreature.h"
+#include "Pal/Widget/PalBox/PalBoxItemTab.h"
+#include "Components/WidgetSwitcher.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+
+bool UPalBoxWidget::SetMainWidget()
+{
+	bool bResult = Super::SetMainWidget();
+	//UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(GetOwningPlayer(), this, EMouseLockMode::DoNotLock, true);
+	return bResult;
+}
 
 void UPalBoxWidget::NativeOnInitialized()
 {
@@ -19,7 +29,51 @@ void UPalBoxWidget::NativeOnInitialized()
 void UPalBoxWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetSelectedPanel(CurSelectedIndex);
 }
+
+void UPalBoxWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+}
+
+FReply UPalBoxWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UPalBoxWidget : OnKeyDown"));
+	if (PalBoxSwither)
+	{
+		int32 Index = PalBoxSwither->GetActiveWidgetIndex();
+		if (InKeyEvent.GetKey() == EKeys::Q && PalBoxSwither)
+		{
+			if (Index - 1 < 0)
+			{
+				Index = PalBoxSwither->GetChildrenCount() - 1;
+			}
+		}
+		if (InKeyEvent.GetKey() == EKeys::E && PalBoxSwither)
+		{
+			if (Index + 1 >= PalBoxSwither->GetChildrenCount())
+			{
+				Index = 0;
+			}
+		}
+		if (Index != PalBoxSwither->GetActiveWidgetIndex())
+		{
+			PalBoxSwither->SetActiveWidgetIndex(Index);
+		}
+	}
+	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
+}
+
+void UPalBoxWidget::SetSelectedPanel(int32 SelectedIndex)
+{
+	if (PalBoxSwither && SelectedIndex >= 0 && SelectedIndex < PalBoxSwither->GetChildrenCount())
+	{
+		CurSelectedIndex = SelectedIndex;
+		PalBoxSwither->SetActiveWidgetIndex(CurSelectedIndex);
+	}
+}
+
 
 void UPalBoxWidget::OnPalSelectedChanged(ABaseCreature* SelectedPal)
 {
@@ -112,4 +166,12 @@ void UPalBoxWidget::OnPalBoxChangeEvent()
 		PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
 	if (PalInventoryWidget)
 		PalInventoryWidget->SetPalSlot();
+}
+
+
+UPalItemInventoryWidget* UPalBoxWidget::GetPalItemInventoryWidget() const
+{
+	if (!PalBoxItemTab)
+		return nullptr;
+	return PalBoxItemTab->GetPalItemInventoryWidget();
 }

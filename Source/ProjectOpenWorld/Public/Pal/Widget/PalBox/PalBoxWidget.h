@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Building/Widget/BaseBuildingAction.h"
-#include "Player/Interface/MainWidgetInterface.h"
+#include "Pal/Interface/TabWidgetInterface.h"
 #include "PalBoxWidget.generated.h"
 
 class ABaseCreature;
@@ -11,10 +11,12 @@ class UPalInventoryWidget;
 class UPalInfomation;
 class UPalBoxSpawnWidget;
 class AActor;
+class UPalBoxItemTab;
 class UPalItemInventoryWidget;
+class UWidgetSwitcher;
 
 UCLASS()
-class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction
+class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction, public ITabWidgetInterface
 {
 	GENERATED_BODY()
 protected:
@@ -23,7 +25,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UPalInventoryWidget> PalInventoryWidget{};
-
+	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
+	TObjectPtr<UWidgetSwitcher> PalBoxSwither{};
+	
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr < UPalInfomation> PalInfoWidget{};
 
@@ -32,12 +36,18 @@ protected:
 	TWeakObjectPtr<ABaseCreature> CurrentSelectedPal{};
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
-	TObjectPtr < UPalItemInventoryWidget> PalItemInventoryWidget{};
+	TObjectPtr < UPalBoxItemTab> PalBoxItemTab{};
 	
+	UPROPERTY(EditAnywhere, Category = "PalBox")
+	int32 CurSelectedIndex{};
 public:
+	virtual bool SetMainWidget() override;
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
-
+	virtual void NativePreConstruct() override;
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+	
+	virtual void SetSelectedPanel(int32 SelectedIndex) override;
 	//void SetCommanderComponent(UPalCommanderComponent* InCommanderComponent);
 
 	UFUNCTION()
@@ -55,7 +65,7 @@ public:
 	void SwapSpawnInventory(int FromIndex, int ToIndex);
 	void DespawnSlotToInventory(int FromIndex, int ToIndex);
 
-	UPalItemInventoryWidget* GetPalItemInventoryWidget() const { return PalItemInventoryWidget; }
+	UPalItemInventoryWidget* GetPalItemInventoryWidget() const;
 	//OnWidgetAdded
 protected:
 	//DECLARE_EVENT_TwoParams(UGameViewportSubsystem, FWidgetAddedEvent, UWidget*, ULocalPlayer*);

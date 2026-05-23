@@ -14,7 +14,7 @@ class UMaterials;
 class UBuildingProgress;
 class UNavModifierComponent;
 class UPalBuildingStaticMeshComponent;
-class UBuildingActionWidgetComponent;
+class UPalActionWidgetComponent;
 class UPalWorkerInterface;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
@@ -26,7 +26,7 @@ protected:
 	TObjectPtr<UPalBuildingStaticMeshComponent> PalBuildingStaticMeshComponent{};
 	// 해당 기능을 묶어서 처리면 좋을듯?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
-	TObjectPtr<UBuildingActionWidgetComponent> BuildActionWidget{};
+	TObjectPtr<UPalActionWidgetComponent> BuildActionWidgetCom{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
 	TObjectPtr<UNavModifierComponent> NavModifier{};
