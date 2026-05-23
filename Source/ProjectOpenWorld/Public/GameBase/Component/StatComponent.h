@@ -22,7 +22,7 @@ enum class EStatusType :uint8
 	Speed UMETA(DisplayName = "Speed"),
 	Architecture UMETA(DisplayName = "Architecture"),
 	Mining UMETA(DisplayName = "Mining"),
-	Lumbering UMETA(DisplayName = "Lumbering"),
+	Deforest UMETA(DisplayName = "Deforest"),
 	TransportSpeed UMETA(DisplayName = "TransportSpeed"),
 };
 

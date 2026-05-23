@@ -28,11 +28,7 @@ protected:
 	bool bActionStarted{};
 
 	UPROPERTY(EditAnywhere, Category = "PalAnim")
-	TObjectPtr<UAnimSequence> ArchitectureAnim{};
-	UPROPERTY(EditAnywhere, Category = "PalAnim")
-	TObjectPtr<UAnimSequence> MiningAnim{};
-	UPROPERTY(EditAnywhere, Category = "PalAnim")
-	TObjectPtr<UAnimSequence> TransportAnim{};
+	TMap< EPalJobType, TObjectPtr<UAnimSequence>> WorkAnim{};
 	UPROPERTY(EditAnywhere, Category = "PalAnim")
 	TObjectPtr<UAnimSequence> WorkAnimation{};
 

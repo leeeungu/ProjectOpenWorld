@@ -19,31 +19,9 @@ void UPalCreatureAnimInstance::OnChangeWorkCommand(const FPalWorkCommand& Job)
 	if (CurrenJobType == Job.JobType)
 		return;
 	CurrenJobType = Job.JobType;
-	switch (CurrenJobType)
-	{
-	case EPalJobType::Architecture:
-	{
-		WorkAnimation = ArchitectureAnim;
-		return;
-	}
-	case EPalJobType::Mining:
-	{
-		WorkAnimation = MiningAnim;
-		return;
-	}
-	case EPalJobType::Lumbering:
-	{
-		break;
-	}
-	case EPalJobType::Transport:
-	{
-		WorkAnimation = TransportAnim;
-		return;
-	}
-	default:
-		break;
-	}
 	WorkAnimation = nullptr;
+	if(WorkAnim.Contains(CurrenJobType))
+		WorkAnimation = *WorkAnim.Find(CurrenJobType);
 }
 
 void UPalCreatureAnimInstance::OnStartWork()

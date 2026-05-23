@@ -15,8 +15,8 @@ EStatusType PalStatus::GetJobWorkSpeedStatus(EPalJobType JobType)
 	case EPalJobType::Mining:
 		return EStatusType::Mining;
 		break;
-	case EPalJobType::Lumbering:
-		return EStatusType::Lumbering;
+	case EPalJobType::Deforest:
+		return EStatusType::Deforest;
 		break;
 	case EPalJobType::Transport:
 		return EStatusType::TransportSpeed;

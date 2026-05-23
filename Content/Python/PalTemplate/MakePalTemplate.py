@@ -22,6 +22,9 @@ from PalTemplate import MakeAttackTable
 importlib.reload(MakeAttackTable)
 from PalTemplate import Make_LevelTable
 importlib.reload(Make_LevelTable)
+from PalTemplate import Set_PalCapability
+importlib.reload(Set_PalCapability)
+
 
 
 def MakeCharacter(TEMPLATE_NAME : str):
@@ -39,5 +42,6 @@ Make_LevelTable.run_build_LevelData_and_patch_dt(CONFIG_PAL_NAME)
 MakeAttackTable.run_build_attack_montages_and_patch_dt()
 MakeCharacter("Monster")
 MakeCharacter("Pal")
+Set_PalCapability.main()
 unreal.log(f"[Python]  End : 펠 네임 {CONFIG_PAL_NAME} 자동 생성 파이브 라인")
 

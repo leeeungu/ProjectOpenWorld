@@ -12,12 +12,12 @@ enum class EPalJobType : uint8
 	None UMETA(DisplayName = "None"),
 	Architecture UMETA(DisplayName = "Architecture"),
 	Mining UMETA(DisplayName = "Mining"),
-	Lumbering UMETA(DisplayName = "Lumbering"),
-	Transport UMETA(DisplayName = "Transport"),
 	Deforest UMETA(DisplayName = "Deforest"),
+	Transport UMETA(DisplayName = "Transport"),
 	Cooking UMETA(DisplayName = "Cooking"),
 	Planting UMETA(DisplayName = "Planting"),
 	Attack UMETA(DisplayName = "Attack"),
+	CommonWork UMETA(DisplayName = "CommonWork"),
 	Max_JobType UMETA(Hidden),
 };
 
@@ -26,9 +26,12 @@ enum class EPalWorkCapability : uint8
 {
 	Architecture = 1 << 0,
 	Mining = 1 << 1,
-	Lumbering = 1 << 2,
+	Deforest = 1 << 2,
 	Transport = 1 << 3,
-	Attack = 1 << 4,
+	Cooking = 1 << 4,
+	Planting = 1 << 5,
+	Attack = 1 << 6,
+	CommonWork = 1 <<7
 };
 ENUM_CLASS_FLAGS(EPalWorkCapability);
 
