@@ -14,6 +14,9 @@ enum class EPalJobType : uint8
 	Mining UMETA(DisplayName = "Mining"),
 	Lumbering UMETA(DisplayName = "Lumbering"),
 	Transport UMETA(DisplayName = "Transport"),
+	Deforest UMETA(DisplayName = "Deforest"),
+	Cooking UMETA(DisplayName = "Cooking"),
+	Planting UMETA(DisplayName = "Planting"),
 	Attack UMETA(DisplayName = "Attack"),
 	Max_JobType UMETA(Hidden),
 };
