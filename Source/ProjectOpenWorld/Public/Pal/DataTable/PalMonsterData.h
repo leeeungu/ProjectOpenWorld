@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -37,7 +37,7 @@ public:
 };
 
 
-class ABaseMonster;
+class APalBaseMonster;
 
 // Monster World Data
 USTRUCT(BlueprintType)
@@ -48,7 +48,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Data")
 	FName MonsterName = NAME_None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Data")
-	TSubclassOf< ABaseMonster> MonsterClass = nullptr;
+	TSubclassOf< APalBaseMonster> MonsterClass = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
 	FPalMonsterPatrolData PatrolData{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
