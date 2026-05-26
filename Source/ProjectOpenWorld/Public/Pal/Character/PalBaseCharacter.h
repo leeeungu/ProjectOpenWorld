@@ -27,6 +27,8 @@ protected:
 public:
 	//APalBaseCharacter();
 
+	void UseControllerDesiredRotation();
+	void UseOrientRotationToMovement();
 
 //	virtual bool ReceiveCommand_Implementation(FPalCommand Command) override;
 //	UFUNCTION(BlueprintPure, Category = "CreatureAction")

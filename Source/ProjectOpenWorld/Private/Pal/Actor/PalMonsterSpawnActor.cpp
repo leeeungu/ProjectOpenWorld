@@ -1,8 +1,8 @@
-#include "Pal/Actor/PalMonsterSpawnActor.h"
+﻿#include "Pal/Actor/PalMonsterSpawnActor.h"
 #include "Pal/DataTable/PalSpawnerPlacementDatabaseRow.h"
 #include "Pal/DataTable/PalWildSpawnerDatabaseRow.h"
 #include "Kismet/DataTableFunctionLibrary.h"
-#include "Pal/Character/BasePalMonster.h"
+#include "Pal/Character/PalBaseMonster.h"
 #include "NavigationSystem.h"
 #include "NavigationInvokerComponent.h"
 #include "Pal/Component/PalPatrolComponent.h"
@@ -68,7 +68,7 @@ void APalMonsterSpawnActor::BeginPlay()
 
 void APalMonsterSpawnActor::OnMonsterPalDestoryed(AActor* DeadPal)
 {
-	if (ABaseMonster* Monster = Cast< ABaseMonster>(DeadPal))
+	if (APalBaseMonster* Monster = Cast< APalBaseMonster>(DeadPal))
 	{
 		if (FName * MonsterName = SpawnedMonsters.Find(Monster))
 		{
@@ -140,16 +140,16 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 					FRotator SpawnRotation = GetActorRotation();
 					SpawnLocation.Location.Z += 300.0f;
 					FActorSpawnParameters SpawnParams{};
-					ABaseMonster* SpawnedMonster = GetWorld()->SpawnActor<ABaseMonster>(MonsterData->MonsterData->MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
+					APalBaseMonster* SpawnedMonster = GetWorld()->SpawnActor<APalBaseMonster>(MonsterData->MonsterData->MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
 					if (SpawnedMonster)
 					{
 						SpawnedMonster->OnDestroyed.AddUniqueDynamic(this, &APalMonsterSpawnActor::OnMonsterPalDestoryed);
 						SpawnedMonsters.Add(SpawnedMonster, SpawnCharacterData.Pal);
 						int lv = FMath::RandRange(SpawnCharacterData.LvMin, SpawnCharacterData.LvMax);
 						const FPalMonsterLevelData* LevelData = GetMonsterLevelData(MonsterData->MonsterData->MonsterName, lv);
-						SpawnedMonster->SetPalMonsterLevelData(lv, *LevelData);
+						//SpawnedMonster->SetPalMonsterLevelData(lv, *LevelData);
 					}
-					ABasePalMonster* PalMonster = Cast<ABasePalMonster>(SpawnedMonster);
+					APalBaseMonster* PalMonster = Cast<APalBaseMonster>(SpawnedMonster);
 					if (PalMonster && PalMonster->GetPalPatrolComponent() && MonsterData->MonsterData )
 					{
 						PalMonster->GetPalPatrolComponent()->SetPatrolData(&MonsterData->MonsterData->PatrolData);

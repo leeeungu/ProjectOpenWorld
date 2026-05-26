@@ -5,7 +5,7 @@
 #include "Pal/Interface/TabWidgetInterface.h"
 #include "PalBoxWidget.generated.h"
 
-class ABaseCreature;
+class APalBaseCreature;
 class UPalStorageComponent;
 class UPalInventoryWidget;
 class UPalInfomation;
@@ -33,7 +33,7 @@ protected:
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr < UPalBoxSpawnWidget> PalBoxSpawnWidget{};
-	TWeakObjectPtr<ABaseCreature> CurrentSelectedPal{};
+	TWeakObjectPtr<APalBaseCreature> CurrentSelectedPal{};
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr < UPalBoxItemTab> PalBoxItemTab{};
@@ -55,9 +55,9 @@ public:
 	UFUNCTION()
 	void OnPalSpawnInventoryChanged(int nIndex, AActor* Actor);	
 	UFUNCTION()
-	void OnPalSelectedChanged(ABaseCreature* Actor);
+	void OnPalSelectedChanged(APalBaseCreature* Actor);
 
-	TObjectPtr<ABaseCreature> GetPalInInventory(int Index) const;
+	TObjectPtr<APalBaseCreature> GetPalInInventory(int Index) const;
 	virtual void SetOwnerActor(AActor* NewOwner) override;
 
 	void SwapPalInInventory(int FromIndex, int ToIndex);

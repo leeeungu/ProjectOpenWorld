@@ -1,33 +1,7 @@
 ﻿#include "GameBase/Component/StatComponent.h"
 #include "Pal/Data/PalDamageType.h"
-#include "Pal/Data/PalJobTypes.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
-
-EStatusType PalStatus::GetJobWorkSpeedStatus(EPalJobType JobType)
-{
-	switch (JobType)
-	{
-	case EPalJobType::Architecture:
-		return EStatusType::Architecture;
-		break;
-	case EPalJobType::Mining:
-		return EStatusType::Mining;
-		break;
-	case EPalJobType::Deforest:
-		return EStatusType::Deforest;
-		break;
-	case EPalJobType::Transport:
-		return EStatusType::TransportSpeed;
-		break;
-	case EPalJobType::Attack:
-		return EStatusType::Attack;
-		break;
-	}
-	return EStatusType::None;
-}
-
 
 void FStatusValue::SetValue(double NewValue)
 {
@@ -123,7 +97,7 @@ void UStatComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
 
 FOnStatChanged* UStatComponent::GetCurrentOnStatChanged(EStatusType StatName)
 {
-	if (FStatusData* Stat = StatusMap.Find(StatName))
+	if (FStatusData* Stat = &StatusMap.FindOrAdd(StatName))
 	{
 		return &Stat->CurrentStatValue.OnChanged;
 	}
@@ -132,11 +106,21 @@ FOnStatChanged* UStatComponent::GetCurrentOnStatChanged(EStatusType StatName)
 
 FOnStatChanged* UStatComponent::GetMaxOnStatChanged(EStatusType StatName)
 {
-	if (FStatusData* Stat = StatusMap.Find(StatName))
+	if (FStatusData* Stat = &StatusMap.FindOrAdd(StatName))
 	{
 		return &Stat->MaxStatValue.OnChanged;
 	}
 	return nullptr;
+}
+
+void UStatComponent::StatBeginPlay(EStatusType StatName)
+{
+	FStatusData* Stat = StatusMap.Find(StatName);
+	if (!Stat)
+	{
+		return;
+	}
+	Stat->BeginPlay();
 }
 
 void UStatComponent::SetCurrentStat(double Value, EStatusType StatName)

@@ -1,8 +1,8 @@
-#include "Pal/Widget/PalBox/PalBoxSpawnWidget.h"
+﻿#include "Pal/Widget/PalBox/PalBoxSpawnWidget.h"
 #include "Pal/Widget/PalBox/PalBoxSpawnSlot.h"
 #include "Components/VerticalBox.h"
 #include "Components/ScrollBox.h"
-#include "Creature/Character/BaseCreature.h"
+#include "Pal/Character/PalBaseCreature.h"
 
 void UPalBoxSpawnWidget::NativeOnInitialized()
 {
@@ -29,7 +29,7 @@ void UPalBoxSpawnWidget::UpdatePalSpawnInventory(int InventoryIndex, AActor* New
 		UPalBoxSpawnSlot* SpawnSlot = Cast<UPalBoxSpawnSlot>(SpawnBoxScrollBox->GetChildAt(InventoryIndex));
 		if (SpawnSlot)
 		{
-			SpawnSlot->SetPalCreature(Cast<ABaseCreature>(NewActor));
+			SpawnSlot->SetPalCreature(Cast<APalBaseCreature>(NewActor));
 		}
 	}
 	else

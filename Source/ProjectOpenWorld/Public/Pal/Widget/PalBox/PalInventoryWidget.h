@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -7,7 +7,7 @@
 class UUniformGridPanel;
 class UTextBlock;
 class UPalInventorySlot;
-class ABaseCreature;
+class APalBaseCreature;
 class UPalBoxWidget;
 
 UCLASS()
@@ -33,6 +33,6 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
 
-	void UpdatePalInventory(int InventoryIndex, TObjectPtr<ABaseCreature> NewPal);
+	void UpdatePalInventory(int InventoryIndex, TObjectPtr<APalBaseCreature> NewPal);
 	void SetPalSlot();
 };

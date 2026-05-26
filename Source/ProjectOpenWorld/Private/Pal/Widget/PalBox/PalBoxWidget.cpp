@@ -5,7 +5,7 @@
 #include "Pal/Component/PalStorageComponent.h"
 #include "Pal/Actor/PalBaseCamp.h"
 #include "Blueprint/GameViewportSubsystem.h"
-#include "Creature/Character/BaseCreature.h"
+#include "Pal/Character/PalBaseCreature.h"
 #include "Pal/Widget/PalBox/PalBoxItemTab.h"
 #include "Components/WidgetSwitcher.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
@@ -75,7 +75,7 @@ void UPalBoxWidget::SetSelectedPanel(int32 SelectedIndex)
 }
 
 
-void UPalBoxWidget::OnPalSelectedChanged(ABaseCreature* SelectedPal)
+void UPalBoxWidget::OnPalSelectedChanged(APalBaseCreature* SelectedPal)
 {
 	CurrentSelectedPal = SelectedPal;
 	if(PalInfoWidget )
@@ -85,18 +85,18 @@ void UPalBoxWidget::OnPalSelectedChanged(ABaseCreature* SelectedPal)
 void UPalBoxWidget::OnPalInventoryChanged(int nIndex, AActor* Actor)
 {
 	if (PalInventoryWidget)
-		PalInventoryWidget->UpdatePalInventory(nIndex, Cast< ABaseCreature>(Actor));
+		PalInventoryWidget->UpdatePalInventory(nIndex, Cast< APalBaseCreature>(Actor));
 }
 
 void UPalBoxWidget::OnPalSpawnInventoryChanged(int nIndex, AActor* Actor)
 {
 	if (PalBoxSpawnWidget)
-		PalBoxSpawnWidget->UpdatePalSpawnInventory(nIndex, Cast< ABaseCreature>(Actor));
+		PalBoxSpawnWidget->UpdatePalSpawnInventory(nIndex, Cast< APalBaseCreature>(Actor));
 }
 
-TObjectPtr<ABaseCreature>  UPalBoxWidget::GetPalInInventory(int Index) const
+TObjectPtr<APalBaseCreature>  UPalBoxWidget::GetPalInInventory(int Index) const
 {
-	return PalStorageComponent ? Cast<ABaseCreature>(PalStorageComponent->GetStoredPal(Index)) : nullptr;
+	return PalStorageComponent ? Cast<APalBaseCreature>(PalStorageComponent->GetStoredPal(Index)) : nullptr;
 }
 
 void UPalBoxWidget::SetOwnerActor(AActor* NewOwner)

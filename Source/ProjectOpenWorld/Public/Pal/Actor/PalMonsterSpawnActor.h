@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -8,7 +8,7 @@
 
 struct FPalWildSpawnerDatabaseRow;
 struct FPalSpawnerPlacementDatabaseRow;
-class ABaseMonster;
+class APalBaseMonster;
 class UNavigationInvokerComponent;
 
 UCLASS()
@@ -32,7 +32,7 @@ class PROJECTOPENWORLD_API APalMonsterSpawnActor : public AActor, public IGenera
 protected:
 	TMap<FName, PalMonsterData> PalMonsterDataMap{};
 	TMap<FName, PalSpawnerData> SpawnerDataMap{};
-	TMap<TObjectPtr<ABaseMonster>, FName> SpawnedMonsters{};
+	TMap<TObjectPtr<APalBaseMonster>, FName> SpawnedMonsters{};
 	TSet<PalSpawnerData*> SpawnSet{};
 
 	FPalMonsterLevelData DefaultMonsterLevelData{};

@@ -46,6 +46,11 @@ protected:
 	TObjectPtr<UPalPatrolComponent> PalPatrolComponent{};
 public:
 	APalBaseMonster();
+	void InitializeLevel(int32 nLevel, FPalMonsterLevelData LevelData);
+
+	UFUNCTION()
+	void OnMoveSpeedChanged(double PreCurrentStat, double CurrentStat);
+
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	FORCEINLINE UPalPatrolComponent* GetPalPatrolComponent() const { return PalPatrolComponent; }
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")

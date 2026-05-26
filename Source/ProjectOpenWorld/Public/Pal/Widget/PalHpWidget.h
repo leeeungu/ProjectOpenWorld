@@ -1,19 +1,15 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "PalHpWidget.generated.h"
 
-class ABaseCharacter;
-
 UCLASS(Abstract)
 class PROJECTOPENWORLD_API UPalHpWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-protected:
+public:
 	UFUNCTION()
-	virtual void OnDamageEvent(AActor* Other, float Damage) PURE_VIRTUAL(UPalHpWidget::OnDamageEvent, );
-public :
-	virtual  void InitializeHPWidget(ABaseCharacter* OwnerCharacter)PURE_VIRTUAL (UPalHpWidget::Initialize, );
+	virtual void OnHPChanged(double PreStat, double CurStat) PURE_VIRTUAL(UPalHpWidget::OnHPChanged, );
+	virtual  void InitializeHPWidget(FName PalID, int32 Level, double CurStat, double _MaxHP)PURE_VIRTUAL (UPalHpWidget::Initialize, );
 };

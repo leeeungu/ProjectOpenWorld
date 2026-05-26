@@ -3,7 +3,7 @@
 #include "Landscape/Component/GenerateTerrainComponent.h"
 #include "Landscape/Component/GenerateFoliageComponent.h"
 #include "Landscape/Component/GemerateStaticObjectComponent.h"
-#include "Landscape/Component/GenerateMonsterComponent.h"
+#include "Landscape/Component/GenerateSpawnerComponent.h"
 
 AWorldGenerator::AWorldGenerator() : AActor{}
 {
@@ -25,9 +25,9 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	StaticObjectGenerator->Initialize(RootComponent);
 
 
-	MonsterGenerator = CreateDefaultSubobject<UGenerateMonsterComponent>(TEXT("MonsterGenerator"));
-	SectionGenerator->BindGenerteComponent(MonsterGenerator);
-	MonsterGenerator->Initialize(RootComponent);
+	SpawnerGenerator = CreateDefaultSubobject<UGenerateSpawnerComponent>(TEXT("SpawnerGenerator "));
+	SectionGenerator->BindGenerteComponent(SpawnerGenerator);
+	SpawnerGenerator->Initialize(RootComponent);
 
 	Tags.Add(FName("Ladnscape"));
 }

@@ -9,7 +9,7 @@ class UGeneratorSectionComponent;
 class UGenerateTerrainComponent;
 class UGenerateFoliageComponent;
 class UGemerateStaticObjectComponent;
-class UGenerateMonsterComponent;
+class UGenerateSpawnerComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AWorldGenerator : public AActor
@@ -26,7 +26,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGenerateFoliageComponent> FoliageGenerator{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
-	TObjectPtr<UGenerateMonsterComponent> MonsterGenerator{};
+	TObjectPtr<UGenerateSpawnerComponent> SpawnerGenerator{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGemerateStaticObjectComponent> StaticObjectGenerator{};
 	

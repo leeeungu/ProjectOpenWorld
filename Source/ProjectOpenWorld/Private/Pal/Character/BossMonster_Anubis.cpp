@@ -5,6 +5,7 @@
 #include "Pal/Component/PalPatternComponent.h"
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Widget/PatternWidget_Anubis.h"
+#include "GameBase/Component/StatComponent.h"
 
 void ABossMonster_Anubis::BeginPlay()
 {
@@ -54,7 +55,7 @@ void ABossMonster_Anubis::OnMovementModeChanged(EMovementMode PrevMovementMode, 
 
 void ABossMonster_Anubis::OnCustomModeDamaged(AActor* Other, float Damaage)
 {
-	float HPRadio = GetCurrentHp() / GetMaxHp();
+	float HPRadio = StatComponent->GetStatPercent(EStatusType::HP);
 	if (HPRadio <= 0.5f && !bStartPattern)
 	{
 		bStartPattern = true;

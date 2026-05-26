@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -6,7 +6,7 @@
 
 class UImage;
 class UButton;
-class ABaseCreature;
+class APalBaseCreature;
 
 UCLASS(ClassGroup = PalBox)
 class PROJECTOPENWORLD_API UPalInventorySlot : public UUserWidget
@@ -17,7 +17,7 @@ protected:
 	TObjectPtr<UImage> SlotImage{};
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UImage> SlotFrameImage{};
-	TWeakObjectPtr<ABaseCreature> CurrentSelectedCreature{};
+	TWeakObjectPtr<APalBaseCreature> CurrentSelectedCreature{};
 
 	FEventReply DragDropRelpy{};
 	int SlotIndex{ -1 };
@@ -27,7 +27,7 @@ public:
 	//
 	//void UpdateSlot();
 	void SetSlotIndex(int InSlotIndex) { SlotIndex = InSlotIndex; }
-	void SetPalCreature(ABaseCreature* SelectedCreature);
+	void SetPalCreature(APalBaseCreature* SelectedCreature);
 protected:
 
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;

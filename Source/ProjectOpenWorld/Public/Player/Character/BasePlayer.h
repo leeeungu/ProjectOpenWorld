@@ -1,11 +1,12 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameBase/BaseCharacter.h"
+#include "Pal/Character/PalBaseCharacter.h"
 #include "Logging/LogMacros.h"
 #include "Building/Interface/ArchitectureInterface.h"
 #include "Resource/Interface/ResourceInterface.h"
 #include "Player/Interface/PlayerInputInterface.h"
+#include "GameBase/Interface/AttackInterface.h"
 #include "BasePlayer.generated.h"
 
 class USpringArmComponent;
@@ -51,8 +52,8 @@ enum class EPlayerState : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerStateChange, EPlayerState, NewPlayerState, EPlayerState, PrePlayerState);
 
 UCLASS()
-class PROJECTOPENWORLD_API ABasePlayer : public ABaseCharacter, public IArchitectureInterface, public IResourceInterface
-	, public IPlayerInputInterface, public IPlayerInputSettingInterface
+class PROJECTOPENWORLD_API ABasePlayer : public APalBaseCharacter, public IArchitectureInterface, public IResourceInterface
+	, public IPlayerInputInterface, public IPlayerInputSettingInterface, public IAttackInterface
 {
 	GENERATED_BODY()
 protected:
@@ -132,6 +133,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MainWidget")
 	TSubclassOf<UUserWidget> MainWidgetClass{};
 	TObjectPtr<UUserWidget> MainWidget{};
+
+	bool bDead{};
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PlayerState")
 	FOnPlayerStateChange OnStateChangeDelegate{};

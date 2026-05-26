@@ -34,7 +34,7 @@ ABaseMonster::ABaseMonster() : ABaseCharacter{}
 		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
 		if (HpWidget)
 		{
-			HpWidget->InitializeHPWidget(this);
+			//HpWidget->InitializeHPWidget(this);
 		}
 	}
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
@@ -105,21 +105,21 @@ void ABaseMonster::SpawnItem()
 void ABaseMonster::SetPalMonsterLevelData(int lv, const FPalMonsterLevelData& LevelData)
 {
 	Level = lv;
-	HPStat->SetMaxStat(LevelData.MaxHP);
+	/*HPStat->SetMaxStat(LevelData.MaxHP);
 	HPStat->SetCurrentStat(LevelData.MaxHP);
 	AttackStat->SetCurrentStat(LevelData.AttackPower);
-	DefendStat->SetCurrentStat(LevelData.Armor);
+	DefendStat->SetCurrentStat(LevelData.Armor);*/
 	if (HpWidgetComponent)
 	{
 		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
 		if (HpWidget)
 		{
-			HpWidget->InitializeHPWidget(this);
+			//HpWidget->InitializeHPWidget(this);
 		}
 	}
 	if (GetCharacterMovement())
 	{
-		GetCharacterMovement()->MaxWalkSpeed = LevelData.MoveSpeed;
+		//GetCharacterMovement()->MaxWalkSpeed = LevelData.MoveSpeed;
 	}
 }
 

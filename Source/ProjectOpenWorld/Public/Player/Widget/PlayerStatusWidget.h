@@ -34,7 +34,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr<UPlayerStatusProgress> ProgressHp{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	//UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr<UPlayerStatusProgress> ProgressShield{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr<UPlayerStatusProgress> ProgressHealth{};

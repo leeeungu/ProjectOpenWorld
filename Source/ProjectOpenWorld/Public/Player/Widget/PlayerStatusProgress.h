@@ -5,58 +5,43 @@
 #include "Player/Interface/StatusUpdateInterface.h"
 #include "PlayerStatusProgress.generated.h"
 
-class UProgressBar;
-class UTextBlock;
+class UStatusTextBlock;
 class UImage;
+class UStatusBarWidget;
+enum class EStatusType : uint8;
 class UStatComponent;
 
-enum class EStatusType : uint8;
-
 UCLASS()
-class PROJECTOPENWORLD_API UPlayerStatusProgress : public UUserWidget, public IStatusUpdateInterface
+class PROJECTOPENWORLD_API UPlayerStatusProgress : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr< UProgressBar> StatusProgress{};
-	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr< UTextBlock> StatusText{};
-	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr< UTextBlock> MaxStatusText{};
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr< UStatusTextBlock> StatusText{};
 
-	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidgetOptional))
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr < UStatusBarWidget> StatusBarWidget{};
+
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr< UImage> StatusImage{};
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
-	FLinearColor ProgressColor{};
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
+	UPROPERTY(EditAnywhere, Category = "PlayerStatus")
 	TObjectPtr < UTexture2D> StatusTexture{};
-
-	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus")
+	UPROPERTY(EditAnywhere, Category = "PlayerStatus", BlueprintReadOnly)
+	FLinearColor ProgressColor{};
+	UPROPERTY(EditAnywhere, Category = "PlayerStatus")
 	EStatusType StatusType{};
 
-	TObjectPtr< UStatComponent> StatComponent{};
+	TWeakObjectPtr< UStatComponent> PlayerStatCom{};
+public:
+	EStatusType GetStatusType() const { return StatusType; }
+	void SetStatWidget(UStatComponent* StatCom);
 protected:
 	virtual void NativePreConstruct() override;
-	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual void NativeDestruct() override;
 
-	UFUNCTION()
-	void UpdateStatusData(double PreCurrentValue , double PreMaxValue) ;
-public:
-	//void SetStatusProgress(float* Value, float* MaxValue);
-
-	// IStatusUpdateInterface을(를) 통해 상속됨
-	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
-	void UpdateStatus() override;
-
-	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	FText GetStatusText() const;
-	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	FText GetMaxStatusText() const;
-
-	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
-	float GetStatusPercent() const;
+private:
+	void BindStat();
+	void UnBindStat();
 };
 		

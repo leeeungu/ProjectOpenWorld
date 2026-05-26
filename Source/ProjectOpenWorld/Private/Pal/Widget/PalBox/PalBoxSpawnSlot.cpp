@@ -1,10 +1,10 @@
-#include "Pal/Widget/PalBox/PalBoxSpawnSlot.h"
+﻿#include "Pal/Widget/PalBox/PalBoxSpawnSlot.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/CanvasPanel.h"
 #include "Components/VerticalBoxSlot.h"
-#include "Creature/Character/BaseCreature.h"
+#include "Pal/Character/PalBaseCreature.h"
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 #include "Pal/Widget/PalBox/PalBoxDDO.h"
 #include "Pal/Widget/PalBox/PalBoxWidget.h"
@@ -27,20 +27,20 @@ void UPalBoxSpawnSlot::NativeDestruct()
 	//UE_LOG(LogTemp, Log, TEXT("PalBoxSpawnSlot: Destructed"));
 }
 
-void UPalBoxSpawnSlot::SetPalCreature(ABaseCreature* InCreature)
+void UPalBoxSpawnSlot::SetPalCreature(APalBaseCreature* InCreature)
 {
 	CurrentSelectedCreature = InCreature;
 	PalInfoCanvasPanel->SetVisibility(ESlateVisibility::Hidden);
 	if (CurrentSelectedCreature.IsValid())
 	{
 		PalInfoCanvasPanel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		FText CharacterID = FText::FromName(CurrentSelectedCreature->GetPalID());
+		FText CharacterID = FText::FromName(CurrentSelectedCreature->GetPalName());
 		//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
 
 		CharacterID = FText::FromStringTable("/Game/Pal/StringTable/ST_PalName.ST_PalName", *CharacterID.ToString());
 		NameText->SetText(CharacterID);
 		LevelText->SetText(FText::AsNumber(1)); 
-		UTexture2D* IconDataRow = UPalCharacterDataSubsystem::GetPalCharacterIconByName(CurrentSelectedCreature->GetPalID());
+		UTexture2D* IconDataRow = UPalCharacterDataSubsystem::GetPalCharacterIconByName(CurrentSelectedCreature->GetPalName());
 		IconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		if (IconDataRow)
 		{

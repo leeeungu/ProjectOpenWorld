@@ -1,7 +1,7 @@
-#include "Player/Component/MonsterSpawnerComponent.h"
+﻿#include "Player/Component/MonsterSpawnerComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationInvokerComponent.h"
-#include "Creature/Character/BaseMonster.h"
+#include "Pal/Character/PalBaseMonster.h"
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 #include "Pal/DataTable/PalMonsterData.h"
 
@@ -84,7 +84,7 @@ void UMonsterSpawnerComponent::SpawnMonster()
 		SpawnRotation.Yaw += FMath::RandRange(-180.f, 180.f);
 		FActorSpawnParameters SpawnParams{};
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		ABaseMonster* SpawnedMonster = GetWorld()->SpawnActor<ABaseMonster>(SpawnData->MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
+		APalBaseMonster* SpawnedMonster = GetWorld()->SpawnActor<APalBaseMonster>(SpawnData->MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
 		if (SpawnedMonster)
 		{
 			//SpawnedMonster->OnDestroyed.AddUniqueDynamic(this, &UMonsterSpawnerComponent::OnMonsterDead);
@@ -96,7 +96,7 @@ void UMonsterSpawnerComponent::SpawnMonster()
 				lv = FMath::RandRange(SpawnerData->LvMin, SpawnerData->LvMax);
 			}
 			FPalMonsterLevelData LevelData = GetMonsterLevelData(SpawnData, lv);
-			SpawnedMonster->SetPalMonsterLevelData(lv, LevelData);
+			//SpawnedMonster->SetPalMonsterLevelData(lv, LevelData);
 		}
 	}
 	else

@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "PalInfomation.generated.h"
 
-class ABaseCreature;
+class APalBaseCreature;
 class UTextBlock;
 class UImage;
 class UProgressBar;
@@ -32,9 +32,9 @@ protected:
 	TObjectPtr<UPalInventorySlot> PalInventorySlot{};
 
 	UPROPERTY(VisibleAnywhere, Category = "PalBox")
-	TWeakObjectPtr<ABaseCreature> CurrentSelectedCreature{};
+	TWeakObjectPtr<APalBaseCreature> CurrentSelectedCreature{};
 public:
 	virtual void NativeConstruct() override;
 
-	void SetPalCreature(ABaseCreature* SelectedCreature);
+	void SetPalCreature(APalBaseCreature* SelectedCreature);
 };

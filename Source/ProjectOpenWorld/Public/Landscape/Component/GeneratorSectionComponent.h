@@ -102,8 +102,8 @@ protected:
 	void UpdateTerrain();
 	void EndGenerateTerrain();
 
-	FVector GetSectionSize() const;
 public:	
+	FVector GetSectionSize() const;
 	FIntPoint GetSectionIndex(FVector Location) const;
 	FIntPoint GetPlayerSection() const { return PlayerSectionIndex; }
 	int GetSectionCounts() const;

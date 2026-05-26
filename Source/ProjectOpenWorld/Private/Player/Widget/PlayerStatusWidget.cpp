@@ -21,7 +21,7 @@ void UPlayerStatusWidget::SetStatusProgress(EStatusProgressType StatusType, floa
 	if (arSlot[StatusType] && *arSlot[StatusType])
 	{
 	//	(*arSlot[StatusType])->SetStatusProgress(&Value, &MaxValue);
-		(*arSlot[StatusType])->UpdateStatus();
+		//(*arSlot[StatusType])->UpdateStatus();
 	}
 }
 void UPlayerStatusWidget::SetStatusSlot(EStatusSlotType StatusType, float& Value)

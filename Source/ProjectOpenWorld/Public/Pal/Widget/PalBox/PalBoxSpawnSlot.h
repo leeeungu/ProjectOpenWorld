@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -7,7 +7,7 @@
 class UTextBlock;
 class UImage;
 class UProgressBar;
-class ABaseCreature;
+class APalBaseCreature;
 class UCanvasPanel;
 
 UCLASS()
@@ -31,13 +31,13 @@ protected:
 	TObjectPtr<UCanvasPanel> PalInfoCanvasPanel = nullptr;
 
 	UPROPERTY(VisibleAnywhere, Category = "PalBox")
-	TWeakObjectPtr<ABaseCreature> CurrentSelectedCreature{};
+	TWeakObjectPtr<APalBaseCreature> CurrentSelectedCreature{};
 
 	int SlotIndex{ -1 };
 public:
 	virtual void NativeConstruct() override;	
 	virtual void NativeDestruct() override;	
-	void SetPalCreature(ABaseCreature* InCreature);
+	void SetPalCreature(APalBaseCreature* InCreature);
 	void SetSlotIndex(int InIndex) { SlotIndex = InIndex; }
 
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;

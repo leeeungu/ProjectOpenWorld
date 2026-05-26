@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Pal/Widget/PalHpWidget.h"
@@ -6,22 +6,23 @@
 
 class UTextBlock;
 class UProgressBar;
-class ABaseMonster;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalHpWidget_MonsterDefault : public UPalHpWidget
 {
 	GENERATED_BODY()
 protected:
+	double MaxHP{};
+	double CurHP{};
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> HpProgressBar{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr <UTextBlock> MonsterNameTextBlock{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr < UTextBlock> MonsterLevel{};
-	TObjectPtr < ABaseMonster> OwnerMonster{};
-protected:
-	virtual void OnDamageEvent(AActor* Other, float Damage) override;
+
 public:
-	virtual  void InitializeHPWidget(ABaseCharacter* OwnerCharacter) override;
+	virtual void OnHPChanged(double PreStat, double CurStat) override;
+	virtual void InitializeHPWidget(FName PalID, int32 Level, double CurStat, double _MaxHP) override;
 };

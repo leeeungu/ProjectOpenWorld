@@ -1,213 +1,157 @@
 ﻿#include "Pal/Actor/PalMonsterSpawner.h"
-#include "NavigationSystem.h"
+#include "Components/SceneComponent.h"
 #include "NavigationInvokerComponent.h"
-#include "Creature/Character/BaseMonster.h"
-#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+#include "NavigationSystem.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
+#include "Pal/Character/PalBaseMonster.h"
+
 #include "Components/BrushComponent.h"
 
 APalMonsterSpawner::APalMonsterSpawner() : Super{}
 {
-	PrimaryActorTick.bCanEverTick = false;
-	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
-	///Script/Engine.DataTable'/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData'
-	ConstructorHelpers::FObjectFinder<UDataTable> DTMonster(TEXT("/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData"));
-	if (DTMonster.Succeeded())
-	{
-		MonsterDataTable = DTMonster.Object;
-	}
+    PrimaryActorTick.bCanEverTick = false;
+    //RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
+    NavigationInvokerComp->SetComponentTickEnabled(false);
 }
 
 void APalMonsterSpawner::BeginPlay()
 {
-	Super::BeginPlay();
-	//SetActorScale3D(FVector(StaticRadius, StaticRadius, StaticRadius));
-	GetBrushComponent()->Bounds.BoxExtent = FVector(StaticRadius, StaticRadius, StaticRadius);
-	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-	if (GIsEditor && NavSys)
-	{
-		NavSys->OnNavigationBoundsUpdated(this);
-	}
+    Super::BeginPlay();
+   
 }
 
 void APalMonsterSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
-	//for (auto& SpawnSet : SpawnedMonsters)
-	//{
-	//	for (AActor* Monster : SpawnSet.Value)
-	//	{
-	//		Monster->Destroy();
-	//	}
-	//	SpawnSet.Value.Reset();
-	//}
-	SpawnedMonsters.Reset();
-	for (auto& SpawnMap : PalMonsterDataMap)
-	{
-		FSpawnListData* SpawnData = &SpawnMap.Value;
-		if (GetWorld()->GetTimerManager().IsTimerActive(SpawnData->SpawnTimerHandle))
-		{
-			GetWorld()->GetTimerManager().ClearTimer(SpawnData->SpawnTimerHandle);
-		}
-	}
+    Teardown();
+    Super::EndPlay(EndPlayReason);
 }
 
-void APalMonsterSpawner::SetSpawnTimer(FName MonsterName)
-{
-	FSpawnListData* SpawnData = PalMonsterDataMap.Find(MonsterName);
+// ──────────────────────────────────────────────────────────────
 
-	if (SpawnData)
-	{
-		const FSpawnCharacterData* SpawnerData{};
-		if (UPalCharacterDataSubsystem::GetPalSpawnCharacterData(SpawnData->MonsterData.MonsterName, SpawnerData))
-		{
-			GetWorld()->GetTimerManager().SetTimer(
-				SpawnData->SpawnTimerHandle,
-				[this, MonsterName]()
-				{
-					OnSpawnMonster(MonsterName);
-				},
-				SpawnerData->SpawnTime, true, SpawnerData->SpawnTime
-			);
-		}
-	}
+void APalMonsterSpawner::Initialize(UDataTable* InMonsterDt)
+{
+    Teardown();                       // reuse 안전
+
+    MonsterDt = InMonsterDt;
+    if (!MonsterDt)
+        return;
+
+    TArray<FPalMonsterData*> Rows;
+    MonsterDt->GetAllRows<FPalMonsterData>(TEXT("APalMonsterSpawner::Initialize"), Rows);
+    if (Rows.IsEmpty() || !Rows[0])
+    {
+        UE_LOG(LogTemp, Warning, TEXT("APalMonsterSpawner::Initialize - empty DT %s"),
+            *GetNameSafe(InMonsterDt));
+        return;
+    }
+
+    MonsterData = *Rows[0];           // 단일 펠 DT 가정 — 첫 row 만
+    TargetNum = FMath::RandRange(MonsterData.NumMin, MonsterData.NumMax);
+
+    StartSpawnLoop();
 }
 
-void APalMonsterSpawner::OnSpawnMonster(FName MonsterName)
+void APalMonsterSpawner::Teardown()
 {
-	FMath::RandInit(SpawnerSeed);
-	const FSpawnListData* SpawnData = PalMonsterDataMap.Find(MonsterName);
-	TSet<TObjectPtr<AActor>>& SpawnSet = SpawnedMonsters.FindOrAdd(MonsterName);
-	if (SpawnData && SpawnSet.Num() < SpawnData->Num)
-	{
-		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-		FNavLocation SpawnLocation{};
-		NavSys->GetRandomReachablePointInRadius(GetActorLocation(), StaticRadius, SpawnLocation);
-		if (SpawnLocation.Location.Z <= 0)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to find spawn location for %s"), *MonsterName.ToString());
-			return;
-		}
-		FRotator SpawnRotation = GetActorRotation();
-		SpawnLocation.Location.Z += 300.0f;
-		FActorSpawnParameters SpawnParams{};
-		ABaseMonster* SpawnedMonster = GetWorld()->SpawnActor<ABaseMonster>(SpawnData->MonsterData.MonsterClass, SpawnLocation.Location, SpawnRotation, SpawnParams);
-		if (SpawnedMonster)
-		{
-			SpawnedMonster->OnDestroyed.AddUniqueDynamic(this, &APalMonsterSpawner::OnMonsterDead);
-			SpawnSet.Add(SpawnedMonster);
-			int lv = 1;
-			const FSpawnCharacterData* SpawnerData{};
-			if (UPalCharacterDataSubsystem::GetPalSpawnCharacterData(SpawnData->MonsterData.MonsterName, SpawnerData))
-			{
-				lv = FMath::RandRange(SpawnerData->LvMin, SpawnerData->LvMax);
-			}
-			FPalMonsterLevelData LevelData = GetMonsterLevelData(SpawnData->MonsterData.MonsterName, lv);
-			SpawnedMonster->SetPalMonsterLevelData(lv, LevelData);
-		}
-	}
-	else
-	{
-		if (SpawnData && !GetWorld()->GetTimerManager().IsTimerPaused(SpawnData->SpawnTimerHandle))
-		{
-			GetWorld()->GetTimerManager().PauseTimer(SpawnData->SpawnTimerHandle);
-		}
-	}
+    StopSpawnLoop();
+
+    for (TObjectPtr<APalBaseMonster>& M : AliveMonsters)
+    {
+        if (IsValid(M))
+            M->Destroy();
+    }
+    AliveMonsters.Reset();
+    TargetNum = 0;
 }
 
-FPalMonsterLevelData APalMonsterSpawner::GetMonsterLevelData(FName MonsterName, int32 Level) const
+// ──────────────────────────────────────────────────────────────
+
+void APalMonsterSpawner::StartSpawnLoop()
 {
-	FSpawnListData const* MonsterData = PalMonsterDataMap.Find(MonsterName);
-	if (MonsterData  && MonsterData->MonsterData.LevelDataTable)
-	{
-		TArray<FPalMonsterLevelData*> LevelDataRows{};
-		MonsterData->MonsterData.LevelDataTable->GetAllRows("", LevelDataRows);
-		if (LevelDataRows.IsValidIndex(Level))
-		{
-			return *LevelDataRows[Level];
-		}
-		else
-			UE_LOG(LogTemp, Warning, TEXT("Monster Level Data not found : %s Level : %d"), *MonsterData->MonsterData.MonsterName.ToString(), Level);
-	}
-	else if (!MonsterData || !MonsterData->MonsterData.LevelDataTable)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Monster Data Table is nullptr : %s"), *MonsterName.ToString());
-	}
-	return FPalMonsterLevelData{};
+    if (!GetWorld()) 
+        return;
+    GetBrushComponent()->Bounds.BoxExtent = FVector(StaticRadius, StaticRadius, StaticRadius);
+    UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    if (GIsEditor && NavSys)
+    {
+        NavSys->OnNavigationBoundsUpdated(this);
+    }
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+    const float Interval = FMath::Max(MonsterData.SpawnTime, 1.f);
+    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APalMonsterSpawner::OnSpawnTick, Interval, true, Interval);
+
+    FVector SpawnLocation = GetActorLocation();
+    SpawnLocation.Z += 100.f;
+    APalBaseMonster* Spawned = GetWorld()->SpawnActor<APalBaseMonster>(MonsterData.MonsterClass, SpawnLocation, GetActorRotation(), Params);
+    if (!Spawned) 
+        return;
+
+    Spawned->OnDestroyed.AddUniqueDynamic(this, &APalMonsterSpawner::OnMonsterDead);
+    AliveMonsters.Add(Spawned);
+
+    const int32 Lv = FMath::RandRange(MonsterData.LvMin, MonsterData.LvMax);
+    Spawned->InitializeLevel(Lv, GetLevelData(Lv));
+
+}
+
+void APalMonsterSpawner::StopSpawnLoop()
+{
+    if (GetWorld())
+        GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+}
+
+void APalMonsterSpawner::OnSpawnTick()
+{
+    if (AliveMonsters.Num() >= TargetNum)
+        return;
+    if (!*MonsterData.MonsterClass)
+        return;
+
+    UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    if (!NavSys)
+        return;
+        FNavLocation SpawnLoc{};
+    if (!NavSys->GetRandomReachablePointInRadius(GetActorLocation(), SpawnRadius, SpawnLoc))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("APalMonsterSpawner::OnSpawnTick  No Location %s"), *SpawnLoc.Location.ToString());
+        return;
+    }
+
+    SpawnLoc.Location.Z += 100.f;     // 캐릭터 캡슐 띄우기
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+    APalBaseMonster* Spawned = GetWorld()->SpawnActor<APalBaseMonster>(
+        MonsterData.MonsterClass, SpawnLoc.Location, GetActorRotation(), Params);
+    if (!Spawned) return;
+
+    Spawned->OnDestroyed.AddUniqueDynamic(this, &APalMonsterSpawner::OnMonsterDead);
+    AliveMonsters.Add(Spawned);
+
+    const int32 Lv = FMath::RandRange(MonsterData.LvMin, MonsterData.LvMax);
+    Spawned->InitializeLevel(Lv, GetLevelData(Lv));
 }
 
 void APalMonsterSpawner::OnMonsterDead(AActor* DeadPal)
 {
-	ABaseMonster* Monster = Cast<ABaseMonster>(DeadPal);
-	if (Monster)
-	{
-		FName MonsterName = Monster->GetMonsterName();
-		TSet<TObjectPtr<AActor>>* SpawnSet = SpawnedMonsters.Find(MonsterName);
-		if (SpawnSet)
-		{
-			SpawnSet->Remove(Monster);
-		}
-		FSpawnListData* SpawnData = PalMonsterDataMap.Find(MonsterName);
-		if (SpawnData && GetWorld()->GetTimerManager().IsTimerPaused(SpawnData->SpawnTimerHandle))
-		{
-			GetWorld()->GetTimerManager().UnPauseTimer(SpawnData->SpawnTimerHandle);
-		}
-	}
+    if (APalBaseMonster* M = Cast<APalBaseMonster>(DeadPal))
+        AliveMonsters.Remove(M);
 }
 
-void APalMonsterSpawner::SetSpawnList(float RandSeed)
+FPalMonsterLevelData APalMonsterSpawner::GetLevelData(int32 Level) const
 {
-	SpawnerSeed = RandSeed;
-	if (MonsterDataTable)
-	{
-		TArray<FPalMonsterData*> MonsterDataRows{};
-		MonsterDataTable->GetAllRows<FPalMonsterData>(TEXT(""), MonsterDataRows);
-		for (const FPalMonsterData* MonsterDataRow : MonsterDataRows)
-		{
-			if (MonsterDataRow)
-			{
-				FSpawnListData& List = PalMonsterDataMap.Add(MonsterDataRow->MonsterName, {});
-				List.MonsterData = *MonsterDataRow;
-			}
-		}
-	}
-	for (auto& SpawnMap : PalMonsterDataMap)
-	{
-		FSpawnListData* SpawnData = &SpawnMap.Value;
-		FMath::RandInit(SpawnerSeed);
-		const FSpawnCharacterData* SpawnerData{};
-		if (UPalCharacterDataSubsystem::GetPalSpawnCharacterData(SpawnData->MonsterData.MonsterName, SpawnerData))
-		{
-			SpawnData->Num = FMath::RandRange(SpawnerData->NumMin, SpawnerData->NumMax);
-			SetSpawnTimer(SpawnMap.Key);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Spawn Character Data not found : %s"), *SpawnData->MonsterData.MonsterName.ToString());
-		}
-	}
+    if (!MonsterData.LevelDataTable) return {};
+
+    TArray<FPalMonsterLevelData*> Rows;
+    MonsterData.LevelDataTable->GetAllRows<FPalMonsterLevelData>(TEXT(""), Rows);
+    if (Rows.IsValidIndex(Level - 1))   return *Rows[Level - 1];
+    if (Rows.IsValidIndex(0))           return *Rows[0];
+    return {};
 }
-
-//void APalMonsterSpawner::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
-//{
-//	bIsSpawning = true;
-//}
-//
-//void APalMonsterSpawner::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
-//{
-//	bIsSpawning = false;
-//	for (auto& SpawnSet : SpawnedMonsters)
-//	{
-//		for (AActor* Monster : SpawnSet.Value)
-//		{
-//			Monster->Destroy();
-//		}
-//		SpawnSet.Value.Reset();
-//	}
-//	SpawnedMonsters.Reset();
-//}
-
-//void APalMonsterSpawner::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//}
-

@@ -1,14 +1,14 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Creature/Character/BaseMonster.h"
+#include "Pal/Character/PalBaseMonster.h"
 #include "BossMonster.generated.h"
 
 class UPalPatternComponent;
 class UPalMonsterInteractionComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API ABossMonster : public ABaseMonster
+class PROJECTOPENWORLD_API ABossMonster : public APalBaseMonster
 {
 	GENERATED_BODY()
 protected:

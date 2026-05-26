@@ -6,6 +6,9 @@
 #include "Pal/Component/PalAttackComponent.h"
 #include "GameBase/Component/StatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Pal/DataTable/PalMonsterData.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 APalBaseMonster::APalBaseMonster() : Super()
 {
@@ -16,6 +19,27 @@ APalBaseMonster::APalBaseMonster() : Super()
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
 	MonsterName = TEXT("Monster");
 	Level = 1;
+	SetCanAffectNavigationGeneration(false);
+	GetCapsuleComponent()->SetCanEverAffectNavigation(false);
+	//GetCapsuleComponent()->bDynamicObstacle = false;
+	GetMesh()->SetCanEverAffectNavigation(false);
+	//GetMesh()->bEnableUpdateRateOptimizations = true;
+	//GetMesh()->bDisplayDebugUpdateRateOptimizations = false;
+}
+
+void APalBaseMonster::InitializeLevel(int32 nLevel, FPalMonsterLevelData LevelData)
+{
+	Level = nLevel;
+	//StatComponent->SetMaxStat(LevelData.MaxHP, EStatusType::HP);
+	//StatComponent->StatBeginPlay(EStatusType::HP);
+}
+
+void APalBaseMonster::OnMoveSpeedChanged(double PreCurrentStat, double CurrentStat)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CurrentStat;
+	}
 }
 
 void APalBaseMonster::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -64,10 +88,12 @@ void APalBaseMonster::BeginPlay()
 			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(StatComponent, &UStatComponent::ReceiveDamage);
 		}
 	}
-	if (StatComponent && StatComponent->GetCurrentOnStatChanged(EStatusType::HP))
+	if (StatComponent)
 	{
 		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &APalBaseMonster::HPChanged);
+		StatComponent->GetCurrentOnStatChanged(EStatusType::MoveSpeed)->AddUniqueDynamic(this, &APalBaseMonster::OnMoveSpeedChanged);
 	}
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
 }
 
 void APalBaseMonster::HPChanged(double PreCurrentStat, double CurrentStat)

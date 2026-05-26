@@ -1,8 +1,8 @@
-#include "Pal/Widget/PalBox/PalInventorySlot.h"
+﻿#include "Pal/Widget/PalBox/PalInventorySlot.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/UniformGridSlot.h"
-#include "Creature/Character/BaseCreature.h"
+#include "Pal/Character/PalBaseCreature.h"
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 #include "Pal/Widget/PalBox/PalBoxWidget.h"
 #include "Blueprint/DragDropOperation.h"
@@ -24,7 +24,7 @@ void UPalInventorySlot::NativeConstruct()
 	}
 }
 
-void UPalInventorySlot::SetPalCreature(ABaseCreature* SelectedCreature)
+void UPalInventorySlot::SetPalCreature(APalBaseCreature* SelectedCreature)
 {
 	CurrentSelectedCreature = SelectedCreature;
 	SlotImage->SetColorAndOpacity({1,1,1,0});
@@ -32,7 +32,7 @@ void UPalInventorySlot::SetPalCreature(ABaseCreature* SelectedCreature)
 	{
 		if(SlotImage)
 		{
-			UTexture2D* IconDataRow = UPalCharacterDataSubsystem::GetPalCharacterIconByName(CurrentSelectedCreature->GetPalID());
+			UTexture2D* IconDataRow = UPalCharacterDataSubsystem::GetPalCharacterIconByName(CurrentSelectedCreature->GetPalName());
 			if (IconDataRow)
 			{
 				SlotImage->SetColorAndOpacity({1,1,1,1});

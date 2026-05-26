@@ -35,7 +35,7 @@
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
-ABasePlayer::ABasePlayer() : ABaseCharacter()
+ABasePlayer::ABasePlayer() : Super{}
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -182,6 +182,10 @@ void ABasePlayer::BeginPlay()
 		if (MainWidget)
 		{
 			MainWidget->AddToViewport();
+		}
+		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
+		{
+			_MainWidget->SetStatWidget(PlayerStatComponent);
 		}
 	}
 }
@@ -455,12 +459,12 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 	}
 	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
 	//GetStatus(EStatusType::Hp, Hp);
-	Damage = HPStat->AddCurrentStat(-Damage);
+	Damage = PlayerStatComponent->AddCurrentStat(-Damage, EStatusType::HP);
 	/*if (OnDamagedDelegate.IsBound())
 	{
 		OnDamagedDelegate.Broadcast(pOther, Damage);
 	}*/
-	if (HPStat->GetCurrentStat() <= 0.f)
+	if (PlayerStatComponent->GetCurrentStat(EStatusType::HP) <= 0.f)
 	{
 		PlayerAttackComponent->StopAttack();
 		PlayerAttackComponent->Attack(EPlayerAttackType::Dead);
@@ -836,7 +840,7 @@ void ABasePlayer::Restart()
 	{
 		bDead = false;
 		RemoveFromViewPort(GameOverWidget);
-		HPStat->SetCurrentStat(HPStat->GetMaxStat());
+		PlayerStatComponent->StatBeginPlay(EStatusType::HP);
 		if (PlayerAttackComponent)
 			PlayerAttackComponent->StopAttack();
 		EnableInput(Cast<APlayerController>(GetController()));

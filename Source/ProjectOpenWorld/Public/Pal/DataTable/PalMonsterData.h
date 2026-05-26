@@ -3,8 +3,11 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Pal/DataTable/PalWildSpawnerDatabaseRow.h"
+#include "Pal/Data/StatusData.h"
 #include "PalMonsterData.generated.h"
 
+enum class EStatusType : uint8;
+class APalBaseMonster;
 
 USTRUCT(BlueprintType)
 struct FPalMonsterPatrolData 
@@ -27,17 +30,8 @@ struct FPalMonsterLevelData : public FTableRowBase // Row Equl to Level
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
-	int32 MaxHP = 100;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
-	float AttackPower = 1.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
-	float Armor = 0.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
-	float MoveSpeed = 500.0f;
+	TMap<EStatusType, double> LevelStatusData{};
 };
-
-
-class APalBaseMonster;
 
 // Monster World Data
 USTRUCT(BlueprintType)

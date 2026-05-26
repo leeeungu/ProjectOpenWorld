@@ -28,6 +28,8 @@
 //},
 //"RespawnCoolTime" : 0.0
 
+class APalBaseMonster;
+
 USTRUCT(BlueprintType)
 struct FPalSpawnerPlacementDatabaseRow : public FTableRowBase
 {
@@ -43,7 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnerPlacement")
 	double StaticRadius = 0.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnerPlacement")
-	TSubclassOf<UObject> SpawnerClass;
+	TSubclassOf<APalBaseMonster> SpawnerClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnerPlacement")
 	float RespawnCoolTime = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnerPlacement")

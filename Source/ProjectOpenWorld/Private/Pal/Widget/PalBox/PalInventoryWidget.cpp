@@ -1,8 +1,8 @@
-#include "Pal/Widget/PalBox/PalInventoryWidget.h"
+﻿#include "Pal/Widget/PalBox/PalInventoryWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/TextBlock.h"
 #include "Pal/Widget/PalBox/PalInventorySlot.h"
-#include "Creature/Character/BaseCreature.h"
+#include "Pal/Character/PalBaseCreature.h"
 #include "Pal/Widget/PalBox/PalBoxWidget.h"
 
 void UPalInventoryWidget::NativeOnInitialized()
@@ -60,7 +60,7 @@ void UPalInventoryWidget::NativePreConstruct()
 	}
 }
 
-void UPalInventoryWidget::UpdatePalInventory(int InventoryIndex, TObjectPtr<ABaseCreature> NewPal)
+void UPalInventoryWidget::UpdatePalInventory(int InventoryIndex, TObjectPtr<APalBaseCreature> NewPal)
 {
 	int32 IndexRow = InventoryIndex / NumColumns;
 	int32 IndexCol = InventoryIndex % NumColumns;
@@ -68,7 +68,7 @@ void UPalInventoryWidget::UpdatePalInventory(int InventoryIndex, TObjectPtr<ABas
 	int32 SlotIndex = IndexRow * NumColumns + IndexCol;
 	if (UPalInventorySlot* SlotWidget = Cast<UPalInventorySlot>(PalBoxGridPanel->GetChildAt(SlotIndex)))
 	{
-		TObjectPtr<ABaseCreature> SelectedPal = nullptr;
+		TObjectPtr<APalBaseCreature> SelectedPal = nullptr;
 		if (ParentPalBoxWidget)
 		{
 			SelectedPal = ParentPalBoxWidget->GetPalInInventory(SlotIndex);
@@ -86,7 +86,7 @@ void UPalInventoryWidget::SetPalSlot()
 			int32 SlotIndex = IndexRow * NumColumns + IndexCol;
 			if (UPalInventorySlot* SlotWidget = Cast<UPalInventorySlot>(PalBoxGridPanel->GetChildAt(SlotIndex)))
 			{
-				TObjectPtr<ABaseCreature> SelectedPal = nullptr;
+				TObjectPtr<APalBaseCreature> SelectedPal = nullptr;
 				if (ParentPalBoxWidget)
 				{
 					SelectedPal = ParentPalBoxWidget->GetPalInInventory(SlotIndex);

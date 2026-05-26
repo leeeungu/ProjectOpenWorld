@@ -8,7 +8,6 @@
 
 class UTextBlock;
 class UProgressBar;
-class ABaseMonster;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalHpWidget_Boss : public UPalHpWidget
@@ -16,6 +15,8 @@ class PROJECTOPENWORLD_API UPalHpWidget_Boss : public UPalHpWidget
 	GENERATED_BODY()
 
 protected:
+	double MaxHP{};
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> HpProgressBar{};
 	UPROPERTY(meta = (BindWidget))
@@ -24,9 +25,7 @@ protected:
 	TObjectPtr < UTextBlock> MonsterLevel{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr < UTextBlock> MonsterHPText{};
-	TObjectPtr < ABaseMonster> OwnerMonster{};
-protected:
-	virtual void OnDamageEvent(AActor* Other, float Damage) override;
 public:
-	virtual  void InitializeHPWidget(ABaseCharacter* OwnerCharacter) override;
+	virtual void OnHPChanged(double PreStat, double CurStat) override;
+	virtual void InitializeHPWidget(FName PalID, int32 Level, double CurStat, double _MaxHP) override;
 };
