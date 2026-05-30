@@ -14,8 +14,17 @@ class UWidgetComponent;
 class ABasePlayer;
 class UPalHitHandlerComponent;
 
-UCLASS()
-class PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalCommandInterface, public ICommanderManageable, public IPlayerDetectInterface
+// APalBaseMonster 로이전으로 인한 메크로 설정
+UCLASS(
+	Abstract,                  // SpawnActor / NewObject 불가
+	NotBlueprintable,          // BP 자식 클래스 못 만듦
+	NotPlaceable,              // 레벨 드래그 배치 못함
+	HideDropdown,              // 클래스 드롭다운에서 숨김
+	meta = (
+		DeprecationMessage = "Use APalBaseMonster instead. This class will be removed."
+		)
+)
+class [[deprecated("Use APalBaseMonster instead")]] PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalCommandInterface, public ICommanderManageable, public IPlayerDetectInterface
 {
 	GENERATED_BODY()
 protected:

@@ -2,6 +2,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
+#include "GameBase/Component/StatComponent.h"
 
 // ── 라이프사이클 ─────────────────────────────────────────────────────────────
 
@@ -27,8 +28,10 @@ void UStatusBarWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
     const float Alpha = FMath::Clamp(Elapsed / TransitionDuration, 0.0f, 1.0f);
     DisplayRatio = FMath::Lerp(StartRatio, TargetRatio, Alpha);
 
-    if(ActiveBar)
+    if (ActiveBar)
+    {
         ActiveBar->SetPercent(DisplayRatio);   // Paint 무효화만 발생
+    }
 
     if (Alpha >= 1.0f)
     {
@@ -78,7 +81,7 @@ void UStatusBarWidget::OnCurrentStatusChanged(double PreCurrentStat, double InCu
     }
 
     BeginTransition(CurrentStat, bSegChanged && bIsDamage);
-
+    /*
 #if WITH_EDITOR
     if (bDebugLog && GEngine)
     {
@@ -94,11 +97,28 @@ void UStatusBarWidget::OnCurrentStatusChanged(double PreCurrentStat, double InCu
             bIsDamage ? FColor::Red : FColor::Green, Msg);
     }
 #endif
+    */
 }
 
 void UStatusBarWidget::OnMaxStatusChanged(double PreMaxStat, double InMaxStat)
 {
     SetInitial(CurrentStat, InMaxStat);
+}
+
+void UStatusBarWidget::BindStatWidget(UStatComponent* StatCom, EStatusType StatusType)
+{
+    if (!StatCom)
+        return;
+    StatCom->GetCurrentOnStatChanged(StatusType)->AddUniqueDynamic(this, &UStatusBarWidget::OnCurrentStatusChanged);
+    StatCom->GetMaxOnStatChanged(StatusType)->AddUniqueDynamic(this, &UStatusBarWidget::OnMaxStatusChanged);
+}
+
+void UStatusBarWidget::UnBindStatWidget(UStatComponent* StatCom, EStatusType StatusType)
+{
+    if (!StatCom)
+        return;
+    StatCom->GetCurrentOnStatChanged(StatusType)->RemoveDynamic(this, &UStatusBarWidget::OnCurrentStatusChanged);
+    StatCom->GetMaxOnStatChanged(StatusType)->RemoveDynamic(this, &UStatusBarWidget::OnMaxStatusChanged);
 }
 
 // ── 내부 ─────────────────────────────────────────────────────────────────────
@@ -109,12 +129,10 @@ void UStatusBarWidget::InitBars()
         return;
     BarOverlay->ClearChildren();
 
-    auto AddFill = [this](UProgressBar* Bar)
-        {
-            if (Bar)
+    auto AddFill = [this](UProgressBar* Bar) {
+        if (Bar)
             {
                 Bar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(FLinearColor(0.f, 0.f, 0.f, 0.f));
-                Bar->SetPercent(0.8f);
                 if (UOverlaySlot* Slot = BarOverlay->AddChildToOverlay(Bar))
                 {
                     Slot->SetHorizontalAlignment(HAlign_Fill);
@@ -126,7 +144,7 @@ void UStatusBarWidget::InitBars()
     AddFill(PreviewBar);  
     AddFill(ActiveBar);   
 
-    if(ActiveBar)
+    if (ActiveBar)
         ActiveBar->SetFillColorAndOpacity(SafeColor(0));
     if(PreviewBar)
         PreviewBar->SetFillColorAndOpacity(SafeColor(1));
@@ -135,7 +153,7 @@ void UStatusBarWidget::InitBars()
 void UStatusBarWidget::SwapColors(int32 InSegIdx)
 {
     // 두 줄의 SetFillColorAndOpacity → Paint 무효화만, Layout 무효화 없음
-    if (!ActiveBar || !PreviewBar || bSwapColors)
+    if (!ActiveBar || !PreviewBar || !bSwapColors)
         return;
     ActiveBar->SetFillColorAndOpacity(SafeColor(InSegIdx));
     PreviewBar->SetFillColorAndOpacity(SafeColor(InSegIdx + 1));
@@ -161,7 +179,9 @@ FLinearColor UStatusBarWidget::SafeColor(int32 Idx) const
 
 int32 UStatusBarWidget::CalcSegIdx(double Stat) const
 {
-    const int32 N = SegmentColors.Num();
+    int32 N = 0;
+    if (bSwapColors)
+        N = SegmentColors.Num();
     if (N == 0 || MaxStat <= 0.0)
         return 0;
     return FMath::Clamp(FMath::FloorToInt((MaxStat - Stat) / (MaxStat / N)), 0, N - 1);
@@ -169,10 +189,12 @@ int32 UStatusBarWidget::CalcSegIdx(double Stat) const
 
 float UStatusBarWidget::CalcIntraRatio(double Stat, int32 Idx) const
 {
-    const int32 N = SegmentColors.Num();
-    if (N == 0 || MaxStat <= 0.0) return 1.0f;
+    int32 N = 1;
+    if (bSwapColors)
+        N = SegmentColors.Num();
+    if (N == 0 || MaxStat <= 0.0)
+        return 1.0f;
     const double PerSeg = MaxStat / N;
     const double SegMin = MaxStat - (Idx + 1) * PerSeg;
-    return FMath::Clamp(
-        static_cast<float>((Stat - SegMin) / PerSeg), 0.0f, 1.0f);
+    return FMath::Clamp(static_cast<float>((Stat - SegMin) / PerSeg), 0.0f, 1.0f);
 }

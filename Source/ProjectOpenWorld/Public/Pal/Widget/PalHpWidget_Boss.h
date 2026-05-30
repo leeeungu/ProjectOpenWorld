@@ -26,6 +26,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr < UTextBlock> MonsterHPText{};
 public:
-	virtual void OnHPChanged(double PreStat, double CurStat) override;
+	void OnHPChanged(double PreStat, double CurStat) ;
+
+	virtual void SetStatWidget(UStatComponent* StatCom) {}
 	virtual void InitializeHPWidget(FName PalID, int32 Level, double CurStat, double _MaxHP) override;
 };

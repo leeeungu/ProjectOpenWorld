@@ -8,5 +8,6 @@ void UPalHitHandlerComponent::BeginPlay()
 
 void UPalHitHandlerComponent::TakeDamage(const FPalDamagePayload& Payload)
 {
+	// damage 계산?
 	OnDamageTaken.Broadcast(Payload);
 }

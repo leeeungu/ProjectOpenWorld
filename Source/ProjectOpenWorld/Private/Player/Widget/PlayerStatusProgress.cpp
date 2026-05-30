@@ -14,6 +14,9 @@ void UPlayerStatusProgress::NativePreConstruct()
 	if (StatusBarWidget)
 	{
 		StatusBarWidget->SetColor(0, ProgressColor);
+		FLinearColor BackProgressColor = ProgressColor;
+		BackProgressColor.A = 0.3;
+		StatusBarWidget->SetColor(1, BackProgressColor);
 	}
 }
 
@@ -41,16 +44,14 @@ void UPlayerStatusProgress::BindStat()
 	{
 		if (StatusBarWidget)
 		{
-			PlayerStatCom->GetCurrentOnStatChanged(StatusType)->AddUniqueDynamic(StatusBarWidget, &UStatusBarWidget::OnCurrentStatusChanged);
-			PlayerStatCom->GetMaxOnStatChanged(StatusType)->AddUniqueDynamic(StatusBarWidget, &UStatusBarWidget::OnMaxStatusChanged);
 			StatusBarWidget->SetInitial(PlayerStatCom->GetCurrentStat(StatusType), PlayerStatCom->GetMaxStat(StatusType));
+			StatusBarWidget->BindStatWidget(PlayerStatCom.Get(), StatusType);
 		}
 
 		if (StatusText)
 		{
-			PlayerStatCom->GetCurrentOnStatChanged(StatusType)->AddUniqueDynamic(StatusText, &UStatusTextBlock::OnCurrentStatusChanged);
-			PlayerStatCom->GetMaxOnStatChanged(StatusType)->AddUniqueDynamic(StatusText, &UStatusTextBlock::OnMaxStatusChanged);
 			StatusText->SetInitial(PlayerStatCom->GetCurrentStat(StatusType), PlayerStatCom->GetMaxStat(StatusType));
+			StatusText->BindStatWidget(PlayerStatCom.Get(), StatusType);
 		}
 	}
 }
@@ -61,14 +62,12 @@ void UPlayerStatusProgress::UnBindStat()
 	{
 		if (StatusBarWidget)
 		{
-			PlayerStatCom->GetCurrentOnStatChanged(StatusType)->RemoveDynamic(StatusBarWidget, &UStatusBarWidget::OnCurrentStatusChanged);
-			PlayerStatCom->GetMaxOnStatChanged(StatusType)->RemoveDynamic(StatusBarWidget, &UStatusBarWidget::OnMaxStatusChanged);
+			StatusBarWidget->UnBindStatWidget(PlayerStatCom.Get(), StatusType);
 		}
 
 		if (StatusText)
 		{
-			PlayerStatCom->GetCurrentOnStatChanged(StatusType)->RemoveDynamic(StatusText, &UStatusTextBlock::OnCurrentStatusChanged);
-			PlayerStatCom->GetMaxOnStatChanged(StatusType)->RemoveDynamic(StatusText, &UStatusTextBlock::OnMaxStatusChanged);
+			StatusText->UnBindStatWidget(PlayerStatCom.Get(), StatusType);
 		}
 	}
 }

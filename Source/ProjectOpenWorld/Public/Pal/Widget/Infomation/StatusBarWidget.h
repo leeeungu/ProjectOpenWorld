@@ -6,6 +6,8 @@
 
 class UProgressBar;
 class UOverlay;
+class UStatComponent;
+enum class EStatusType :uint8;
 
 UCLASS(BlueprintType)
 class PROJECTOPENWORLD_API UStatusBarWidget : public UUserWidget
@@ -22,6 +24,8 @@ public:
     UFUNCTION()
     void OnMaxStatusChanged(double PreMaxStat, double InMaxStat);
 
+    void BindStatWidget(UStatComponent* StatCom, EStatusType StatusType);
+    void UnBindStatWidget(UStatComponent* StatCom, EStatusType StatusType);
 protected:
     /** 인덱스 0이 가장 먼저 소모. 순서가 곧 디자인 */
     UPROPERTY(EditAnywhere, Category = "Status|Config")

@@ -253,9 +253,10 @@ void ABasePlayer::UnEquip(USkeletalMesh* OldMesh)
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 {
-	if (StatusArray.IsValidIndex((uint8)StatusType))
+	if (PlayerStatComponent)
 	{
-		StatusArray[(uint8)StatusType] = Value;
+		PlayerStatComponent->SetCurrentStat(Value, StatusType);
+
 	}
 }
 

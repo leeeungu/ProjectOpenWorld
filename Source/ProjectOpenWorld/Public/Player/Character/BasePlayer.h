@@ -101,9 +101,6 @@ protected:
 	TObjectPtr<UInteractionComponent> InteractionComponent{};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
-	TArray<float> StatusArray{};
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
 	UAnimMontage* ClimbMontage{};
 
 	//void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
@@ -192,6 +189,7 @@ public:
 	FORCEINLINE EPlayerState GetPlayerState() const { return CurrentPlayerState; }  //
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE  USpringArmComponent* const  GetCameraBoom() const { return CameraBoom; }
+	UStatComponent* GetPlayerStatComponent() const { return PlayerStatComponent; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
@@ -212,10 +210,6 @@ public:
 
 	void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName  = NAME_None);
 	void UnEquip(USkeletalMesh* OldMesh);
-
-	FORCEINLINE  float* GetStatusRef(EStatusType StatusType) {
-		return  StatusArray.IsValidIndex((uint8)StatusType) ? &StatusArray[(uint8)StatusType] : &StatusArray[0];
-	} 
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void SetStatus(EStatusType StatusType, float Value);

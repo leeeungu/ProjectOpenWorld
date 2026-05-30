@@ -6,6 +6,7 @@
 #include "Player/Controller/BasePlayerController.h"
 #include "Inventory/Widget/EquipSlotWidget.h"
 #include "Inventory/Widget/InventorySlotBase.h"
+#include "Player/Widget/PlayerStatusWidget.h"
 
 bool UPlayerInventoryWidget::SetMainWidget()
 {
@@ -62,5 +63,14 @@ void UPlayerInventoryWidget::UpdatEquipSlot()
 		AxeSlot->SetSlotPtr(inventoryComponent->GetEquipSlot(EItemSlotType::Axe));
 		HeadEquipSlot->SetSlotPtr(inventoryComponent->GetEquipSlot(EItemSlotType::HeadEquip));
 		BodyEquipSlot->SetSlotPtr(inventoryComponent->GetEquipSlot(EItemSlotType::BodyEquip));
+	}
+}
+
+
+void UPlayerInventoryWidget::SetStatWidget(UStatComponent* StatCom)
+{
+	if (PlayerStatusWidget)
+	{
+		PlayerStatusWidget->SetStatWidget(StatCom);
 	}
 }

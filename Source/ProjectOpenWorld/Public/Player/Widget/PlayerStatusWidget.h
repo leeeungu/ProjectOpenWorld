@@ -6,20 +6,13 @@
 
 class UPlayerStatusSlot;
 class UPlayerStatusProgress;
+class UStatComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerStatusWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	enum EStatusProgressType
-	{
-		ProgressNone,
-		Hp,
-		Shield,
-		Health,
-		ProgressMax
-	};
 	enum EStatusSlotType
 	{
 		SlotNone,
@@ -53,11 +46,8 @@ protected:
 	TObjectPtr<UPlayerStatusSlot> SlotMaxWeight{};
 
 public:
-	UPlayerStatusWidget(const FObjectInitializer& ObjectInitializer);
-
-	void SetStatusProgress(EStatusProgressType StatusType, float& Value, float& MaxValue);
 	void SetStatusSlot(EStatusSlotType StatusType, float& Value);
-
+	void SetStatWidget(UStatComponent* StatCom);
 protected:
 	virtual void NativeConstruct() override;
 };

@@ -1,4 +1,4 @@
-#include "Player/Controller/BasePlayerController.h"
+﻿#include "Player/Controller/BasePlayerController.h"
 #include "Inventory/Component/InventoryComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Player/Widget/PlayerInventoryWidget.h"
@@ -33,6 +33,18 @@ void ABasePlayerController::BeginPlay()
 	if (InventoryWidgetClass)
 	{
 		InventoryWidget = CreateWidget<UPlayerInventoryWidget>(this, InventoryWidgetClass);
+		if (InventoryWidget)
+		{
+			ABasePlayer* PlayerCharacter = Cast< ABasePlayer>(GetPawn());
+			if (PlayerCharacter)
+			{
+				InventoryWidget->SetStatWidget(PlayerCharacter->GetPlayerStatComponent());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ABasePlayerController::beginplay NoPwan"));
+			}
+		}
 	}
 }
 

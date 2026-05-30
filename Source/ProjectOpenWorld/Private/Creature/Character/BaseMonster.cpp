@@ -27,16 +27,16 @@ ABaseMonster::ABaseMonster() : ABaseCharacter{}
 	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
 
 	//Script/UMGEditor.WidgetBlueprint'/Game/Pal/Widget/WBP_PalMonsterHP.WBP_PalMonsterHP'
-	static ConstructorHelpers::FClassFinder<UPalHpWidget_MonsterDefault> HpWidgetClass(TEXT("/Game/Pal/Widget/WBP_PalMonsterHP"));
-	if (HpWidgetClass.Succeeded())
-	{
-		HpWidgetComponent->SetWidgetClass(HpWidgetClass.Class);
-		UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
-		if (HpWidget)
-		{
-			//HpWidget->InitializeHPWidget(this);
-		}
-	}
+	//static ConstructorHelpers::FClassFinder<UPalHpWidget_MonsterDefault> HpWidgetClass(TEXT("/Game/Pal/Widget/WBP_PalMonsterHP"));
+	//if (HpWidgetClass.Succeeded())
+	//{
+	//	HpWidgetComponent->SetWidgetClass(HpWidgetClass.Class);
+	//	UPalHpWidget_MonsterDefault* HpWidget = Cast<UPalHpWidget_MonsterDefault>(HpWidgetComponent->GetUserWidgetObject());
+	//	if (HpWidget)
+	//	{
+	//		//HpWidget->InitializeHPWidget(this);
+	//	}
+	//}
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
 	HpWidgetComponent->SetTickMode(ETickMode::Enabled);
 	HpWidgetComponent->SetupAttachment(GetRootComponent());
