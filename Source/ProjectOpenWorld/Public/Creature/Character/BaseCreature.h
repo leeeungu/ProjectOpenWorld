@@ -27,7 +27,7 @@ UCLASS(
 		DeprecationMessage = "Use APalBaseCreature instead. This class will be removed."
 		)
 )
-class [[deprecated("Use APalBaseCreature instead")]] PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter,
+class  PROJECTOPENWORLD_API ABaseCreature : public ABaseCharacter,
 	public IPalCommandInterface,
 	public IResourceInterface, public IArchitectureInterface, public IPlayerDetectInterface
 {

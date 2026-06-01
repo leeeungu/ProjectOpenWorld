@@ -20,19 +20,25 @@ void UGenerateSpawnerComponent::BeginPlay()
 
 void UGenerateSpawnerComponent::StartGenerateWorld(bool bEditor)
 {
+    if (!GetWorld()->HasBegunPlay())
+        return;
+
     Super::StartGenerateWorld(bEditor);
     EnsureRowsCached();   // 에디터 프리뷰 경로 보장
 }
 
 void UGenerateSpawnerComponent::NewGenerateWorld(const FGenerateSectionData& SectionData)
 {
-    if (!SectionData.Vertices || SectionData.Vertices->Num() <= 1)
+    if (!SectionData.Vertices || SectionData.Vertices->Num() <= 1 || !GetWorld()->HasBegunPlay())
         return;
     BuildCandidatesForSection(SectionData);
 }
 
 void UGenerateSpawnerComponent::DelGenerateWorld(const FGenerateSectionData& SectionData)
 {
+    if (!GetWorld()->HasBegunPlay())
+        return;
+
     // 6x6 에서 빠진 섹션: 활성이었으면 디스폰 + 후보 제거
     DeactivateSection(SectionData.SectionID);
     SectionSpawnerMap.Remove(SectionData.SectionID);
@@ -41,12 +47,11 @@ void UGenerateSpawnerComponent::DelGenerateWorld(const FGenerateSectionData& Sec
 
 void UGenerateSpawnerComponent::FinishGenerateWorld()
 {
+    if (!GetWorld()->HasBegunPlay())
+        return;
     Super::FinishGenerateWorld();
     UpdateActiveRing();
 }
-
-// ──────────────────────────────────────────────────────────────────────────────
-
 
 void UGenerateSpawnerComponent::EnsureRowsCached()
 {
@@ -104,7 +109,7 @@ void UGenerateSpawnerComponent::BuildCandidatesForSection(const FGenerateSection
 
             FSpawnerCandidate C;
             C.Location = V;
-            C.SpawnerDt = DT;
+            C.SpawnerDt = Row;
             Section.Candidates.Add(C);
         }
     }
@@ -114,8 +119,6 @@ void UGenerateSpawnerComponent::UpdateActiveRing()
 {
     // 에디터 프리뷰에선 캐릭터 활성 안 함 (후보만 보임)
     if (!GeneratorSectionComponent)
-        return;
-    if (!GetWorld() || !GetWorld()->HasBegunPlay())
         return;
 
     const FIntPoint Player = GeneratorSectionComponent->GetPlayerSection();
@@ -159,8 +162,10 @@ void UGenerateSpawnerComponent::ActivateSection(const FIntPoint& ID)
 
     for (FSpawnerCandidate& C : Data->Candidates)
     {
-        if (!C.ActiveSpawner && C.SpawnerDt)
-            C.ActiveSpawner = AcquireSpawner(C.SpawnerDt, C.Location);
+        if (!C.ActiveSpawner && C.SpawnerDt && C.SpawnerDt->SpawnerDt.IsValid())
+        {
+            C.ActiveSpawner = AcquireSpawner(C.SpawnerDt->SpawnerDt.LoadSynchronous(), C.Location);
+        }
     }
 }
 
@@ -200,9 +205,10 @@ APalMonsterSpawner* UGenerateSpawnerComponent::AcquireSpawner(UDataTable* Dt, co
     }
 
     FTransform T(FRotator::ZeroRotator, Loc);
+
     APalMonsterSpawner* S = GetWorld()->SpawnActorDeferred<APalMonsterSpawner>(
         APalMonsterSpawner::StaticClass(), T, GetOwner(), nullptr,
-        ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
     if (S)
     {
         S->Initialize(Dt);                          // ★ FinishSpawning 전에 DT 주입

@@ -42,4 +42,5 @@ public:
 	bool IsDead() const;
 
 	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const { return nullptr; }
+	virtual UPalAttackComponent* GetPalAttackComponent() const { return nullptr; }
 };

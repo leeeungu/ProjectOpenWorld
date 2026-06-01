@@ -17,12 +17,10 @@ struct FSpawnerCandidate
     UPROPERTY(VisibleAnywhere, Category = "Spawner")
     FVector Location = FVector::ZeroVector;
 
-    /** 활성 시 spawner 에 주입할 DT (펠 모스터 데이터). 미리 LoadSynchronous 된 hard 포인터. */
-    UPROPERTY(VisibleAnywhere, Category = "Spawner")
-    TObjectPtr<UDataTable> SpawnerDt = nullptr;
-
     UPROPERTY(VisibleAnywhere, Category = "Spawner")
     TObjectPtr<APalMonsterSpawner> ActiveSpawner = nullptr;
+
+    const FPalSpawnHabitatRow* SpawnerDt{};
 };
 
 USTRUCT()
@@ -93,9 +91,8 @@ protected:
     bool bDebugDraw = false;
 
     /** 섹션별 후보 + 활성 상태. (6x6 영역 안의 섹션만 들어 있음) */
-    UPROPERTY(VisibleAnywhere, Category = "Spawner")
-    TMap<FIntPoint, FSpawnerSectionData> SectionSpawnerMap;
-
+    UPROPERTY(VisibleDefaultsOnly, Category = "Spawner")
+    TMap<FIntPoint, FSpawnerSectionData> SectionSpawnerMap{};
 private:
     /** 현재 ring (디스폰/스폰 diff 계산용) */
     TSet<FIntPoint> ActiveSectionSet;

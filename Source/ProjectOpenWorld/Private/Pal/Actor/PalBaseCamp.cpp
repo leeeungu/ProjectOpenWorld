@@ -1,4 +1,4 @@
-#include "Pal/Actor/PalBaseCamp.h"
+﻿#include "Pal/Actor/PalBaseCamp.h"
 #include "Pal/Component/PalCommanderComponent.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -65,9 +65,13 @@ void APalBaseCamp::BeginPlay()
 		GetWorld(),
 		GetActorLocation(), GetActorLocation(), CampBounds->GetScaledSphereRadius(), arQuery,
 		false, IgnoreActors, EDrawDebugTrace::Type::None, arHitted, true);
+	if (PalCommander)
+	{
+
 	for(FHitResult& hit : arHitted)
 	{
 		PalCommander->RegisterWork(hit.GetActor());
+	}
 	}
 }
 
@@ -100,7 +104,8 @@ bool APalBaseCamp::SpawnPal(AActor* Spawned)
 
 	Spawned->SetActorTransform(SpawnComponent->GetComponentTransform());
 	Spawned->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
-	PalCommander->StorePal(Spawned);
+	if(PalCommander)
+		PalCommander->StorePal(Spawned);
 	return true;
 }
 
@@ -108,7 +113,8 @@ void APalBaseCamp::DeSpawnPal(AActor* DeSpawned)
 {
 	if (!DeSpawned)
 		return ;
-	PalCommander->RemovePal(DeSpawned);
+	if(PalCommander)
+		PalCommander->RemovePal(DeSpawned);
 }
 
 void APalBaseCamp::StorePalClass(TSubclassOf<AActor> NewPal, int Index)
@@ -133,6 +139,7 @@ void APalBaseCamp::PalDead(AActor* DeadPal)
 
 void APalBaseCamp::WorkDestory(AActor* DeadPal)
 {
+	if(PalCommander)
 	PalCommander->UnRegisterWork(DeadPal);
 
 }
@@ -140,12 +147,16 @@ void APalBaseCamp::WorkDestory(AActor* DeadPal)
 void APalBaseCamp::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
 	PalStore->ShowAllSpawnedPals();
+	if(PalCommander)
 	PalCommander->SetComponentTickEnabled(true);
 }
 
 void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	PalCommander->SetComponentTickEnabled(false);
-	PalCommander->StopAllPal();
+	if (PalCommander)
+	{
+		PalCommander->SetComponentTickEnabled(false);
+		PalCommander->StopAllPal();
+	}
 	PalStore->HideAllSpawnedPals();
 }

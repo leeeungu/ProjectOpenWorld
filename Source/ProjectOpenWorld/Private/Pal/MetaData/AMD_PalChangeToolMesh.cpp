@@ -2,10 +2,12 @@
 #include "Pal/Character/PalBaseCreature.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/UnrealType.h"
+#if WITH_EDITOR
 #include "IAnimationEditor.h"
 #include "IPersonaPreviewScene.h"
 #include "IPersonaToolkit.h"
 #include "Animation/DebugSkelMeshComponent.h"
+#endif
 
 #if WITH_EDITOR
 void UAMD_PalChangeToolMesh::PostLoad()

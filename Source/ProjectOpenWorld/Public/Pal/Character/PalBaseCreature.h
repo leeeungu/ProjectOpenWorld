@@ -65,7 +65,7 @@ public:
 	virtual void  RetAttackValue_Implementation() override {}
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override { return true; }
 	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const override { return HitHandlerComponent; }
-
+	virtual UPalAttackComponent* GetPalAttackComponent() const { return AttackComponent; }
 
 	// IPalWorkerInterface
 	virtual void StartWorking() override;

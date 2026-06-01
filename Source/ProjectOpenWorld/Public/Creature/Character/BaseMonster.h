@@ -24,7 +24,7 @@ UCLASS(
 		DeprecationMessage = "Use APalBaseMonster instead. This class will be removed."
 		)
 )
-class [[deprecated("Use APalBaseMonster instead")]] PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalCommandInterface, public ICommanderManageable, public IPlayerDetectInterface
+class  PROJECTOPENWORLD_API ABaseMonster : public ABaseCharacter, public IPalCommandInterface, public ICommanderManageable, public IPlayerDetectInterface
 {
 	GENERATED_BODY()
 protected:

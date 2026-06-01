@@ -164,15 +164,11 @@ void APalBaseCreature::BeginPlay()
 			JobComponent->OnWorkEnd.AddUObject(this, &APalBaseCreature::OnEndTransport);
 		}
 	}
-
-	//if (AttackComponent)
-	//{
-	//	AttackComponent->OnPalAttackEnd.AddUniqueDynamic(this, &APalBaseCreature::OnAttackEnd);
-	//}
 }
 
 void APalBaseCreature::HPChanged(double PreCurrentStat, double CurrentStat)
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s Hitted %f"), *GetName(), CurrentStat);
 	if (CurrentStat <= 0)
 	{
 		AttackComponent->StopAttack();

@@ -1,5 +1,5 @@
-#include "Pal/Component/PalStorageComponent.h"
-#include "Creature/Character/BaseCreature.h"
+﻿#include "Pal/Component/PalStorageComponent.h"
+#include "Pal/Character/PalBaseCreature.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Actor/PalBaseCamp.h"
 
@@ -54,7 +54,7 @@ bool UPalStorageComponent::StorePal(FPalStoreInventoryData NewPal)
 		PalStorage[i] = SpawnedActor;
 		SpawnedActor->SetActorHiddenInGame(true);
 		SpawnedActor->SetActorTickEnabled(false);
-		ABaseCreature* pCreature = Cast<ABaseCreature>(SpawnedActor);
+		APalBaseCreature* pCreature = Cast<APalBaseCreature>(SpawnedActor);
 		if (pCreature)
 		{
 			pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
@@ -88,7 +88,7 @@ AActor* UPalStorageComponent::SpawnPal(int InventoryIndex, int SpawnIndex)
 	{
 		PalToSpawn->SetActorHiddenInGame(false);
 		PalToSpawn->SetActorTickEnabled(true);
-		ABaseCreature* pCreature = Cast<ABaseCreature>(PalToSpawn);
+		APalBaseCreature* pCreature = Cast<APalBaseCreature>(PalToSpawn);
 		if (pCreature)
 		{
 			pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
@@ -121,10 +121,10 @@ void UPalStorageComponent::DeSpawnPal(int InventoryIndex, int SpawnIndex)
 	{
 		PalToDeSpawn->SetActorHiddenInGame(true);
 		PalToDeSpawn->SetActorTickEnabled(false);
-		ABaseCreature* pCreature = Cast<ABaseCreature>(PalToDeSpawn);
+		APalBaseCreature* pCreature = Cast<APalBaseCreature>(PalToDeSpawn);
 		if (pCreature)
 		{
-			pCreature->SetActionStarted(false);
+			//pCreature->SetActionStarted(false);
 			pCreature->StopAnimMontage();
 			pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 		}
@@ -204,10 +204,10 @@ void UPalStorageComponent::HideAllSpawnedPals()
 		{
 			Pal->SetActorHiddenInGame(true);
 			Pal->SetActorTickEnabled(false);
-			ABaseCreature * pCreature = Cast<ABaseCreature>(Pal);
+			APalBaseCreature* pCreature = Cast<APalBaseCreature>(Pal);
 			if (pCreature)
 			{
-				pCreature->SetActionStarted(false);
+				//pCreature->SetActionStarted(false);
 				pCreature->StopAnimMontage();
 				pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 			}
