@@ -33,6 +33,7 @@ class UPlayerEquipComponent;
 class UItemUseComponent;
 class UEquipmentComponent;
 class UPlayerEquipVisualComponent;
+class UPalHitHandlerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -101,7 +102,7 @@ protected:
 	TObjectPtr<UInteractionComponent> InteractionComponent{};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
-	UAnimMontage* ClimbMontage{};
+	TObjectPtr<UAnimMontage> ClimbMontage{};
 
 	//void (ABasePlayer::*PlayerMoveFunc)(const FInputActionValue&);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -132,6 +133,9 @@ protected:
 	TObjectPtr<UUserWidget> MainWidget{};
 
 	bool bDead{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	TObjectPtr<UPalHitHandlerComponent> HitHandlerComponent{};
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "PlayerState")
 	FOnPlayerStateChange OnStateChangeDelegate{};
@@ -174,7 +178,7 @@ protected:
 	UFUNCTION()
 	void KnockBackReset();
 	///** Called for movement input */
-	void MoveClimb(const FInputActionValue& Value);
+	void MoveClimb(const FInputActionValue& Value) {}
 	//void MoveTravel(const FInputActionValue& Value);
 	virtual void PossessedBy(AController* NewController) override;
 protected:
@@ -196,6 +200,11 @@ public:
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
+	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const override { return HitHandlerComponent; }
+
+	UFUNCTION()
+	void OnHPChanged(double PreCurrentStat, double CurrentStat);
+
 	//FORCEINLINE UMonsterSpawnerComponent* const GetMonsterSpawnerComponent() const { return MonsterSpawnerComponent; }
 	FORCEINLINE UItemUseComponent* const GetPlayerItemUseComponent() const { return PlayerItemUseComponent; }
 	UEquipmentComponent* const GetPlayerEquipComponent() const;
@@ -225,7 +234,7 @@ public:
 
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;
-	virtual void  RetAttackValue_Implementation() override;
+	virtual void  RetAttackValue_Implementation() {}
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 	virtual bool IsDead_Implementation() const override;
 	virtual bool KnockBackAttack_Implementation(const TScriptInterface< IAttackInterface>& Other) override;

@@ -32,6 +32,8 @@
 #include "Item/Component/ItemUseComponent.h"
 #include "Player/Component/PlayerEquipVisualComponent.h"
 #include "Inventory/Component/InventoryComponent.h"
+#include "Pal/Component/PalHitHandlerComponent.h"
+#include "Pal/Data/PalDamageType.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -114,6 +116,7 @@ ABasePlayer::ABasePlayer() : Super{}
 	LeftHandEquipComponent->SetupAttachment(GetMesh());
 
 	PlayerStatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("PlayerStatComponent"));
+	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
 }
 
 void ABasePlayer::Tick(float DeltaTime)
@@ -168,6 +171,18 @@ void ABasePlayer::BeginPlay()
 		GameOverWidget = CreateWidget<UPlayerGameOver>(PlayerController, GameOverWidgetClass);
 	}
 
+	if (HitHandlerComponent && PlayerStatComponent)
+	{
+		HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(PlayerStatComponent, &UStatComponent::ReceiveDamage);
+	}
+	if (PlayerStatComponent)
+	{
+		if (FOnStatChanged* HpChanged = PlayerStatComponent->GetCurrentOnStatChanged(EStatusType::HP))
+		{
+			HpChanged->AddUniqueDynamic(this, &ABasePlayer::OnHPChanged);
+		}
+	}
+
 	//SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
 	//HPStat->SetCurrentStat(*GetStatusRef(EStatusType::MaxHp));
 	//HPStat->SetMaxStat(*GetStatusRef(EStatusType::MaxHp));
@@ -188,6 +203,8 @@ void ABasePlayer::BeginPlay()
 			_MainWidget->SetStatWidget(PlayerStatComponent);
 		}
 	}
+
+
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
@@ -444,45 +461,35 @@ void ABasePlayer::SetAttackValue_Implementation(float NewValue)
 	SetStatus(EStatusType::Attack, NewValue);
 }
 
-void ABasePlayer::RetAttackValue_Implementation()
-{
-}
-
 bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttackInterface>& Other)
 {
-	if (!Other || !Other.GetObject() || bDead)
-		return false;
-	APawn* pOther = Cast < APawn>(Other.GetObject());
-	if (pOther  && FGenericTeamId::GetAttitude(GetController(), pOther->GetController()) == ETeamAttitude::Friendly)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Friendly Fire Disabled"));
-		return false;
-	}
-	float Damage = IAttackInterface::Execute_GetAttackValue(Other.GetObject());
-	//GetStatus(EStatusType::Hp, Hp);
-	Damage = PlayerStatComponent->AddCurrentStat(-Damage, EStatusType::HP);
-	/*if (OnDamagedDelegate.IsBound())
-	{
-		OnDamagedDelegate.Broadcast(pOther, Damage);
-	}*/
-	if (PlayerStatComponent->GetCurrentStat(EStatusType::HP) <= 0.f)
+	return false;
+}
+
+void ABasePlayer::OnHPChanged(double PreCurrentStat, double CurrentStat)
+{
+	if (bDead || CurrentStat > 0.0)
+		return;
+
+	bDead = true;
+	if (PlayerAttackComponent)
 	{
 		PlayerAttackComponent->StopAttack();
 		PlayerAttackComponent->Attack(EPlayerAttackType::Dead);
-		DisableInput(Cast<APlayerController>(GetController()));
-		bDead = true;
-		if (GameOverWidget)
-		{
-			RemoveFromViewPort(MainWidgetInterface);
-			AddToViewPort(GameOverWidget);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GameOverWidget is null"));
-		}
 	}
-	return true;
+	DisableInput(Cast<APlayerController>(GetController()));
+
+	if (GameOverWidget)
+	{
+		RemoveFromViewPort(MainWidgetInterface);
+		AddToViewPort(GameOverWidget);
+	}
+	else
+	{
+		UE_LOG(LogBasePlayer, Warning, TEXT("GameOverWidget is null"));
+	}
 }
+
 
 bool ABasePlayer::IsDead_Implementation() const
 {
@@ -853,6 +860,7 @@ void ABasePlayer::Restart()
 				PlayerController->SetShowMouseCursor(true);
 			}
 		}
+
 	}
 }
 

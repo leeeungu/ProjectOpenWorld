@@ -7,7 +7,8 @@
 #include "PalHpWidget_Boss.generated.h"
 
 class UTextBlock;
-class UProgressBar;
+class UStatusBarWidget;
+class UStatusTextBlock;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalHpWidget_Boss : public UPalHpWidget
@@ -15,19 +16,16 @@ class PROJECTOPENWORLD_API UPalHpWidget_Boss : public UPalHpWidget
 	GENERATED_BODY()
 
 protected:
-	double MaxHP{};
-
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UProgressBar> HpProgressBar{};
+	TObjectPtr<UStatusBarWidget> HpProgressBar{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr <UTextBlock> MonsterNameTextBlock{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr < UTextBlock> MonsterLevel{};
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr < UTextBlock> MonsterHPText{};
+	TObjectPtr < UStatusTextBlock> MonsterHPText{};
 public:
-	void OnHPChanged(double PreStat, double CurStat) ;
-
-	virtual void SetStatWidget(UStatComponent* StatCom) {}
-	virtual void InitializeHPWidget(FName PalID, int32 Level, double CurStat, double _MaxHP) override;
+	virtual void SetupInfo(FName DisplayName, int32 Level) override;
+	virtual void UnbindStat() override;
+	virtual void BindStat() override;
 };

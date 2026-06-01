@@ -20,4 +20,20 @@ public:
 	FOnDamageTaken OnDamageTaken{};
 
 	void TakeDamage(const FPalDamagePayload& Payload);
+
+
+public:
+#if WITH_EDITOR
+	// 컴파일/로드/배치/리컨스트럭션 시점 — 실제 인스턴스 기준 검사(BP에서 붙인 컴포넌트도 보임).
+	virtual void OnRegister() override;
+#endif
+protected:
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere, Category = "Collision Guard")
+	TEnumAsByte<ECollisionChannel> RequiredObjectType{ ECC_GameTraceChannel4 }; protected:
+#endif
+#if WITH_EDITOR
+	// Owner에 조건을 만족하는 PrimitiveComponent가 하나라도 있는지. 실패 시 OutError를 채운다.
+	bool HasRequiredCollisionPrimitive(FText& OutError) const;
+#endif
 };

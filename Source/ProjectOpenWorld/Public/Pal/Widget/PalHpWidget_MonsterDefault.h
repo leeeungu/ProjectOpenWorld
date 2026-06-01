@@ -19,9 +19,8 @@ protected:
 	TObjectPtr <UTextBlock> MonsterNameTextBlock{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr < UTextBlock> MonsterLevel{};
-
-	TWeakObjectPtr< UStatComponent> MonsterStatComponent{};
-public:
-	virtual void SetStatWidget(UStatComponent* StatCom) override;
-	virtual void InitializeHPWidget(FName PalID, int32 Level, double CurStat, double _MaxHP) override;
+protected:
+	virtual void SetupInfo(FName DisplayName, int32 Level) override;
+	virtual void UnbindStat() override;
+	virtual void BindStat() override;
 };

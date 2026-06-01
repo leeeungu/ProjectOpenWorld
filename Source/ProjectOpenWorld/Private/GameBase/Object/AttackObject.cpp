@@ -137,7 +137,8 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 		DamagePayload.BaseDamage = IAttackInterface::Execute_GetAttackValue(CauserCharacter);
 		DamagePayload.Instigator = CauserCharacter;
 		DamagePayload.HitResult = &HitData;
-		HitInterfacePtr->GetHitHandlerComponent()->TakeDamage(DamagePayload);
+		if(HitInterfacePtr->GetHitHandlerComponent())
+			HitInterfacePtr->GetHitHandlerComponent()->TakeDamage(DamagePayload);
 	}
 	if (OtherAttack)
 	{
