@@ -24,7 +24,7 @@ protected:
 	TObjectPtr < UTextBlock> MonsterLevel{};
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr < UStatusTextBlock> MonsterHPText{};
-public:
+protected:
 	virtual void SetupInfo(FName DisplayName, int32 Level) override;
 	virtual void UnbindStat() override;
 	virtual void BindStat() override;

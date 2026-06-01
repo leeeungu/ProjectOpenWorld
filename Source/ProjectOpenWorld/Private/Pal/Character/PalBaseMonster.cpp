@@ -81,22 +81,22 @@ void APalBaseMonster::BeginPlay()
 	{
 		if (MonsterCombatComponent)
 		{
-			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(MonsterCombatComponent, &UPalMonsterCombatComponent::ReceiveDamage);
+			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(MonsterCombatComponent, &UPalMonsterCombatComponent::OnReceiveDamage);
 		}
 		if (StatComponent)
 		{
-			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(StatComponent, &UStatComponent::ReceiveDamage);
+			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(StatComponent, &UStatComponent::OnReceiveDamage);
 		}
 	}
 	if (StatComponent)
 	{
-		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &APalBaseMonster::HPChanged);
+		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &APalBaseMonster::OnHPChanged);
 		StatComponent->GetCurrentOnStatChanged(EStatusType::MoveSpeed)->AddUniqueDynamic(this, &APalBaseMonster::OnMoveSpeedChanged);
 	}
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
 }
 
-void APalBaseMonster::HPChanged(double PreCurrentStat, double CurrentStat)
+void APalBaseMonster::OnHPChanged(double PreCurrentStat, double CurrentStat)
 {
 	UE_LOG(LogTemp, Warning, TEXT("HP Changed: %f -> %f"), PreCurrentStat, CurrentStat);
 	if (CurrentStat <= 0)

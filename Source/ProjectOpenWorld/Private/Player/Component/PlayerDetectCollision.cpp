@@ -1,4 +1,4 @@
-#include "Player/Component/PlayerDetectCollision.h"
+﻿#include "Player/Component/PlayerDetectCollision.h"
 #include "Player/Interface/PlayerDetectInterface.h"
 #include "Player/Character/BasePlayer.h"
 
@@ -17,6 +17,7 @@ void UPlayerDetectCollision::OnDetectBeginOverlap(UPrimitiveComponent* Overlappe
 	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UPlayerDetectInterface::StaticClass()) && OwnerPlayer)
 	{
 		IPlayerDetectInterface::Execute_OnDetectBeginEvent(OtherActor, OwnerPlayer);
+		OnDetectChanged.Broadcast(OtherActor, true);
 	}
 }
 
@@ -25,6 +26,7 @@ void UPlayerDetectCollision::OnDetectEndOverlap(UPrimitiveComponent* OverlappedC
 	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UPlayerDetectInterface::StaticClass()) && OwnerPlayer)
 	{
 		IPlayerDetectInterface::Execute_OnDetectEndEvent(OtherActor, OwnerPlayer);
+		OnDetectChanged.Broadcast(OtherActor, false);
 	}
 }
 
@@ -34,4 +36,11 @@ void UPlayerDetectCollision::BeginPlay()
 	OwnerPlayer = Cast<ABasePlayer>(GetOwner());
 	OnComponentBeginOverlap.AddDynamic(this, &UPlayerDetectCollision::OnDetectBeginOverlap);
 	OnComponentEndOverlap.AddDynamic(this, &UPlayerDetectCollision::OnDetectEndOverlap);
+	for (const FOverlapInfo& OtherOverlap : OverlappingComponents)
+	{
+		UPrimitiveComponent* OtherComp = OtherOverlap.OverlapInfo.Component.Get();
+		AActor* const OtherActor = OtherComp->GetOwner();
+		if(OtherActor)
+			OnDetectChanged.Broadcast(OtherActor, true);
+	}
 }

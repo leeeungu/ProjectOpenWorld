@@ -21,5 +21,5 @@ protected:
 	virtual void BeginPlay() override;
 public:
 	UFUNCTION()
-	void ReceiveDamage(const FPalDamagePayload& DamagePayload);
+	void OnReceiveDamage(const FPalDamagePayload& DamagePayload);
 };

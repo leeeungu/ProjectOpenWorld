@@ -8,7 +8,8 @@ class UWeaponeWidget;
 enum class EWeapone : uint8;
 class UPlayerStatusProgress;
 class UStatComponent;
-enum class EStatusType : uint8;
+class UPalHpWidget_Boss;
+class UMonsterHpLayer;
 
 UCLASS()
 class PROJECTOPENWORLD_API UMainUI : public UUserWidget
@@ -19,15 +20,21 @@ protected:
 	TObjectPtr<UWeaponeWidget> WBP_WeaponUI{};
 	UPROPERTY(meta = (BindWidget), Category = "Status", EditDefaultsOnly)
 	TObjectPtr<UPlayerStatusProgress> PlayerHPBar{};
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr < UMonsterHpLayer> MonsterHpLayer{};
 	//UPROPERTY(meta = (BindWidgetOptional), Category = "Status", EditDefaultsOnly)
 	TObjectPtr<UPlayerStatusProgress> PlayerHealthBar{};
 	//UPROPERTY(meta = (BindWidgetOptional), Category = "Status", EditDefaultsOnly)
 	TObjectPtr<UPlayerStatusProgress> PlayerShieldBar{};
 
+
 public:
 	void ChangeWeapone(FName NewWeaponeID, EWeapone NewWeaponeType);
-	void SetStatWidget(UStatComponent* StatCom);
+	void SetPlayerStatWidget(UStatComponent* StatCom);
 
+	void RegisterMonster(AActor* Target);
+	void UnregisterMonster(AActor* Target);
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

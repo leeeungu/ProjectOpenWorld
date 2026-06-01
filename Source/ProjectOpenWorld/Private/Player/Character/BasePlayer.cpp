@@ -115,7 +115,7 @@ ABasePlayer::ABasePlayer() : Super{}
 	LeftHandEquipComponent = CreateDefaultSubobject<UPlayerEquipVisualComponent>(TEXT("LeftHandEquipComponent"));
 	LeftHandEquipComponent->SetupAttachment(GetMesh());
 
-	PlayerStatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("PlayerStatComponent"));
+	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("PlayerStatCom"));
 	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
 }
 
@@ -171,22 +171,20 @@ void ABasePlayer::BeginPlay()
 		GameOverWidget = CreateWidget<UPlayerGameOver>(PlayerController, GameOverWidgetClass);
 	}
 
-	if (HitHandlerComponent && PlayerStatComponent)
+	if (HitHandlerComponent && StatComponent)
 	{
-		HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(PlayerStatComponent, &UStatComponent::ReceiveDamage);
+		HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(StatComponent, &UStatComponent::OnReceiveDamage);
 	}
-	if (PlayerStatComponent)
+	if (StatComponent)
 	{
-		if (FOnStatChanged* HpChanged = PlayerStatComponent->GetCurrentOnStatChanged(EStatusType::HP))
+		if (FOnStatChanged* HpChanged = StatComponent->GetCurrentOnStatChanged(EStatusType::HP))
 		{
 			HpChanged->AddUniqueDynamic(this, &ABasePlayer::OnHPChanged);
 		}
 	}
 
-	//SetStatus(EStatusType::Hp, *GetStatusRef(EStatusType::MaxHp));
-	//HPStat->SetCurrentStat(*GetStatusRef(EStatusType::MaxHp));
-	//HPStat->SetMaxStat(*GetStatusRef(EStatusType::MaxHp));
-	StatComponent_Level->OnLevelUp.AddUniqueDynamic(this, &ABasePlayer::OnLevelUpEvent);
+	if(StatComponent_Level)
+		StatComponent_Level->OnLevelUp.AddUniqueDynamic(this, &ABasePlayer::OnLevelUpEvent);
 
 	SetInputInterface(EInputKeyType::WASD, PlayerMoveComponent);
 	SetInputInterface(EInputKeyType::MouseWheel, PlayerEquipComponent);
@@ -200,11 +198,14 @@ void ABasePlayer::BeginPlay()
 		}
 		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
 		{
-			_MainWidget->SetStatWidget(PlayerStatComponent);
+			_MainWidget->SetPlayerStatWidget(StatComponent);
 		}
 	}
 
-
+	if(PlayerDetectCollision)
+	{
+		PlayerDetectCollision->OnDetectChanged.AddDynamic(this, &ABasePlayer::OnMonsterDetectChanged);
+	}
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
@@ -270,16 +271,16 @@ void ABasePlayer::UnEquip(USkeletalMesh* OldMesh)
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 {
-	if (PlayerStatComponent)
+	if (StatComponent)
 	{
-		PlayerStatComponent->SetCurrentStat(Value, StatusType);
+		StatComponent->SetCurrentStat(Value, StatusType);
 
 	}
 }
 
 bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 {
-	Result =  PlayerStatComponent->GetCurrentStat(StatusType);
+	Result = StatComponent->GetCurrentStat(StatusType);
 	return true;
 	/*switch (StatusType)
 	{
@@ -596,6 +597,21 @@ void ABasePlayer::RemoveFromViewPort(TScriptInterface<IMainWidgetInterface> NewW
 	MainWidgetInterface = nullptr;
 }
 
+void ABasePlayer::OnMonsterDetectChanged(AActor* Actor, bool bDetected)
+{
+	if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
+	{
+		if (bDetected)
+		{
+			_MainWidget->RegisterMonster(Actor);
+		}
+		else
+		{
+			_MainWidget->UnregisterMonster(Actor);
+		}
+	}
+}
+
 void ABasePlayer::OnStartEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
 	TScriptInterface<IPlayerInputInterface>* InputInterface =InputMapping.Find(KeyType);
@@ -848,7 +864,8 @@ void ABasePlayer::Restart()
 	{
 		bDead = false;
 		RemoveFromViewPort(GameOverWidget);
-		PlayerStatComponent->StatBeginPlay(EStatusType::HP);
+		if(StatComponent)
+			StatComponent->StatBeginPlay(EStatusType::HP);
 		if (PlayerAttackComponent)
 			PlayerAttackComponent->StopAttack();
 		EnableInput(Cast<APlayerController>(GetController()));
@@ -860,7 +877,6 @@ void ABasePlayer::Restart()
 				PlayerController->SetShowMouseCursor(true);
 			}
 		}
-
 	}
 }
 

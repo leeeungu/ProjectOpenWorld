@@ -27,10 +27,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Monster")
 	int Level{};
 
-	//hp, attack defend 같은 statut 관련 component
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	TObjectPtr< UStatComponent> StatComponent{};
-
 	// attack관련 componnet 공격 타입 관리 공격 중 관리
 	UPROPERTY( VisibleAnywhere)
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
@@ -80,5 +76,5 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void HPChanged(double PreCurrentStat, double CurrentStat);
+	void OnHPChanged(double PreCurrentStat, double CurrentStat);
 };

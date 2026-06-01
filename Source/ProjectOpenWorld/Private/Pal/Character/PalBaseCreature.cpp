@@ -143,12 +143,12 @@ void APalBaseCreature::BeginPlay()
 	{
 		if (StatComponent)
 		{
-			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(StatComponent, &UStatComponent::ReceiveDamage);
+			HitHandlerComponent->OnDamageTaken.AddUniqueDynamic(StatComponent, &UStatComponent::OnReceiveDamage);
 		}
 	}
 	if (StatComponent && StatComponent->GetCurrentOnStatChanged(EStatusType::HP))
 	{
-		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &APalBaseCreature::HPChanged);
+		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &APalBaseCreature::OnHPChanged);
 	}
 	if (JobComponent && GetMesh())
 	{
@@ -166,7 +166,7 @@ void APalBaseCreature::BeginPlay()
 	}
 }
 
-void APalBaseCreature::HPChanged(double PreCurrentStat, double CurrentStat)
+void APalBaseCreature::OnHPChanged(double PreCurrentStat, double CurrentStat)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s Hitted %f"), *GetName(), CurrentStat);
 	if (CurrentStat <= 0)

@@ -21,10 +21,6 @@ protected:
 	float StunDuration{};
 
 	float CurStunTime{};
-	TSubclassOf<UUserWidget> HpWidgetClass{};
-	UPROPERTY()
-	TObjectPtr< UUserWidget> HpWidget{};
-
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
@@ -56,7 +52,7 @@ public:
 
 
 	// IPlayerDetectInterface
-	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override;
-	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override;
+	virtual void OnDetectBeginEvent_Implementation(ABasePlayer* Player)override {}
+	virtual void OnDetectEndEvent_Implementation(ABasePlayer* Player)override {}
 
 };

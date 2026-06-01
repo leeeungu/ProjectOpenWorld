@@ -17,7 +17,7 @@ void UPalMonsterCombatComponent::BeginPlay()
 	}
 }
 
-void UPalMonsterCombatComponent::ReceiveDamage(const FPalDamagePayload& DamagePayload)
+void UPalMonsterCombatComponent::OnReceiveDamage(const FPalDamagePayload& DamagePayload)
 {
 	if (DamagePayload.Instigator)
 	{

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Pal/Data/PalDamageType.h"
+#include "Pal/Data/PalCollisionFactory.h"
 #include "PalHitHandlerComponent.generated.h"
 
 
@@ -30,7 +31,7 @@ public:
 protected:
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, Category = "Collision Guard")
-	TEnumAsByte<ECollisionChannel> RequiredObjectType{ ECC_GameTraceChannel4 }; protected:
+	TEnumAsByte<ECollisionChannel> RequiredObjectType =  PalDamage::GetDamageCollisionChannel();
 #endif
 #if WITH_EDITOR
 	// Owner에 조건을 만족하는 PrimitiveComponent가 하나라도 있는지. 실패 시 OutError를 채운다.

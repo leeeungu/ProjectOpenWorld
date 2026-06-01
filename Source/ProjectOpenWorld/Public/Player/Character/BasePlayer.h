@@ -68,8 +68,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr <UStatComponent_Level> StatComponent_Level{};
-	UPROPERTY(VisibleAnywhere,  Category = Camera)
-	TObjectPtr< UStatComponent> PlayerStatComponent{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Building)
 	TObjectPtr<UBuildingAssistComponent> BuildAssistComponent{}; 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation)
@@ -193,7 +191,7 @@ public:
 	FORCEINLINE EPlayerState GetPlayerState() const { return CurrentPlayerState; }  //
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE  USpringArmComponent* const  GetCameraBoom() const { return CameraBoom; }
-	UStatComponent* GetPlayerStatComponent() const { return PlayerStatComponent; }
+	UStatComponent* GetPlayerStatComponent() const { return StatComponent; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE  UCameraComponent* const GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE  UBuildingAssistComponent* const GetBuildingAssist() const { return BuildAssistComponent; }
@@ -254,5 +252,7 @@ public:
 	bool AddToViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);
 	void RemoveFromViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);
 
+	UFUNCTION()
+	void OnMonsterDetectChanged(AActor* Actor, bool bDetected);
 };
 

@@ -43,5 +43,5 @@ public:
 	virtual double GetStatPercent(EStatusType StatName = EStatusType::None) const;
 
 	UFUNCTION()
-	void ReceiveDamage(const FPalDamagePayload& DamagePayload);
+	void OnReceiveDamage(const FPalDamagePayload& DamagePayload);
 };

@@ -192,10 +192,12 @@ APalMonsterSpawner* UGenerateSpawnerComponent::AcquireSpawner(UDataTable* Dt, co
         while (!ActorPool.IsEmpty())
         {
             APalMonsterSpawner* S = ActorPool.Pop().Get();
-            if (!IsValid(S)) continue;
+            if (!IsValid(S))
+                continue;
 
-            S->SetActorLocationAndRotation(Loc, FRotator::ZeroRotator,
-                false, nullptr, ETeleportType::TeleportPhysics);
+            S->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+            S->SetActorLocationAndRotation(Loc, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
+            S->GetRootComponent()->SetMobility(EComponentMobility::Static);
             S->SetActorHiddenInGame(false);
             S->SetActorEnableCollision(true);
             S->SetActorTickEnabled(true);

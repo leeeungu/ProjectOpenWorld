@@ -194,7 +194,7 @@ double UStatComponent::GetStatPercent(EStatusType StatName) const
 
 }
 
-void UStatComponent::ReceiveDamage(const FPalDamagePayload& DamagePayload)
+void UStatComponent::OnReceiveDamage(const FPalDamagePayload& DamagePayload)
 {
 	AddCurrentStat(-DamagePayload.BaseDamage, EStatusType::HP);
 }

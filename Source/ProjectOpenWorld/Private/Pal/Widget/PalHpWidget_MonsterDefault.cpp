@@ -8,9 +8,9 @@ void UPalHpWidget_MonsterDefault::SetupInfo(FName DisplayName, int32 Level)
 {
 	if (MonsterNameTextBlock)
 	{
-		// 기존 코드와 동일하게 StringTable로 표시명 변환
-		const FText NameText = FText::FromStringTable(
-			TEXT("/Game/Pal/StringTable/ST_PalName.ST_PalName"), DisplayName.ToString());
+		FText MonsterName = FText::FromString(DisplayName.ToString());
+		//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
+		const FText NameText = FText::FromStringTable(TEXT("/Game/Pal/StringTable/ST_PalName.ST_PalName"), *MonsterName.ToString());
 		MonsterNameTextBlock->SetText(NameText);
 	}
 	if (MonsterLevel)
@@ -40,7 +40,6 @@ void UPalHpWidget_MonsterDefault::BindStat()
 	{
 		double CurrentStat = StatComponent->GetCurrentStat(Stat);
 		double MaxStat = StatComponent->GetMaxStat(Stat);
-		HpProgressBar->SetInitial(CurrentStat, MaxStat);
 		if (FOnStatChanged* CurrentDel = StatComponent->GetCurrentOnStatChanged(Stat))
 		{
 			CurrentDel->AddDynamic(HpProgressBar, &UStatusBarWidget::OnCurrentStatusChanged);
@@ -49,5 +48,6 @@ void UPalHpWidget_MonsterDefault::BindStat()
 		{
 			MaxDel->AddDynamic(HpProgressBar, &UStatusBarWidget::OnMaxStatusChanged);
 		}
+		HpProgressBar->SetInitial(CurrentStat, MaxStat);
 	}
 }

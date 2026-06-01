@@ -23,10 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "PalCreature")
 	int Level{};
 
-	//hp, attack defend 같은 statut 관련 component
-	UPROPERTY(VisibleAnywhere, Category = "PalCreature")
-	TObjectPtr< UStatComponent> StatComponent{};
-
 	// attack관련 componnet 공격 타입 관리 공격 중 관리
 	UPROPERTY(VisibleAnywhere, Category = "PalCreature")
 	TObjectPtr < UPalAttackComponent> AttackComponent{};
@@ -66,7 +62,6 @@ public:
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override { return true; }
 	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const override { return HitHandlerComponent; }
 	virtual UPalAttackComponent* GetPalAttackComponent() const { return AttackComponent; }
-
 	// IPalWorkerInterface
 	virtual void StartWorking() override;
 	virtual void StopWorking() override;
@@ -86,5 +81,5 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION()
-	void HPChanged(double PreCurrentStat, double CurrentStat);
+	void OnHPChanged(double PreCurrentStat, double CurrentStat);
 };

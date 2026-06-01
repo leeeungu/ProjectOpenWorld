@@ -1,18 +1,21 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-
-
-enum ECollisionChannel : int;
+#include "Engine/EngineTypes.h"
 
 namespace PalJob
 {
-	ECollisionChannel GetHarvestCollisionChannel();
+	static ECollisionChannel GetHarvestCollisionChannel()
+	{
+		return ECollisionChannel::ECC_GameTraceChannel5;
+	}
 }
 
 namespace PalDamage
 {
-	ECollisionChannel GetDamageCollisionChannel();
+	static ECollisionChannel GetDamageCollisionChannel() {
+		return  ECollisionChannel::ECC_GameTraceChannel4;
+	}
 }
 
 //
