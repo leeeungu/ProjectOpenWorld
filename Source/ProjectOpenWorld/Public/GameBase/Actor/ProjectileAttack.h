@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -6,6 +6,7 @@
 
 class UCapsuleComponent;
 class IAttackInterface;
+class UAttackObject;
 
 UCLASS(BlueprintType, Blueprintable, Category = "Projectile")
 class PROJECTOPENWORLD_API AProjectileAttack : public AActor
@@ -29,11 +30,12 @@ protected:
 	float CurrentDistanceTraveled = 0.0f;
 	UPROPERTY()
 	TScriptInterface<IAttackInterface>  ProjectileOwnerAttacker{};
+	UPROPERTY(EditAnywhere, Instanced, Category = "ProjectileAttack", BlueprintReadWrite)
+	TArray<TObjectPtr<UAttackObject>> AttackEventObject{};   
 public:	
 	AProjectileAttack();
 
-	void InitializeProjectile(TScriptInterface<IAttackInterface> OwnerAttacker,
-		const FVector& Direction, float Speed, float LifeTime = 5.0f, float DistanceTraveled = 0.0f);
+	void InitializeProjectile(TScriptInterface<IAttackInterface> OwnerAttacker, const FVector& Direction, float Speed, float LifeTime = 5.0f, float DistanceTraveled = 0.0f);
 
 protected:
 	virtual void BeginPlay() override;

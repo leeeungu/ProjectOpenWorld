@@ -62,6 +62,9 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		FCollisionResponseParams ResponseParam{};
 		CollisionAttackResult(MeshComp, arResult);
 		TSet< APawn*> Attacked{};
+		FAttackEventContext Context{};
+		Context.Owner = MeshComp->GetOwner();
+		Context.SourceComp = MeshComp;
 		for (const FHitResult& Hit : arResult)
 		{
 			bool bReadldyIn{};
@@ -73,11 +76,12 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 			Attacked.FindOrAdd(Pawn, &bReadldyIn);
 			if (bReadldyIn)
 				continue;
+			Context.Hit = &Hit;
 			for (UAttackObject* AttackObject : AttackEventObject)
 			{
 				if (AttackObject)
 				{
-					AttackObject->ExecuteAttackEvent(MeshComp, Hit);
+					AttackObject->ExecuteAttackEvent(Context);
 				}
 			}
 		}
@@ -98,11 +102,14 @@ void UAnimNotify_Attack::AttackEventObjectDebug(USkeletalMeshComponent* MeshComp
 	{
 		FVector StartLocation = GetStartLocation(MeshComp);
 		FVector EndLocation = GetEndLocation(MeshComp);
+		FAttackEventContext Context{};
+		Context.Owner = MeshComp->GetOwner();
+		Context.SourceComp = MeshComp;
 		for (UAttackObject* AttackObject : AttackEventObject)
 		{
 			if (AttackObject)
 			{
-				AttackObject->ExecuteDebugAttackEvent(MeshComp, StartLocation, EndLocation, GetAttackCollisionShape());
+				AttackObject->ExecuteDebugAttackEvent(Context, StartLocation, EndLocation, GetAttackCollisionShape());
 			}
 		}
 	}

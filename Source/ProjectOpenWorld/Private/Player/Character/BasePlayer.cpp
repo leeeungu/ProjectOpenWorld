@@ -469,9 +469,9 @@ bool ABasePlayer::DamagedCharacter_Implementation(const TScriptInterface<IAttack
 
 void ABasePlayer::OnHPChanged(double PreCurrentStat, double CurrentStat)
 {
+	UE_LOG(LogBasePlayer, Log, TEXT("PlayerHitted"));
 	if (bDead || CurrentStat > 0.0)
 		return;
-
 	bDead = true;
 	if (PlayerAttackComponent)
 	{

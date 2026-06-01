@@ -7,13 +7,14 @@
 #include "GenericTeamAgentInterface.h"
 #include "Pal/Component/PalHitHandlerComponent.h"
 
-void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+void UAttackObject_KnockBackDirection::AttackEvent(const FAttackEventContext& AttContext) const
 {
 	// Character를 넉백 시키는 함수
+	const FHitResult& HitData = *AttContext.Hit;
 	AActor* AttackTarget = HitData.GetActor();
 	if (AttackTarget)
 	{
-		ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+		ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
 		if (!CauserCharacter)
 			return;
 		TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
@@ -24,9 +25,9 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 		}
 		FVector Direction = KnockBackDirection;
 		Direction.Normalize();
-		if (!bIsWorldDirection && CauserMesh)
+		if (!bIsWorldDirection && CauserCharacter->GetMesh())
 		{
-			Direction = CauserMesh->GetOwner()->GetActorRotation().RotateVector(Direction);
+			Direction = CauserCharacter->GetActorRotation().RotateVector(Direction);
 		}
 		FVector LaunchVelocity = Direction * KnockBackForce;
 		UPrimitiveComponent* TargetRootComponent = Cast<UPrimitiveComponent>(AttackTarget->GetRootComponent());
@@ -35,8 +36,12 @@ void UAttackObject_KnockBackDirection::AttackEvent(USkeletalMeshComponent* Cause
 	}
 }
 
-void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
+void UAttackObject_KnockBackDirection::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
+	if (!CauserCharacter)
+		return;
+	USkeletalMeshComponent* CauserMesh = CauserCharacter->GetMesh();
 	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
 	FVector Direction = KnockBackDirection;
@@ -50,9 +55,9 @@ void UAttackObject_KnockBackDirection::DebugAttackEvent(USkeletalMeshComponent* 
 		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
 }
 
-void UAttackObject_PlayerStun::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+void UAttackObject_PlayerStun::AttackEvent(const FAttackEventContext& AttContext) const
 {
-
+	const FHitResult& HitData = *AttContext.Hit;
 	if (ACharacter* TargetCharacter = Cast<ACharacter>(HitData.GetActor()))
 	{
 		TargetCharacter->DisableInput(nullptr);
@@ -66,12 +71,13 @@ void UAttackObject_PlayerStun::AttackEvent(USkeletalMeshComponent* CauserMesh, c
 	}
 }
 
-void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+void UAttackObject_Impulse::AttackEvent(const FAttackEventContext& AttContext) const
 //void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* AttackCauser, AActor* AttackTarget) const
 {
+	const FHitResult& HitData = *AttContext.Hit;
 	if (ACharacter* TargetCharacter = Cast<ACharacter>(HitData.GetActor()))
 	{
-		ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+		ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
@@ -108,8 +114,12 @@ void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* CauserMesh, cons
 	}
 }
 
-void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
+void UAttackObject_Impulse::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
+	if (!CauserCharacter)
+		return;
+	USkeletalMeshComponent* CauserMesh = CauserCharacter->GetMesh();
 	if (!CauserMesh || !CauserMesh->GetWorld()) // || CauserMesh->GetWorld()->HasBegunPlay())
 		return;
 	FVector NewLocation = CauserMesh->GetSocketLocation(SocketName) + CauserMesh->GetComponentRotation().Quaternion() * SocketOffset;
@@ -121,9 +131,10 @@ void UAttackObject_Impulse::DebugAttackEvent(USkeletalMeshComponent* CauserMesh,
 		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
 }
 
-void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+void UAttackObject_Attack::AttackEvent(const FAttackEventContext& AttContext) const
 {
-	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+	const FHitResult& HitData = *AttContext.Hit;
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
 	if (!CauserCharacter)
 		return;
 	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
@@ -146,8 +157,9 @@ void UAttackObject_Attack::AttackEvent(USkeletalMeshComponent* CauserMesh, const
 	}
 }
 
-void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
+void UAttackObject_Attack::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
+	USkeletalMeshComponent* CauserMesh = Cast< USkeletalMeshComponent>(AttContext.SourceComp);
 	if (!CauserMesh || !CauserMesh->GetWorld())
 		return;
 	if (CollisionShape.IsSphere())
@@ -172,9 +184,10 @@ void UAttackObject_Attack::DebugAttackEvent(USkeletalMeshComponent* CauserMesh, 
 	}
 }
 
-void UAttackObject_HitReact::AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+void UAttackObject_HitReact::AttackEvent(const FAttackEventContext& AttContext) const
 {
-	ACharacter* CauserCharacter = Cast<ACharacter>(CauserMesh->GetOwner());
+	const FHitResult& HitData = *AttContext.Hit;
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
 	if (!CauserCharacter)
 		return;
 	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());

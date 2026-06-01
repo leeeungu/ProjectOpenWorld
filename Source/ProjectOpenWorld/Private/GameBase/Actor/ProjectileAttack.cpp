@@ -1,6 +1,7 @@
-#include "GameBase/Actor/ProjectileAttack.h"
+﻿#include "GameBase/Actor/ProjectileAttack.h"
 #include "Components/CapsuleComponent.h"
 #include "GameBase/Interface/AttackInterface.h"
+#include "GameBase/Object/AttackObject.h"
 
 AProjectileAttack::AProjectileAttack() :Super()
 {
@@ -44,10 +45,20 @@ void AProjectileAttack::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompo
 	{
 		return;
 	}
-
+	FAttackEventContext Contxt{};
+	Contxt.Owner = GetInstigator();
+	Contxt.Hit = &SweepResult;
+	Contxt.Causer = this;
+	for (UAttackObject* AttackObject : AttackEventObject)
+	{
+		if (AttackObject)
+		{
+			AttackObject->ExecuteAttackEvent(Contxt);
+		}
+	}
 	if (OtherActor && OtherActor->Implements<UAttackInterface>())
 	{
-		IAttackInterface::Execute_DamagedCharacter(OtherActor, ProjectileOwnerAttacker);
+		//IAttackInterface::Execute_DamagedCharacter(OtherActor, ProjectileOwnerAttacker);
 	}
 }
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
@@ -18,6 +18,16 @@ public:
 	FColor DebugColor = FColor::Red;
 };
 
+USTRUCT()
+struct FAttackEventContext
+{
+	GENERATED_BODY()
+	TObjectPtr<AActor> Owner = nullptr;           // 공격자
+	TObjectPtr<AActor> Causer = nullptr;           // 타격 원인(무기/투사체/본인)
+	TObjectPtr<USceneComponent> SourceComp = nullptr; // 위치·소켓 기준(Mesh or Collision)
+	const FHitResult* Hit{};
+};
+
 //UCLASS(Blueprintable, abstract, editinlinenew, hidecategories = Object, collapsecategories, MinimalAPI)
 UCLASS(Blueprintable, editinlinenew, Abstract)
 class PROJECTOPENWORLD_API UAttackObject : public UObject
@@ -26,16 +36,16 @@ class PROJECTOPENWORLD_API UAttackObject : public UObject
 protected:
 
 protected:
-	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const {}
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation,const FCollisionShape& CollisionShape) const {}
+	virtual void AttackEvent(const FAttackEventContext& AttContext) const {}
+	virtual void DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation,const FCollisionShape& CollisionShape) const {}
 public:
-	void ExecuteAttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const
+	void ExecuteAttackEvent(const FAttackEventContext& AttContext) const
 	{
-		AttackEvent(CauserMesh, HitData);
+		AttackEvent(AttContext);
 	}
-	void ExecuteDebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
+	void ExecuteDebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 	{
-		DebugAttackEvent(CauserMesh, StartLocation, EndLocation, CollisionShape);
+		DebugAttackEvent(AttContext, StartLocation, EndLocation, CollisionShape);
 	}
 };
 
@@ -54,8 +64,8 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "AttackEvent")
 	FDebugData DebugData{};
 
-	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override;
+	virtual void AttackEvent(const FAttackEventContext& AttContext) const override;
+	virtual void DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override;
 };
 
 UCLASS()
@@ -66,7 +76,7 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "AttackEvent")
 	float StunTime = 1.f;
 
-	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
+	virtual void AttackEvent(const FAttackEventContext& AttContext) const override;
 };
 
 
@@ -86,8 +96,8 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "AttackEvent")
 	FDebugData DebugData{};
 
-	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override;
+	virtual void AttackEvent(const FAttackEventContext& AttContext) const override;
+	virtual void DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override;
 };
 
 UCLASS()
@@ -99,8 +109,8 @@ protected:
 	FDebugData DebugData{};
 
 protected:
-	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override;
+	virtual void AttackEvent(const FAttackEventContext& AttContext) const override;
+	virtual void DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override;
 };
 
 UCLASS()
@@ -112,7 +122,7 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "AttackEvent")
 	FDebugData DebugData{};
 
-	virtual void AttackEvent(USkeletalMeshComponent* CauserMesh, const FHitResult& HitData) const override;
-	virtual void DebugAttackEvent(USkeletalMeshComponent* CauserMesh, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override {};
+	virtual void AttackEvent(const FAttackEventContext& AttContext) const override;
+	virtual void DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const override {};
 };
 
