@@ -13,8 +13,13 @@ namespace PalJob
 
 namespace PalDamage
 {
-	static ECollisionChannel GetDamageCollisionChannel() {
+	static ECollisionChannel GetDamageCollisionChannel() 
+	{
 		return  ECollisionChannel::ECC_GameTraceChannel4;
+	}
+	static FName GetHitCollisionProfileName()
+	{
+		return FName(TEXT("P_Hitbox"));
 	}
 }
 

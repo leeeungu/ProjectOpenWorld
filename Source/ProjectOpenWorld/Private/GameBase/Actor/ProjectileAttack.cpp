@@ -1,47 +1,85 @@
 ﻿#include "GameBase/Actor/ProjectileAttack.h"
-#include "Components/CapsuleComponent.h"
-#include "GameBase/Interface/AttackInterface.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/ShapeComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Pal/Data/PalCollisionFactory.h" // PalDamage::GetHitCollisionProfileName
 #include "GameBase/Object/AttackObject.h"
+#include "Pal/Data/PalDamageType.h"
 
-AProjectileAttack::AProjectileAttack() :Super()
+AProjectileAttack::AProjectileAttack()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
-	Collision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
-	Collision->SetupAttachment(Root);
-	Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	CurrentDistanceTraveled = 0.0f;
+
+	Movement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
+	Movement->bRotationFollowsVelocity = true; // 콜리전(및 그 자식 비주얼)이 진행 방향으로 정렬
+	Movement->ProjectileGravityScale = 0.f;    // 직선 (포물선은 자식/BP에서 조정)
+	Movement->MaxSpeed = 0.f;                  // 0 = 무제한
 }
 
-void AProjectileAttack::InitializeProjectile(TScriptInterface<IAttackInterface> OwnerAttacker, const FVector& Direction, float Speed, float LifeTime, float DistanceTraveled)
+void AProjectileAttack::OnConstruction(const FTransform& Transform)
 {
-	if ((LifeTime == 0 && DistanceTraveled == 0) || !OwnerAttacker)
-	{
-		Destroy();
-		return;
-	}
-	ProjectileOwnerAttacker = OwnerAttacker;
-	ProjectileDirection = Direction.GetSafeNormal();
-	ProjectileSpeed = Speed;
-	ProjectileLifeTime = LifeTime;
-	SetLifeSpan(ProjectileLifeTime);
-	ProjectileDistanceTraveled = DistanceTraveled;
+	Super::OnConstruction(Transform);
+	ApplyCollisionProfile();
 }
 
 void AProjectileAttack::BeginPlay()
 {
 	Super::BeginPlay();
-	ProjectileOwnerAttacker = GetInstigator();
-	if (Collision)
+
+	Collision = GetCollision();
+	if (!ensureMsgf(Collision, TEXT("AProjectileAttack: GetCollision이 콜리전을 반환하지 않음 - BP에서 지정 필요")))
 	{
-		Collision->OnComponentBeginOverlap.AddUniqueDynamic(this, &AProjectileAttack::OnProjectileOverlap);
+		return;
 	}
+
+	ApplyCollisionProfile();
+	Collision->OnComponentBeginOverlap.AddDynamic(this, &AProjectileAttack::OnProjectileOverlap);
+	//Movement->SetUpdatedComponent(Collision);
+}
+
+void AProjectileAttack::Launch(const FProjectileLaunchParams& Params)
+{
+	//FVector Direction = Params.SpawnRotation.RotateVector(Params.ProjectileDirection);
+	//if (!Params.bUseMeshRotation && MeshComp->GetOwner())
+	//{
+	//	Direction = MeshComp->GetOwner()->GetActorRotation().RotateVector(LaunchParams.ProjectileDirection);
+	//}
+	Movement->ProjectileGravityScale = Params.GravityScale;
+	Movement->Velocity = GetActorForwardVector() * Params.ProjectileSpeed;
+
+	if (Params.LifeSpan > 0.f)
+	{
+		SetLifeSpan(Params.LifeSpan);
+	}
+}
+
+void AProjectileAttack::ApplyCollisionProfile()
+{
+	UPrimitiveComponent* Col = Collision ? Collision.Get() : GetCollision();
+	if (!Col)
+	{
+		return;
+	}
+	Col->SetCollisionProfileName(PalDamage::GetHitCollisionProfileName());
+}
+
+UPrimitiveComponent* AProjectileAttack::GetCollision_Implementation() const
+{
+	return FindComponentByClass<UPrimitiveComponent>();
+}
+
+void AProjectileAttack::ResolveHit_Implementation(const FHitResult& Hit)
+{
+	Destroy();
 }
 
 void AProjectileAttack::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!ProjectileOwnerAttacker || OtherActor == ProjectileOwnerAttacker.GetObject() || OtherActor == GetInstigator() || OtherActor->GetClass() == GetClass())
+	if (OtherActor == GetInstigator() || OtherActor->GetClass() == GetClass())
 	{
 		return;
 	}
@@ -56,26 +94,24 @@ void AProjectileAttack::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompo
 			AttackObject->ExecuteAttackEvent(Contxt);
 		}
 	}
-	if (OtherActor && OtherActor->Implements<UAttackInterface>())
-	{
-		//IAttackInterface::Execute_DamagedCharacter(OtherActor, ProjectileOwnerAttacker);
-	}
+	OnProjectileHit(SweepResult);
+	//ResolveHit(SweepResult);
 }
 
-void AProjectileAttack::Tick(float DeltaTime)
+void AProjectileAttack::OnHandleHit(UPrimitiveComponent* /*HitComp*/, AActor* OtherActor, UPrimitiveComponent* /*OtherComp*/, FVector /*NormalImpulse*/, const FHitResult& Hit)
 {
-	Super::Tick(DeltaTime);
-
-	float DeltaDistance = ProjectileSpeed * DeltaTime;
-	if(CurrentDistanceTraveled + DeltaDistance >= ProjectileDistanceTraveled)
-	{
-		DeltaDistance = ProjectileDistanceTraveled - CurrentDistanceTraveled;
-	}
-	CurrentDistanceTraveled += DeltaDistance;
-	FVector DeltaLocation = ProjectileDirection * DeltaDistance;
-	AddActorWorldOffset(DeltaLocation, true);
-	if (CurrentDistanceTraveled >= ProjectileDistanceTraveled)
-	{
-		Destroy();
-	}
+	//FAttackEventContext Contxt{};
+	//Contxt.Owner = GetInstigator();
+	//Contxt.Hit = &SweepResult;
+	//Contxt.Causer = this;
+	//for (UAttackObject* AttackObject : AttackEventObject)
+	//{
+	//	if (AttackObject)
+	//	{
+	//		AttackObject->ExecuteAttackEvent(Contxt);
+	//	}
+	//}
+	//
+	//OnProjectileHit(Hit);
+	//ResolveHit(Hit);
 }

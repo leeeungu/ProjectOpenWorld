@@ -57,6 +57,28 @@ public:
     bool bIsCritical = false;
 };
 
+USTRUCT(BlueprintType)
+struct FProjectileLaunchParams
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileAttack ")
+    FVector ProjectileDirection = FVector::ForwardVector;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileAttack ")
+    float ProjectileSpeed = 100.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileAttack ")
+    float ProjectileLifeTime = 0.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileAttack ")
+    float ProjectileDistanceTraveled = 100.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+    float GravityScale = 0.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+    float LifeSpan = 5.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileAttack ")
+    bool bUseMeshRotation = true;
+};
+
+
 // dt 형식으로 하게 되니깐 mesh에 붙이는지 root에 붙이는 지 판별이 어려움
 //USTRUCT(BlueprintType)
 //struct FPalHitboxData : public FTableRowBase
