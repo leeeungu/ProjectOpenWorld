@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameBase/MetaData/AMDLoop.h"
@@ -43,7 +43,6 @@ private:
 	FVector InitialActorDirection{};
 	FVector MoveWorldDirection{};
 	float MoveSpeed = 3500.f;
-	float MoveDistance = 3500.f;
 	float CurrenDistance{};
 	EMovementMode InitMovement{};
 	uint8 InitCustomMovement{};

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
@@ -30,6 +30,7 @@ protected:
 
 	int CurrentMontageIndex{};
 	bool bIsPlayingMontage{};
+	bool bWasLooping{};
 public:
 	UPROPERTY(BlueprintAssignable, Category = "MontageManager")
 	FOnMontageEvent OnMontageQueueEnd;

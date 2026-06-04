@@ -1,7 +1,7 @@
-#include "GameBase/MetaData/AMDLoop_Direction.h"
+﻿#include "GameBase/MetaData/AMDLoop_Direction.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameBase/BaseCharacter.h"
+#include "Pal/Character/PalBaseCharacter.h"
 
 UAMDLoop_Direction::UAMDLoop_Direction(const FObjectInitializer& ObjectInitializer) : 
 	UAMDLoop(ObjectInitializer)
@@ -13,8 +13,6 @@ void UAnimLoopObject_Direction::Initialize(UAnimInstance* Animinstance, UAMDLoop
 {
 	Super::Initialize(Animinstance, MetaData);
 	OwnerPawn = OwnerAniminstance ? OwnerAniminstance->TryGetPawnOwner() : nullptr;
-	if (!OwnerPawn.IsValid())
-		return;
 	CurrenDistance = 0.0f;
 	if (UAMDLoop_Direction * Data = Cast< UAMDLoop_Direction>(LoopMetaData))
 	{
@@ -22,38 +20,35 @@ void UAnimLoopObject_Direction::Initialize(UAnimInstance* Animinstance, UAMDLoop
 		InitialActorDirection = Data->GetMoveDirection().GetSafeNormal();
 		bControllerRotattion = Data->IsControllerRotation();
 		MoveWorldDirection = InitialActorDirection;
-		if (!bWorldDirection)
-		{
-			if(bControllerRotattion)
-				MoveWorldDirection = OwnerPawn->GetControlRotation().RotateVector(MoveWorldDirection);
-			else
-				MoveWorldDirection = OwnerPawn->GetActorRotation().RotateVector(MoveWorldDirection);
-		}
+	
 		MoveSpeed = Data->GetMoveSpeed();
-		MoveDistance = Data->GetMoveDistance();
-		CurrenDistance = MoveDistance;
-		
-		if (ABaseCharacter* BaseCharacter = Cast<ABaseCharacter>(OwnerPawn.Get()))
+		CurrenDistance = Data->GetMoveDistance();
+		if (OwnerPawn.IsValid())
 		{
-			if (bControllerRotattion)
+			if (!bWorldDirection)
 			{
-				BaseCharacter->UseControllerDesiredRotation();
+				if (bControllerRotattion)
+					MoveWorldDirection = OwnerPawn->GetControlRotation().RotateVector(MoveWorldDirection);
+				else
+					MoveWorldDirection = OwnerPawn->GetActorRotation().RotateVector(MoveWorldDirection);
 			}
-			else
+			if (APalBaseCharacter* BaseCharacter = Cast<APalBaseCharacter>(OwnerPawn.Get()))
 			{
-				BaseCharacter->UseOrientRotationToMovement();
+				if (bControllerRotattion)
+				{
+					BaseCharacter->UseControllerDesiredRotation();
+				}
+				else
+				{
+					BaseCharacter->UseOrientRotationToMovement();
+				}
 			}
 		}
 	}
-		MoveDistance = 0;
 }
+
 void UAnimLoopObject_Direction::UpdateLoop(float DeltaTime)
 {
-	if (!OwnerPawn.IsValid())
-	{
-		bLoop = false;
-		return;
-	}
 	bLoop = CurrenDistance > 0;
 	if (bLoop)
 	{
@@ -62,14 +57,17 @@ void UAnimLoopObject_Direction::UpdateLoop(float DeltaTime)
 			DeltaMove = CurrenDistance;
 		CurrenDistance -= DeltaMove;
 		MoveWorldDirection = InitialActorDirection.GetSafeNormal();
-		if (!bWorldDirection)
+		if (OwnerPawn.IsValid())
 		{
-			if (bControllerRotattion)
-				MoveWorldDirection = OwnerPawn->GetControlRotation().RotateVector(MoveWorldDirection);
-			else
-				MoveWorldDirection = OwnerPawn->GetActorRotation().RotateVector(MoveWorldDirection);
+			if (!bWorldDirection)
+			{
+				if (bControllerRotattion)
+					MoveWorldDirection = OwnerPawn->GetControlRotation().RotateVector(MoveWorldDirection);
+				else
+					MoveWorldDirection = OwnerPawn->GetActorRotation().RotateVector(MoveWorldDirection);
+			}
+			OwnerPawn->AddActorWorldOffset(MoveWorldDirection * DeltaMove, true, nullptr, ETeleportType::None);
 		}
-		OwnerPawn->AddActorWorldOffset(MoveWorldDirection * DeltaMove, true, nullptr, ETeleportType::None);
 	}
 }
 

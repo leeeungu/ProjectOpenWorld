@@ -19,35 +19,18 @@ void UBaseAnimInstance::NativeInitializeAnimation()
 void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-	if (!MovementComponent)
-		return;
-	IsFalling = MovementComponent->IsFalling();
-	MoveSpeed = 0.0f;
-	if (MovementComponent->GetMaxSpeed() > 0)
-		MoveSpeed = MovementComponent->Velocity.Length() / MovementComponent->GetMaxSpeed();
+	if (MovementComponent)
+	{
+		IsFalling = MovementComponent->IsFalling();
+		MoveSpeed = 0.0f;
+		if (MovementComponent->GetMaxSpeed() > 0)
+			MoveSpeed = MovementComponent->Velocity.Length() / MovementComponent->GetMaxSpeed();
+	}
 	MoveSpeed = FMath::Clamp(MoveSpeed, 0.0f, 1.0f);
 	if (LoopObject)
 	{
 		LoopObject->UpdateLoop(DeltaSeconds);
-		if (!IsLoop())
-		{
-			LoopObject->EndLoop();
-			LoopObject = nullptr;
-			CurrentMontageIndex++;
-			if (CanPlayMontage())
-			{
-				const TArray<UAnimMetaData*>& MetaData = CurrentMontage->GetMetaData();
-				for (UAnimMetaData* Data : MetaData)
-				{
-					if (UAMD_MontageChangeEvent* ChangeEvent = Cast<UAMD_MontageChangeEvent>(Data))
-					{
-						ChangeEvent->EndEvent(this);
-					}
-				}
-				PlayMontage();
-				return;
-			}
-		}
+		bWasLooping = IsLoop();
 	}
 }
 
@@ -55,21 +38,19 @@ void UBaseAnimInstance::OnMontageStartedEvent(UAnimMontage* Montage)
 {
 }
 
-
 void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!bIsPlayingMontage)
 		return;
-	bool bWasLooping = false;
-	if (LoopObject)
+	if (LoopObject && bWasLooping)
 	{
 		LoopObject->UpdateBlendOut();
 		bWasLooping = IsLoop();
-		if (!bWasLooping)
-		{
-			LoopObject->EndLoop();
-			LoopObject = nullptr;
-		}
+	}
+	if (!bWasLooping && LoopObject)
+	{
+		LoopObject->EndLoop();
+		LoopObject = nullptr;
 	}
 	if (!bWasLooping)
 	{
@@ -153,7 +134,7 @@ void UBaseAnimInstance::OnMontageEnd()
 	{
 		OnMontageQueueEnd.Broadcast();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd Montage Queue End "), *GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd Montage Queue End "), *GetName());
 }
 
 void UBaseAnimInstance::PlayMontage()
@@ -178,7 +159,10 @@ void UBaseAnimInstance::PlayMontage()
 				{
 					LoopObject = LoopData->CreateInstanceObject(GetWorld());
 					if (LoopObject)
+					{
 						LoopObject->Initialize(this, LoopData);
+						bWasLooping = true;
+					}
 				}
 			}
 		}

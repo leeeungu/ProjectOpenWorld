@@ -1,4 +1,4 @@
-#include "SubSystem/GPT/GPTInstanceSubsystem.h"
+Ôªø#include "SubSystem/GPT/GPTInstanceSubsystem.h"
 #include "VaRestSubsystem.h"
 #include "VaRestRequestJSON.h"
 #include "VaRestTypes.h"
@@ -7,27 +7,32 @@
 #include "Engine/Texture2D.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Subsystem/GPT/GPTResponseInterface.h"
+#include "SubSystem/DeveloperSettings/GPTSettings.h"
 
-UVaRestRequestJSON* UGPTInstanceSubsystem::GetRequest(EVaRestRequestVerb verb, EVaRestRequestContentType contentType, UObject* ResponseTarget)
+UVaRestRequestJSON* UGPTInstanceSubsystem::GetRequest(EVaRestRequestVerb verb, EVaRestRequestContentType contentType, UObject* ResponseTarget,
+	const TArray< FGPTField>* PostFields)
 {
 	UVaRestRequestJSON* Request = VaRestSubsystem->ConstructVaRestRequestExt(verb, contentType); // );
 	if (Request)
 	{
-		{
-			FScriptDelegate Delegate{};
-			Delegate.BindUFunction(ResponseTarget, TEXT("OnRequestComplete"));
-			Request->OnRequestComplete.Add(Delegate);
-		}
-		{
-			FScriptDelegate Delegate{};
-			Delegate.BindUFunction(ResponseTarget, TEXT("OnRequestFail"));
-			Request->OnRequestFail.Add(Delegate);
-		}
+		FScriptDelegate Delegate{};
+		Delegate.BindUFunction(ResponseTarget, TEXT("OnRequestComplete"));
+		Request->OnRequestComplete.Add(Delegate);
+		Delegate.Clear();
 
-		Request->SetHeader("Authorization", APIKey);
-		Request->SetHeader("Content-Type", "application/json");
-		// º≠πˆø°º≠ ∞¸∏Æ∞° « ø‰«œ¡ˆ∏∏ ª˝∑´
-		Request->SetHeader("OpenAI-Organization", "org-BZKAwjvbzNgg3Uszu2Pb91Hz");
+		Delegate.BindUFunction(ResponseTarget, TEXT("OnRequestFail"));
+		Request->OnRequestFail.Add(Delegate);
+
+		FGPTField KeyFeild = UGPTSettings::GetGPTKey();
+		Request->SetHeader(KeyFeild.Header, KeyFeild.Value);
+		if (PostFields)
+		{
+			for (const FGPTField& Feild : *PostFields)
+			{
+				Request->SetHeader(Feild.Header, Feild.Value);
+			}
+		}
 	}
 	return Request;
 }
@@ -41,7 +46,8 @@ bool UGPTInstanceSubsystem::CheckSendable()
 		UE_LOG(LogTemp, Warning, TEXT("Cant find UVaRestSubsystem"));
 		return false;
 	}
-	if (APIKey == TEXT("YOUR_API_KEY_HERE"))
+	FGPTField Feild = UGPTSettings::GetGPTKey();
+	if (Feild.Value == TEXT("YOUR_API_KEY_HERE"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GPT API Key is Empty"));
 		return false;
@@ -74,20 +80,36 @@ UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestJsonValue* JsonValu
 	return Result;
 }
 
-TArray<FString> UGPTInstanceSubsystem::GetResponsePath(EResponseType type) const
+void UGPTInstanceSubsystem::SetRequestField(UVaRestJsonObject* RequestRootObject, const TArray<FGPTField>& Fields)
 {
-	switch (type)
+	if (RequestRootObject)
 	{
-	case UGPTInstanceSubsystem::EResponseType::RESPONSEID:
-		return { TEXT("id") };
-	case UGPTInstanceSubsystem::EResponseType::IMAGE:
-		return  { TEXT("output"), TEXT("result") };
-	case UGPTInstanceSubsystem::EResponseType::TEXT:
-		return { TEXT("output"), TEXT("content"), TEXT("text") };
-	case UGPTInstanceSubsystem::EResponseType::TOTALTOKEN:
-		return { TEXT("usage"), TEXT("total_tokens") };
+		//https://developers.openai.com/api/reference/resources/responses/methods/create
+		for (const FGPTField& Feild : Fields)
+		{
+			if (Feild.ValueType == EVaJson::String)
+			{
+				RequestRootObject->SetStringField(Feild.Header, Feild.Value);
+			}
+			else if (Feild.ValueType == EVaJson::Number)
+			{
+				RequestRootObject->SetNumberField(Feild.Header, FCString::Atof(*Feild.Value));
+			}
+			else if (Feild.ValueType == EVaJson::Boolean)
+			{
+				RequestRootObject->SetBoolField(Feild.Header, FCString::ToBool(*Feild.Value));
+			}
+			else if (Feild.ValueType == EVaJson::Array)
+			{
+				TArray<UVaRestJsonValue*> ArrayValues;
+				for (const FString& Value : Feild.ValueArray)
+				{
+					ArrayValues.Add(VaRestSubsystem->ConstructJsonValueString(Value));
+				}
+				RequestRootObject->SetArrayField(Feild.Header, ArrayValues);
+			}
+		}
 	}
-	return TArray<FString>();
 }
 
 UVaRestJsonValue* UGPTInstanceSubsystem::GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const
@@ -109,57 +131,12 @@ void UGPTInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	VaRestSubsystem = GEngine->GetEngineSubsystem<UVaRestSubsystem>();
-	APIKey = TEXT("Bearer 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");
-}
-
-void UGPTInstanceSubsystem::SendGPTStringRequest(FGPTStringRequest RequestData, TScriptInterface< IGPTResponseInterface> Target)
-{
-	if (!Target || !Target.GetObject())
-	{
-		if (Target.GetObject())
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s No Interface :SendGPTStringRequest"), *Target.GetObject()->GetName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("No Object :SendGPTStringRequest"));
-		}
-		return;
-	}
-	if (!CheckSendable())
-		return;
-	if (!RequestData.CheckSendable())
-		return;
-
-	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target.GetObject());
-	if (Request)
-	{
-		UVaRestJsonObject* RequestObject = VaRestSubsystem->ConstructVaRestJsonObject();
-		{
-			RequestObject->SetStringField(TEXT("model"), TEXT("gpt-4.1"));
-		}
-		{
-			TArray< UVaRestJsonValue*> array{};
-			UVaRestJsonObject* RequestValueObj = VaRestSubsystem->ConstructVaRestJsonObject();
-			RequestValueObj->SetStringField(TEXT("role"), TEXT("developer"));
-			RequestValueObj->SetStringField(TEXT("content"), RequestData.Frompt);
-			array.Add(VaRestSubsystem->ConstructJsonValueObject(RequestValueObj));
-			RequestValueObj = VaRestSubsystem->ConstructVaRestJsonObject();
-			RequestValueObj->SetStringField(TEXT("role"), TEXT("user"));
-			RequestValueObj->SetStringField(TEXT("content"), RequestData.Text);
-			array.Add(VaRestSubsystem->ConstructJsonValueObject(RequestValueObj));
-			RequestObject->SetArrayField(TEXT("input"), array);
-			// 100 µ«∏È ≤˜±Ë
-			//RequestObject->SetIntegerField(TEXT("max_output_tokens"), 100);
-		}
-
-		Request->SetRequestObject(RequestObject);
-		Request->ProcessURL("https://api.openai.com/v1/responses");
-	}
+	//APIKey = TEXT("Bearer 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");
 }
 
 void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, TScriptInterface< IGPTResponseInterface> Target)
 {
+	//https://developers.openai.com/api/reference/resources/images/methods/generate
 	// Check Send Condition
 	if (!Target.GetObject())
 	{
@@ -178,27 +155,22 @@ void UGPTInstanceSubsystem::SendGPTImageRequest(FGPTImageRequest RequestData, TS
 	if (!RequestData.CheckSendable())
 		return;
 
-	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target.GetObject());
+	FGPTImagePostData ImagePrompt = UGPTSettings::GetImagePostData();
+	UVaRestRequestJSON* Request = GetRequest(EVaRestRequestVerb::POST, EVaRestRequestContentType::json, Target.GetObject(), &ImagePrompt.PostFields);
 	if (Request)
 	{
 		UVaRestJsonObject* RequestRootObject = VaRestSubsystem->ConstructVaRestJsonObject();
+		if (RequestRootObject)
 		{
-			// https://platform.openai.com/docs/guides/tools-image-generation#page-top
-			RequestRootObject->SetStringField(TEXT("model"), TEXT("gpt-4.1-mini"));
-			RequestRootObject->SetStringField(TEXT("input"), RequestData.Text);
-			{
-				TArray< UVaRestJsonValue*> array{};
-				UVaRestJsonObject* RequestValueObj = VaRestSubsystem->ConstructVaRestJsonObject();
-				RequestValueObj->SetStringField(TEXT("type"), TEXT("image_generation"));
-				RequestValueObj->SetStringField(TEXT("quality"), TEXT("low"));
-				RequestValueObj->SetStringField(TEXT("size"), TEXT("1024x1024"));
-				array.Add(VaRestSubsystem->ConstructJsonValueObject(RequestValueObj));
-				RequestRootObject->SetArrayField(TEXT("tools"), array);
-			}
+			SetRequestField(RequestRootObject, ImagePrompt.PromptFields);
+			RequestRootObject->SetStringField(ImagePrompt.PromptHeader, RequestData.Text);
+			Request->SetRequestObject(RequestRootObject);
+			Request->ProcessURL(ImagePrompt.RequestURL);
 		}
-
-		Request->SetRequestObject(RequestRootObject);
-		Request->ProcessURL(TEXT("https://api.openai.com/v1/responses"));
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Can't Make RestJsonObject :SendGPTImageRequest"));
+		}
 	}
 }
 
@@ -226,21 +198,9 @@ void UGPTInstanceSubsystem::SendGetGPTResponse(FString modelID, TScriptInterface
 	}
 }
 
-FString UGPTInstanceSubsystem::GetResponseString(UVaRestRequestJSON* Request) const
-{
-	TArray<FString> Fields = GetResponsePath(EResponseType::TEXT);// { TEXT("output"), TEXT("content"), TEXT("text") };
-	EVaJson type{};
-	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
-	if (Value && type==EVaJson::String)
-	{
-		return Value->AsString();
-	}
-	return FString();
-}
-
 FString UGPTInstanceSubsystem::GetRequestID(UVaRestRequestJSON* Request) const
 {
-	TArray<FString> Fields = GetResponsePath(EResponseType::RESPONSEID);
+	TArray<FString> Fields = UGPTSettings::GetResponsePath(EResponseType::RESPONSEID);
 	EVaJson type{};
 	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
 	if (Value && type == EVaJson::String)
@@ -253,7 +213,7 @@ FString UGPTInstanceSubsystem::GetRequestID(UVaRestRequestJSON* Request) const
 UTexture2D* UGPTInstanceSubsystem::GetResponseTexture(UVaRestRequestJSON* Request) const
 {
 	EVaJson type{};
-	TArray<FString> Fields = GetResponsePath(EResponseType::IMAGE);
+	TArray<FString> Fields = UGPTSettings::GetResponsePath(EResponseType::IMAGE);
 	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
 	if (Value && type == EVaJson::String)
 	{
@@ -316,7 +276,7 @@ UTexture2D* UGPTInstanceSubsystem::GetResponseTexture(UVaRestRequestJSON* Reques
 
 int32 UGPTInstanceSubsystem::GetResponseTotalTogens(UVaRestRequestJSON* Request) const
 {
-	TArray<FString> Fields = GetResponsePath(EResponseType::TOTALTOKEN);
+	TArray<FString> Fields = UGPTSettings::GetResponsePath(EResponseType::TOTALTOKEN);
 	EVaJson type{};
 	UVaRestJsonValue* Value = GetJsonValue(Request, Fields, type);
 	if (Value && type == EVaJson::Number)
@@ -330,9 +290,9 @@ int32 UGPTInstanceSubsystem::GetResponseTotalTogens(UVaRestRequestJSON* Request)
 bool FGPTStringRequest::CheckSendable() const
 {
 	//|| RequestData.Frompt.Contains("Http") >= 0 || RequestData.Frompt.Contains("http") >= 0)
-	// √÷±Ÿ aiø°º≠ url¿ª «ÿºÆ«œ∞‘ «œ¥¬ πÊπ˝¿∏∑Œ ¿Œ¡ßº« ∞¯∞›¿ª «— ªÁ∑ ∞° ¿÷æÓº≠ √ﬂ∞°
-	if (Frompt.IsEmpty() || Text.IsEmpty() ||
-		Text.Contains("Http", ESearchCase::IgnoreCase) || Frompt.Contains("Http", ESearchCase::IgnoreCase))
+	// ÏµúÍ∑º aiÏóêÏÑú urlÏùÑ Ìï¥ÏÑùÌïòÍ≤å ÌïòÎäî Î∞©Î≤ïÏúºÎ°ú Ïù∏Ï†ùÏÖò Í≥µÍ≤©ÏùÑ Ìïú ÏÇ¨Î°ÄÍ∞Ä ÏûàÏñ¥ÏÑú Ï∂îÍ∞Ä
+	if (prompt.IsEmpty() || Text.IsEmpty() ||
+		Text.Contains("Http", ESearchCase::IgnoreCase) || prompt.Contains("Http", ESearchCase::IgnoreCase))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GPT Request Invalid: %s"), *Text);
 		return false;
@@ -343,7 +303,7 @@ bool FGPTStringRequest::CheckSendable() const
 bool FGPTImageRequest::CheckSendable() const
 {
 	//|| RequestData.Frompt.Contains("Http") >= 0 || RequestData.Frompt.Contains("http") >= 0)
-	// √÷±Ÿ aiø°º≠ url¿ª «ÿºÆ«œ∞‘ «œ¥¬ πÊπ˝¿∏∑Œ ¿Œ¡ßº« ∞¯∞›¿ª «— ªÁ∑ ∞° ¿÷æÓº≠ √ﬂ∞°
+	// ÏµúÍ∑º aiÏóêÏÑú urlÏùÑ Ìï¥ÏÑùÌïòÍ≤å ÌïòÎäî Î∞©Î≤ïÏúºÎ°ú Ïù∏Ï†ùÏÖò Í≥µÍ≤©ÏùÑ Ìïú ÏÇ¨Î°ÄÍ∞Ä ÏûàÏñ¥ÏÑú Ï∂îÍ∞Ä
 	if (Text.IsEmpty() ||
 		Text.Contains("Http", ESearchCase::IgnoreCase))// || Frompt.Contains("Http", ESearchCase::IgnoreCase))
 	{

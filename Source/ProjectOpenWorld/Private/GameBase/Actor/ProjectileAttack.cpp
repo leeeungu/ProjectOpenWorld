@@ -3,7 +3,7 @@
 #include "Components/PrimitiveComponent.h"
 #include "Components/ShapeComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Pal/Data/PalCollisionFactory.h" // PalDamage::GetHitCollisionProfileName
+#include "Pal/Data/PalCollisionFactory.h"
 #include "GameBase/Object/AttackObject.h"
 #include "Pal/Data/PalDamageType.h"
 
@@ -15,9 +15,9 @@ AProjectileAttack::AProjectileAttack()
 	SetRootComponent(Root);
 
 	Movement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
-	Movement->bRotationFollowsVelocity = true; // 콜리전(및 그 자식 비주얼)이 진행 방향으로 정렬
-	Movement->ProjectileGravityScale = 0.f;    // 직선 (포물선은 자식/BP에서 조정)
-	Movement->MaxSpeed = 0.f;                  // 0 = 무제한
+	Movement->bRotationFollowsVelocity = true;
+	Movement->ProjectileGravityScale = 0.f;
+	Movement->MaxSpeed = 0.f; 
 }
 
 void AProjectileAttack::OnConstruction(const FTransform& Transform)
@@ -37,17 +37,12 @@ void AProjectileAttack::BeginPlay()
 	}
 
 	ApplyCollisionProfile();
-	Collision->OnComponentBeginOverlap.AddDynamic(this, &AProjectileAttack::OnProjectileOverlap);
-	//Movement->SetUpdatedComponent(Collision);
+	if(Collision)
+		Collision->OnComponentBeginOverlap.AddDynamic(this, &AProjectileAttack::OnProjectileOverlap);
 }
 
 void AProjectileAttack::Launch(const FProjectileLaunchParams& Params)
 {
-	//FVector Direction = Params.SpawnRotation.RotateVector(Params.ProjectileDirection);
-	//if (!Params.bUseMeshRotation && MeshComp->GetOwner())
-	//{
-	//	Direction = MeshComp->GetOwner()->GetActorRotation().RotateVector(LaunchParams.ProjectileDirection);
-	//}
 	Movement->ProjectileGravityScale = Params.GravityScale;
 	Movement->Velocity = GetActorForwardVector() * Params.ProjectileSpeed;
 

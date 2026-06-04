@@ -56,6 +56,8 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 	if (MeshComp->GetOwner() && pWorld)
 	{
 		APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
+		if (!OwnerPawn)
+			return;
 		TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(MeshComp->GetOwner());
 		TArray<FHitResult> arResult{};
 		FCollisionQueryParams Param{};

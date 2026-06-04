@@ -1,8 +1,7 @@
-#pragma once
+癤�#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Subsystem/GPT/GPTResponseInterface.h"
 #include "GPTInstanceSubsystem.generated.h"
 
 class UVaRestSubsystem;
@@ -12,6 +11,11 @@ enum class EVaRestRequestContentType : uint8;
 enum class EVaJson : uint8;
 class UTexture2D;
 class UVaRestJsonValue;
+class IGPTResponseInterface;
+enum class EResponseType : uint8;
+struct FGPTField;
+class UVaRestJsonObject;
+struct FGPTPostPrompt;
 
 USTRUCT(BlueprintType)
 struct FGPTRequest
@@ -27,7 +31,7 @@ struct FGPTStringRequest : public FGPTRequest
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GPTRequest")
-	FString Frompt{};
+	FString prompt{};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GPTRequest")
 	FString Text{};
 
@@ -44,44 +48,45 @@ struct FGPTImageRequest : public FGPTRequest
 	virtual bool CheckSendable() const override;
 };
 
+
+USTRUCT(BlueprintType)
+struct FGPTRequestResult : public FGPTRequest
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "GPTRequest")
+	FString RequestID{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "GPTRequest")
+	FString Text{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "GPTRequest")
+	TObjectPtr<UTexture2D>  Image{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "GPTRequest")
+	int32 ToggenCount{};
+};
+
 UCLASS()
 class PROJECTOPENWORLD_API UGPTInstanceSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 protected:
-	UVaRestSubsystem* VaRestSubsystem{};
-	// 서버에서 관리가 필요하지만 생략
-	FString APIKey = TEXT("YOUR_API_KEY_HERE");
-
-	enum class EResponseType
-	{
-		NONE,
-		RESPONSEID,
-		IMAGE,
-		TEXT,
-		TOTALTOKEN,
-	};
+	TObjectPtr<UVaRestSubsystem> VaRestSubsystem{};
 private:
-	UVaRestRequestJSON* GetRequest(EVaRestRequestVerb verb, EVaRestRequestContentType contentType, UObject* ResponseTarget);
+	UVaRestRequestJSON* GetRequest(EVaRestRequestVerb verb, EVaRestRequestContentType contentType, UObject* ResponseTarget,		const TArray< FGPTField>* PostFields = nullptr);
 	UVaRestJsonValue* GetJsonValue(UVaRestRequestJSON* Request, const TArray<FString>& FieldPath, EVaJson& Type) const;
 	bool CheckSendable() ;
 	UVaRestJsonValue* GetJsonValue(UVaRestJsonValue* JsonValue, const FString* ArrayFields, int Count) const;
-	TArray<FString> GetResponsePath(EResponseType type) const;
+	void SetRequestField(UVaRestJsonObject* RequestRootObject , const TArray< FGPTField>& Fields);
+
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
-	void SendGPTStringRequest(FGPTStringRequest RequestData, TScriptInterface< IGPTResponseInterface> Target);
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
 	void SendGPTImageRequest(FGPTImageRequest RequestData, TScriptInterface< IGPTResponseInterface> Target);
 
 	UFUNCTION(BlueprintCallable, Category = "VaRest|Utility")
 	void SendGetGPTResponse(FString modelID, TScriptInterface< IGPTResponseInterface> Target);
 
-
-	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
-	FString  GetResponseString(UVaRestRequestJSON* Request) const;
 	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")
 	FString  GetRequestID(UVaRestRequestJSON* Request) const;
 	UFUNCTION(BlueprintPure, Category = "VaRest|Utility")

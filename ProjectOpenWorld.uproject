@@ -13,7 +13,8 @@
 				"UMG",
 				"CoreUObject",
 				"AIModule",
-				"Foliage"
+				"Foliage",
+				"DeveloperSettings"
 			]
 		}
 	],
