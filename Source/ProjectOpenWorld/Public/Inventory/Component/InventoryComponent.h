@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Inventory/Interface/InventorySlotInterface.h"
 #include "Item/DataTable/ItemSlotType.h"
+#include "Pal/Interface/PalSaveGameObject.h"
 #include "InventoryComponent.generated.h"
 
 class ABasePlayer;
@@ -11,18 +12,23 @@ class UBaseItem;
 struct FPalStaticItemDataStruct;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateInventory_V2, const TArray<FInventorySlot>&, SlotData);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class PROJECTOPENWORLD_API UInventoryComponent : public UActorComponent
+class PROJECTOPENWORLD_API UInventoryComponent : public UActorComponent, public IPalSaveGameObject
 {
 	GENERATED_BODY()
 
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	TArray<FInventorySlot> inventoryArray{};
-
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	TArray < FInventorySlot> EquipSlot{};
+
+	UPROPERTY(SaveGame) 
+	TArray<FPalSlotSaveData> SavedInventory;
+	UPROPERTY(SaveGame) 
+	TArray<FPalSlotSaveData> SavedEquip;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
 	float totalInventoryWeight{};
@@ -44,14 +50,25 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnUpdateInventory onUpdateInventory{};
 
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnUpdateInventory_V2  OnUpdateInventory_V2{};
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnUpdateInventory_V2  OnUpdateEquip{};
+
 public:
 	UInventoryComponent();
+
+
+	virtual void OnPreSave() override;
+	virtual void OnLoaded() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Editor")
 	bool AddItem(UBaseItem* NewItem);
 
 	//UFUNCTION(BlueprintCallable, CallInEditor, Category = "Inventory|Editor", meta = (DevelopmentOnly))
 	bool AddItem(FName NewItemID, int ItemCount = 1);
+
+	bool SetItemAtSlot(TArray<FInventorySlot>& Arr, int32 SlotIndex, UBaseItem* Item);
 	bool ReturnItemToInventory(UBaseItem* BaseItem);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")

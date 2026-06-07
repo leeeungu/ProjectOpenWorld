@@ -57,11 +57,17 @@ void APalMonsterSpawner::Teardown()
 {
     StopSpawnLoop();
 
-    for (TObjectPtr<APalBaseMonster>& M : AliveMonsters)
+   /* if (!AliveMonsters.IsEmpty())
     {
-        if (IsValid(M))
-            M->Destroy();
-    }
+        for (TObjectPtr<APalBaseMonster>& M : AliveMonsters)
+        {
+            if (IsValid(M))
+            {
+                M->Destroy();
+                M = nullptr;
+            }
+        }
+    }*/
     AliveMonsters.Reset();
     TargetNum = 0;
 }

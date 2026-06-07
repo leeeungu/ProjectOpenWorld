@@ -17,6 +17,7 @@ enum class EPlayerAttackType : uint8
 	Hit02,
 	Hit03,
 	Dead,
+	Attack_None,
 	EnumMax UMETA(Hidden)
 };
 class UAnimMontage;

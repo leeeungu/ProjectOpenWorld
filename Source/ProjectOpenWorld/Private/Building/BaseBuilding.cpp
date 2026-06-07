@@ -36,7 +36,7 @@ ABaseBuilding::ABaseBuilding() :Super()
 	NavModifier = CreateDefaultSubobject<UNavModifierComponent>(TEXT("NavModifier"));
 	NavModifier->CalculateBounds();
 	NavModifier->SetAreaClass(UNavArea_Default::StaticClass());
-	Command = UPalCommandFunctionLibrary::CommandArchitecture(nullptr, this);
+	//Command = UPalCommandFunctionLibrary::CommandArchitecture(nullptr, this);
 }
 
 void ABaseBuilding::BeginPlay()
@@ -64,7 +64,7 @@ void ABaseBuilding::BeginDestroy()
 	Super::BeginDestroy();
 }
 
-EPalCommandKind ABaseBuilding::GetCommandKind_Implementation()
+/*EPalCommandKind ABaseBuilding::GetCommandKind_Implementation()
 {
 	return Command.CommandKind;
 }
@@ -85,6 +85,7 @@ bool ABaseBuilding::IsCommandFinished_Implementation()
 		return true;
 	return PalBuildingStaticMeshComponent->IsBuildingEnd();
 }
+*/
 
 void ABaseBuilding::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {

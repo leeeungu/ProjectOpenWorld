@@ -25,5 +25,7 @@ protected:
 	virtual FVector GetEndLocation(USkeletalMeshComponent* MeshComp) const;
 	virtual bool CollisionAttackResult(USkeletalMeshComponent* MeshComp, TArray<FHitResult>& HitResult);
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+#if WITH_EDITOR
 	void AttackEventObjectDebug(USkeletalMeshComponent* MeshComp);
+#endif
 };

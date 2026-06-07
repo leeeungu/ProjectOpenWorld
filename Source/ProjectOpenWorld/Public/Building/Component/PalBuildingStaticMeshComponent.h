@@ -71,6 +71,6 @@ public:
 	const float* GetBuildSpeed() const { return &buildSpeed; }
 
 	//FORCEINLINE UStaticMeshComponent* GetMeshComponent() const;
-private:
 	void SetBuildingPercent(float Value);
+private:
 };

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Item/Object/BaseItemObject.h"
@@ -26,6 +26,6 @@ protected:
 public:
 	UItemObject_PlayerWeapon();
 
-	virtual void RegisterItemObject(AActor* TargetActor) override;
-	virtual void UnregisterItemObject(AActor* TargetActor) override;
+	virtual void RegisterItemObject(AActor* TargetActor) override {}
+	virtual void UnregisterItemObject(AActor* TargetActor) override {}
 };

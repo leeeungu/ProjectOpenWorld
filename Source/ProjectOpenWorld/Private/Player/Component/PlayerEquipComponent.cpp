@@ -152,14 +152,14 @@ bool UPlayerEquipComponent::RegisterItem(const UBaseItem* Item)
 			FInventorySlot* EmpthySlot = Player->GetInventoryComponent()->GetEmptyInventorySlot();
 			const FInventorySlot* EquipSlot = Player->GetInventoryComponent()->GetEquipSlot(SlotFragment->GetSlotType());
 			Player->GetInventoryComponent()->SwapEquipSlot(EquipSlot, EmpthySlot);
-			UE_LOG(LogTemp, Warning, TEXT("RegisterItem: Swapped item from equip slot to inventory slot"));
+			//UE_LOG(LogTemp, Warning, TEXT("RegisterItem: Swapped item from equip slot to inventory slot"));
 		}
 		if (RegisterItem)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PreRegistered item: %s to weapon type: %d"), *RegisterItem->GetItemID().ToString(), static_cast<uint8>(NewWeaponType));
+			//UE_LOG(LogTemp, Warning, TEXT("PreRegistered item: %s to weapon type: %d"), *RegisterItem->GetItemID().ToString(), static_cast<uint8>(NewWeaponType));
 		}
 		RegisterItem = Item;
-		UE_LOG(LogTemp, Warning, TEXT("Registered item: %s to weapon type: %d"), *RegisterItem->GetItemID().ToString(), static_cast<uint8>(NewWeaponType));
+		//UE_LOG(LogTemp, Warning, TEXT("Registered item: %s to weapon type: %d"), *RegisterItem->GetItemID().ToString(), static_cast<uint8>(NewWeaponType));
 		if (Player->GetInventoryComponent() && SlotFragment)
 		{
 			Player->GetInventoryComponent()->SetEquipSlot(SlotFragment->GetSlotType(), const_cast<UBaseItem*>(Item));
@@ -252,6 +252,30 @@ void UPlayerEquipComponent::TriggerEvent(const FInputActionValue& Value, EInputK
 
 void UPlayerEquipComponent::CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
+}
+
+void UPlayerEquipComponent::OnUpdateEquip(const TArray<FInventorySlot>& Data)
+{
+	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
+	if (Player)
+	{
+		for (const FInventorySlot& Slot : Data)
+		{
+			if (const UBaseItem* Item = Slot.ItemObject)
+			{
+				UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
+				UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
+				if (HandEquipData && SlotFragment)
+				{
+					const EWeapone NewWeaponType = SlotFragment->GetWeaponeData();
+
+					const UBaseItem*& RegisterItem = EquipItemMap.FindOrAdd(NewWeaponType, nullptr);
+					RegisterItem = Item;
+				}
+
+			}
+		}
+	}
 }
 
 UHandEquipItemFragment* UPlayerEquipComponent::GetHandEquipFragment(const UBaseItem* Item) const

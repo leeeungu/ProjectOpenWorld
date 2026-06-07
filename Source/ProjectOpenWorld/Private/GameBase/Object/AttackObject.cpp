@@ -6,6 +6,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GenericTeamAgentInterface.h"
 #include "Pal/Component/PalHitHandlerComponent.h"
+#include "Engine/StaticMeshActor.h"
 
 void UAttackObject_KnockBackDirection::AttackEvent(const FAttackEventContext& AttContext) const
 {
@@ -36,24 +37,6 @@ void UAttackObject_KnockBackDirection::AttackEvent(const FAttackEventContext& At
 	}
 }
 
-void UAttackObject_KnockBackDirection::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
-{
-	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
-	if (!CauserCharacter)
-		return;
-	USkeletalMeshComponent* CauserMesh = CauserCharacter->GetMesh();
-	if (!CauserMesh || !CauserMesh->GetWorld() || CauserMesh->GetWorld()->HasBegunPlay())
-		return;
-	FVector Direction = KnockBackDirection;
-	Direction.Normalize();
-	if (!bIsWorldDirection )
-	{
-		Direction = FRotator(0,90,0).RotateVector(Direction);
-	}
-	FVector LaunchVelocity = Direction * KnockBackForce;
-	DrawDebugDirectionalArrow(CauserMesh->GetWorld(), CauserMesh->GetOwner()->GetActorLocation() , CauserMesh->GetOwner()->GetActorLocation()+ Direction * 100.f,
-		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
-}
 
 void UAttackObject_PlayerStun::AttackEvent(const FAttackEventContext& AttContext) const
 {
@@ -93,7 +76,7 @@ void UAttackObject_Impulse::AttackEvent(const FAttackEventContext& AttContext) c
 			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 
 			// 힘 벡터 계산
-			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation ).GetSafeNormal();
+			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation).GetSafeNormal();
 			//LaunchDirection.X *= 3;
 			//LaunchDirection.Y *= 3;
 			LaunchDirection.Z = abs(LaunchDirection.Z);
@@ -114,23 +97,6 @@ void UAttackObject_Impulse::AttackEvent(const FAttackEventContext& AttContext) c
 	}
 }
 
-void UAttackObject_Impulse::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
-{
-	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
-	if (!CauserCharacter)
-		return;
-	USkeletalMeshComponent* CauserMesh = CauserCharacter->GetMesh();
-	if (!CauserMesh || !CauserMesh->GetWorld()) // || CauserMesh->GetWorld()->HasBegunPlay())
-		return;
-	FVector NewLocation = CauserMesh->GetSocketLocation(SocketName) + CauserMesh->GetComponentRotation().Quaternion() * SocketOffset;
-	DrawDebugSphere(CauserMesh->GetWorld(), NewLocation, AttackRadius, 20, FColor::Purple, false, DebugData.DebugLifeTime, 0, 0.5f);
-
-	FVector Direction = {1,0,0};
-	Direction = FRotator(0, 90, 0).RotateVector(Direction);
-	DrawDebugDirectionalArrow(CauserMesh->GetWorld(), CauserMesh->GetOwner()->GetActorLocation(), CauserMesh->GetOwner()->GetActorLocation() + Direction * 100.f,
-		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
-}
-
 void UAttackObject_Attack::AttackEvent(const FAttackEventContext& AttContext) const
 {
 	const FHitResult& HitData = *AttContext.Hit;
@@ -148,7 +114,7 @@ void UAttackObject_Attack::AttackEvent(const FAttackEventContext& AttContext) co
 		DamagePayload.BaseDamage = IAttackInterface::Execute_GetAttackValue(CauserCharacter);
 		DamagePayload.Instigator = CauserCharacter;
 		DamagePayload.HitResult = &HitData;
-		if(HitInterfacePtr->GetHitHandlerComponent())
+		if (HitInterfacePtr->GetHitHandlerComponent())
 			HitInterfacePtr->GetHitHandlerComponent()->TakeDamage(DamagePayload);
 	}
 	if (OtherAttack)
@@ -157,8 +123,63 @@ void UAttackObject_Attack::AttackEvent(const FAttackEventContext& AttContext) co
 	}
 }
 
+void UAttackObject_HitReact::AttackEvent(const FAttackEventContext& AttContext) const
+{
+	const FHitResult& HitData = *AttContext.Hit;
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
+	if (!CauserCharacter)
+		return;
+	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
+	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+	if (OtherAttack)
+	{
+		IAttackInterface::Execute_HitReaction(HitData.GetActor(), AttackInterface);
+	}
+}
+
+#if WITH_EDITOR
+void UAttackObject_KnockBackDirection::InitializeEvent(const FInitializeData& Data)
+{
+	
+}
+
+void UAttackObject_KnockBackDirection::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
+{
+	if (!DebugData.bFireInEditor || !AttContext.Owner)
+		return;
+	FVector Direction = KnockBackDirection;
+	Direction.Normalize();
+	if (!bIsWorldDirection)
+	{
+		Direction = FRotator(0, 90, 0).RotateVector(Direction);
+	}
+	DrawDebugDirectionalArrow(AttContext.Owner->GetWorld(), StartLocation, EndLocation + Direction * 100.f,
+		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
+}
+
+void UAttackObject_Impulse::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
+{
+	if (!DebugData.bFireInEditor)
+		return;
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
+	if (!CauserCharacter)
+		return;
+	USkeletalMeshComponent* CauserMesh = CauserCharacter->GetMesh();
+	if (!CauserMesh || !CauserMesh->GetWorld()) // || CauserMesh->GetWorld()->HasBegunPlay())
+		return;
+	FVector NewLocation = CauserMesh->GetSocketLocation(SocketName) + CauserMesh->GetComponentRotation().Quaternion() * SocketOffset;
+	DrawDebugSphere(CauserMesh->GetWorld(), NewLocation, AttackRadius, 20, FColor::Purple, false, DebugData.DebugLifeTime, 0, 0.5f);
+
+	FVector Direction = {1,0,0};
+	Direction = FRotator(0, 90, 0).RotateVector(Direction);
+	DrawDebugDirectionalArrow(CauserMesh->GetWorld(), CauserMesh->GetOwner()->GetActorLocation(), CauserMesh->GetOwner()->GetActorLocation() + Direction * 100.f,
+		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
+}
+
 void UAttackObject_Attack::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
+	if (!DebugData.bFireInEditor)
+		return;
 	USkeletalMeshComponent* CauserMesh = Cast< USkeletalMeshComponent>(AttContext.SourceComp);
 	if (!CauserMesh || !CauserMesh->GetWorld())
 		return;
@@ -183,17 +204,4 @@ void UAttackObject_Attack::DebugAttackEvent(const FAttackEventContext& AttContex
 				FQuat::Identity, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 0.5f);
 	}
 }
-
-void UAttackObject_HitReact::AttackEvent(const FAttackEventContext& AttContext) const
-{
-	const FHitResult& HitData = *AttContext.Hit;
-	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
-	if (!CauserCharacter)
-		return;
-	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
-	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
-	if (OtherAttack)
-	{
-		IAttackInterface::Execute_HitReaction(HitData.GetActor(), AttackInterface);
-	}
-}
+#endif

@@ -102,9 +102,6 @@ ABasePlayer::ABasePlayer() : Super{}
 	PlayerItemManagerComponent = CreateDefaultSubobject<UPlayerItemComponent>(TEXT("PlayerItemManagerComponent"));
 	StatComponent_Level = CreateDefaultSubobject<UStatComponent_Level>(TEXT("StatComponent_Level"));
 
-	//MonsterSpawnerComponent = CreateDefaultSubobject<UMonsterSpawnerComponent>(TEXT("MonsterSpawnerComponent"));
-	//MonsterSpawnerComponent->SetupAttachment(GetRootComponent());
-
 	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMoveComponent>(TEXT("PlayerMoveComponent"));
 
 	PlayerEquipComponent = CreateDefaultSubobject<UPlayerEquipComponent>(TEXT("PlayerEquipComponent"));
@@ -148,19 +145,6 @@ void ABasePlayer::SetTopDownMode(bool bTopDown)
 //	if(PlayerAnimationComponent->StartTravel())
 //		PlayerMoveFunc = &ABasePlayer::MoveTravel;
 //}
-
-void ABasePlayer::UpdateWeight(float InventoryWeight)
-{
-	/*if (*GetStatusRef(EStatusType::MaxWeight) > InventoryWeight)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
-	}
-	else
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 50.0f;
-	}*/
-}
-
 
 void ABasePlayer::BeginPlay()
 {
@@ -206,18 +190,20 @@ void ABasePlayer::BeginPlay()
 	{
 		PlayerDetectCollision->OnDetectChanged.AddDynamic(this, &ABasePlayer::OnMonsterDetectChanged);
 	}
+
+	if (GetInventoryComponent() && PlayerEquipComponent)
+	{
+		GetInventoryComponent()->OnUpdateEquip.AddDynamic(PlayerEquipComponent, &UPlayerEquipComponent::OnUpdateEquip);
+	}
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
 {
-	if (IsMaxLevel)
+	if (IsMaxLevel || !StatComponent)
 		return;
-	//float MaxHp = *GetStatusRef(EStatusType::MaxHp);
-	//float NewMaxHp = MaxHp + 50;
-	////SetStatus(EStatusType::MaxHp, NewMaxHp);
-	//HPStat->SetMaxStat(NewMaxHp);
-	//HPStat->SetCurrentStat(NewMaxHp);
-	//AttackStat->AddCurrentStat(20.0f);
+	StatComponent->AddMaxStat(50);
+	StatComponent->AddCurrentStat(50);
+	StatComponent->AddCurrentStat(20.0f);
 }
 
 UEquipmentComponent* const ABasePlayer::GetPlayerEquipComponent() const
@@ -252,70 +238,21 @@ class UInventoryComponent* ABasePlayer::GetInventoryComponent() const
 	return nullptr;
 }
 
-void ABasePlayer::SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName)
-{
-	//if (PlayerEquipComponent)
-	//	PlayerEquipComponent->SetEquipMesh(NewMesh);
-	//{
-	//	PlayerEquipComponent->SetSkeletalMesh(NewMesh);
-	//	PlayerEquipComponent->SetRelativeTransform(FTransform::Identity);
-	//	PlayerEquipComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
-	//}
-}
-
-void ABasePlayer::UnEquip(USkeletalMesh* OldMesh)
-{
-	//if (PlayerEquipComponent)
-	//	PlayerEquipComponent->SetUnequipMesh(OldMesh);
-}
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 {
 	if (StatComponent)
 	{
 		StatComponent->SetCurrentStat(Value, StatusType);
-
 	}
 }
 
 bool ABasePlayer::GetStatus(EStatusType StatusType, float& Result) const
 {
+	if (!StatComponent)
+		return false;
 	Result = StatComponent->GetCurrentStat(StatusType);
 	return true;
-	/*switch (StatusType)
-	{
-	case EStatusType::None:
-		break;
-	case EStatusType::Hp:
-		Result = HPStat->GetCurrentStat();
-		break;
-	case EStatusType::MaxHp:
-		Result = HPStat->GetMaxStat();
-		break;
-	case EStatusType::Attack:
-		Result = AttackStat->GetCurrentStat();
-		break;
-	case EStatusType::Defense:
-		Result = DefendStat->GetCurrentStat();
-		break;
-	case EStatusType::Shield:
-	case EStatusType::MaxShield:
-	case EStatusType::Health:
-	case EStatusType::MaxHealth:
-	case EStatusType::Stamina:
-	case EStatusType::WorkSpeed:
-	case EStatusType::MaxWeight:
-	case EStatusType::EnumMax:
-	default:
-		if (StatusArray.IsValidIndex((uint8)StatusType))
-		{
-			Result = StatusArray[(uint8)StatusType];
-			return true;
-		}
-		break;
-	}
-	*/
-	//return false;
 }
 
 void ABasePlayer::ChangePlayerState(EPlayerState NewState)

@@ -27,7 +27,7 @@ struct FInventorySlot
 public:
 	FInventorySlot() = default;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData", SaveGame)
 	TObjectPtr<UBaseItem> ItemObject{};
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ItemData")
@@ -42,4 +42,19 @@ public:
 	void Clear();
 
 	bool Swap(FInventorySlot* Dst);
+};
+
+USTRUCT()
+struct FPalSlotSaveData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(SaveGame) 
+	int32 SlotIndex = -1;
+	UPROPERTY(SaveGame) 
+	FName ItemID = NAME_None;
+	UPROPERTY(SaveGame) 
+	int32 Count = 0;
+	UPROPERTY(SaveGame) 
+	uint8 SlotType = 0;   // EItemSlotType
 };

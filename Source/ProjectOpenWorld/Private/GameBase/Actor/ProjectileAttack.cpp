@@ -90,7 +90,6 @@ void AProjectileAttack::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompo
 		}
 	}
 	OnProjectileHit(SweepResult);
-	//ResolveHit(SweepResult);
 }
 
 void AProjectileAttack::OnHandleHit(UPrimitiveComponent* /*HitComp*/, AActor* OtherActor, UPrimitiveComponent* /*OtherComp*/, FVector /*NormalImpulse*/, const FHitResult& Hit)

@@ -10,6 +10,7 @@ class UBaseItem;
 class UHandEquipItemFragment;
 class UWeaponeAssetUserData;
 class UItemDataAsset;
+struct FInventorySlot;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPlayerEquipComponent : public UEquipmentComponent, public IPlayerInputInterface
@@ -47,6 +48,9 @@ public:
 	virtual void TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
 	virtual void CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;
 
+
+	UFUNCTION()
+	void OnUpdateEquip(const TArray< FInventorySlot>& Data);
 private:
 	UHandEquipItemFragment* GetHandEquipFragment(const UBaseItem* Item) const;
 	class UPlayerAnimationSLEDataFragment* GetPlayerAnimationSLEDataFragment(const UBaseItem* Item) const;

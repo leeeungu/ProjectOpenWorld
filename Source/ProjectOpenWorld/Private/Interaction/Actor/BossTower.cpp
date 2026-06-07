@@ -1,10 +1,11 @@
-#include "Interaction/Actor/BossTower.h"
+﻿#include "Interaction/Actor/BossTower.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/TargetPoint.h"
 #include "GameBase/Subsystem/SoundGameInstanceSubsystem.h"
 #include "Player/Character/BasePlayer.h"
+#include "GameBase/GameMode/BaseGameInstance.h"
 
 ABossTower::ABossTower() : Super()
 {
@@ -54,16 +55,19 @@ void ABossTower::OnInteractionStart_Implementation(ACharacter* pOther)
 	}
 	if (BossPoint && pOther)
 	{
-		USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType::BGMST_BossTower);
+		//USoundGameInstanceSubsystem::PlayMainBGMSound(EBGMSoundType::BGMST_BossTower);
 		pOther->SetActorLocation(BossPoint->GetActorLocation());
 		pOther->SetActorRotation(BossPoint->GetActorRotation());
 		pOther->GetController()->SetControlRotation(BossPoint->GetActorRotation());
 		//pOther->GetController()->SetActorLocation(BossPoint->GetActorLocation());
 	}
-	if(ABasePlayer* Player = Cast<ABasePlayer>(pOther))
-	{
-		Player->SetMonsterSpawner(false);
-	}
+	//UBaseGameInstance::SetTargetLevel(BossLevel);
+	//UBaseGameInstance::LoadLevelStatic(this);
+	UBaseGameInstance::OpenLevelStatic(this, BossLevel);
+	//if(ABasePlayer* Player = Cast<ABasePlayer>(pOther))
+	//{
+	//	Player->SetMonsterSpawner(false);
+	//}
 }
 
 void ABossTower::OnInteraction_Implementation(ACharacter* pOther)

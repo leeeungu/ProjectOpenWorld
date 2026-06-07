@@ -2,12 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Item/DataTable/ItemSlotType.h"
 #include "InventorySlotInterface.generated.h"
 
 //class UItemPrimaryDataAsset;
-
-struct FInventorySlot;
-
 UINTERFACE(MinimalAPI)
 class UInventorySlotInterface : public UInterface
 {

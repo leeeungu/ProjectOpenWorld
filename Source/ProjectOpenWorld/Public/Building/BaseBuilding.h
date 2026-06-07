@@ -5,6 +5,7 @@
 #include "Pal/Interface/CommanderManageable.h"
 #include "Pal/Interface/PalWorkable.h"
 #include "GameBase/Interface/GenerateWorldInterface.h"
+#include "Pal/Interface/PalSaveGameObject.h"
 #include "BaseBuilding.generated.h"
 
 class UStaticMesh;
@@ -18,7 +19,8 @@ class UPalActionWidgetComponent;
 class UPalWorkerInterface;
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = Architecture)
-class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public ICommanderManageable, public IGenerateWorldInterface, public IPalWorkable
+class PROJECTOPENWORLD_API ABaseBuilding : public AActor, public IGenerateWorldInterface, public IPalWorkable, public IPalSaveGameObject
+	// public ICommanderManageable, 
 {
 	GENERATED_BODY()
 protected:
@@ -37,14 +39,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginDestroy() override;
-private:
-	FPalCommand Command{};
+//private:
+//	FPalCommand Command{};
+//
+//public:
+//	virtual EPalCommandKind GetCommandKind_Implementation() override;
+//	virtual uint8 GetSubCommandType_Implementation() override;
+//	virtual FPalCommand GetCommand_Implementation() override;
+//	virtual bool IsCommandFinished_Implementation() override;
 
 public:
-	virtual EPalCommandKind GetCommandKind_Implementation() override;
-	virtual uint8 GetSubCommandType_Implementation() override;
-	virtual FPalCommand GetCommand_Implementation() override;
-	virtual bool IsCommandFinished_Implementation() override;
+	virtual void OnPreSave() override {}
+	virtual void OnLoaded() override {}
 
 	// GenerateWorldInterface
 	virtual void NewGenerateWorldEvent(const FGenerateSectionData& SectionData) override;

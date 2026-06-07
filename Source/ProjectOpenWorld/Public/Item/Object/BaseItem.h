@@ -20,7 +20,7 @@ private:
 	int32 ItemCount{};
 
 public:
-	FORCEINLINE EItemUseType GetUseType() const;
+	EItemUseType GetUseType() const;
 	FORCEINLINE void SetItemID(FName InItemID) { ItemID = InItemID; }
 	FORCEINLINE FName GetItemID() const { return ItemID; }
 	FORCEINLINE void SetItemCount(int32 InItemCount) { ItemCount = FMath::Max(0, InItemCount); }

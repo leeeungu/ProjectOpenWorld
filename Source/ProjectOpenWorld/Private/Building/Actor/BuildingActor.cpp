@@ -14,6 +14,22 @@ void ABuildingActor::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ABuildingActor::OnPreSave()
+{
+	if (UPalBuildingStaticMeshComponent* P = GetBuildingProgress())
+		SavedBuildProgress = *P->GetBuildPercent();
+}
+
+void ABuildingActor::OnLoaded()
+{
+	UPalBuildingStaticMeshComponent* P = GetBuildingProgress();
+	if (!P) 
+		return;
+	P->SetBuildingPercent(SavedBuildProgress);
+	if (P->IsBuildingEnd())
+		P->EndBuilding();
+}
+
 void ABuildingActor::PostLoad()
 {
 	Super::PostLoad();

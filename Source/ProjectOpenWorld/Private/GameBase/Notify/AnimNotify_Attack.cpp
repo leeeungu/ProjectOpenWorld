@@ -9,18 +9,22 @@
 void UAnimNotify_Attack::OnAnimNotifyCreatedInEditor(FAnimNotifyEvent& ContainingAnimNotifyEvent)
 {
 	Super::OnAnimNotifyCreatedInEditor(ContainingAnimNotifyEvent);
-	for (UAttackObject* AttackObject : AttackEventObject)
-	{
-		if (AttackObject)
-		{
-			//AttackObject->insti
-		}
-	}
 }
 
 void UAnimNotify_Attack::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
+	//for (UAttackObject* AttackObject : AttackEventObject)
+	//{
+	//	if (AttackObject)
+	//	{
+	//		FInitializeData Data{};
+	//		if(CachedPreviewWorld.IsValid())
+	//			Data.World = CachedPreviewWorld.Get();
+	//		AttackObject->ExecuteInitialize(Data);
+	//			//AttackObject->insti
+	//	}
+	//}
 }
 #endif
 
@@ -49,15 +53,15 @@ bool UAnimNotify_Attack::CollisionAttackResult(USkeletalMeshComponent* MeshComp,
 void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
+	if (!MeshComp)
+		return;
 
 	FVector NewLocation = GetStartLocation(MeshComp);
 	UWorld* pWorld = MeshComp->GetWorld();
 	FVector EndLocation = GetEndLocation(MeshComp);
-	if (MeshComp->GetOwner() && pWorld)
+	APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
+	if (MeshComp->GetOwner() && pWorld && OwnerPawn)
 	{
-		APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
-		if (!OwnerPawn)
-			return;
 		TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(MeshComp->GetOwner());
 		TArray<FHitResult> arResult{};
 		FCollisionQueryParams Param{};
@@ -97,9 +101,9 @@ void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 #endif
 }
 
+#if WITH_EDITOR	
 void UAnimNotify_Attack::AttackEventObjectDebug(USkeletalMeshComponent* MeshComp)
 {
-#if WITH_EDITOR	
 	if (!MeshComp->GetWorld()->HasBegunPlay())
 	{
 		FVector StartLocation = GetStartLocation(MeshComp);
@@ -115,5 +119,5 @@ void UAnimNotify_Attack::AttackEventObjectDebug(USkeletalMeshComponent* MeshComp
 			}
 		}
 	}
-#endif
 }
+#endif

@@ -47,7 +47,7 @@ void UBaseAnimInstance::OnMontageBlendingOutEvent(UAnimMontage* Montage, bool bI
 		LoopObject->UpdateBlendOut();
 		bWasLooping = IsLoop();
 	}
-	if (!bWasLooping && LoopObject)
+	if (LoopObject && bWasLooping == false)
 	{
 		LoopObject->EndLoop();
 		LoopObject = nullptr;

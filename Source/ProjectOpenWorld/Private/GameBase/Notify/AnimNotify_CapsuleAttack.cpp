@@ -1,4 +1,4 @@
-#include "GameBase/Notify/AnimNotify_CapsuleAttack.h"
+﻿#include "GameBase/Notify/AnimNotify_CapsuleAttack.h"
 
 FCollisionShape UAnimNotify_CapsuleAttack::GetAttackCollisionShape() const
 {

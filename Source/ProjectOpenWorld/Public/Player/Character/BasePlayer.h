@@ -145,6 +145,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	//virtual void Serialize(FArchive& Ar) override;
+
 	UFUNCTION(BlueprintCallable, Category = "PlayerMode")
 	void SetTopDownMode(bool bTopDown);
 	//UFUNCTION(BlueprintCallable, Category = "PlayerMode")
@@ -155,7 +157,7 @@ public:
 	//UFUNCTION(BlueprintCallable )
 	//void StartTravel();
 
-	void UpdateWeight(float InventoryWeight);
+	//void UpdateWeight(float InventoryWeight);
 
 	UFUNCTION()
 	void OnStartEvent(const FInputActionValue& Value, EInputKeyType KeyType);
@@ -215,8 +217,8 @@ public:
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
 	
 
-	void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName  = NAME_None);
-	void UnEquip(USkeletalMesh* OldMesh);
+	//void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName  = NAME_None);
+	//void UnEquip(USkeletalMesh* OldMesh);
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void SetStatus(EStatusType StatusType, float Value);

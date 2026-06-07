@@ -15,6 +15,51 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UInventoryComponent::OnPreSave()
+{
+	auto Gather = [](const TArray<FInventorySlot>& From, TArray<FPalSlotSaveData>& Out)
+		{
+			Out.Reset();
+			for (const FInventorySlot& S : From)
+			{
+				if (!S.ItemObject) continue;
+				FPalSlotSaveData D;
+				D.SlotIndex = S.SlotIndex;
+				D.ItemID = S.GetItemID();
+				D.Count = S.GetItemCount();
+				D.SlotType = static_cast<uint8>(S.SlotType);
+				Out.Add(D);
+			}
+		};
+	Gather(inventoryArray, SavedInventory);
+	Gather(EquipSlot, SavedEquip);
+}
+
+void UInventoryComponent::OnLoaded()
+{
+	for (FInventorySlot& S : inventoryArray)
+		S.Clear();
+	for (FInventorySlot& S : EquipSlot)      
+		S.Clear();
+	totalInventoryWeight = 0.f;
+
+	auto Restore = [this](TArray<FInventorySlot>& Arr, const TArray<FPalSlotSaveData>& From)
+		{
+			for (const FPalSlotSaveData& D : From)
+			{
+				UBaseItem* Item = UItemFunctionLibrary::CreateBaseItem(D.ItemID, D.Count, this);
+				if (!SetItemAtSlot(Arr, D.SlotIndex, Item))   // 위치 보존 배치
+					continue;
+				if (const FPalStaticItemDataStruct* SD = FindStaticItemData(D.ItemID))
+					totalInventoryWeight += SD->Weight * D.Count;
+			}
+		};
+	Restore(inventoryArray, SavedInventory);
+	Restore(EquipSlot, SavedEquip);
+
+	BroadcastInventoryUpdated();   // 무게/UI 갱신
+}
+
 const FPalStaticItemDataStruct* UInventoryComponent::FindStaticItemData(FName ItemID) const
 {
 	if (!UItemDataSubsystem::IsValidInstance() || ItemID.IsNone())
@@ -28,14 +73,17 @@ const FPalStaticItemDataStruct* UInventoryComponent::FindStaticItemData(FName It
 
 void UInventoryComponent::BroadcastInventoryUpdated()
 {
-	if (PlayerCharacter)
-	{
-		PlayerCharacter->UpdateWeight(totalInventoryWeight);
-	}
-
 	if (onUpdateInventory.IsBound())
 	{
 		onUpdateInventory.Broadcast();
+	}
+	if (OnUpdateInventory_V2.IsBound())
+	{
+		OnUpdateInventory_V2.Broadcast(inventoryArray);
+	}
+	if (OnUpdateEquip.IsBound())
+	{
+		OnUpdateEquip.Broadcast(EquipSlot);
 	}
 }
 
@@ -54,7 +102,6 @@ bool UInventoryComponent::CanStackItem(const UBaseItem* Lhs, const UBaseItem* Rh
 	if (!Lhs || !Rhs)
 		return false;
 
-	// 현재 최소 조건
 	if (Lhs->GetItemID() != Rhs->GetItemID())
 		return false;
 
@@ -116,6 +163,14 @@ bool UInventoryComponent::AddItem(FName ItemID, int ItemCount)
 		return false;
 
 	return AddItem(TempItem);
+}
+
+bool UInventoryComponent::SetItemAtSlot(TArray<FInventorySlot>& Arr, int32 SlotIndex, UBaseItem* Item)
+{
+	if (!Arr.IsValidIndex(SlotIndex) || !Item)
+		return false;
+	Arr[SlotIndex].ItemObject = Item;
+	return true;
 }
 
 bool UInventoryComponent::ReturnItemToInventory(UBaseItem* BaseItem)

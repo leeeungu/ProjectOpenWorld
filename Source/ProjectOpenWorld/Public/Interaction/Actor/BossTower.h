@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -26,6 +26,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "BossTower")
 	TObjectPtr <AActor> BoosLanscape{};
 
+	UPROPERTY(EditAnywhere, Category = "BossTower")
+	TSoftObjectPtr<UWorld> BossLevel{};
 public:	
 	ABossTower();
 
