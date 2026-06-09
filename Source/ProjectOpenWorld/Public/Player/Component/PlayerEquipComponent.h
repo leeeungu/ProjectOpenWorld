@@ -12,6 +12,10 @@ class UWeaponeAssetUserData;
 class UItemDataAsset;
 struct FInventorySlot;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEquipRegister, const UBaseItem*, NewEquip, const UBaseItem*, OldEquip);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEquipChanged, EWeapone, Type, const UBaseItem*, Equip);
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPlayerEquipComponent : public UEquipmentComponent, public IPlayerInputInterface
 {
@@ -31,6 +35,9 @@ protected:
 public:	
 	UPlayerEquipComponent();
 
+	UPROPERTY(BlueprintAssignable, Category = "PlayerEquip")
+	FOnEquipChanged OnEquipChanged{};
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -42,6 +49,7 @@ public:
 
 	bool IsEquipSlot(const UBaseItem* Item) const;
 	bool UnEquipCurrent() ;
+	bool IsEquip() const;
 
 	// 	IPlayerInputInterface implementation
 	virtual void StartEvent(const FInputActionValue& Value, EInputKeyType KeyType) override;

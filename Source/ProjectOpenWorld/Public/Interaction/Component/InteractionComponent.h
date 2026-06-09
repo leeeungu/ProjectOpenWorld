@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -46,10 +46,11 @@ public:
 	void OnDetectEnd();
 	void OnDetectBegin();
 
-	// Àß¸ø ¸¸µç ÇÔ¼ö »èÁ¦ ÇÊ¿ä
+	// ìž˜ëª» ë§Œë“  í•¨ìˆ˜ ì‚­ì œ í•„ìš”
 	void OnActorCancel();
 
 	bool IsInteracting() const { return bIsInteraction; }
+	bool IsDetecting() const { return bIsDetect; }
 	bool IsSetTarget() const;
 	bool CheckSameTarget(TScriptInterface<IInteractionInterface> Other) const;
 

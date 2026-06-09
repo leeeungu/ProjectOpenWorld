@@ -74,14 +74,14 @@ protected:
 	TArray<FFoliageDataTable*> FoliageTypes{};
 	int32 ComponentIndex{};
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Transient)
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> FoliageMeshData{};
 	TArray<	TObjectPtr<UFoliageInstancedStaticMeshComponent>> EmpthyFoliageMeshData{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "1000"))
 	int32 FoliageComponentCount = 520;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Landscape Settings")
-	int32 FoliageCount = 200;
+	int32 FoliageCount{};
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5000"))
 	int32 UpdateComponentTickCount = 10;
@@ -115,6 +115,9 @@ public:
 #endif
 protected:
 	virtual void BeginPlay() override;
+private:
+	UFoliageInstancedStaticMeshComponent* MakeMeshComponent();
+protected:
 	void SetFoliageMeshComponent(const TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr< UFoliageInstancedStaticMeshComponent> MeshComp) const ;
 
 	void GenerateFoliageAsync();

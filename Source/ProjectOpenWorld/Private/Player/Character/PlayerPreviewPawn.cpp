@@ -1,4 +1,4 @@
-#include "Player/Character/PlayerPreviewPawn.h"
+ï»¿#include "Player/Character/PlayerPreviewPawn.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -30,12 +30,15 @@ APlayerPreviewPawn::APlayerPreviewPawn()
 	SpringArm->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 
 	SceneCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
-	SceneCapture->SetupAttachment(SpringArm);
-	SceneCapture->bCaptureEveryFrame = false;
-	SceneCapture->bCaptureOnMovement = false;
-	SceneCapture->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
-	SceneCapture->ProjectionType = ECameraProjectionMode::Orthographic;
-	SceneCapture->OrthoWidth = 210.0f;
+	if (SceneCapture)
+	{
+		SceneCapture->SetupAttachment(SpringArm);
+		SceneCapture->bCaptureEveryFrame = false;
+		SceneCapture->bCaptureOnMovement = false;
+		SceneCapture->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
+		SceneCapture->ProjectionType = ECameraProjectionMode::Orthographic;
+		SceneCapture->OrthoWidth = 210.0f;
+	}
 }
 
 void APlayerPreviewPawn::OnConstruction(const FTransform& Transform)
@@ -77,19 +80,21 @@ void APlayerPreviewPawn::StartPreview()
 
 	SetActorHiddenInGame(false);
 	RefreshFromSource();
-	SceneCapture->bCaptureEveryFrame = true;
+	if(SceneCapture)
+		SceneCapture->bCaptureEveryFrame = true;
 }
 
 void APlayerPreviewPawn::EndPreview()
 {
 	SetActorHiddenInGame(true);
-	SceneCapture->bCaptureEveryFrame = false;
+	if(SceneCapture)
+		SceneCapture->bCaptureEveryFrame = false;
 	SourcePlayer = nullptr;
 }
 
 void APlayerPreviewPawn::RefreshFromSource()
 {
-	if (!SourcePlayer.IsValid())
+	if (!SourcePlayer.IsValid() || !SceneCapture || !PreviewMesh)
 	{
 		return;
 	}
@@ -100,12 +105,12 @@ void APlayerPreviewPawn::RefreshFromSource()
 		return;
 	}
 
-	USkeletalMeshComponent* SourceMesh = Player->FindComponentByClass<USkeletalMeshComponent>();
+	USkeletalMeshComponent* SourceMesh = Player->GetMesh();
 	if (!SourceMesh)
 	{
 		return;
 	}
-	// Mesh¿Í ÇÏÀ§ ¸Å½¬ ¼³Á¤
+	// Meshì™€ í•˜ìœ„ ë§¤ì‰¬ ì„¤ì •
 	PreviewMesh->SetSkeletalMesh(SourceMesh->GetSkeletalMeshAsset());
 	PreviewMesh->SetAnimInstanceClass(SourceMesh->GetAnimClass());
 
@@ -121,5 +126,6 @@ void APlayerPreviewPawn::RefreshFromSource()
 void APlayerPreviewPawn::RotatePreview(float InYawDelta)
 {
 	AddActorLocalRotation(FRotator(0.f, InYawDelta, 0.f));
-	SceneCapture->CaptureScene();
+	if(SceneCapture)
+		SceneCapture->CaptureScene();
 }

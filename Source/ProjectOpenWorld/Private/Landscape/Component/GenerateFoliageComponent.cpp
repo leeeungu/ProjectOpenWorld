@@ -7,27 +7,13 @@ UGenerateFoliageComponent::UGenerateFoliageComponent() :UGenerateWorldComponent{
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	FoliageMeshData.Empty(true);
-	FoliageMeshData.Reserve(FoliageComponentCount);
-	for (int i = 0; i < FoliageComponentCount; i++)
-	{
-		UFoliageInstancedStaticMeshComponent* FoliageCompoent =
-			CreateDefaultSubobject<UPalFoliageInstanceComponent>(FName(*FString::Printf(TEXT("FoliageInstancedStaticMeshComponent_%d"), i)));
-		if (FoliageCompoent)
-		{
-			FoliageCompoent->ComponentTags.Add(FName("Landscape"));
-			FoliageCompoent->SetRenderCustomDepth(false);
-			FoliageCompoent->SetCustomDepthStencilValue(0);
-			FoliageMeshData.Add(FoliageCompoent);
-
-		}
-	}
 	//Script/Engine.DataTable'/Game/Landscape/DT_FoliageData.DT_FoliageData'
 	ConstructorHelpers::FObjectFinder<UDataTable> FoliageDataObj(TEXT("/Game/Landscape/DT_FoliageData.DT_FoliageData"));
 	if (FoliageDataObj.Succeeded())
 	{
 		FoliageDataTable= FoliageDataObj.Object;
 	}
-	FoliageCount = FoliageMeshData.Num();
+	//FoliageCount = FoliageMeshData.Num();
 }
 #if WITH_EDITOR	
 void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -41,7 +27,7 @@ void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 			FoliageDataTable->GetAllRows< FFoliageDataTable>(TEXT(""), FoliageTypes);
 		}
 	}
-	FoliageCount = FoliageMeshData.Num();
+	//FoliageCount = FoliageMeshData.Num();
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 #endif
@@ -49,6 +35,9 @@ void UGenerateFoliageComponent::PostEditChangeProperty(FPropertyChangedEvent& Pr
 void UGenerateFoliageComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	FoliageCount = 0;
+	FoliageMeshData.Empty(FoliageComponentCount);
+
 	if (FoliageDataTable)
 	{
 		DeleteArray.Empty(false);
@@ -61,6 +50,10 @@ void UGenerateFoliageComponent::BeginPlay()
 	bUpdateBackData = false;
 	bDelayUpdate = false;
 	EmpthyFoliageMeshData.Empty(false);
+	/*for (int i = 0; i < FoliageComponentCount; i++)
+	{
+		MakeMeshComponent();
+	}
 	for (int i = 0; i < FoliageMeshData.Num(); i++)
 	{
 		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
@@ -69,8 +62,24 @@ void UGenerateFoliageComponent::BeginPlay()
 			FoliageCompoent->ClearInstances();
 			EmpthyFoliageMeshData.Add(FoliageCompoent);
 		}
+	}*/
+	//FoliageCount = FoliageComponentCount;
+}
+
+UFoliageInstancedStaticMeshComponent* UGenerateFoliageComponent::MakeMeshComponent()
+{
+	UFoliageInstancedStaticMeshComponent* FoliageCompoent = NewObject<UPalFoliageInstanceComponent>(GetOwner());
+	if (FoliageCompoent)
+	{
+		FoliageCount++;
+		FoliageCompoent->ComponentTags.Add(FName("Landscape"));
+		FoliageCompoent->SetRenderCustomDepth(false);
+		FoliageCompoent->SetCustomDepthStencilValue(0);
+		FoliageCompoent->SetFlags(RF_Transient);
+		FoliageCompoent->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		FoliageCompoent->RegisterComponent();
 	}
-	FoliageCount = FoliageMeshData.Num();
+	return FoliageCompoent;
 }
 
 void UGenerateFoliageComponent::SetFoliageMeshComponent(const TObjectPtr<UFoliageType_InstancedStaticMesh> FoliageMesh, TObjectPtr<UFoliageInstancedStaticMeshComponent> MeshComp) const
@@ -117,6 +126,13 @@ void UGenerateFoliageComponent::UpdateGenerateFoliage()
 		if (bUpdateBackData)
 		{
 			int Max = UpdateComponentTickCount;
+			while (Max > 0 && FoliageCount < FoliageComponentCount)
+			{
+				UFoliageInstancedStaticMeshComponent* New = MakeMeshComponent();
+				New->ClearInstances();
+				EmpthyFoliageMeshData.Add(New);
+				Max--;
+			}
 			while (!UpdateData.IsEmpty() && Max > 0)
 			{
 				Max--;
@@ -209,7 +225,10 @@ void UGenerateFoliageComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	Time += DeltaTime;
+	if (EmpthyFoliageMeshData.IsValidIndex(FoliageComponentCount))
+	{
 
+	}
 	if (bGeneratingFoliage)
 	{
 		if (bUpdateBackData)
@@ -282,14 +301,18 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
 {
 	Super::Initialize(ParentComponent);
-	for (int i = 0; i < FoliageComponentCount; i++)
+	return;
+	/*if (FoliageMeshData.IsValidIndex(FoliageComponentCount - 1))
 	{
-		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
-		if (FoliageCompoent)
+		for (int i = 0; i < FoliageComponentCount; i++)
 		{
-			FoliageCompoent->SetupAttachment(ParentComponent);
+			UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
+			if (FoliageCompoent)
+			{
+				FoliageCompoent->SetupAttachment(ParentComponent);
+			}
 		}
-	}
+	}*/
 }
 
 void FAsyncFoliageGenerater::Initialize()

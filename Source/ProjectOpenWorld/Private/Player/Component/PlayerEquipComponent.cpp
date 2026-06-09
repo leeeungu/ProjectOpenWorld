@@ -64,6 +64,9 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 
 		CurrentEquipItem = Item;
 		CurrentWeapone = NewWeaponType;
+		if(OnEquipChanged.IsBound())
+			OnEquipChanged.Broadcast(CurrentWeapone, CurrentEquipItem);
+
 		Player->ChangePlayerState(SlotFragment->GetEquipPlayerState());
 		Player->ChangeEquipWidget(SlotFragment->GetWeaponeID(), NewWeaponType);
 
@@ -125,7 +128,8 @@ bool UPlayerEquipComponent::UnequipItem(const UBaseItem* Item)
 
 	CurrentEquipItem = nullptr;
 	CurrentWeapone = EWeapone::None;
-
+	if (OnEquipChanged.IsBound())
+		OnEquipChanged.Broadcast(CurrentWeapone, CurrentEquipItem);
 	if (UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
 	{
 		PlayerAnimInstance->ResetAnimSection();
@@ -203,6 +207,11 @@ bool UPlayerEquipComponent::UnEquipCurrent()
 	return UnequipItem(CurrentEquipItem);
 }
 
+bool UPlayerEquipComponent::IsEquip() const
+{
+	return CurrentEquipItem != nullptr;
+}
+
 void UPlayerEquipComponent::StartEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
 }
@@ -268,7 +277,6 @@ void UPlayerEquipComponent::OnUpdateEquip(const TArray<FInventorySlot>& Data)
 				if (HandEquipData && SlotFragment)
 				{
 					const EWeapone NewWeaponType = SlotFragment->GetWeaponeData();
-
 					const UBaseItem*& RegisterItem = EquipItemMap.FindOrAdd(NewWeaponType, nullptr);
 					RegisterItem = Item;
 				}
@@ -311,6 +319,5 @@ UWeaponeAssetUserData* UPlayerEquipComponent::GetWeaponAssetUserData(USkeletalMe
 	if (!Mesh)
 		return nullptr;
 
-	return Cast<UWeaponeAssetUserData>(
-		Mesh->GetAssetUserDataOfClass(UWeaponeAssetUserData::StaticClass()));
+	return Cast<UWeaponeAssetUserData>(Mesh->GetAssetUserDataOfClass(UWeaponeAssetUserData::StaticClass()));
 }

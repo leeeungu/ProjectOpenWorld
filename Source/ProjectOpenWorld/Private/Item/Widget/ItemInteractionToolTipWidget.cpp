@@ -1,5 +1,6 @@
 ﻿#include "Item/Widget/ItemInteractionToolTipWidget.h"
 #include "Components/TextBlock.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"
 
 bool UItemInteractionToolTipWidget::Initialize()
 {
@@ -9,5 +10,9 @@ bool UItemInteractionToolTipWidget::Initialize()
 
 void UItemInteractionToolTipWidget::SetItemName(FName Name)
 {
-	ItemNameTextBlock->SetText(FText::FromString(Name.ToString()));
+	if (!ItemNameTextBlock)
+		return;
+	FText ItemName = FText::FromString(Name.ToString());
+	ItemName = UStringTableFunctionLibrary::GetItemNameFromStringTable(*ItemName.ToString());
+	ItemNameTextBlock->SetText(ItemName);
 }

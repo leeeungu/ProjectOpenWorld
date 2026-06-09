@@ -11,7 +11,7 @@ public class ProjectOpenWorld : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Landscape", "UMG",
             "AIModule", "SlateCore", "NavigationSystem", "VaRest", "Niagara", "ProceduralMeshComponent", "Foliage",
-            "DeveloperSettings"
+            "DeveloperSettings", "PhysicsCore"
 
         });
 

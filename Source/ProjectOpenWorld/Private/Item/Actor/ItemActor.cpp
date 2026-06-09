@@ -54,8 +54,7 @@ AItemActor::AItemActor() : Super()
 	ItemWidget->SetCollisionProfileName(TEXT("NoCollision"));
 	ItemWidget->SetWidgetSpace(EWidgetSpace::Screen);
 
-	static ConstructorHelpers::FClassFinder<UUserWidget> InteractionWidget(
-		TEXT("/Game/Item/Widget/WBP_ItemInteraction.WBP_ItemInteraction_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> InteractionWidget(TEXT("/Game/Item/Widget/WBP_ItemInteraction.WBP_ItemInteraction_C"));
 	if (InteractionWidget.Succeeded())
 	{
 		ToolTipWidgetClass = InteractionWidget.Class;
@@ -63,7 +62,7 @@ AItemActor::AItemActor() : Super()
 
 	PickUpSound = EEffectSoundType::EST_PickUpItem;
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshAsset(TEXT("/Game/Pal/Model/Prop/Resource/CoinGold/Mesh/SM_CoinGold.SM_CoinGold"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshAsset(TEXT("/Game/Pal/Model/Prop/Resource/CoinGold/Mesh/SM_CoinGold.SM_CoinGold"));
 	if (StaticMeshAsset.Succeeded())
 	{
 		SetStaticMeshAsset(StaticMeshAsset.Object);

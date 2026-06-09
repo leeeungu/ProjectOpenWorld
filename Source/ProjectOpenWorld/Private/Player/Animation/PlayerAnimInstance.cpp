@@ -1,4 +1,4 @@
-#include "Player/Animation/PlayerAnimInstance.h"
+﻿#include "Player/Animation/PlayerAnimInstance.h"
 #include "Player/Character/BasePlayer.h"
 #include "GameFramework/CharacterMovementComponent.h" 
 #include "Player/Component/PlayerAnimationComponent.h"
@@ -99,9 +99,15 @@ bool UPlayerAnimInstance::SetAnimationSequences(UAnimSequence* Start, UAnimSeque
 		StartAnim = Start;
 		LoopAnim = Loop;
 		EndAnim = End;
+		bSetAnimation = nullptr != StartAnim || nullptr != EndAnim || nullptr != LoopAnim;
 		return true;
 	}
 	return false;
+}
+
+bool UPlayerAnimInstance::IsSetAnimation() const
+{
+	return bSetAnimation;
 }
 
 bool UPlayerAnimInstance::SetArchitectAnimSequence()

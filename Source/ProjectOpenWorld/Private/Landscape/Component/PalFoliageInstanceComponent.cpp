@@ -285,10 +285,10 @@ void UPalFoliageInstanceComponent::OnHarvestEvent(FHarvestEventData EventData)
 		{
 			HarvestableAssetUserData->PlayHarvestDestroySound(this, InstanceTransform);
 		}
-		else
-		{
-			HarvestableAssetUserData->PlayHarvestHitSound(this, InstanceTransform);
-		}
+		//else
+		//{
+		//	HarvestableAssetUserData->PlayHarvestHitSound(this, InstanceTransform);
+		//}
 	}
 	if (rCount <= 0)
 	{

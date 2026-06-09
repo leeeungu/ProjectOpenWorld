@@ -1,4 +1,4 @@
-#include "Interaction/Component/InteractionComponent.h"
+﻿#include "Interaction/Component/InteractionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
@@ -111,9 +111,9 @@ void UInteractionComponent::OnDetectEnd()
 
 void UInteractionComponent::OnDetectBegin()
 {
+	bIsDetect = true;
 	if (InteractionTarget && InteractionTarget.GetObject())
 	{
-		bIsDetect = true;
 		IInteractionInterface::Execute_OnBeginDetected(InteractionTarget.GetObject(), OwnerCharacter.Get());
 	}
 }

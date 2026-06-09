@@ -83,13 +83,13 @@ ABasePlayer::ABasePlayer() : Super{}
 
 	PlayerAttackComponent = CreateDefaultSubobject<UPlayerAttackComponent>(TEXT("PlayerAttackComponent"));
 	///Script/Engine.DataTable'/Game/Player/Input/DataTable/DT_PlayerInput.DT_PlayerInput'
-	ConstructorHelpers::FObjectFinder<UDataTable> InputDataTableObj(TEXT("/Game/Player/Input/DataTable/DT_PlayerInput.DT_PlayerInput"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> InputDataTableObj(TEXT("/Game/Player/Input/DataTable/DT_PlayerInput.DT_PlayerInput"));
 	if (InputDataTableObj.Succeeded())
 	{
 		InputDataTable = InputDataTableObj.Object;
 	}
 	///Script/UMGEditor.WidgetBlueprint'/Game/Widget/WBP_GameOver.WBP_GameOver'
-	ConstructorHelpers::FClassFinder<UUserWidget> OverWidgetClass(TEXT("/Game/Widget/WBP_GameOver.WBP_GameOver_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> OverWidgetClass(TEXT("/Game/Widget/WBP_GameOver.WBP_GameOver_C"));
 	if (OverWidgetClass.Succeeded())
 	{
 		GameOverWidgetClass = OverWidgetClass.Class;
@@ -604,8 +604,22 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState != EPlayerState::Battle)
 		{
-			if (GetPlayerAnimInstance())
+			if (GetPlayerAnimInstance() && GetPlayerAnimInstance()->IsSetAnimation())
 				GetPlayerAnimInstance()->StartAnimSection();
+			else
+			{
+				if (PlayerAttackComponent)
+				{
+					PlayerAttackComponent->Attack(EPlayerAttackType::Attack_None);
+				}
+			}
+		}
+		else
+		{
+			if (PlayerAttackComponent)
+			{
+				PlayerAttackComponent->Attack(EPlayerAttackType::Default);
+			}
 		}
 		break;
 	case EInputKeyType::MouseWheel:
@@ -635,19 +649,14 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 {
 	switch (KeyType)
 	{
-	/*case EInputKeyType::WASD:
-		if (PlayerMoveFunc && CurrentPlayerState != EPlayerState::TopDown)
-		{
-			(this->*PlayerMoveFunc)(Value);
-		}
-		break;*/
 	case EInputKeyType::SpaceBar:
 		break;
 	case EInputKeyType::MouseAxis:
 		if (CurrentPlayerState != EPlayerState::TopDown)
 		{
 			FVector2D LookAxisVector = Value.Get<FVector2D>();
-			if (Controller != nullptr)
+			// 마우스 누르면 서 너무 흔들려서 최소치를 둠
+			if (Controller != nullptr && LookAxisVector.Length() > 0.2f)
 			{
 				// add yaw and pitch input to controller
 				AddControllerYawInput(LookAxisVector.X);
@@ -731,16 +740,9 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseR:
 		break;
 	case EInputKeyType::MouseL:
-		if (CurrentPlayerState == EPlayerState::Battle)
+		if (CurrentPlayerState != EPlayerState::Battle)
 		{
-			if (PlayerAttackComponent)
-			{
-				PlayerAttackComponent->Attack(EPlayerAttackType::Default);
-			}
-		}
-		else
-		{
-			if(GetPlayerAnimInstance())
+			if(GetPlayerAnimInstance() && GetPlayerAnimInstance() ->IsSetAnimation())
 				GetPlayerAnimInstance()->EndAnimSection();
 		}
 		break;

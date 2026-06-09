@@ -52,7 +52,7 @@ void UPlayerAttackComponent::OnAttackMontageEnd()
 void UPlayerAttackComponent::Attack(EPlayerAttackType InAttackType)
 {
 	uint8 AttackIndex = static_cast<uint8>(InAttackType);
-	UE_LOG(LogTemp, Warning, TEXT("UPlayerAttackComponent::Attack %d"), AttackIndex);
+	//UE_LOG(LogTemp, Warning, TEXT("UPlayerAttackComponent::Attack %d"), AttackIndex);
 	if (bIsAttacking || !PlayerAttackDataArray.IsValidIndex(AttackIndex) || !PlayerAttackDataArray[AttackIndex])
 		return;
 	if (MontageCoolTime[AttackIndex] > 0)

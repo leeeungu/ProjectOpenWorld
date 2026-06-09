@@ -64,6 +64,8 @@ protected:
 	TObjectPtr<UAnimSequence> ArchitectLoopAnim{};
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UAnimSequence> ArchitectEndAnim{};
+
+	bool bSetAnimation{};
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -96,6 +98,8 @@ public:
 
 	bool SetAnimationSequences(UAnimSequence* Start, UAnimSequence* Loop, UAnimSequence* End);
 
+
+	bool IsSetAnimation() const;
 	UFUNCTION(BlueprintCallable)
 	bool SetArchitectAnimSequence();
 
