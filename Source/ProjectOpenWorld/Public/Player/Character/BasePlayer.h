@@ -131,6 +131,7 @@ protected:
 	TObjectPtr<UUserWidget> MainWidget{};
 
 	bool bDead{};
+	bool bArchitect{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UPalHitHandlerComponent> HitHandlerComponent{};
@@ -216,10 +217,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "PlayerAnimation")
 	FORCEINLINE  UPlayerAnimationComponent* const GetPlayerAnimationComponent() const { return PlayerAnimationComponent; }
 	
-
-	//void SetWeaponMesh(USkeletalMesh* NewMesh, FName SocketName  = NAME_None);
-	//void UnEquip(USkeletalMesh* OldMesh);
-
 	UFUNCTION(BlueprintCallable, Category = "PlayerStatus")
 	void SetStatus(EStatusType StatusType, float Value);
 	UFUNCTION(BlueprintPure, Category = "PlayerStatus")
@@ -256,5 +253,7 @@ public:
 
 	UFUNCTION()
 	void OnMonsterDetectChanged(AActor* Actor, bool bDetected);
+	UFUNCTION()
+	void OnFinishAnimSection();
 };
 

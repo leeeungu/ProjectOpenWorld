@@ -195,6 +195,11 @@ void ABasePlayer::BeginPlay()
 	{
 		GetInventoryComponent()->OnUpdateEquip.AddDynamic(PlayerEquipComponent, &UPlayerEquipComponent::OnUpdateEquip);
 	}
+
+	if (UPlayerAnimInstance* Anim = GetPlayerAnimInstance())
+	{
+		Anim->OnFinishAnimSection.AddDynamic(this, &ABasePlayer::OnFinishAnimSection);
+	}
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)
@@ -237,7 +242,6 @@ class UInventoryComponent* ABasePlayer::GetInventoryComponent() const
 	}
 	return nullptr;
 }
-
 
 void ABasePlayer::SetStatus(EStatusType StatusType, float Value)
 {
@@ -459,12 +463,15 @@ bool ABasePlayer::HitReaction_Implementation(const TScriptInterface<IAttackInter
 
 float ABasePlayer::GetArchitectSpeed_Implementation() const
 {
-	return 1.0f;
+	if (!StatComponent)
+		return 1.0f;
+	return StatComponent->GetCurrentStat(EStatusType::Architecture);
 }
 
 void ABasePlayer::StartArchitect_Implementation(ABaseBuilding* Building)
 {
-	if (GetPlayerAnimInstance()->SetArchitectAnimSequence())
+	bArchitect = true;
+	if (GetPlayerAnimInstance() && GetPlayerAnimInstance()->SetArchitectAnimSequence())
 	{
 		GetPlayerAnimInstance()->StartAnimSection();
 	}
@@ -472,14 +479,22 @@ void ABasePlayer::StartArchitect_Implementation(ABaseBuilding* Building)
 
 void ABasePlayer::StopArchitect_Implementation(ABaseBuilding* Building)
 {
-	GetPlayerAnimInstance()->EndAnimSection();
+	bArchitect = false;
+	if (GetPlayerAnimInstance())
+	{
+		GetPlayerAnimInstance()->EndAnimSection();
+	}
 }
 
 void ABasePlayer::EndArchitect_Implementation(ABaseBuilding* Building)
 {
+	bArchitect = false;
 	if(StatComponent_Level)
 		StatComponent_Level->AddCurrentStat(35.0);
-	GetPlayerAnimInstance()->EndAnimSection();
+	if (GetPlayerAnimInstance())
+	{
+		GetPlayerAnimInstance()->EndAnimSection();
+	}
 }
 
 float ABasePlayer::GetResourceSpeed_Implementation() const
@@ -549,6 +564,15 @@ void ABasePlayer::OnMonsterDetectChanged(AActor* Actor, bool bDetected)
 	}
 }
 
+void ABasePlayer::OnFinishAnimSection()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Hello"));
+	if (bArchitect)
+	{
+		GetPlayerAnimInstance()->ResetAnimSection();
+	}
+}
+
 void ABasePlayer::OnStartEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
 	TScriptInterface<IPlayerInputInterface>* InputInterface =InputMapping.Find(KeyType);
@@ -588,7 +612,8 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() || !HasMainWidget())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !HasMainWidget() &&
+			PlayerAttackComponent&& !PlayerAttackComponent->IsAttacking())
 		{
 			InteractionComponent->OnInteractionStart();
 			//AddToViewPort(InteractionComponent);
@@ -605,7 +630,10 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		if (CurrentPlayerState != EPlayerState::Battle)
 		{
 			if (GetPlayerAnimInstance() && GetPlayerAnimInstance()->IsSetAnimation())
-				GetPlayerAnimInstance()->StartAnimSection();
+			{
+				if(!bArchitect)
+					GetPlayerAnimInstance()->StartAnimSection();
+			}
 			else
 			{
 				if (PlayerAttackComponent)
@@ -616,7 +644,7 @@ void ABasePlayer::StartEvent(const FInputActionValue& Value, EInputKeyType KeyTy
 		}
 		else
 		{
-			if (PlayerAttackComponent)
+			if (PlayerAttackComponent && InteractionComponent&& !InteractionComponent->IsInteracting())
 			{
 				PlayerAttackComponent->Attack(EPlayerAttackType::Default);
 			}
@@ -665,7 +693,8 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 		}
 		break;
 	case EInputKeyType::KeyF:
-		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive())
+		if (InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive()&&
+			PlayerAttackComponent && !PlayerAttackComponent->IsAttacking())
 		{
 			InteractionComponent->OnInteractionTriggered();
 		}
@@ -718,7 +747,9 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseAxis:
 		break;
 	case EInputKeyType::KeyF:
-		if (BasePlayerController && InteractionComponent && BuildAssistComponent && !BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen())
+		if (BasePlayerController && InteractionComponent && BuildAssistComponent && 
+			!BuildAssistComponent->IsBuildingActive() && !BasePlayerController->bIsInventoryOpen()
+			&& PlayerAttackComponent && !PlayerAttackComponent->IsAttacking())
 		{
 			InteractionComponent->OnInteractionCompleted();
 		}
@@ -742,7 +773,7 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 	case EInputKeyType::MouseL:
 		if (CurrentPlayerState != EPlayerState::Battle)
 		{
-			if(GetPlayerAnimInstance() && GetPlayerAnimInstance() ->IsSetAnimation())
+			if(GetPlayerAnimInstance() && GetPlayerAnimInstance() ->IsSetAnimation() && !bArchitect)
 				GetPlayerAnimInstance()->EndAnimSection();
 		}
 		break;

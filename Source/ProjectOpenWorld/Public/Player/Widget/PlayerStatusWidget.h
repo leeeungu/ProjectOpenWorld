@@ -7,6 +7,7 @@
 class UPlayerStatusSlot;
 class UPlayerStatusProgress;
 class UStatComponent;
+class UVerticalBox;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerStatusWidget : public UUserWidget
@@ -25,29 +26,21 @@ public:
 		SlotMax
 	};
 protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr<UPlayerStatusProgress> ProgressHp{};
 	//UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr<UPlayerStatusProgress> ProgressShield{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr<UPlayerStatusProgress> ProgressHealth{};
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr<UPlayerStatusSlot> SlotMaxHp{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr<UPlayerStatusSlot> SlotStamina{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr<UPlayerStatusSlot> SlotAttack{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr<UPlayerStatusSlot> SlotDefense{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr<UPlayerStatusSlot> SlotWorkSpeed{};
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "PlayerStatus", meta = (BindWidget))
-	TObjectPtr<UPlayerStatusSlot> SlotMaxWeight{};
-
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "PlayerStatus", meta = (BindWidget))
+	TObjectPtr<UVerticalBox> StatusView{};
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "PlayerStatus")
+	TArray<TObjectPtr<UPlayerStatusSlot>> SlotArray{};
 public:
-	void SetStatusSlot(EStatusSlotType StatusType, float& Value);
 	void SetStatWidget(UStatComponent* StatCom);
 protected:
+	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
+
 };

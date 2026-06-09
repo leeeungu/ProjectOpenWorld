@@ -3,6 +3,7 @@
 #include "Pal/Interface/PalWorkerInterface.h"
 #include "Item/System/ItemDataSubsystem.h"
 #include "Pal/Actor/PalBaseCamp_V2.h"
+#include "Pal/FunctionLibrary/PalSpawnBlueprintFunctionLibrary.h"
 
 void UPalHarvestSMComponent::Respawn()
 {
@@ -15,7 +16,7 @@ void UPalHarvestSMComponent::OnHarvestEvent(FHarvestEventData EventData)
 	if (UItemSpawnListAssetUserData* SpawnList = Cast< UItemSpawnListAssetUserData>(GetStaticMesh()->GetAssetUserDataOfClass(UItemSpawnListAssetUserData::StaticClass())))
 	{
 		FItemSpawnRateData SpawnData = SpawnList->GetRandomItem();
-		UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), SpawnData.ItemName, FTransform(EventData.Hit->Location), SpawnData.SpawnRandomCount);
+		UPalSpawnBlueprintFunctionLibrary::SpawnPalStaticItemVisualActorByName(GetWorld(), SpawnData.ItemName, FTransform(EventData.Hit->Location), SpawnData.SpawnRandomCount);
 		SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetVisibility(false);
 		FTimerHandle Timer{};

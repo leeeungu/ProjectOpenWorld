@@ -2,19 +2,19 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Player/Interface/StatusUpdateInterface.h"
 #include "PlayerStatusSlot.generated.h"
 
 class UTextBlock;
 class UImage;
 class UTexture2D;
+enum class EStatusType : uint8;
+class UStatComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API UPlayerStatusSlot : public UUserWidget, public IStatusUpdateInterface
+class PROJECTOPENWORLD_API UPlayerStatusSlot : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
-	float* StatusRef{};
 	UPROPERTY(BlueprintReadOnly, EditInstanceOnly, Category = "PlayerStatus", meta = (BindWidget))
 	TObjectPtr< UTextBlock> StatusText{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus", meta = (BindWidget))
@@ -24,12 +24,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
 	FText StatusName{};
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
+	EStatusType StatusType{};
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "PlayerStatus")
 	TObjectPtr < UTexture2D> StatusTexture{};
 protected:
 	virtual void NativePreConstruct() override;
 public:
-	void SetStatusSlot(float* Value) { StatusRef = Value; }
-
-	// IStatusUpdateInterface을(를) 통해 상속됨
-	void UpdateStatus() override;
+	void SetStatWidget(UStatComponent* StatCom);
+private:
+	UFUNCTION()
+	void OnMaxStatusChanged(double PreMaxStat, double InMaxStat);
 };

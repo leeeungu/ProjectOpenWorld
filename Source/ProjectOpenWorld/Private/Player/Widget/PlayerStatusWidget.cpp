@@ -1,8 +1,8 @@
 ﻿#include "Player/Widget/PlayerStatusWidget.h"
 #include "Player/Widget/PlayerStatusProgress.h"
 #include "Player/Widget/PlayerStatusSlot.h"
-#include "Player/Character/BasePlayer.h"
-#include "GameFramework/PlayerController.h"
+#include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
 
 void UPlayerStatusWidget::SetStatWidget(UStatComponent* StatCom)
 {
@@ -14,28 +14,29 @@ void UPlayerStatusWidget::SetStatWidget(UStatComponent* StatCom)
 	{
 		ProgressHealth->SetStatWidget(StatCom);
 	}
+
+	TArray<UWidget*> Array = StatusView->GetAllChildren();
+	if (!SlotArray.IsEmpty() && Array.Num() == SlotArray.Num())
+		return;
+	SlotArray.Empty();
+	SlotArray.Reserve(Array.Num());
+	for (UWidget* Widget : Array)
+	{
+		if (UPlayerStatusSlot* StatSlot = Cast< UPlayerStatusSlot>(Widget))
+		{
+			SlotArray.Add(StatSlot);
+			StatSlot->SetStatWidget(StatCom);
+		}
+	}
 }
 
-void UPlayerStatusWidget::SetStatusSlot(EStatusSlotType StatusType, float& Value)
+void UPlayerStatusWidget::NativeOnInitialized()
 {
-	TObjectPtr<UPlayerStatusSlot>* arSlot[SlotMax] =
-	{
-		nullptr,
-		&SlotMaxHp,
-		&SlotStamina,
-		&SlotAttack,
-		&SlotDefense,
-		&SlotWorkSpeed,
-		&SlotMaxWeight,
-	};
-	if (arSlot[StatusType] && *arSlot[StatusType])
-	{
-		(*arSlot[StatusType])->SetStatusSlot(&Value);
-		(*arSlot[StatusType])->UpdateStatus();
-	}
+	Super::NativeOnInitialized();
 }
 
 void UPlayerStatusWidget::NativeConstruct()
 {
-	UUserWidget::NativeConstruct();
+	Super::NativeConstruct();
+	
 }

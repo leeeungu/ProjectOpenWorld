@@ -12,13 +12,18 @@ FReply UEquipSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeome
 		if (UInventoryComponent* inventoryComponent = GetInventoryComponent())
 		{
 			FInventorySlot* pSrc = inventoryComponent->GetEmptyInventorySlot();
+			inventoryComponent->UnUseItemSlot(itemPointer);
+			inventoryComponent->SwapInventorySlot(pSrc, const_cast<FInventorySlot*>(itemPointer));
+		}
+
+		/*if (UInventoryComponent* inventoryComponent = GetInventoryComponent())
+		{
 			UEquipmentComponent* equipComponent = GetPlayerEquipComponent();
 			if (equipComponent)
 			{
 				equipComponent->UnRegisterItem(itemPointer->ItemObject);
 			}
-			inventoryComponent->SwapInventorySlot(pSrc, const_cast<FInventorySlot*>(itemPointer));
-		}
+		}*/
 	}
 	return FReply::Handled();
 }

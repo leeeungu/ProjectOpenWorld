@@ -97,7 +97,7 @@ void ABaseMonster::SpawnItem()
 
 		UE_LOG(LogTemp, Warning, TEXT("APalBaseCamp::Monster Dead Drop Item Spawn %s "), *ItemData.ItemId.ToString());
 		int nCount = FMath::RandRange(ItemData.min, ItemData.Max);
-		UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemData.ItemId, GetActorTransform(), nCount);
+		//UUPalSpawnBlueprintFunctionLibrary::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemData.ItemId, GetActorTransform(), nCount);
 	}
 	Destroy();
 }

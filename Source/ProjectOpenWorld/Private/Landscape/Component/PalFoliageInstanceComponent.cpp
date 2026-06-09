@@ -6,6 +6,7 @@
 #include "PhysicsEngine/BodySetup.h"
 #include "Resource/AssetUserData/ResourceEndEvent.h"
 #include "Resource/AssetUserData/HarvestableAssetUserData.h"
+#include "Pal/FunctionLibrary/PalSpawnBlueprintFunctionLibrary.h"
 
 void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 {
@@ -271,7 +272,8 @@ void UPalFoliageInstanceComponent::OnHarvestEvent(FHarvestEventData EventData)
 
 	UHarvestableAssetUserData* HarvestableAssetUserData =
 		Cast< UHarvestableAssetUserData>(GetStaticMesh()->GetAssetUserDataOfClass(UHarvestableAssetUserData::StaticClass()));
-	AItemActor* ItemActor = UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemName, FTransform(NewLocation));
+	AItemActor* ItemActor = UPalSpawnBlueprintFunctionLibrary::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemName, FTransform(NewLocation));
+		//UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(GetWorld(), ItemName, FTransform(NewLocation));
 	if (ItemActor)
 	{
 		ItemActor->Init(ItemName, SpawnData.SpawnRandomCount);

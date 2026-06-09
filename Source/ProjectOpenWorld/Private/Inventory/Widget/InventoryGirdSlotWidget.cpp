@@ -13,7 +13,7 @@ FReply UInventoryGirdSlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry&
 			{
 				if (inventoryComponent->UseItemSlot(itemPointer))
 				{
-					inventoryComponent->RemoveItemSlot(inventoryRow, inventoryCol, 1);
+					inventoryComponent->RemoveItemSlot(inventoryRow, inventoryCol, itemPointer->GetItemCount());
 				}
 			}
 		}

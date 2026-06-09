@@ -115,6 +115,13 @@ void UItemDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (!LoadAndSaveDataTableToMap(PalStaticItemDataTableStruct, TEXT("/Game/Item/DataTable/DT_PalStaticItemData.DT_PalStaticItemData")))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load PalStaticItemData DataTable"));
+
+	}
+	else
+	{
+		///Script/ProjectOpenWorld.ItemDataAsset'/Game/Item/DataAsset/Item/DA_CoinGold.DA_CoinGold'
+		TObjectPtr<UItemDataAsset> DataAsset = LoadObject<UItemDataAsset>(nullptr, TEXT("/Game/Item/DataAsset/Item/DA_CoinGold.DA_CoinGold"));
+		PalStaticItemDataTableStruct.Dummy.ItemDataAssetSoft = DataAsset;
 	}
 	//Script/Engine.DataTable'/Game/Item/DataTable/DT_ItemRecipeDataTable.DT_ItemRecipeDataTable'
 	if (!LoadAndSaveDataTableToMap(PalItemRecipeDataTableStruct, TEXT("/Game/Item/DataTable/DT_ItemRecipeDataTable.DT_ItemRecipeDataTable")))
@@ -226,39 +233,40 @@ TSubclassOf<UBaseItemObject> UItemDataSubsystem::GetPalStaticItemObjectVisualBlu
 	return UBaseItemObject::StaticClass();
 }
 
-AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count)
-{
-	if (WorldContextObject == nullptr)
-		return nullptr;
-	const FPalStaticItemDataStruct* Result{};
-	if (!GetPalStaticItemDataPtr(ItemID, &Result))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UItemDataSubsystem::SpawnPalStaticItemVisualActorByName: No data found for ItemID '%s'."), *ItemID.ToString());
-	}
-	UWorld* World = WorldContextObject->GetWorld();
-	TSubclassOf<UObject> SpawnClass = Result->VisualBlueprintClassSoft;
-	if (World && Result->VisualBlueprintClassSoft == nullptr)
-	{
-		// Script / Engine.Blueprint'/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem'
-		SpawnClass = LoadClass<UObject>(World, TEXT("/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem_C"));
-	}
-	if (World && SpawnClass)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AItemActor* SpawnedActor = World->SpawnActor<AItemActor>(SpawnClass, SpawnTransform, SpawnParams);
-		if (SpawnedActor)
-		{
-			SpawnedActor->Init(ItemID, Count);
-		}
-		return SpawnedActor;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. World or SpawnClass is null."));
-	}
-	return nullptr;
-}
+//AItemActor* UItemDataSubsystem::SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count)
+//{
+//	return UPalSpawnBlueprintFunctionLibrary::SpawnPalStaticItemVisualActorByName(WorldContextObject, ItemID, SpawnTransform, Count);
+	//if (WorldContextObject == nullptr)
+	//	return nullptr;
+	//const FPalStaticItemDataStruct* Result{};
+	//if (!GetPalStaticItemDataPtr(ItemID, &Result))
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("UItemDataSubsystem::SpawnPalStaticItemVisualActorByName: No data found for ItemID '%s'."), *ItemID.ToString());
+	//}
+	//UWorld* World = WorldContextObject->GetWorld();
+	//TSubclassOf<UObject> SpawnClass = Result->VisualBlueprintClassSoft;
+	//if (World && Result->VisualBlueprintClassSoft == nullptr)
+	//{
+	//	// Script / Engine.Blueprint'/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem'
+	//	SpawnClass = LoadClass<UObject>(World, TEXT("/Game/Item/Blueprint/Base/BP_BaseItem.BP_BaseItem_C"));
+	//}
+	//if (World && SpawnClass)
+	//{
+	//	FActorSpawnParameters SpawnParams;
+	//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	//	AItemActor* SpawnedActor = World->SpawnActor<AItemActor>(SpawnClass, SpawnTransform, SpawnParams);
+	//	if (SpawnedActor)
+	//	{
+	//		SpawnedActor->Init(ItemID, Count);
+	//	}
+	//	return SpawnedActor;
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("UItemDataSubsystem::Failed to spawn item actor. World or SpawnClass is null."));
+	//}
+	//return nullptr;
+//}
 
 FString UItemDataSubsystem::GetPalItemRecipeProductIdByName(FName RowName)
 {
@@ -303,10 +311,17 @@ const TArray<FRecipeMaterialData> UItemDataSubsystem::GetPalItemRecipeMaterialsB
 UItemDataAsset* UItemDataSubsystem::GetPalItemDataAssetByName(FName RowName)
 {
 	const FPalStaticItemDataStruct* Result{};
-	if (GetPalStaticItemDataPtr(RowName, &Result) && Result->ItemDataAssetSoft)
+	if (GetPalStaticItemDataPtr(RowName, &Result))
 	{
 		return Result->ItemDataAssetSoft;
 	}
+	return nullptr;
+}
+
+UItemDataAsset* UItemDataSubsystem::GetMoneyItemDataAsset()
+{
+	if (SingletonInstance)
+		return SingletonInstance->PalStaticItemDataTableStruct.Dummy.ItemDataAssetSoft;
 	return nullptr;
 }
 

@@ -13,12 +13,12 @@ class PROJECTOPENWORLD_API UPalItemSpawnSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 public:
 //    /** 채집물용 — StaticMesh의 AssetUserData 기반 */
-    UFUNCTION(BlueprintCallable, Category = "Pal|Item")
-    AItemActor* SpawnItemsFromMesh(UWorld* World, FName ItemName, FTransform Origin, AActor* Owner = nullptr);
+//   UFUNCTION(BlueprintCallable, Category = "Pal|Item")
+//   static AItemActor* SpawnItemsFromMesh(UWorld* World, FName ItemName, FTransform Origin, AActor* Owner = nullptr);
 //
 //    /** 캐릭터/몬스터용 — 캐릭터 ID로 CharacterDataSubsystem 조회 */
-//    UFUNCTION(BlueprintCallable, Category = "Pal|Item")
-//    int32 SpawnItemsForCharacter(FName CharacterID, const FTransform& Origin, AActor* Causer = nullptr);
+//   UFUNCTION(BlueprintCallable, Category = "Pal|Item")
+//   static int32 SpawnItemsForCharacter(FName CharacterID, const FTransform& Origin, AActor* Causer = nullptr);
 //
 //    UPROPERTY(EditAnywhere, Category = "Pal|Item")
 //    FVector RandomXYOffsetRange = FVector(50.f, 50.f, 0.f);

@@ -51,6 +51,7 @@ bool UPlayerAnimInstance::StartAnimSection()
 	if (CurrentAnimationSection == EAnimationSectionType::None)
 	{
 		CurrentAnimationSection = EAnimationSectionType::Start;
+		OnStartAnimSection.Broadcast();
 		return true;
 	}
 	return false;
@@ -74,7 +75,7 @@ bool UPlayerAnimInstance::ResetAnimSection()
 	{
 		return false;
 	}
-	AnimNotify_FinishAnimSection();
+	CurrentAnimationSection = EAnimationSectionType::None;
 	SetAnimationSequences(nullptr, nullptr, nullptr);
 	return true;
 }
@@ -84,12 +85,14 @@ void UPlayerAnimInstance::AnimNotify_LoopAnimSection()
 	if (CurrentAnimationSection == EAnimationSectionType::Start)
 	{
 		CurrentAnimationSection = EAnimationSectionType::Loop;
+		OnStartLoopAnimSection.Broadcast();
 	}
 }
 
 void UPlayerAnimInstance::AnimNotify_FinishAnimSection()
 {
 	CurrentAnimationSection = EAnimationSectionType::None;
+	OnFinishAnimSection.Broadcast();
 }
 
 bool UPlayerAnimInstance::SetAnimationSequences(UAnimSequence* Start, UAnimSequence* Loop, UAnimSequence* End)
@@ -99,7 +102,7 @@ bool UPlayerAnimInstance::SetAnimationSequences(UAnimSequence* Start, UAnimSeque
 		StartAnim = Start;
 		LoopAnim = Loop;
 		EndAnim = End;
-		bSetAnimation = nullptr != StartAnim || nullptr != EndAnim || nullptr != LoopAnim;
+		bSetAnimation = nullptr == StartAnim && nullptr == EndAnim && nullptr == LoopAnim;
 		return true;
 	}
 	return false;

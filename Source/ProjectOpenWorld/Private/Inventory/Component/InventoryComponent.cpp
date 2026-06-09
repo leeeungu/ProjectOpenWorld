@@ -130,7 +130,7 @@ bool UInventoryComponent::AddItem(UBaseItem* NewItem)
 	{
 		for (FInventorySlot& Slot : inventoryArray)
 		{
-			if (Slot.GetItemID()== NewItemID && SlotData->MaxStackCount - NewItemCount > Slot.GetItemCount())
+			if (Slot.GetItemID() == NewItemID && SlotData->MaxStackCount - NewItemCount > Slot.GetItemCount())
 			{
 				pStackSlot = &Slot;
 				Slot.ItemObject->SetItemCount(Slot.ItemObject->GetItemCount() + NewItemCount);
@@ -412,6 +412,19 @@ bool UInventoryComponent::UseItemSlot(const FInventorySlot* Slot)
 	if (ItemUseComponent)
 	{
 		return ItemUseComponent->UseItem(Slot->ItemObject);
+	}
+	return false;
+}
+
+bool UInventoryComponent::UnUseItemSlot(const FInventorySlot* Slot)
+{
+
+	if (!Slot || !PlayerCharacter || !Slot->ItemObject || !inventoryArray.IsValidIndex(Slot->SlotIndex))
+		return false;
+	UItemUseComponent* ItemUseComponent = PlayerCharacter->GetPlayerItemUseComponent();
+	if (ItemUseComponent)
+	{
+		return ItemUseComponent->UnUseItem(Slot->ItemObject);
 	}
 	return false;
 }

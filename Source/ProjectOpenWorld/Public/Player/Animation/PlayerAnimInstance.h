@@ -11,6 +11,8 @@ enum class EAnimationState : uint8;
 class UPlayerAnimationComponent;
 enum class EPlayerState : uint8;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnimSectionEvent);
+
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerAnimInstance : public UBaseAnimInstance
 {
@@ -67,6 +69,13 @@ protected:
 
 	bool bSetAnimation{};
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnAnimSectionEvent OnStartAnimSection{};
+	UPROPERTY(BlueprintAssignable)
+	FOnAnimSectionEvent OnStartLoopAnimSection{};
+	UPROPERTY(BlueprintAssignable)
+	FOnAnimSectionEvent OnFinishAnimSection{};
+
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
@@ -92,14 +101,13 @@ protected:
 
 public:
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE EAnimationSectionType GetAnimSectionType() const {
-		return CurrentAnimationSection;
-	}
+	FORCEINLINE EAnimationSectionType GetAnimSectionType() const { return CurrentAnimationSection; }
 
 	bool SetAnimationSequences(UAnimSequence* Start, UAnimSequence* Loop, UAnimSequence* End);
 
 
 	bool IsSetAnimation() const;
+	bool IsPlayerAnimationSeq() const { return CurrentAnimationSection != EAnimationSectionType::None; }
 	UFUNCTION(BlueprintCallable)
 	bool SetArchitectAnimSequence();
 

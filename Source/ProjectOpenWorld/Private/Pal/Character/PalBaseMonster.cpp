@@ -9,6 +9,7 @@
 #include "Pal/DataTable/PalMonsterData.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Pal/FunctionLibrary/PalSpawnBlueprintFunctionLibrary.h"
 
 APalBaseMonster::APalBaseMonster() : Super()
 {
@@ -113,6 +114,8 @@ void APalBaseMonster::OnHPChanged(double PreCurrentStat, double CurrentStat)
 			//	GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
 			//}
 		}
+		UPalSpawnBlueprintFunctionLibrary::SpawnItemsForCharacter(this, GetMonsterName(), GetActorTransform(), this);
+
 		GetMesh()->bPauseAnims = true;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FTimerHandle handle{};

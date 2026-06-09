@@ -66,7 +66,6 @@ void UPlayerInventoryWidget::UpdatEquipSlot()
 	}
 }
 
-
 void UPlayerInventoryWidget::SetStatWidget(UStatComponent* StatCom)
 {
 	if (PlayerStatusWidget)

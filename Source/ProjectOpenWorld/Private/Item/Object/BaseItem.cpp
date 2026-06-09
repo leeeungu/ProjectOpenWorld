@@ -38,10 +38,7 @@ int32 UBaseItem::AddItemCount(int32 Count)
 
 UItemDataAsset* UBaseItem::GetPalItemDataAssetByName() const
 {
-	const FPalStaticItemDataStruct* Result{};
-	if(UItemDataSubsystem::GetPalStaticItemDataPtr(ItemID, &Result) && Result->ItemDataAssetSoft)
-		return Result->ItemDataAssetSoft;
-	return nullptr;
+	return UItemDataSubsystem::GetPalItemDataAssetByName(ItemID);
 }
 
 UItemDataFragment* UBaseItem::GetItemDataFragment(TSubclassOf<UItemDataFragment> FragClass) const

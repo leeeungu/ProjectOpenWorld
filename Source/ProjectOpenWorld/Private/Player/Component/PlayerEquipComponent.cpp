@@ -50,18 +50,29 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 	if (CurrentEquipItem == Item)
 		return true;
 	ABasePlayer* Player = Cast<ABasePlayer>(GetOwner());
-	if (!Player)
+	UItemDataAsset* Asset = Item->GetPalItemDataAssetByName();
+	if (!Player || !Asset)
 		return false;
+	const TArray<TObjectPtr<UItemDataFragment>>* Array = Asset->GetItemDataFragmentArray();
+	FItemEquipContext Context{};
+	Context.User = Player;
+	Context.Target = WeaponMesh;
+	Context.Item = Item;
+	for (auto& Fragment : *Array)
+	{
+		if (IEquipItemInterface* UseInterface = Cast<IEquipItemInterface>(Fragment))
+		{
+			UseInterface->Equip(Context);
+		}
+	}
 
-	UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
 	UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
-	if (HandEquipData && HandEquipData->GetHandEquipMesh() && SlotFragment)
+	if (SlotFragment)
 	{
 		const EWeapone NewWeaponType = SlotFragment->GetWeaponeData();
 
 		// 휠 전환용 등록 정보는 유지되어야 하므로 Equip 시 갱신만 한다.
 		EquipItemMap.FindOrAdd(NewWeaponType) = Item;
-
 		CurrentEquipItem = Item;
 		CurrentWeapone = NewWeaponType;
 		if(OnEquipChanged.IsBound())
@@ -69,36 +80,7 @@ bool UPlayerEquipComponent::EquipItem(const UBaseItem* Item)
 
 		Player->ChangePlayerState(SlotFragment->GetEquipPlayerState());
 		Player->ChangeEquipWidget(SlotFragment->GetWeaponeID(), NewWeaponType);
-
-		WeaponMesh->SetSkeletalMesh(HandEquipData->GetHandEquipMesh());
-		WeaponMesh->AttachToComponent(
-			PlayerMesh,
-			FAttachmentTransformRules::KeepRelativeTransform,
-			HandEquipData->GetHandEquipSocket());
-		WeaponMesh->SetRelativeTransform(HandEquipData->GetHandEquipRelativeTransform());
 	}
-	/*if (UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass())))
-	{
-		Player->GetInventoryComponent()->SetEquipSlot(SlotFragment->GetSlotType(), const_cast<UBaseItem*>(Item));
-	}*/
-
-	TObjectPtr < UPlayerAnimationSLEDataFragment> Fragment = GetPlayerAnimationSLEDataFragment(Item);
-	if (Fragment)
-	{
-		UE_LOG(LogTemp, Log, TEXT("SetAnimSequence"));
-		if(UPlayerAnimInstance* PlayerAnimInstance = Player->GetPlayerAnimInstance())
-		{
-			PlayerAnimInstance->SetAnimationSequences(
-				Fragment->GetStartAnim(),
-				Fragment->GetLoopAnim(),
-				Fragment->GetEndAnim());
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No PlayerAnimationSLEDataFragment found for item: %s"), *Item->GetItemID().ToString());
-	}
-
 	return true;
 }
 
@@ -176,6 +158,7 @@ bool UPlayerEquipComponent::UnRegisterItem(const UBaseItem* Item)
 {
 	if (!Item)
 		return false;
+	UnequipItem(Item);
 	UHandEquipItemFragment* HandEquipData = GetHandEquipFragment(Item);
 	UItemDataSlotFragment* SlotFragment = Cast< UItemDataSlotFragment>(Item->GetItemDataFragment(UItemDataSlotFragment::StaticClass()));
 	if (HandEquipData && SlotFragment)

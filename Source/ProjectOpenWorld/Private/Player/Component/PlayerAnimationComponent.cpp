@@ -1,11 +1,10 @@
-#include "Player/Component/PlayerAnimationComponent.h"
+ï»¿#include "Player/Component/PlayerAnimationComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
-
 
 UPlayerAnimationComponent::UPlayerAnimationComponent()
 {
@@ -52,7 +51,7 @@ bool UPlayerAnimationComponent::ClimbLineCheck()
 	if (bClimbing)
 	{
 		{
-			// ¹Ù´Ú Ã¼Å©
+			// ë°”ë‹¥ ì²´í¬
 			FVector Start = OwnerCharacter->GetActorLocation();
 			FVector End = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorUpVector() * -98.0f;
 			FHitResult rHit{};
@@ -138,14 +137,14 @@ void UPlayerAnimationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 bool UPlayerAnimationComponent::StartClimb()
 {
-	if (!OwnerCharacter || !ClimbLineCheck() ) // ½ÃÀÛ ½Ã climb end Áß¿¡ ´Ù½Ã climb µÇ´Â ¹®Á¦°¡ ÀÖÀ½
+	if (!OwnerCharacter || !ClimbLineCheck() ) // ì‹œì‘ ì‹œ climb end ì¤‘ì— ë‹¤ì‹œ climb ë˜ëŠ” ë¬¸ì œê°€ ìˆìŒ
 	{
 		return false;
 	}
 	bClimbing = true;
 	SetComponentTickEnabled(true);
-	// º®¿¡ ºÙ¾î¼­ climb ÇÏ¸é º® ¾È¿¡ µé¾î°¡ ¹ö·Á¼­ ¶³¾î ¶ß¸±·Á°í ¼öÁ¤Çß´Âµ¥
-	// º®°ú ºñ½ºµëÇÏ¸é ¿©ÀüÈ÷ º®¿¡ ¹·È÷´Â ¹ö±×°¡ ÀÖÀ½ (ray¸¦ ½÷¾ßÇÒ·Á³ª, °è»êÇÏ°í tick¿¡¼­ º¸Á¤À» Ä¥±î )
+	// ë²½ì— ë¶™ì–´ì„œ climb í•˜ë©´ ë²½ ì•ˆì— ë“¤ì–´ê°€ ë²„ë ¤ì„œ ë–¨ì–´ ëœ¨ë¦´ë ¤ê³  ìˆ˜ì •í–ˆëŠ”ë°
+	// ë²½ê³¼ ë¹„ìŠ¤ë“¬í•˜ë©´ ì—¬ì „íˆ ë²½ì— ë­íˆëŠ” ë²„ê·¸ê°€ ìˆìŒ (rayë¥¼ ì´ì•¼í• ë ¤ë‚˜, ê³„ì‚°í•˜ê³  tickì—ì„œ ë³´ì •ì„ ì¹ ê¹Œ )
 	if (ClimbData.arrHitResult[SClimbRayData::ERoot].Distance < OwnerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius() * 2.8)
 	{
 	OwnerCharacter->AddActorWorldOffset(ClimbData.arrHitResult[SClimbRayData::ERoot].ImpactNormal * 

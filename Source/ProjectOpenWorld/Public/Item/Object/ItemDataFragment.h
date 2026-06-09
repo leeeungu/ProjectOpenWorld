@@ -4,6 +4,67 @@
 #include "UObject/NoExportTypes.h"
 #include "ItemDataFragment.generated.h"
 
+class AActor;
+class UBaseItem;
+
+USTRUCT()
+struct FItemUseContext
+{
+	GENERATED_USTRUCT_BODY()
+	TObjectPtr<AActor> User{};
+	TObjectPtr<UBaseItem> ItemInstance{};
+};
+
+
+USTRUCT()
+struct FItemUseResult
+{
+	GENERATED_USTRUCT_BODY()
+	bool  bSuccess = false;
+	int32 ConsumeCount = 0;
+};
+
+UINTERFACE(MinimalAPI)
+class UUseItemInterface : public UInterface { GENERATED_BODY() };
+class IUseItemInterface
+{
+	GENERATED_BODY()
+public:
+	// 공유 에셋이라 const + Context 그대로 유지
+	virtual void OnUse(const FItemUseContext& Ctx, FItemUseResult& Out) const {};
+	virtual void OnUnUse(const FItemUseContext& Ctx, FItemUseResult& Out) const {};
+};
+
+//UINTERFACE(MinimalAPI)
+//class UItemAcquireReactor : public UInterface { GENERATED_BODY() };
+//class IItemAcquireReactor
+//{
+//	GENERATED_BODY()
+//public:
+//	virtual void OnAcquire(const FItemUseContext& Ctx) const = 0;
+//};
+
+class USkeletalMeshComponent;
+
+USTRUCT()
+struct FItemEquipContext
+{
+	GENERATED_USTRUCT_BODY()
+	TObjectPtr<AActor> User{};
+	TObjectPtr<USkeletalMeshComponent> Target{};
+	const UBaseItem* Item{};
+};
+
+UINTERFACE(MinimalAPI)
+class UEquipItemInterface : public UInterface { GENERATED_BODY() };
+class IEquipItemInterface
+{
+	GENERATED_BODY()
+public:
+	virtual bool Equip(const FItemEquipContext& Context) const { return false; }
+	virtual bool Unequip(const FItemEquipContext& Context) const { return false; }
+};
+
 
 UCLASS(Abstract, BlueprintType, EditInlineNew, DefaultToInstanced)
 class PROJECTOPENWORLD_API UItemDataFragment : public UObject
@@ -19,7 +80,7 @@ class PROJECTOPENWORLD_API UItemDataFragment : public UObject
 class USkeletalMesh;
 
 UCLASS()
-class UHandEquipItemFragment : public UItemDataFragment
+class UHandEquipItemFragment : public UItemDataFragment, public IEquipItemInterface
 {
 	GENERATED_BODY()
 protected:
@@ -33,9 +94,14 @@ protected:
 	FTransform HandEquipRelativeTransform{};
 
 public:
-	USkeletalMesh* GetHandEquipMesh() const;
-	FName GetHandEquipSocket() const { return HandEquipSocket; }
-	FTransform GetHandEquipRelativeTransform() const { return HandEquipRelativeTransform; }
+	virtual bool Equip(const FItemEquipContext& Context) const override;
+	virtual bool Unequip(const FItemEquipContext& Context) const override;
+
+	static bool EquipItem(USkeletalMeshComponent* Target, class USkeletalMesh* TargetMesh, FName SockeName, FTransform Relative);
+	static bool UnEquipItem(USkeletalMeshComponent* Target);
+	//USkeletalMesh* GetHandEquipMesh() const;
+	//FName GetHandEquipSocket() const { return HandEquipSocket; }
+	//FTransform GetHandEquipRelativeTransform() const { return HandEquipRelativeTransform; }
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
@@ -43,7 +109,7 @@ public:
 
 
 UCLASS()
-class UComsumItemFragment : public UItemDataFragment
+class UComsumItemFragment : public UItemDataFragment, public IUseItemInterface
 {
 	GENERATED_BODY()
 public:

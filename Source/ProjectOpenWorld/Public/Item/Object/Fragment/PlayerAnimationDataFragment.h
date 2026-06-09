@@ -6,15 +6,8 @@
 
 class UAnimSequence;
 
-UCLASS(Abstract, BlueprintType, EditInlineNew, DefaultToInstanced)
-class PROJECTOPENWORLD_API UPlayerAnimationDataFragment : public UItemDataFragment
-{
-	GENERATED_BODY()
-public:
-};
-
-UCLASS()
-class PROJECTOPENWORLD_API UPlayerAnimationSLEDataFragment : public UPlayerAnimationDataFragment
+UCLASS(BlueprintType)
+class PROJECTOPENWORLD_API UPlayerAnimationSLEDataFragment : public UItemDataFragment, public IEquipItemInterface
 {
 	GENERATED_BODY()
 protected:
@@ -28,4 +21,8 @@ public:
 	UAnimSequence* GetStartAnim() const;
 	UAnimSequence* GetLoopAnim() const;
 	UAnimSequence* GetEndAnim() const;
+
+
+	virtual bool Equip(const FItemEquipContext& Context) const override;
+	virtual bool Unequip(const FItemEquipContext& Context) const override;
 };

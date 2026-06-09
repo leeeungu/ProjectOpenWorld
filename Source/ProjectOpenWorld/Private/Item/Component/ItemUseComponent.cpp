@@ -1,8 +1,10 @@
 ﻿#include "Item/Component/ItemUseComponent.h"
 #include "Player/Character/BasePlayer.h"
 #include "Item/Component/EquipmentComponent.h"
+#include "Inventory/Component/InventoryComponent.h"
 #include "Item/Object/BaseItem.h"
 #include "Item/DataAsset/ItemDataAsset.h"
+#include "Item/System/ItemDataSubsystem.h"
 
 UItemUseComponent::UItemUseComponent()
 {
@@ -28,10 +30,31 @@ bool UItemUseComponent::UseItem(UBaseItem* Item)
 {
 	if (Item && Player)
 	{
-		EItemUseType UseType = Item->GetUseType();
-		uint8 UseTypeValue = static_cast<uint8>(UseType);
-		if (UseHandler[UseTypeValue])
-			return (this->*UseHandler[UseTypeValue])(Item);
+		UItemDataAsset* Asset = Item->GetPalItemDataAssetByName();
+		if (Asset)
+		{
+			FItemUseContext Context{};
+			Context.User = Player;
+			Context.ItemInstance = Item;
+			FItemUseResult Result{};
+			const TArray<TObjectPtr<UItemDataFragment>>* Array = Asset->GetItemDataFragmentArray();
+			for (auto& Fragment : *Array)
+			{
+				if (IUseItemInterface* UseInterface = Cast< IUseItemInterface>(Fragment))
+				{
+					UseInterface->OnUse(Context, Result);
+				}
+			}
+			EItemUseType UseType = Item->GetUseType();
+			uint8 UseTypeValue = static_cast<uint8>(UseType);
+			if (UseHandler[UseTypeValue])
+				return (this->*UseHandler[UseTypeValue])(Item);
+		}
+		else if (Player->GetInventoryComponent())
+		{
+			Player->GetInventoryComponent()->AddItem(TEXT("Money"), Item->GetItemCount());
+			return true;
+		}
 	}
 	return false;
 }
@@ -40,6 +63,21 @@ bool UItemUseComponent::UnUseItem(UBaseItem* Item)
 {
 	if (Item && Player)
 	{
+		if (UItemDataAsset* Asset = Item->GetPalItemDataAssetByName())
+		{
+			FItemUseContext Context{};
+			Context.User = Player;
+			Context.ItemInstance = Item;
+			FItemUseResult Result{};
+			const TArray<TObjectPtr<UItemDataFragment>>* Array = Asset->GetItemDataFragmentArray();
+			for (auto& Fragment : *Array)
+			{
+				if (IUseItemInterface* UseInterface = Cast< IUseItemInterface>(Fragment))
+				{
+					UseInterface->OnUnUse(Context, Result);
+				}
+			}
+		}
 		EItemUseType UseType = Item->GetUseType();
 		uint8 UseTypeValue = static_cast<uint8>(UseType);
 		if (UnUseHandler[UseTypeValue])
@@ -83,10 +121,10 @@ bool UItemUseComponent::UnHandleDefault(UBaseItem* Item)
 bool UItemUseComponent::UnHandleHandEquip(UBaseItem* Item)
 {
 	//UEquipmentComponent
-	/*if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
+	if (UEquipmentComponent* EquipmentComponent = Player->GetPlayerEquipComponent())
 	{
-		return EquipmentComponent->UnequipItem(Item);
-	}*/
+		return EquipmentComponent->UnRegisterItem(Item);
+	}
 	return false;
 }
 

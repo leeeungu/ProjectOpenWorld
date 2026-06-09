@@ -115,8 +115,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static TSubclassOf<UBaseItemObject> GetPalStaticItemObjectVisualBlueprintClassSoftByName(FName RowName) ;
 
-	UFUNCTION(BlueprintCallable, Category = "ItemDataSubsystem")
-	static AItemActor* SpawnPalStaticItemVisualActorByName(UObject* WorldContextObject, FName ItemID, const FTransform& SpawnTransform, int Count = 1);
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static FString GetPalItemRecipeProductIdByName(FName RowName) ;
 
@@ -134,6 +132,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static UItemDataAsset* GetPalItemDataAssetByName(FName RowName);
+	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
+	static UItemDataAsset* GetMoneyItemDataAsset();
 
 	UFUNCTION(BlueprintPure, Category = "ItemDataSubsystem")
 	static UTexture2D* GetPalItemIconTextureByName(FName RowName) ;

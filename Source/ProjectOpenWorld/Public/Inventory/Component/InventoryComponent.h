@@ -91,6 +91,7 @@ public:
 	void UseItem(int Row, int Col);
 
 	bool UseItemSlot(const FInventorySlot* Slot);
+	bool UnUseItemSlot(const FInventorySlot* Slot);
 	bool IsInventorySlot(const FInventorySlot* Slot) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")

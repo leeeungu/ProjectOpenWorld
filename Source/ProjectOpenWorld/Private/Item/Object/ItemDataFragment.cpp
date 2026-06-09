@@ -1,10 +1,41 @@
 ﻿#include "Item/Object/ItemDataFragment.h"
 #include "Item/AssetUserData/WeaponeAssetUserData.h"
+#include "GameFramework/Character.h"
 #include "Engine/SkeletalMesh.h"
 
-USkeletalMesh* UHandEquipItemFragment::GetHandEquipMesh() const
+
+bool UHandEquipItemFragment::Equip(const FItemEquipContext& Context) const
 {
-	return HandEquipMesh.LoadSynchronous();
+	HandEquipMesh.LoadSynchronous();
+	return EquipItem(Context.Target, HandEquipMesh.Get(), HandEquipSocket, HandEquipRelativeTransform);
+}
+
+bool UHandEquipItemFragment::Unequip(const FItemEquipContext& Context) const
+{
+	return UnEquipItem(Context.Target);
+}
+
+bool UHandEquipItemFragment::EquipItem(USkeletalMeshComponent* Target, USkeletalMesh* TargetMesh, FName SockeName, FTransform Relative)
+{
+	if (!Target || !TargetMesh || !Target->GetOwner())
+		return false;
+	if (ACharacter* OwnerCharacter = Cast<ACharacter>(Target->GetOwner()))
+	{
+		Target->SetSkeletalMesh(TargetMesh);
+		Target->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SockeName);
+		Target->SetRelativeTransform(Relative);
+		return true;
+	}
+	return false;
+}
+
+bool UHandEquipItemFragment::UnEquipItem(USkeletalMeshComponent* Target)
+{
+	if (!Target)
+		return false;
+	Target->SetSkeletalMesh(nullptr);
+	Target->SetRelativeTransform(FTransform::Identity);
+	return true;
 }
 
 #if WITH_EDITOR
