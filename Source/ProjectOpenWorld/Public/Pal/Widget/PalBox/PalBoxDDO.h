@@ -1,8 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/DragDropOperation.h"
 #include "PalBoxDDO.generated.h"
+
+class UPalSpawnerComponent;
+class UPalStorageComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalBoxDDO : public UDragDropOperation
@@ -15,6 +18,8 @@ public:
 		, Index(InIndex)
 	{
 	}
+	TObjectPtr<UPalStorageComponent> PalStorageComponent{};
+	TObjectPtr< UPalSpawnerComponent> PalSpawnerComponent{};
 	UPROPERTY()
 	bool IsFromInventory{ false };
 	UPROPERTY()

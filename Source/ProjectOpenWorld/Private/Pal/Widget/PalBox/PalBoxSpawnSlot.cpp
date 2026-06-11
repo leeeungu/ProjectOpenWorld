@@ -11,10 +11,18 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "GameBase/Widget/UserWidgetTemplate.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
+#include "Pal/Component/PalStorageComponent.h"
+#include "Pal/Component/PalSpawnerComponent.h"
 
 
 void UPalBoxSpawnSlot::NativeConstruct()
 {
+	UObject* OuterWidget = GetOuter();
+	while (OuterWidget && !ParentWidget)
+	{
+		ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
+		OuterWidget = OuterWidget->GetOuter();
+	}
 	Super::NativeConstruct();
 	SetPalCreature(nullptr);	
 	if(BackgroundFrameImage)
@@ -75,13 +83,6 @@ FReply UPalBoxSpawnSlot::NativeOnMouseButtonUp(const FGeometry& InGeometry, cons
 {
 	if (CurrentSelectedCreature.IsValid() && IsHovered())
 	{
-		UObject* OuterWidget = GetOuter();
-		UPalBoxWidget* ParentWidget{};
-		while (OuterWidget && !ParentWidget)
-		{
-			ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
-			OuterWidget = OuterWidget->GetOuter();
-		}
 		if (ParentWidget)
 		{
 			UUIDataGameInstanceSubsystem::PlayButtonClickSound();
@@ -116,12 +117,17 @@ FReply UPalBoxSpawnSlot::NativeOnMouseButtonDoubleClick(const FGeometry& InGeome
 void UPalBoxSpawnSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
-	if (!OutOperation)
+	if (!OutOperation && CurrentSelectedCreature.IsValid())
 	{
 		UPalBoxDDO* DDo = Cast< UPalBoxDDO>(UWidgetBlueprintLibrary::CreateDragDropOperation(UPalBoxDDO::StaticClass()));
 		OutOperation = DDo;
 		DDo->IsFromInventory = false;
 		DDo->Index = SlotIndex;
+		if (ParentWidget)
+		{
+			DDo->PalStorageComponent = ParentWidget->GetPalStorageComponent();
+			DDo->PalSpawnerComponent = ParentWidget->GetPalSpawnerComponent();
+		}
 	}
 	if (OutOperation)
 	{
@@ -137,29 +143,34 @@ void UPalBoxSpawnSlot::NativeOnDragDetected(const FGeometry& InGeometry, const F
 
 bool UPalBoxSpawnSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	UPalBoxDDO* DDo = Cast< UPalBoxDDO>(InOperation);
-	if (DDo)
+	UPalBoxDDO* PalDDO = Cast< UPalBoxDDO>(InOperation);
+	if (PalDDO && ParentWidget)
 	{
-		UObject* OuterWidget = GetOuter();
-		UPalBoxWidget* ParentWidget{};
-		while (OuterWidget && !ParentWidget)
+		if (PalDDO->IsFromInventory)
 		{
-			ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
-			OuterWidget = OuterWidget->GetOuter();
+			UPalSpawnerComponent* OwnerCom = ParentWidget->GetPalSpawnerComponent();
+			if (PalDDO->PalStorageComponent && OwnerCom)
+			{
+				AActor* pTo = OwnerCom->GetPal(SlotIndex);
+				AActor* pFrom = PalDDO->PalStorageComponent->GetStoredPal(PalDDO->Index);
+				OwnerCom->RemovePal(SlotIndex);
+				PalDDO->PalStorageComponent->RemovePal(PalDDO->Index);
+				if (pFrom)
+				{
+					OwnerCom->StorePal( pFrom,SlotIndex );
+				}
+
+				if (pTo)
+				{
+					PalDDO->PalStorageComponent->StorePal({ pTo, PalDDO->Index });
+				}
+				return true;
+			}
 		}
-		if (ParentWidget)
+		else
 		{
-			//UE_LOG(LogTemp, Log, TEXT("PalBoxSpawnSlot: On Drop Detected, FromInventory=%d, Index=%d, ToSlotIndex=%d"), DDo->IsFromInventory, DDo->Index, this->SlotIndex);
-			if (DDo->IsFromInventory)
-			{
-				ParentWidget->SpawnSlotFromInventory(DDo->Index, this->SlotIndex);
-				return true;
-			}
-			else
-			{
-				ParentWidget->SwapSpawnInventory(DDo->Index, this->SlotIndex);
-				return true;
-			}
+			ParentWidget->SwapSpawnInventory(PalDDO->Index, this->SlotIndex);
+			return true;
 		}
 	}
 	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);

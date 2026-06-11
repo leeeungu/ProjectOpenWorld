@@ -88,7 +88,7 @@ void APalMonsterSpawner::StartSpawnLoop()
     Params.Owner = this;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-    const float Interval = FMath::Max(MonsterData.SpawnTime, 1.f);
+    const float Interval = FMath::Max(FMath::RandRange(-1.0,1.0) + MonsterData.SpawnTime, 1.f+ FMath::RandRange(-1.0, 1.0));
     GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APalMonsterSpawner::OnSpawnTick, Interval, true, Interval);
 
     FVector SpawnLocation = GetActorLocation();

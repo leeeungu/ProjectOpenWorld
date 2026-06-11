@@ -34,6 +34,8 @@
 #include "Inventory/Component/InventoryComponent.h"
 #include "Pal/Component/PalHitHandlerComponent.h"
 #include "Pal/Data/PalDamageType.h"
+#include "Pal/Component/PalStorageComponent.h"
+#include "Pal/Component/PalSpawnerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -114,6 +116,9 @@ ABasePlayer::ABasePlayer() : Super{}
 
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("PlayerStatCom"));
 	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
+	PalStorageComponent= CreateDefaultSubobject<UPalStorageComponent>(TEXT("PalStorageComponent"));
+	PalSpawnerComponent = CreateDefaultSubobject<UPalSpawnerComponent>(TEXT("PalSpawnerComponent"));
+	PalSpawnerComponent->SetupAttachment(GetRootComponent());
 }
 
 void ABasePlayer::Tick(float DeltaTime)

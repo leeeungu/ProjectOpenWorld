@@ -34,6 +34,7 @@ class UItemUseComponent;
 class UEquipmentComponent;
 class UPlayerEquipVisualComponent;
 class UPalHitHandlerComponent;
+class UPalStorageComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBasePlayer, Log, All);
 
@@ -130,6 +131,11 @@ protected:
 	TSubclassOf<UUserWidget> MainWidgetClass{};
 	TObjectPtr<UUserWidget> MainWidget{};
 
+	UPROPERTY(VisibleAnywhere, Category = "PalStorage")
+	TObjectPtr<UPalStorageComponent> PalStorageComponent{};
+	UPROPERTY(VisibleAnywhere, Category = "PalStorage")
+	TObjectPtr<class UPalSpawnerComponent> PalSpawnerComponent{};
+	
 	bool bDead{};
 	bool bArchitect{};
 
@@ -201,6 +207,10 @@ public:
 	FORCEINLINE  UInteractionComponent* const GetInteractionComponent() const { return InteractionComponent; }
 	FORCEINLINE UPlayerItemComponent* const GetPlayerItemComponent() const { return PlayerItemManagerComponent; }
 	FORCEINLINE UStatComponent_Level* const GetLevelComponent() const { return StatComponent_Level; }
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UPalStorageComponent* const GetPalStorageComponent() const { return PalStorageComponent; }
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UPalSpawnerComponent* const GetPalSpawnerComponent() const { return PalSpawnerComponent; }
 	virtual UPalHitHandlerComponent* GetHitHandlerComponent() const override { return HitHandlerComponent; }
 
 	UFUNCTION()

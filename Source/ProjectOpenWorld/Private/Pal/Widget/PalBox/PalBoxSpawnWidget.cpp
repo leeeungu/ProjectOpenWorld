@@ -42,6 +42,7 @@ void UPalBoxSpawnWidget::CreateSpawnSlotWidget(int SlotIndex)
 {
 	if (SpawnBoxScrollBox && PalBoxSpawnSlotClass)
 	{
+		/*SpawnBoxScrollBox->ClearChildren();
 		SlotIndex = SlotIndex - SpawnBoxScrollBox->GetChildrenCount();
 		for (int i = 0; i < SlotIndex; i++)
 		{
@@ -50,6 +51,6 @@ void UPalBoxSpawnWidget::CreateSpawnSlotWidget(int SlotIndex)
 			{
 				SpawnSlot->SetSlotIndex(i + SpawnBoxScrollBox->GetChildrenCount());
 			}
-		}
+		}*/
 	}
 }

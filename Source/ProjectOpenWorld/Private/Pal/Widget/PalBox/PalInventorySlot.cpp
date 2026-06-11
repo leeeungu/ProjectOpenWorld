@@ -9,6 +9,8 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Pal/Widget/PalBox/PalBoxDDO.h"
 #include "GameBase/Subsystem/UIDataGameInstanceSubsystem.h"
+#include "Pal/Component/PalStorageComponent.h"
+#include "Pal/Component/PalSpawnerComponent.h"
 
 void UPalInventorySlot::NativeOnInitialized()
 {
@@ -17,6 +19,12 @@ void UPalInventorySlot::NativeOnInitialized()
 
 void UPalInventorySlot::NativeConstruct()
 {
+	UObject* OuterWidget = GetOuter();
+	while (OuterWidget && !ParentWidget)
+	{
+		ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
+		OuterWidget = OuterWidget->GetOuter();
+	}
 	Super::NativeConstruct();
 	if (!IsHovered() && SlotFrameImage)
 	{
@@ -65,14 +73,6 @@ FReply UPalInventorySlot::NativeOnMouseButtonUp(const FGeometry& InGeometry, con
 {
 	if (CurrentSelectedCreature.IsValid() && IsHovered())
 	{
-		UObject* OuterWidget = GetOuter();
-		UPalBoxWidget* ParentWidget{};
-		while (OuterWidget && !ParentWidget)
-		{
-			ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
-			OuterWidget = OuterWidget->GetOuter();
-		}
-
 		if (ParentWidget)
 		{
 			UUIDataGameInstanceSubsystem::PlayButtonClickSound();
@@ -84,8 +84,7 @@ FReply UPalInventorySlot::NativeOnMouseButtonUp(const FGeometry& InGeometry, con
 
 FReply UPalInventorySlot::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	Super::NativeOnMouseMove(InGeometry, InMouseEvent);
-	return FReply::Unhandled();
+	return Super::NativeOnMouseMove(InGeometry, InMouseEvent);
 }
 
 FReply UPalInventorySlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -94,25 +93,28 @@ FReply UPalInventorySlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, c
 	{
 		return UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton).NativeReply;
 	}
-	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
-	return FReply::Unhandled();
+	return Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 }
 
 FReply UPalInventorySlot::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
-	return FReply::Handled();
+	return Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
 }
 
 void UPalInventorySlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
-	if(!OutOperation)
+	if (!OutOperation && CurrentSelectedCreature.IsValid())
 	{
 		UPalBoxDDO* DDo = Cast<UPalBoxDDO>(UWidgetBlueprintLibrary::CreateDragDropOperation(UPalBoxDDO::StaticClass()));
 		OutOperation = DDo;
 		DDo->IsFromInventory = true;
 		DDo->Index = SlotIndex;
+		if (ParentWidget)
+		{
+			DDo->PalSpawnerComponent = ParentWidget->GetPalSpawnerComponent();
+			DDo->PalStorageComponent = ParentWidget->GetPalStorageComponent();
+		}
 	}
 	if (OutOperation)
 	{
@@ -146,22 +148,34 @@ bool UPalInventorySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 	UPalBoxDDO* PalDDO = Cast<UPalBoxDDO>(InOperation);
 	if (PalDDO && this != InOperation->Payload)
 	{
-		UObject* OuterWidget = GetOuter();
-		UPalBoxWidget* ParentWidget{};
-		while (OuterWidget && !ParentWidget)
+		if (ParentWidget)
 		{
-			ParentWidget = Cast<UPalBoxWidget>(OuterWidget);
-			OuterWidget = OuterWidget->GetOuter();
-		}
-		if(PalDDO->IsFromInventory)
-		{
-			ParentWidget->SwapPalInInventory(PalDDO->Index, this->SlotIndex);
-			return true;
-		}
-		else
-		{
-			ParentWidget->DespawnSlotToInventory(PalDDO->Index, this->SlotIndex);
-			return true;
+			if (PalDDO->IsFromInventory)
+			{
+				ParentWidget->GetPalStorageComponent()->SwapStoredPals(PalDDO->Index, this->SlotIndex);
+				return true;
+			}
+			else
+			{
+				UPalStorageComponent* OwnerCom = ParentWidget->GetPalStorageComponent();
+				if (PalDDO->PalSpawnerComponent && OwnerCom)
+				{
+					AActor* pTo = OwnerCom->GetStoredPal(SlotIndex);
+					AActor* pFrom = PalDDO->PalSpawnerComponent->GetPal(PalDDO->Index);
+					OwnerCom->RemovePal(SlotIndex);
+					PalDDO->PalSpawnerComponent->RemovePal(PalDDO->Index);
+					if (pFrom)
+					{
+						OwnerCom->StorePal({ pFrom,SlotIndex });
+					}
+
+					if (pTo)
+					{
+						PalDDO->PalSpawnerComponent->StorePal(pTo, PalDDO->Index);
+					}
+					return true;
+				}
+			}
 		}
 
 	}

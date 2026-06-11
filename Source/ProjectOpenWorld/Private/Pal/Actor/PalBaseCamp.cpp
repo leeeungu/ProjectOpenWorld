@@ -11,7 +11,6 @@
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 #include "Item/System/ItemDataSubsystem.h"
 
-
 APalBaseCamp::APalBaseCamp() : Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -146,7 +145,7 @@ void APalBaseCamp::WorkDestory(AActor* DeadPal)
 
 void APalBaseCamp::NewGenerateWorldEvent(const FGenerateSectionData& SectionData)
 {
-	PalStore->ShowAllSpawnedPals();
+	//PalStore->ShowAllSpawnedPals();
 	if(PalCommander)
 	PalCommander->SetComponentTickEnabled(true);
 }
@@ -158,5 +157,5 @@ void APalBaseCamp::DelGenerateWorldEvent(const FGenerateSectionData& SectionData
 		PalCommander->SetComponentTickEnabled(false);
 		PalCommander->StopAllPal();
 	}
-	PalStore->HideAllSpawnedPals();
+	//PalStore->HideAllSpawnedPals();
 }

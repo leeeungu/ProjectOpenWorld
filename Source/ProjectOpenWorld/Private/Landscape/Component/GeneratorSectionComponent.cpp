@@ -447,6 +447,23 @@ void FAsyncWorldGenerater::GenerateTerrainTile(const int inSectionIndexX, const 
 
 float FAsyncWorldGenerater::GetHeight(float inX, float inY) const
 {
+	//if (!WorldGenerator) return 0.0f;
+
+	//// 1) 매크로 octave → 0~1 기복 마스크
+	//float macro = FMath::PerlinNoise2D(FVector2D(inX, inY) * WorldGenerator->scales[0]);
+	//macro = macro * 0.5f + 0.5f;                          // -1~1 → 0~1
+	//macro = FMath::Pow(macro, 2); // >1이면 평지 평탄·언덕 강조 (예: 2~3)
+
+	//float Height = macro * WorldGenerator->amplitudes[0];
+
+	//// 2) 디테일 octave를 macro로 마스킹 → 평지엔 디테일 거의 안 얹힘
+	//float detail = 0.f;
+	//for (int i = 1; i < WorldGenerator->amplitudes.Num(); i++)
+	//	detail += FMath::PerlinNoise2D(FVector2D(inX, inY) * WorldGenerator->scales[i]) * WorldGenerator->amplitudes[i];
+	//Height += detail * macro;
+
+	//return Height;
+
 	if (!WorldGenerator)
 		return 0.0f;
 	float HeightScale{};

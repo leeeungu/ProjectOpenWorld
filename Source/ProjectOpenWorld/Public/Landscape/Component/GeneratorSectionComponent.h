@@ -32,7 +32,7 @@ protected:
 	int yVertexCount = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	float CellSize = 12000.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "2", ClampMax = "10"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "5"))
 	int SectionRadiusCount = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Landscape Settings", meta = (ClampMin = "1", ClampMax = "10"))
 	int SectionUpdateTickCount = 1;

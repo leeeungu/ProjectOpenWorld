@@ -7,6 +7,8 @@
 #include "Pal/Widget/Item/PalItemInventoryWidget.h"
 #include "Building/Component/PalBuildingStaticMeshComponent.h"
 #include "Player/Character/BasePlayer.h"
+#include "Pal/Component/PalStorageComponent.h"
+#include "Pal/Component/PalSpawnerComponent.h"
 
 APalBaseCamp_V2::APalBaseCamp_V2() : Super{}
 {
@@ -15,6 +17,10 @@ APalBaseCamp_V2::APalBaseCamp_V2() : Super{}
 	PalWorkableSearchComponent->SetupAttachment(GetRootComponent());
 	PalWorkCommander = CreateDefaultSubobject<UPalWorkCommander>(TEXT("PalWorkCommander"));
 	PalInventory = CreateDefaultSubobject<UPalInventory>(TEXT("PalInventory"));
+	//PalStorageComponent = CreateDefaultSubobject<UPalStorageComponent>(TEXT("PalStorageComponent"));
+
+	PalSpawnerComponent = CreateDefaultSubobject<UPalSpawnerComponent>(TEXT("PalSpawnerComponent"));
+	PalSpawnerComponent->SetupAttachment(GetRootComponent());
 }
 
 void APalBaseCamp_V2::OnDelActionWidget(UUserWidget* ActionWidget)
@@ -45,6 +51,19 @@ void APalBaseCamp_V2::BeginPlay()
 		PalWorkableSearchComponent->OnComponentEndOverlap.AddUniqueDynamic(PalWorkCommander.Get(), &UPalWorkCommander::OnEndSearch);
 	}
 	Super::BeginPlay();
+	if (PalSpawnerComponent)
+	{
+		PalSpawnerComponent->OnContainerUpdated.AddDynamic(this, &APalBaseCamp_V2::SpawnPal);
+	}
+}
+
+void APalBaseCamp_V2::SpawnPal(int32 Index, AActor* Pre)
+{
+	if (PalSpawnerComponent)
+	{
+		PalSpawnerComponent->SpawnPal(Index);
+	}
+
 }
 
 void APalBaseCamp_V2::OnInteractionStart_Implementation(ACharacter* pOther)
@@ -66,6 +85,8 @@ void APalBaseCamp_V2::OnInteractionStart_Implementation(ACharacter* pOther)
 				{
 					if (UPalBoxWidget* PalBoxWidget = Cast< UPalBoxWidget>(BuildActionWidgetCom->GetActionWidget()))
 					{
+						PalBoxWidget->SetStorageComponent(pPlayer->GetPalStorageComponent());
+						PalBoxWidget->SetPalSpawnerComponent(PalSpawnerComponent);
 						if (UPalItemInventoryWidget* PalItemInventoryWidget = PalBoxWidget->GetPalItemInventoryWidget())
 						{
 							PalInventory->OnSlotChanged.AddUniqueDynamic(PalItemInventoryWidget, &UPalItemInventoryWidget::OnUpdateSlot);
@@ -112,6 +133,8 @@ void APalBaseCamp_V2::OnInteractionEnd_Implementation(ACharacter* pOther)
 	//			PalItemInventoryWidget->OnSlotSwap.RemoveAll(PalInventory);
 	//		}
 	//	}
-	//	BuildActionWidgetCom->DeleteActionWidget();
+	//	//BuildActionWidgetCom->DeleteActionWidget();
 	//}
 }
+
+

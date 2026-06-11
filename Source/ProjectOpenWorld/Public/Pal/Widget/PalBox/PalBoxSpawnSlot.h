@@ -9,12 +9,15 @@ class UImage;
 class UProgressBar;
 class APalBaseCreature;
 class UCanvasPanel;
+class UPalBoxWidget;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalBoxSpawnSlot : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
+	TObjectPtr < UPalBoxWidget> ParentWidget{};
+
 	UPROPERTY(meta = (BindWidget), Category = "PalBox", EditDefaultsOnly)
 	TObjectPtr<UTextBlock> NameText = nullptr;
 	UPROPERTY(meta = (BindWidget), Category = "PalBox", EditDefaultsOnly)

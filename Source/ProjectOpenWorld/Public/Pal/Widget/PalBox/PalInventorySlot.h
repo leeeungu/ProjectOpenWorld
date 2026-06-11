@@ -7,12 +7,15 @@
 class UImage;
 class UButton;
 class APalBaseCreature;
+class UPalBoxWidget;
 
 UCLASS(ClassGroup = PalBox)
 class PROJECTOPENWORLD_API UPalInventorySlot : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
+	TObjectPtr < UPalBoxWidget> ParentWidget{};
+
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UImage> SlotImage{};
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")

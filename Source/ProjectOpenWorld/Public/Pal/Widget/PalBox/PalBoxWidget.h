@@ -14,6 +14,7 @@ class AActor;
 class UPalBoxItemTab;
 class UPalItemInventoryWidget;
 class UWidgetSwitcher;
+class UPalSpawnerComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction, public ITabWidgetInterface
@@ -21,7 +22,8 @@ class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction, public IT
 	GENERATED_BODY()
 protected:
 	UPROPERTY()
-	TObjectPtr<UPalStorageComponent> PalStorageComponent;
+	TObjectPtr<UPalStorageComponent> PalStorageComponent{};
+	TObjectPtr< UPalSpawnerComponent> PalSpawnerComponent{};
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UPalInventoryWidget> PalInventoryWidget{};
@@ -45,6 +47,7 @@ public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
+	virtual void NativeDestruct() override;
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 	
 	virtual void SetSelectedPanel(int32 SelectedIndex) override;
@@ -59,12 +62,20 @@ public:
 
 	TObjectPtr<APalBaseCreature> GetPalInInventory(int Index) const;
 	virtual void SetOwnerActor(AActor* NewOwner) override;
+	void SetStorageComponent(UPalStorageComponent* Storage);
+	void SetPalSpawnerComponent(UPalSpawnerComponent* Spawner);
 
 	void SwapPalInInventory(int FromIndex, int ToIndex);
 	void SpawnSlotFromInventory(int FromIndex, int ToIndex);
 	void SwapSpawnInventory(int FromIndex, int ToIndex);
 	void DespawnSlotToInventory(int FromIndex, int ToIndex);
 
+
+	void StorePal(struct FPalStoreInventoryData NewPal);
+	void RemovePal(int Index);
+
+	UPalStorageComponent* GetPalStorageComponent() const { return PalStorageComponent; }
+	UPalSpawnerComponent* GetPalSpawnerComponent() const { return PalSpawnerComponent; }
 	UPalItemInventoryWidget* GetPalItemInventoryWidget() const;
 	//OnWidgetAdded
 protected:
@@ -75,6 +86,6 @@ protected:
 	UFUNCTION()
 	void OnPalBoxChangeEvent();
 
-
-
+	UFUNCTION()
+	void OnUpdateSpawnSlot(int32 Index, AActor* preActor);
 };
