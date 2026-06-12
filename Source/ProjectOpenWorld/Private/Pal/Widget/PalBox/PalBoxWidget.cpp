@@ -10,6 +10,8 @@
 #include "Pal/Widget/PalBox/PalBoxItemTab.h"
 #include "Components/WidgetSwitcher.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Pal/Widget/PalBox/PalBoxDDO.h"
+#include "Pal/Widget/PalBox/PalInventorySlot.h"
 
 bool UPalBoxWidget::SetMainWidget()
 {
@@ -25,12 +27,16 @@ void UPalBoxWidget::NativeOnInitialized()
 	{
 		Subsystem->OnWidgetAdded.AddUFunction(this, FName("OnPalBoxWidgetAdded"));
 	}
+	if (PalInventoryWidget)
+	{
+		PalInventoryWidget->OnInventoryDropEvent.AddUniqueDynamic(this, &UPalBoxWidget::OnSlotOnDropEvent);
+	}
 }
 
 void UPalBoxWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	SetSelectedPanel(CurSelectedIndex);
+	//SetSelectedPanel(CurSelectedIndex);
 }
 
 void UPalBoxWidget::NativePreConstruct()
@@ -41,12 +47,8 @@ void UPalBoxWidget::NativePreConstruct()
 void UPalBoxWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
-	if (PalStorageComponent)
-	{
-		PalStorageComponent->OnPalStoreChanged.RemoveDynamic(this, &UPalBoxWidget::OnPalInventoryChanged);
-		PalStorageComponent = nullptr;
-	}
-	if (PalSpawnerComponent)
+	PalStorageComponent = nullptr;
+	if (PalSpawnerComponent.IsValid())
 	{
 		PalSpawnerComponent->OnContainerUpdated.RemoveDynamic(this, &UPalBoxWidget::OnUpdateSpawnSlot);
 		PalSpawnerComponent = nullptr;
@@ -61,14 +63,16 @@ FReply UPalBoxWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEve
 		int32 Index = PalBoxSwither->GetActiveWidgetIndex();
 		if (InKeyEvent.GetKey() == EKeys::Q && PalBoxSwither)
 		{
-			if (Index - 1 < 0)
+			Index -= 1;
+			if (Index  < 0)
 			{
 				Index = PalBoxSwither->GetChildrenCount() - 1;
 			}
 		}
 		if (InKeyEvent.GetKey() == EKeys::E && PalBoxSwither)
 		{
-			if (Index + 1 >= PalBoxSwither->GetChildrenCount())
+			Index += 1;
+			if (Index >= PalBoxSwither->GetChildrenCount())
 			{
 				Index = 0;
 			}
@@ -81,28 +85,14 @@ FReply UPalBoxWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEve
 	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
 
-void UPalBoxWidget::SetSelectedPanel(int32 SelectedIndex)
-{
-	if (PalBoxSwither && SelectedIndex >= 0 && SelectedIndex < PalBoxSwither->GetChildrenCount())
-	{
-		CurSelectedIndex = SelectedIndex;
-		PalBoxSwither->SetActiveWidgetIndex(CurSelectedIndex);
-	}
-}
-
-
 void UPalBoxWidget::OnPalSelectedChanged(APalBaseCreature* SelectedPal)
 {
 	CurrentSelectedPal = SelectedPal;
-	if(PalInfoWidget )
-		PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
+	//if(PalInfoWidget )
+	//	PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
 }
 
-void UPalBoxWidget::OnPalInventoryChanged(int nIndex, AActor* Actor)
-{
-	if (PalInventoryWidget)
-		PalInventoryWidget->UpdatePalInventory(nIndex, Cast< APalBaseCreature>(Actor));
-}
+
 
 void UPalBoxWidget::OnPalSpawnInventoryChanged(int nIndex, AActor* Actor)
 {
@@ -112,35 +102,32 @@ void UPalBoxWidget::OnPalSpawnInventoryChanged(int nIndex, AActor* Actor)
 
 TObjectPtr<APalBaseCreature>  UPalBoxWidget::GetPalInInventory(int Index) const
 {
-	return PalStorageComponent ? Cast<APalBaseCreature>(PalStorageComponent->GetStoredPal(Index)) : nullptr;
+	return PalStorageComponent.IsValid() ? Cast<APalBaseCreature>(PalStorageComponent->GetStoredPal(Index)) : nullptr;
 }
 
 void UPalBoxWidget::SetOwnerActor(AActor* NewOwner)
 {
 	Super::SetOwnerActor(NewOwner);
+
 }
 
 void UPalBoxWidget::SetStorageComponent(UPalStorageComponent* Storage)
 {
-	if (PalStorageComponent)
-	{
-		PalStorageComponent->OnPalStoreChanged.RemoveDynamic(this, &UPalBoxWidget::OnPalInventoryChanged);
-	}
 	PalStorageComponent = Storage;
-	if (PalStorageComponent)
+	if (PalInventoryWidget)
 	{
-		PalStorageComponent->OnPalStoreChanged.AddUniqueDynamic(this, &UPalBoxWidget::OnPalInventoryChanged);
+		PalInventoryWidget->SetStorageComponent(PalStorageComponent.Get());
 	}
 }
 
 void UPalBoxWidget::SetPalSpawnerComponent(UPalSpawnerComponent* Spawner)
 {
-	if (PalSpawnerComponent)
+	if (PalSpawnerComponent.IsValid())
 	{
 		PalSpawnerComponent->OnContainerUpdated.RemoveDynamic(this, &UPalBoxWidget::OnUpdateSpawnSlot);
 	}
 	PalSpawnerComponent = Spawner;
-	if (PalStorageComponent)
+	if (PalSpawnerComponent.IsValid())
 	{
 		PalSpawnerComponent->OnContainerUpdated.AddUniqueDynamic(this, &UPalBoxWidget::OnUpdateSpawnSlot);
 	}
@@ -148,7 +135,7 @@ void UPalBoxWidget::SetPalSpawnerComponent(UPalSpawnerComponent* Spawner)
 
 void UPalBoxWidget::SwapPalInInventory(int FromIndex, int ToIndex)
 {
-	if (PalStorageComponent)
+	if (PalStorageComponent.IsValid())
 	{
 		PalStorageComponent->SwapStoredPals(FromIndex, ToIndex);
 	}
@@ -156,7 +143,7 @@ void UPalBoxWidget::SwapPalInInventory(int FromIndex, int ToIndex)
 
 void UPalBoxWidget::SpawnSlotFromInventory(int FromIndex, int ToIndex)
 {
-	if (PalSpawnerComponent)
+	if (PalSpawnerComponent.IsValid())
 	{
 		//PalStorageComponent->SpawnPal(FromIndex, ToIndex);
 	}
@@ -164,7 +151,7 @@ void UPalBoxWidget::SpawnSlotFromInventory(int FromIndex, int ToIndex)
 
 void UPalBoxWidget::SwapSpawnInventory(int FromIndex, int ToIndex)
 {
-	if (PalSpawnerComponent)
+	if (PalSpawnerComponent.IsValid())
 	{
 		PalSpawnerComponent->SwapSpawnedPals(FromIndex, ToIndex);
 	}
@@ -172,7 +159,7 @@ void UPalBoxWidget::SwapSpawnInventory(int FromIndex, int ToIndex)
 
 void UPalBoxWidget::DespawnSlotToInventory(int FromIndex, int ToIndex)
 {
-	if (PalSpawnerComponent)
+	if (PalSpawnerComponent.IsValid())
 	{
 		//PalStorageComponent->DeSpawnPal(ToIndex, FromIndex);
 	}
@@ -191,8 +178,9 @@ void UPalBoxWidget::OnPalBoxChangeEvent()
 {
 	if (PalInfoWidget)
 		PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
+	/*
 	if (PalInventoryWidget)
-		PalInventoryWidget->SetPalSlot();
+		PalInventoryWidget->SetPalSlot();*/
 }
 
 
@@ -205,12 +193,12 @@ UPalItemInventoryWidget* UPalBoxWidget::GetPalItemInventoryWidget() const
 
 void UPalBoxWidget::StorePal(struct FPalStoreInventoryData NewPal)
 {
-	if(PalStorageComponent)
+	if(PalStorageComponent.IsValid())
 		PalStorageComponent->StorePal(NewPal);
 }
 void UPalBoxWidget::RemovePal(int Index)
 {
-	if (PalStorageComponent)
+	if (PalStorageComponent.IsValid())
 	{
 		PalStorageComponent->RemovePal(Index);
 	}
@@ -218,8 +206,45 @@ void UPalBoxWidget::RemovePal(int Index)
 
 void UPalBoxWidget::OnUpdateSpawnSlot(int32 Index, AActor* preActor)
 {
-	if (PalBoxSpawnWidget && PalSpawnerComponent)
+	if (PalBoxSpawnWidget && PalSpawnerComponent.IsValid())
 	{
 		PalBoxSpawnWidget->UpdatePalSpawnInventory(Index, PalSpawnerComponent->GetPal(Index));
 	}
+}
+
+void UPalBoxWidget::OnSlotOnDropEvent(int32 SlotIndex, UPalBoxDDO* PalBoxDDO)
+{
+	if (!PalBoxDDO)
+		return;
+	if (!PalBoxDDO->IsFromInventory)
+	{
+		UPalStorageComponent* OwnerCom = GetPalStorageComponent();
+		if (PalBoxDDO->PalSpawnerComponent && OwnerCom)
+		{
+			AActor* pTo = OwnerCom->GetStoredPal(SlotIndex);
+			AActor* pFrom = PalBoxDDO->PalSpawnerComponent->GetPal(PalBoxDDO->Index);
+			OwnerCom->RemovePal(SlotIndex);
+			PalBoxDDO->PalSpawnerComponent->RemovePal(PalBoxDDO->Index);
+			if (pFrom)
+			{
+				OwnerCom->StorePal({ pFrom,SlotIndex });
+			}
+
+			if (pTo)
+			{
+				PalBoxDDO->PalSpawnerComponent->StorePal(pTo, PalBoxDDO->Index);
+			}
+		}
+	}
+}
+
+
+UPalStorageComponent* UPalBoxWidget::GetPalStorageComponent() const
+{
+	return PalStorageComponent.Get(); 
+}
+
+UPalSpawnerComponent* UPalBoxWidget::GetPalSpawnerComponent() const
+{
+	return PalSpawnerComponent.Get(); 
 }

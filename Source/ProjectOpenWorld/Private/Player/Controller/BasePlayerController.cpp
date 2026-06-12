@@ -39,6 +39,7 @@ void ABasePlayerController::BeginPlay()
 			if (PlayerCharacter)
 			{
 				InventoryWidget->SetStatWidget(PlayerCharacter->GetPlayerStatComponent());
+				InventoryWidget->SetStorageComponent(PlayerCharacter->GetPalStorageComponent());
 			}
 			else
 			{

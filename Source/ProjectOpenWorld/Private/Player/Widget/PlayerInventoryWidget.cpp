@@ -7,6 +7,8 @@
 #include "Inventory/Widget/EquipSlotWidget.h"
 #include "Inventory/Widget/InventorySlotBase.h"
 #include "Player/Widget/PlayerStatusWidget.h"
+#include "Pal/Component/PalStorageComponent.h"
+#include "Pal/Widget/PalBox/PalInventoryWidget.h"
 
 bool UPlayerInventoryWidget::SetMainWidget()
 {
@@ -71,5 +73,13 @@ void UPlayerInventoryWidget::SetStatWidget(UStatComponent* StatCom)
 	if (PlayerStatusWidget)
 	{
 		PlayerStatusWidget->SetStatWidget(StatCom);
+	}
+}
+
+void UPlayerInventoryWidget::SetStorageComponent(UPalStorageComponent* Storage)
+{
+	if (PalInventoryWidget)
+	{
+		PalInventoryWidget->SetStorageComponent(Storage);
 	}
 }

@@ -15,18 +15,22 @@ class UPalBoxItemTab;
 class UPalItemInventoryWidget;
 class UWidgetSwitcher;
 class UPalSpawnerComponent;
+class USwitcherCanvasPanel;
+class UPalBoxDDO;
 
 UCLASS()
-class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction, public ITabWidgetInterface
+class PROJECTOPENWORLD_API UPalBoxWidget : public UBaseBuildingAction
 {
 	GENERATED_BODY()
 protected:
 	UPROPERTY()
-	TObjectPtr<UPalStorageComponent> PalStorageComponent{};
-	TObjectPtr< UPalSpawnerComponent> PalSpawnerComponent{};
+	TWeakObjectPtr<UPalStorageComponent> PalStorageComponent{};
+	TWeakObjectPtr< UPalSpawnerComponent> PalSpawnerComponent{};
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UPalInventoryWidget> PalInventoryWidget{};
+	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
+	TObjectPtr < USwitcherCanvasPanel> SwitcherCanvasPanel{};
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UWidgetSwitcher> PalBoxSwither{};
 	
@@ -39,9 +43,6 @@ protected:
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr < UPalBoxItemTab> PalBoxItemTab{};
-	
-	UPROPERTY(EditAnywhere, Category = "PalBox")
-	int32 CurSelectedIndex{};
 public:
 	virtual bool SetMainWidget() override;
 	virtual void NativeOnInitialized() override;
@@ -50,11 +51,7 @@ public:
 	virtual void NativeDestruct() override;
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 	
-	virtual void SetSelectedPanel(int32 SelectedIndex) override;
-	//void SetCommanderComponent(UPalCommanderComponent* InCommanderComponent);
 
-	UFUNCTION()
-	void OnPalInventoryChanged(int nIndex, AActor* Actor);	
 	UFUNCTION()
 	void OnPalSpawnInventoryChanged(int nIndex, AActor* Actor);	
 	UFUNCTION()
@@ -74,8 +71,8 @@ public:
 	void StorePal(struct FPalStoreInventoryData NewPal);
 	void RemovePal(int Index);
 
-	UPalStorageComponent* GetPalStorageComponent() const { return PalStorageComponent; }
-	UPalSpawnerComponent* GetPalSpawnerComponent() const { return PalSpawnerComponent; }
+	UPalStorageComponent* GetPalStorageComponent() const;
+	UPalSpawnerComponent* GetPalSpawnerComponent() const;
 	UPalItemInventoryWidget* GetPalItemInventoryWidget() const;
 	//OnWidgetAdded
 protected:
@@ -88,4 +85,6 @@ protected:
 
 	UFUNCTION()
 	void OnUpdateSpawnSlot(int32 Index, AActor* preActor);
+	UFUNCTION()
+	void OnSlotOnDropEvent(int32 SlotIndex, UPalBoxDDO* PalBoxDDO);
 };

@@ -7,14 +7,17 @@
 class UImage;
 class UButton;
 class APalBaseCreature;
-class UPalBoxWidget;
+class UPalInventoryWidget;
+class UPalBoxDDO;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventorySlotSelected, int32, Index, AActor*, SelectedCreature);
 
 UCLASS(ClassGroup = PalBox)
 class PROJECTOPENWORLD_API UPalInventorySlot : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
-	TObjectPtr < UPalBoxWidget> ParentWidget{};
+	TObjectPtr < UPalInventoryWidget> InventoryWidget{};
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UImage> SlotImage{};
@@ -25,12 +28,14 @@ protected:
 	FEventReply DragDropRelpy{};
 	int SlotIndex{ -1 };
 public:
+	FOnInventorySlotSelected OnSlotSelected{};
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 	//
 	//void UpdateSlot();
 	void SetSlotIndex(int InSlotIndex) { SlotIndex = InSlotIndex; }
 	void SetPalCreature(APalBaseCreature* SelectedCreature);
+	void OnInitialized(UPalInventoryWidget* ParentWidget) { InventoryWidget = ParentWidget;	}
 protected:
 
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;

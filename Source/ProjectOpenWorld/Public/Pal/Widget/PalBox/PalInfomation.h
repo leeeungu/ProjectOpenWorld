@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Pal/Interface/PalSlotSelectedInterface.h"
 #include "PalInfomation.generated.h"
 
 class APalBaseCreature;
@@ -12,7 +13,7 @@ class UPalInventorySlot;
 class UVerticalBox;
 
 UCLASS(ClassGroup = PalBox)
-class PROJECTOPENWORLD_API UPalInfomation : public UUserWidget
+class PROJECTOPENWORLD_API UPalInfomation : public UUserWidget, public IPalSlotSelectedInterface
 {
 	GENERATED_BODY()
 protected:
@@ -37,4 +38,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	void SetPalCreature(APalBaseCreature* SelectedCreature);
+
+
+	virtual void OnSlotSelected_Implementation(int32 Index, AActor* SelectedCreature) override;
 };

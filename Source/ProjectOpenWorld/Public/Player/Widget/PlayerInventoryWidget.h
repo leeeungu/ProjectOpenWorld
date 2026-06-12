@@ -9,6 +9,8 @@ class UEquipSlotWidget;
 class UInventorySlotBase;
 class UStatComponent;
 class UPlayerStatusWidget;
+class UPalStorageComponent;
+class UPalInventoryWidget;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPlayerInventoryWidget : public UUserWidget, public IMainWidgetInterface
@@ -28,6 +30,8 @@ protected:
 	TObjectPtr < UInventorySlotBase> BodyEquipSlot{};
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
 	TObjectPtr < UPlayerStatusWidget> PlayerStatusWidget{};
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Inventory", meta = (BindWidget))
+	TObjectPtr < UPalInventoryWidget> PalInventoryWidget{};
 public:
 	// IMainWidgetInterface interface
 	virtual bool SetMainWidget() override;
@@ -35,6 +39,7 @@ public:
 
 
 	void SetStatWidget(UStatComponent* StatCom);
+	void SetStorageComponent(UPalStorageComponent* Storage);
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;

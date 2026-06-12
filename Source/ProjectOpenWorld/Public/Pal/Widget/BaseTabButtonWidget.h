@@ -8,6 +8,9 @@ UCLASS()
 class PROJECTOPENWORLD_API UBaseTabButtonWidget : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	UPROPERTY(EditAnywhere, Category = "Tab")
+	int32 TabIndex{ INDEX_NONE };
 public:
 #if WITH_EDITOR
 	virtual void OnSelectedByDesigner() override;
@@ -16,4 +19,5 @@ protected:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 private:
 	bool ClickEvent();
+	int32 ResolveTabIndex() const;
 };

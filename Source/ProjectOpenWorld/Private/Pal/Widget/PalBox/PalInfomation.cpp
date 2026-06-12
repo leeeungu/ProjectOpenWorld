@@ -29,3 +29,8 @@ void UPalInfomation::SetPalCreature(APalBaseCreature* SelectedCreature)
 		InfoVerticalBox->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
+
+void UPalInfomation::OnSlotSelected_Implementation(int32 Index, AActor* SelectedCreature)
+{
+	SetPalCreature(Cast< APalBaseCreature>(SelectedCreature));
+}
