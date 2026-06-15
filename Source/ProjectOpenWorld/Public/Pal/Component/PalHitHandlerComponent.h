@@ -16,13 +16,14 @@ class PROJECTOPENWORLD_API UPalHitHandlerComponent : public UActorComponent
 protected:
 	virtual void BeginPlay() override;
 
+	TWeakObjectPtr<AActor> DamageInstigator{};
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "Hitboxes")
 	FOnDamageTaken OnDamageTaken{};
 
 	void TakeDamage(const FPalDamagePayload& Payload);
 
-
+	AActor* GetDamageInstigator() const { return DamageInstigator.Get(); }
 public:
 #if WITH_EDITOR
 	// 컴파일/로드/배치/리컨스트럭션 시점 — 실제 인스턴스 기준 검사(BP에서 붙인 컴포넌트도 보임).

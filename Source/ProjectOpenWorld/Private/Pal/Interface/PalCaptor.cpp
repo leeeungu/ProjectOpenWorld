@@ -1,0 +1,1 @@
+﻿#include "Pal/Interface/PalCaptor.h"

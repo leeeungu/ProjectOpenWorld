@@ -66,9 +66,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "PalAttackData")
 	FOnPalAttack OnPalAttackStart{};
 	UPalAttackComponent();
-
+	void SetAttackDataTableFromSubsystem();
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnRegister() override;        // ← 추가 (에디터 검증용)
+	FName ResolveOwnerPalName() const;         // ← 추가
+#if WITH_EDITOR
+	void ValidateAttackDataTableInEditor();    // ← 추가
+#endif
 
 	void ResetAttackData();
 public:	

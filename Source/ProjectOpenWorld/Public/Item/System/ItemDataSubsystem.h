@@ -25,11 +25,11 @@ private:
 	{
 		UPROPERTY()
 		TObjectPtr<UDataTable> ItemDataTable{};
+		T Dummy{};
 		UPROPERTY()
 		TMap<FName, const T*> ItemDataMap{}; // Key: Editor_RowNameHash
-		T Dummy{};
+		UPROPERTY()
 		TMap<int64, const T*> ItemDataHashMap{}; // Key: Editor_RowNameHash
-		
 	};
 	static UItemDataSubsystem* SingletonInstance;
 protected:

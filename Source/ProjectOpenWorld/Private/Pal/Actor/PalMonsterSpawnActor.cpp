@@ -19,7 +19,7 @@ APalMonsterSpawnActor::APalMonsterSpawnActor()
 	NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
 
 	//Script/Engine.DataTable'/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData'
-	ConstructorHelpers::FObjectFinder<UDataTable> DTMonster(TEXT("/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> DTMonster(TEXT("/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData"));
 	if (DTMonster.Succeeded())
 	{
 		MonsterDataTable = DTMonster.Object;
@@ -152,7 +152,7 @@ void APalMonsterSpawnActor::SpawnMonster(FName SpanwerName)
 					APalBaseMonster* PalMonster = Cast<APalBaseMonster>(SpawnedMonster);
 					if (PalMonster && PalMonster->GetPalPatrolComponent() && MonsterData->MonsterData )
 					{
-						PalMonster->GetPalPatrolComponent()->SetPatrolData(&MonsterData->MonsterData->PatrolData);
+						//PalMonster->GetPalPatrolComponent()->SetPatrolData(&MonsterData->MonsterData->PatrolData);
 					}
 				}
 			}

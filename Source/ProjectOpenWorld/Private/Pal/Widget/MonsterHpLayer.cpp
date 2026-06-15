@@ -37,7 +37,7 @@ void UMonsterHpLayer::RegisterMonster(AActor* Target)
 	UStatComponent* Stat{};
 	if (APalBaseMonster* C = Cast<APalBaseMonster>(Target))
 	{
-		Name = C->GetMonsterName();
+		Name = C->GetPalName();
 		Level = C->GetMonsterLevel();
 		Stat = C->GetStatComponent();
 		if (ABossMonster* pBoss = Cast< ABossMonster>(Target))

@@ -9,6 +9,7 @@
 enum class EStatusType : uint8;
 class APalBaseMonster;
 class APalBaseCreature;
+class APalBaseCharacter;
 
 USTRUCT(BlueprintType)
 struct FPalMonsterPatrolData 
@@ -45,11 +46,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Data")
 	TSubclassOf< APalBaseMonster> MonsterClass = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PalWildSpawnerDatabaseRow")
-	TSubclassOf<APalBaseCreature> CreatureClass = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
-	FPalMonsterPatrolData PatrolData{};
+	TSubclassOf<APalBaseCharacter> CreatureClass = nullptr;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
+	//FPalMonsterPatrolData PatrolData{};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Level Data")
 	TObjectPtr<UDataTable> LevelDataTable{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster Data")
+	TObjectPtr<UDataTable> AttackDataTable{};   // ← 추가
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monster Spawn Data", meta = (ClampMin = 1))
 	int32 LvMin = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monster Spawn Data", meta = (ClampMax = 255))

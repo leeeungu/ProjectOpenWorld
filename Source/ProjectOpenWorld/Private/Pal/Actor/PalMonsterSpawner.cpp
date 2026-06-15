@@ -101,7 +101,7 @@ void APalMonsterSpawner::StartSpawnLoop()
     AliveMonsters.Add(Spawned);
 
     const int32 Lv = FMath::RandRange(MonsterData.LvMin, MonsterData.LvMax);
-    Spawned->InitializeLevel(Lv, GetLevelData(Lv));
+    Spawned->InitializeLevel(Lv);
 
 }
 
@@ -142,7 +142,7 @@ void APalMonsterSpawner::OnSpawnTick()
     AliveMonsters.Add(Spawned);
 
     const int32 Lv = FMath::RandRange(MonsterData.LvMin, MonsterData.LvMax);
-    Spawned->InitializeLevel(Lv, GetLevelData(Lv));
+    Spawned->InitializeLevel(Lv);
 }
 
 void APalMonsterSpawner::OnMonsterDead(AActor* DeadPal)

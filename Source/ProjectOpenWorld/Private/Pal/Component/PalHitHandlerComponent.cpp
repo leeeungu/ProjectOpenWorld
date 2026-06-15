@@ -15,6 +15,7 @@ void UPalHitHandlerComponent::BeginPlay()
 
 void UPalHitHandlerComponent::TakeDamage(const FPalDamagePayload& Payload)
 {
+	DamageInstigator = Payload.Instigator;
 	OnDamageTaken.Broadcast(Payload);
 }
 

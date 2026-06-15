@@ -7,6 +7,10 @@
 #include "Animation/AnimInstance.h"
 #include "Engine/DataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Pal/Character/PalBaseCharacter.h"
+#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+#include "Pal/DataTable/PalMonsterData.h"
+
 
 UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 {
@@ -17,6 +21,7 @@ UPalAttackComponent::UPalAttackComponent() : UActorComponent{}
 void UPalAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	SetAttackDataTableFromSubsystem();
 	if (ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()))
 	{
 		OwnerAnimInstance = Cast< UBaseAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
@@ -32,6 +37,63 @@ void UPalAttackComponent::BeginPlay()
 	//	return;
 	//}
 }
+
+FName UPalAttackComponent::ResolveOwnerPalName() const
+{
+	// creature/monster 공통: PalBaseCharacter 기준 (V1 owner면 nullptr → 스킵)
+	if (const APalBaseCharacter* PalChar = Cast<APalBaseCharacter>(GetOwner()))
+		return PalChar->GetPalName();
+	return NAME_None;
+}
+
+void UPalAttackComponent::SetAttackDataTableFromSubsystem()
+{
+	const FName PalName = ResolveOwnerPalName();
+	if (PalName.IsNone())
+		return;   // PalBaseCharacter 아님(V1 등) → 기존 AttackDataAsset 유지
+
+	const FPalMonsterData* Row = nullptr;
+	if (UPalCharacterDataSubsystem::GetPalMonsterData(PalName, Row) && Row && Row->AttackDataTable)
+	{
+		AttackDataAsset = Row->AttackDataTable;
+		AllAttackDataArray.Reset();   // 새 테이블 반영 위해 lazy 캐시 무효화
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[PalAttack] '%s' AttackDataTable 미발견 — 기존 AttackDataAsset 유지"),
+			*PalName.ToString());
+	}
+}
+
+void UPalAttackComponent::OnRegister()
+{
+	Super::OnRegister();
+#if WITH_EDITOR
+	const UWorld* World = GetWorld();
+	if (World && !World->IsGameWorld())   // 에디터 프리뷰 컨텍스트에서만
+		ValidateAttackDataTableInEditor();
+#endif
+}
+
+#if WITH_EDITOR
+void UPalAttackComponent::ValidateAttackDataTableInEditor()
+{
+	const FName PalName = ResolveOwnerPalName();
+	if (PalName.IsNone())
+		return;
+
+	const FPalMonsterData* Row = nullptr;
+	UPalCharacterDataSubsystem::GetPalMonsterData(PalName, Row);
+	if (!Row || !Row->AttackDataTable)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[PalAttack] '%s' 의 AttackDataTable이 통합 MonsterDT에 없습니다. (Owner: %s)"),
+			*PalName.ToString(),
+			GetOwner() ? *GetOwner()->GetName() : TEXT("None"));
+	}
+}
+#endif
 
 void UPalAttackComponent::ResetAttackData()
 {

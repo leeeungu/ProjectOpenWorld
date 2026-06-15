@@ -6,6 +6,7 @@
 #include "StatComponent.generated.h"
 
 struct FPalDamagePayload;
+struct FPalMonsterLevelData;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UStatComponent : public UActorComponent
@@ -44,4 +45,6 @@ public:
 
 	UFUNCTION()
 	void OnReceiveDamage(const FPalDamagePayload& DamagePayload);
+
+	void SetPalLevelData(const FPalMonsterLevelData& LevelData);
 };

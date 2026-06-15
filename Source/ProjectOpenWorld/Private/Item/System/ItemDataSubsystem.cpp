@@ -115,7 +115,6 @@ void UItemDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (!LoadAndSaveDataTableToMap(PalStaticItemDataTableStruct, TEXT("/Game/Item/DataTable/DT_PalStaticItemData.DT_PalStaticItemData")))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load PalStaticItemData DataTable"));
-
 	}
 	else
 	{

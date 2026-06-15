@@ -17,4 +17,10 @@ public:
 	UStatComponent* GetStatComponent() const { return StatComponent; }
 	void UseControllerDesiredRotation();
 	void UseOrientRotationToMovement();
+
+	virtual void HideCharacter();
+	virtual void VisibleCharacter();
+
+	UFUNCTION(BlueprintPure, Category = "Pal")
+	virtual FName GetPalName() const { return NAME_None; }
 };

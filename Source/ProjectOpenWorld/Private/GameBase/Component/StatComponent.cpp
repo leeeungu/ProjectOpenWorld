@@ -2,6 +2,7 @@
 #include "Pal/Data/PalDamageType.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Pal/DataTable/PalMonsterData.h"
 
 void FStatusValue::SetValue(double NewValue)
 {
@@ -197,4 +198,14 @@ double UStatComponent::GetStatPercent(EStatusType StatName) const
 void UStatComponent::OnReceiveDamage(const FPalDamagePayload& DamagePayload)
 {
 	AddCurrentStat(-DamagePayload.BaseDamage, EStatusType::HP);
+}
+
+void UStatComponent::SetPalLevelData(const FPalMonsterLevelData& LevelData)
+{
+	for (const auto& Data : LevelData.LevelStatusData)
+	{
+		EStatusType Stat = Data.Key;
+		SetMaxStat(Data.Value, Stat);
+		StatBeginPlay(Stat);
+	}
 }

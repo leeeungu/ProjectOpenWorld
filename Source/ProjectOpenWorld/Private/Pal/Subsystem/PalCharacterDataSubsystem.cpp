@@ -1,4 +1,4 @@
-#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+﻿#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 
 UPalCharacterDataSubsystem* UPalCharacterDataSubsystem::SingletonInstance{};
 
@@ -22,6 +22,12 @@ void UPalCharacterDataSubsystem::Initialize(FSubsystemCollectionBase& Collection
 	if (!LoadAndSaveDataTableToMap(PalSpawnCharacterDatabaseTable, TEXT("/Game/Pal/DataTable/DT_SpawnCharacterData.DT_SpawnCharacterData")))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load DT_SpawnCharacterData DataTable"));
+	}
+
+	// Script/Engine.DataTable'/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData'
+	if (!LoadAndSaveDataTableToMap(PalMonsterDatabaseTable, TEXT("/Game/Pal/DataTable/DT_PalMonsterData.DT_PalMonsterData")))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load DT_PalMonsterData DataTable"));
 	}
 }
 
@@ -63,6 +69,30 @@ bool UPalCharacterDataSubsystem::GetPalSpawnCharacterData(FName RowName, const F
 	Data = &SingletonInstance->PalSpawnCharacterDatabaseTable.Dummy;
 	return false;
 }
+bool UPalCharacterDataSubsystem::GetPalMonsterData(FName RowName, const FPalMonsterData*& Data)
+{
+	if (!SingletonInstance)
+		return false;
+	if (const FPalMonsterData* const* Found = SingletonInstance->PalMonsterDatabaseTable.DataMap.Find(RowName))
+	{
+		Data = *Found;
+		return true;
+	}
+	Data = &SingletonInstance->PalMonsterDatabaseTable.Dummy;
+	return false;
+
+	/*if (UDataTable* DT = LoadObject<UDataTable>(nullptr, GMonsterDataTablePath))
+	{
+		if (const FPalMonsterData* Row = DT->FindRow<FPalMonsterData>(RowName, TEXT("")))
+		{
+			Data = Row;
+			return true;
+		}
+	}
+	Data = nullptr;
+	return false;*/
+}
+
 UTexture2D* UPalCharacterDataSubsystem::GetPalCharacterIconByName(FName CharacterID)
 {
 	const FPalCharacterIconDataRow* Data = nullptr;

@@ -396,6 +396,20 @@ void ABasePlayer::SetMonsterSpawner(bool bActive)
 	//	MonsterSpawnerComponent->SetSpawnable(bActive);
 }
 
+void ABasePlayer::TryCaptureCreature_Implementation(TSubclassOf<APalBaseCharacter> ActorClass)
+{
+	if (PalStorageComponent && ActorClass)
+	{
+		FVector Location = PalSpawnerComponent->GetComponentLocation();
+		APalBaseCharacter* Pal = Cast<APalBaseCharacter>(GetWorld()->SpawnActor(ActorClass.Get(), &Location));
+		if (Pal)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Creatyre Spawned"));
+			PalStorageComponent->StorePal(FPalStoreInventoryData{ Pal,-1});
+		}
+	}
+}
+
 float ABasePlayer::GetAttackValue_Implementation() const
 {
 	float Result = 0.0f;

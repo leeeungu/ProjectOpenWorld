@@ -42,7 +42,7 @@ protected:
 	TObjectPtr<UPalPatrolComponent> PalPatrolComponent{};
 public:
 	APalBaseMonster();
-	void InitializeLevel(int32 nLevel, FPalMonsterLevelData LevelData);
+	void InitializeLevel(int32 nLevel);
 
 	UFUNCTION()
 	void OnMoveSpeedChanged(double PreCurrentStat, double CurrentStat);
@@ -53,8 +53,7 @@ public:
 	FORCEINLINE UPalAttackComponent* GetAttackComponent() const { return AttackComponent; }
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	int GetMonsterLevel() const { return Level; }
-	UFUNCTION(BlueprintPure, Category = "Pal|Component")
-	FName GetMonsterName() const { return MonsterName; }
+	virtual FName GetPalName() const override { return MonsterName; }
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

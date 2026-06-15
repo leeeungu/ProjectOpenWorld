@@ -7,6 +7,7 @@
 #include "Resource/Interface/ResourceInterface.h"
 #include "Player/Interface/PlayerInputInterface.h"
 #include "GameBase/Interface/AttackInterface.h"
+#include "Pal/Interface/PalCaptor.h"
 #include "BasePlayer.generated.h"
 
 class USpringArmComponent;
@@ -55,7 +56,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerStateChange, EPlayerState,
 
 UCLASS()
 class PROJECTOPENWORLD_API ABasePlayer : public APalBaseCharacter, public IArchitectureInterface, public IResourceInterface
-	, public IPlayerInputInterface, public IPlayerInputSettingInterface, public IAttackInterface
+	, public IPlayerInputInterface, public IPlayerInputSettingInterface, public IAttackInterface, public IPalCaptor
 {
 	GENERATED_BODY()
 protected:
@@ -239,6 +240,8 @@ public:
 
 	void SetMonsterSpawner(bool bActive);
 
+
+	virtual void TryCaptureCreature_Implementation(TSubclassOf<APalBaseCharacter> ActorClass) override;
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;
 	virtual void  RetAttackValue_Implementation() {}

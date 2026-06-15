@@ -50,8 +50,7 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "Pal|Component")
 	int GetPalLevel() const { return Level; }
-	UFUNCTION(BlueprintPure, Category = "Pal|Component")
-	FName GetPalName() const { return PalName; }
+	virtual FName GetPalName() const override { return PalName; }
 
 	// iattackinterface
 	virtual float GetAttackValue_Implementation() const override;

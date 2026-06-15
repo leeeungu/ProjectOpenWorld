@@ -36,11 +36,10 @@ void UPalSpawnerComponent::SpawnPal(int32 Index)
 	{
 		PalSpawned[Index].bSpawned = true;
 		PalToSpawn->SetActorLocation(GetComponentLocation());
-		PalToSpawn->SetActorHiddenInGame(false);
-		ACharacter* pCreature = Cast<ACharacter>(PalToSpawn);
+		APalBaseCreature* pCreature = Cast<APalBaseCreature>(PalToSpawn);
 		if (pCreature)
 		{
-			pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			pCreature->VisibleCharacter();
 		}
 	}
 }
@@ -69,11 +68,9 @@ void UPalSpawnerComponent::RemovePal(int32 Index)
 			APalBaseCreature* pCreature = Cast<APalBaseCreature>(Pre);
 			if (pCreature)
 			{
-				pCreature->SetActorHiddenInGame(true);
-				pCreature->SetActorTickEnabled(false);
+				pCreature->HideCharacter();
 				if (pCreature)
 				{
-					//pCreature->SetActionStarted(false);
 					pCreature->StopAnimMontage();
 					pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 				}

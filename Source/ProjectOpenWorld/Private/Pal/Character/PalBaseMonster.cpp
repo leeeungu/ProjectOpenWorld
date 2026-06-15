@@ -10,6 +10,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Pal/FunctionLibrary/PalSpawnBlueprintFunctionLibrary.h"
+#include "Pal/Interface/PalCaptor.h"
+#include "Pal/Subsystem/PalCharacterDataSubsystem.h"
 
 APalBaseMonster::APalBaseMonster() : Super()
 {
@@ -28,11 +30,28 @@ APalBaseMonster::APalBaseMonster() : Super()
 	//GetMesh()->bDisplayDebugUpdateRateOptimizations = false;
 }
 
-void APalBaseMonster::InitializeLevel(int32 nLevel, FPalMonsterLevelData LevelData)
+void APalBaseMonster::InitializeLevel(int32 nLevel)
 {
 	Level = nLevel;
-	//StatComponent->SetMaxStat(LevelData.MaxHP, EStatusType::HP);
-	//StatComponent->StatBeginPlay(EStatusType::HP);
+	const FPalMonsterData* Data{};
+	if (UPalCharacterDataSubsystem::GetPalMonsterData(GetPalName(), Data))
+	{
+		TObjectPtr<UDataTable> MonsterData = Data->LevelDataTable;
+		if (MonsterData)
+		{
+			TArray<FPalMonsterLevelData*> Rows;
+			const FPalMonsterLevelData* Target{};
+			MonsterData->GetAllRows<FPalMonsterLevelData>(TEXT(""), Rows);
+			if (Rows.IsValidIndex(nLevel - 1))
+				Target = Rows[nLevel - 1];
+			if (Rows.IsValidIndex(0))
+				Target = Rows[0];
+			if (Target)
+			{
+				StatComponent->SetPalLevelData(*Target);
+			}
+		}
+	}
 }
 
 void APalBaseMonster::OnMoveSpeedChanged(double PreCurrentStat, double CurrentStat)
@@ -64,6 +83,8 @@ bool APalBaseMonster::IsDead_Implementation() const
 
 float APalBaseMonster::GetAttackDistance() const
 {
+	if (!AttackComponent)
+		return 100.0f;
 	return AttackComponent->GetAttackDistance();
 }
 
@@ -99,24 +120,30 @@ void APalBaseMonster::BeginPlay()
 
 void APalBaseMonster::OnHPChanged(double PreCurrentStat, double CurrentStat)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HP Changed: %f -> %f"), PreCurrentStat, CurrentStat);
 	if (CurrentStat <= 0)
 	{
-		//bDead = true;
-		AttackComponent->StopAttack();
+		if(AttackComponent)
+			AttackComponent->StopAttack();
 		if (GetMesh())
 		{
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 			GetMesh()->SetSimulatePhysics(true);
-			//FVector LaunchForce = FVector(0.f, 0.f, 500.f);
-			//if (pOther)
-			//{
-			//	GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
-			//}
+			if (HitHandlerComponent)
+			{
+				FVector LaunchForce = FVector(0.f, 0.f, 500.f);
+				AActor* pOther = HitHandlerComponent->GetDamageInstigator();
+				if (pOther)
+				{
+					GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
+					const FPalMonsterData* Data{};
+					if (pOther->Implements< UPalCaptor>() && UPalCharacterDataSubsystem::GetPalMonsterData(GetPalName(), Data))
+					{
+						IPalCaptor::Execute_TryCaptureCreature(pOther, Data->CreatureClass);
+					}
+				}
+			}
 		}
-		UPalSpawnBlueprintFunctionLibrary::SpawnItemsForCharacter(this, GetMonsterName(), GetActorTransform(), this);
-
-		GetMesh()->bPauseAnims = true;
+		UPalSpawnBlueprintFunctionLibrary::SpawnItemsForCharacter(this, GetPalName(), GetActorTransform(), this);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FTimerHandle handle{};
 		GetWorldTimerManager().SetTimer(handle, [this]() { Destroy(); }, 4.0f, false, 4.0f);

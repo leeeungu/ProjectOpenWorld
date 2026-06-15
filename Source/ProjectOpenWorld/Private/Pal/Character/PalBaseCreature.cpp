@@ -83,6 +83,8 @@ float APalBaseCreature::GetWorkSpeed(EPalJobType JobType)
 	return StatComponent->GetCurrentStat(PalStatus::GetJobWorkSpeedStatus(JobType));
 }
 
+
+
 void APalBaseCreature::SetTransportWorkMoveSpeed(float MaxMoveSpeed)
 {
 	if (GetCharacterMovement())
@@ -176,6 +178,12 @@ void APalBaseCreature::OnHPChanged(double PreCurrentStat, double CurrentStat)
 		{
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 			GetMesh()->SetSimulatePhysics(true);
+			FVector LaunchForce = FVector(0.f, 0.f, 500.f);
+			AActor* pOther = HitHandlerComponent->GetDamageInstigator();
+			if (pOther)
+			{
+				GetMesh()->AddForce((GetActorLocation() - pOther->GetActorLocation()).GetSafeNormal() * 1000.f * GetMesh()->GetMass());
+			}
 		}
 		GetMesh()->bPauseAnims = true;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
