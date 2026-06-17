@@ -46,6 +46,12 @@ protected:
 	TMap<TWeakObjectPtr<AActor>, FHpBarEntry> Entries{};
 	UPROPERTY()
 	TArray<TObjectPtr<UPalHpWidget>> Pool{};
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere, Category = "HP UI")
+	bool bCreateInEdit{};
+	TObjectPtr<UPalHpWidget> EditorWidget{};
+#endif
+
 
 	UPalHpWidget* CreateBar();
 	UPalHpWidget* AcquireBar();
@@ -53,6 +59,7 @@ protected:
 	void PrewarmPool();
 
 	virtual void NativeOnInitialized() override;
+	virtual void NativePreConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:

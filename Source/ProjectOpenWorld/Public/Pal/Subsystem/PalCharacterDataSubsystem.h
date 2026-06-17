@@ -53,6 +53,7 @@ protected:
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	static bool GetPalCharacterIconData(FName RowName, const FPalCharacterIconDataRow*& Data);
 	static bool GetPalDropItemData(FName RowName, const FPalDropItemDatabaseRow*& Data);

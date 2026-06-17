@@ -53,7 +53,7 @@ public:
 	AActor* GetStoredPal(int InventoryIndex) const;
 
 	void SwapStoredPals(int IndexA, int IndexB);
-
+	int GetInventorySize() const {return InventorySize;}
 	//void ShowAllSpawnedPals();
 	//void HideAllSpawnedPals();
 };

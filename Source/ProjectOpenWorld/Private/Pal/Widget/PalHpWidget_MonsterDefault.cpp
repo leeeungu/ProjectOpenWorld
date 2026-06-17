@@ -3,19 +3,26 @@
 #include "Pal/Widget/Infomation/StatusBarWidget.h"
 #include "GameBase/Component/StatComponent.h"
 
-
 void UPalHpWidget_MonsterDefault::SetupInfo(FName DisplayName, int32 Level)
 {
-	if (MonsterNameTextBlock)
+	if (DisplayName == NAME_None)
 	{
-		FText MonsterName = FText::FromString(DisplayName.ToString());
-		//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
-		const FText NameText = FText::FromStringTable(TEXT("/Game/Pal/StringTable/ST_PalName.ST_PalName"), *MonsterName.ToString());
-		MonsterNameTextBlock->SetText(NameText);
+		SetVisibility(ESlateVisibility::Hidden);
 	}
-	if (MonsterLevel)
+	else
 	{
-		MonsterLevel->SetText(FText::FromString(TEXT("Lv.") + FString::FromInt(Level)));
+		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		if (MonsterNameTextBlock)
+		{
+			FText MonsterName = FText::FromString(DisplayName.ToString());
+			//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
+			const FText NameText = FText::FromStringTable(TEXT("/Game/Pal/StringTable/ST_PalName.ST_PalName"), *MonsterName.ToString());
+			MonsterNameTextBlock->SetText(NameText);
+		}
+		if (MonsterLevel)
+		{
+			MonsterLevel->SetText(FText::FromString(TEXT("Lv.") + FString::FromInt(Level)));
+		}
 	}
 }
 

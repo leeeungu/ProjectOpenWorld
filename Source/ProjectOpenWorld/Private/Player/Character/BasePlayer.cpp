@@ -36,6 +36,7 @@
 #include "Pal/Data/PalDamageType.h"
 #include "Pal/Component/PalStorageComponent.h"
 #include "Pal/Component/PalSpawnerComponent.h"
+#include "Pal/Character/PalBaseCreature.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -188,6 +189,7 @@ void ABasePlayer::BeginPlay()
 		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
 		{
 			_MainWidget->SetPlayerStatWidget(StatComponent);
+			_MainWidget->SetPalStorageComponent(PalStorageComponent);
 		}
 	}
 
@@ -390,22 +392,18 @@ void ABasePlayer::ChangeEquipWidget(FName WeaponName, EWeapone NewEquip)
 	}
 }
 
-void ABasePlayer::SetMonsterSpawner(bool bActive)
-{
-	//if(MonsterSpawnerComponent)
-	//	MonsterSpawnerComponent->SetSpawnable(bActive);
-}
 
 void ABasePlayer::TryCaptureCreature_Implementation(TSubclassOf<APalBaseCharacter> ActorClass)
 {
 	if (PalStorageComponent && ActorClass)
 	{
 		FVector Location = PalSpawnerComponent->GetComponentLocation();
-		APalBaseCharacter* Pal = Cast<APalBaseCharacter>(GetWorld()->SpawnActor(ActorClass.Get(), &Location));
+		APalBaseCreature* Pal = Cast<APalBaseCreature>(GetWorld()->SpawnActor(ActorClass.Get(), &Location));
 		if (Pal)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Creatyre Spawned"));
 			PalStorageComponent->StorePal(FPalStoreInventoryData{ Pal,-1});
+			Pal->SetOwnerPlayer(this);
 		}
 	}
 }
@@ -812,10 +810,37 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 		break;
 	}
 	case EInputKeyType::Key1:
-	case EInputKeyType::Key2:
+	{
+		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
+		{
+			_MainWidget->RotateSelection(-1);
+		}
+		break;
+	}
+	case EInputKeyType::KeyE:
+	{
+		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
+		{
+			int32 Index = _MainWidget->GetSelectedPal();
+			AActor* pTo = PalStorageComponent->GetStoredPal(Index);
+			AActor* pFrom = PalSpawnerComponent->GetPal(0);
+			PalStorageComponent->RemovePal(Index);
+			PalSpawnerComponent->RemovePal(0);
+			if (pFrom)
+			{
+				PalStorageComponent->StorePal({ pFrom,Index });
+			}
+
+			if (pTo)
+			{
+				PalSpawnerComponent->StorePal(pTo, 0);
+				PalSpawnerComponent->SpawnPal(0);
+			}
+		}
+	}
 	case EInputKeyType::Key3:
 	{
-		if (PlayerAttackComponent && CurrentPlayerState == EPlayerState::Battle)
+		/*if (PlayerAttackComponent && CurrentPlayerState == EPlayerState::Battle)
 		{
 			int32 SkillIndex = (int32)KeyType - (int32)EInputKeyType::Key1 + (int32)EPlayerAttackType::Skill01;
 			PlayerAttackComponent->Attack((EPlayerAttackType)(SkillIndex));
@@ -823,6 +848,10 @@ void ABasePlayer::CompleteEvent(const FInputActionValue& Value, EInputKeyType Ke
 			{
 				RemoveFromViewPort(MainWidgetInterface);
 			}
+		}*/
+		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
+		{
+			_MainWidget->RotateSelection(1);
 		}
 		break;
 	}

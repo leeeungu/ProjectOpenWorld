@@ -25,4 +25,7 @@ public:
     UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
     static FName GetBBJobLocation();
 
+    UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
+    static FName GetBBOwnerPlayer();
+    
 };

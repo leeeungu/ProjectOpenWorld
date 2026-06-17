@@ -11,6 +11,7 @@ class UImage;
 class UProgressBar;
 class UPalInventorySlot;
 class UVerticalBox;
+class UStatusBarWidget;
 
 UCLASS(ClassGroup = PalBox)
 class PROJECTOPENWORLD_API UPalInfomation : public UUserWidget, public IPalSlotSelectedInterface
@@ -24,7 +25,7 @@ protected:
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UImage> PalImage{};
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
-	TObjectPtr<UProgressBar> PalHealthBar{};
+	TObjectPtr<UStatusBarWidget> PalHealthBar{};
 
 	UPROPERTY(meta = (BindWidget), EditDefaultsOnly, Category = "PalBox")
 	TObjectPtr<UVerticalBox> InfoVerticalBox{};

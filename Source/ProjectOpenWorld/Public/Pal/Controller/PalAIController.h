@@ -25,6 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
 	
+public:
 	UFUNCTION(BlueprintCallable, Category = "BB")
 	void SetBBActor(FName BBKey, AActor* NewTarget);
 	UFUNCTION(BlueprintCallable, Category = "BB")

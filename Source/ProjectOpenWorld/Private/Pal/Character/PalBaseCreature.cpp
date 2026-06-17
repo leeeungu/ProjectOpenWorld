@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Pal/Animation/PalCreatureAnimInstance.h"
 #include "Pal/Data/PalSocketProfile.h"
+#include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
 
 APalBaseCreature::APalBaseCreature() : Super{}
 {
@@ -76,6 +77,17 @@ void APalBaseCreature::EndWorking(bool bSuccess)
 	}
 }
 
+bool APalBaseCreature::IsCanWork() const
+{
+	if (bIsHidden)
+		return false;
+	if (GetPalJobComponent())
+	{
+		return !GetPalJobComponent()->IsWorking();
+	}
+	return false;
+}
+
 float APalBaseCreature::GetWorkSpeed(EPalJobType JobType)
 {
 	if(!StatComponent)
@@ -83,7 +95,14 @@ float APalBaseCreature::GetWorkSpeed(EPalJobType JobType)
 	return StatComponent->GetCurrentStat(PalStatus::GetJobWorkSpeedStatus(JobType));
 }
 
-
+void APalBaseCreature::SetOwnerPlayer(AActor* OwnerPlayer)
+{
+	APalAIlyController* Control = Cast<APalAIlyController>(GetController());
+	if (Control)
+	{
+		Control->SetBBActor(UPalAIBlackboardKeysLibrary::GetBBOwnerPlayer(), OwnerPlayer);
+	}
+}
 
 void APalBaseCreature::SetTransportWorkMoveSpeed(float MaxMoveSpeed)
 {

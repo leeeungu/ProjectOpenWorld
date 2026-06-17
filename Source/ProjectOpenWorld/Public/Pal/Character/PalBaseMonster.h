@@ -40,6 +40,7 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pal|Component")
 	TObjectPtr<UPalPatrolComponent> PalPatrolComponent{};
+	FTimerHandle Deadhandle{};
 public:
 	APalBaseMonster();
 	void InitializeLevel(int32 nLevel);

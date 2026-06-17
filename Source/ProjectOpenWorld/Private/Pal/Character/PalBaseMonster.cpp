@@ -120,7 +120,7 @@ void APalBaseMonster::BeginPlay()
 
 void APalBaseMonster::OnHPChanged(double PreCurrentStat, double CurrentStat)
 {
-	if (CurrentStat <= 0)
+	if (CurrentStat <= 0 && !GetWorldTimerManager().IsTimerActive(Deadhandle))
 	{
 		if(AttackComponent)
 			AttackComponent->StopAttack();
@@ -145,7 +145,6 @@ void APalBaseMonster::OnHPChanged(double PreCurrentStat, double CurrentStat)
 		}
 		UPalSpawnBlueprintFunctionLibrary::SpawnItemsForCharacter(this, GetPalName(), GetActorTransform(), this);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		FTimerHandle handle{};
-		GetWorldTimerManager().SetTimer(handle, [this]() { Destroy(); }, 4.0f, false, 4.0f);
+		GetWorldTimerManager().SetTimer(Deadhandle, [this]() { Destroy(); }, 4.0f, false, 4.0f);
 	}
 }

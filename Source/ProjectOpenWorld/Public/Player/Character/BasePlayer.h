@@ -238,9 +238,6 @@ public:
 	// 좌하단 장비 UI
 	void ChangeEquipWidget(FName WeaponName, EWeapone NewEquip);
 
-	void SetMonsterSpawner(bool bActive);
-
-
 	virtual void TryCaptureCreature_Implementation(TSubclassOf<APalBaseCharacter> ActorClass) override;
 	virtual float GetAttackValue_Implementation() const override;
 	virtual void  SetAttackValue_Implementation(float NewValue) override;

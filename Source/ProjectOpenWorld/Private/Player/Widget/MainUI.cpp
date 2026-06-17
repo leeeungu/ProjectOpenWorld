@@ -2,6 +2,7 @@
 #include "Item/Widget/WeaponeWidget.h"
 #include "Player/Widget/PlayerStatusProgress.h"
 #include "Pal/Widget/MonsterHpLayer.h"
+#include "Player/Widget/PlayerPalSpawnerWidget.h"
 
 void UMainUI::ChangeWeapone(FName NewWeaponeID, EWeapone NewWeaponeType)
 {
@@ -16,6 +17,14 @@ void UMainUI::SetPlayerStatWidget(UStatComponent* StatCom)
 	if (PlayerHPBar)
 	{
 		PlayerHPBar->SetStatWidget(StatCom);
+	}
+}
+
+void UMainUI::SetPalStorageComponent(UPalStorageComponent* InStorage)
+{
+	if (PlayerPalSpawnerWidget)
+	{
+		PlayerPalSpawnerWidget->InitWidget(InStorage);
 	}
 }
 
@@ -41,4 +50,21 @@ void UMainUI::UnregisterMonster(AActor* Target)
 	if (!MonsterHpLayer)
 		return;
 	MonsterHpLayer->UnregisterMonster(Target);
+}
+
+void UMainUI::RotateSelection(int32 Direction)
+{
+	if (PlayerPalSpawnerWidget)
+	{
+		PlayerPalSpawnerWidget->RotateSelection(Direction);
+	}
+}
+
+int32 UMainUI::GetSelectedPal() const
+{
+	if (PlayerPalSpawnerWidget)
+	{
+		return PlayerPalSpawnerWidget->GetSelectedPal();
+	}
+	return -1;
 }

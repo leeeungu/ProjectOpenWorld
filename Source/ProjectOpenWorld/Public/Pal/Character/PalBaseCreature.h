@@ -66,8 +66,10 @@ public:
 	virtual void StopWorking() override;
 	virtual void EndWorking(bool bSuccess) override;
 	virtual float GetWorkSpeed(EPalJobType JobType) override;
+	virtual bool IsCanWork() const override;
 	virtual UPalJobComponent* GetPalJobComponent() const { return JobComponent; }
 
+	void SetOwnerPlayer(AActor* OwnerPlayer);
 protected:
 	void SetTransportWorkMoveSpeed(float MaxMoveSpeed);
 	UFUNCTION()

@@ -1,5 +1,6 @@
 ﻿#include "Pal/Character/PalBaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 void APalBaseCharacter::UseControllerDesiredRotation()
 {
@@ -17,15 +18,19 @@ void APalBaseCharacter::UseOrientRotationToMovement()
 }
 void APalBaseCharacter::HideCharacter()
 {
+	bIsHidden = true;
 	SetActorHiddenInGame(true);
 	SetActorTickEnabled(false);
 	StopAnimMontage();
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
 }
 
 void APalBaseCharacter::VisibleCharacter()
 {
+	bIsHidden = false;
 	SetActorHiddenInGame(false);
 	SetActorTickEnabled(true);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }

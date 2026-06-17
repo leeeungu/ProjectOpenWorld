@@ -25,6 +25,7 @@ public:
 	virtual void EndWorking(bool bSuccess) {}
 	UFUNCTION(BlueprintCallable, Category = "Pal|Worker")
 	virtual float GetWorkSpeed(EPalJobType JobType) { return 1.0f; }
+	virtual bool IsCanWork() const { return true; }
 	virtual UPalJobComponent* GetPalJobComponent() const { return nullptr; }
 	
 };

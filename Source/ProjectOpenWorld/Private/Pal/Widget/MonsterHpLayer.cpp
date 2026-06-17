@@ -16,6 +16,33 @@ void UMonsterHpLayer::NativeOnInitialized()
 	PrewarmPool();
 }
 
+void UMonsterHpLayer::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+#if WITH_EDITOR
+	if (bCreateInEdit)
+	{
+		if (!EditorWidget && BarCanvas)
+		{
+			EditorWidget = CreateBar();
+			if (UCanvasPanelSlot* CanvasSlot = BarCanvas->AddChildToCanvas(EditorWidget))
+			{
+				CanvasSlot->SetAutoSize(true);
+				CanvasSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+			}
+		}
+	}
+	else
+	{
+		if (EditorWidget && BarCanvas)
+		{
+			BarCanvas->RemoveChild(EditorWidget);
+			EditorWidget = nullptr;
+		}
+	}
+#endif
+}
+
 void UMonsterHpLayer::PrewarmPool()
 {
 	if (!MonsterBarClass)

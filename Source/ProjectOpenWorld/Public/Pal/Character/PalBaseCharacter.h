@@ -13,6 +13,7 @@ class PROJECTOPENWORLD_API APalBaseCharacter : public ACharacter
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "PalBase")
 	TObjectPtr< UStatComponent> StatComponent{};
+	bool bIsHidden{};
 public:
 	UStatComponent* GetStatComponent() const { return StatComponent; }
 	void UseControllerDesiredRotation();
@@ -23,4 +24,5 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Pal")
 	virtual FName GetPalName() const { return NAME_None; }
+	bool GetIsHidden() const { return bIsHidden; }
 };

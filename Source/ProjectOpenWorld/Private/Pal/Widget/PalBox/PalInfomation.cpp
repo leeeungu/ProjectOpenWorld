@@ -6,6 +6,7 @@
 #include "Components/ProgressBar.h"
 #include "Pal/Character/PalBaseCreature.h"
 #include "Pal/Subsystem/PalCharacterDataSubsystem.h"
+#include "Pal/Widget/Infomation/StatusBarWidget.h"
 
 void UPalInfomation::NativeConstruct()
 {
@@ -15,12 +16,18 @@ void UPalInfomation::NativeConstruct()
 
 void UPalInfomation::SetPalCreature(APalBaseCreature* SelectedCreature)
 {
+	if (PalHealthBar && CurrentSelectedCreature.IsValid())
+	{
+		PalHealthBar->UnBindStatWidget(CurrentSelectedCreature->GetStatComponent(), EStatusType::HP);
+	}
 	CurrentSelectedCreature = SelectedCreature;
 	InfoVerticalBox->SetVisibility(ESlateVisibility::Hidden);
 	if (CurrentSelectedCreature.IsValid())
 	{
-		PalInventorySlot->SetPalCreature(SelectedCreature);
-		FText CharacterID = FText::FromName(SelectedCreature->GetPalName());
+		if(PalHealthBar)
+			PalHealthBar->BindStatWidget(CurrentSelectedCreature->GetStatComponent(), EStatusType::HP);
+		PalInventorySlot->SetPalCreature(CurrentSelectedCreature.Get());
+		FText CharacterID = FText::FromName(CurrentSelectedCreature->GetPalName());
 		//Script/Engine.StringTable'/Game/Pal/StringTable/ST_PalName.ST_PalName'
 		
 		CharacterID= FText::FromStringTable("/Game/Pal/StringTable/ST_PalName.ST_PalName", *CharacterID.ToString());

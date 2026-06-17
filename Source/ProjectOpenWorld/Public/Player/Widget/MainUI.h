@@ -10,6 +10,8 @@ class UPlayerStatusProgress;
 class UStatComponent;
 class UPalHpWidget_Boss;
 class UMonsterHpLayer;
+class UPlayerPalSpawnerWidget;
+class UPalStorageComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API UMainUI : public UUserWidget
@@ -28,11 +30,16 @@ protected:
 	//UPROPERTY(meta = (BindWidgetOptional), Category = "Status", EditDefaultsOnly)
 	TObjectPtr<UPlayerStatusProgress> PlayerShieldBar{};
 
+	UPROPERTY(meta = (BindWidget), Category = "Spawner", VisibleAnywhere)
+	TObjectPtr<UPlayerPalSpawnerWidget> PlayerPalSpawnerWidget{};
+	
 
 public:
 	void ChangeWeapone(FName NewWeaponeID, EWeapone NewWeaponeType);
 	void SetPlayerStatWidget(UStatComponent* StatCom);
-
+	void SetPalStorageComponent(UPalStorageComponent* InStorage);
+	void RotateSelection(int32 Direction);
+	int32 GetSelectedPal() const;
 	void RegisterMonster(AActor* Target);
 	void UnregisterMonster(AActor* Target);
 protected:

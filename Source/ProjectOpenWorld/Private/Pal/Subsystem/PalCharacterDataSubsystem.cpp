@@ -31,6 +31,12 @@ void UPalCharacterDataSubsystem::Initialize(FSubsystemCollectionBase& Collection
 	}
 }
 
+void UPalCharacterDataSubsystem::Deinitialize()
+{
+	SingletonInstance = nullptr;
+	Super::Deinitialize();
+}
+
 bool UPalCharacterDataSubsystem::GetPalCharacterIconData(FName RowName, const FPalCharacterIconDataRow*& Data)
 {
 	if (!SingletonInstance)

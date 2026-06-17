@@ -101,8 +101,8 @@ AActor* UPalWorkCommander::FindBestWorkableFor(EPalJobType JobType)  const
 	for (TWeakObjectPtr<AActor> Worker: WorkerArray)
 	{
 		Workerctor = Worker.Get();
-		IPalWorkerInterface* IWorkable = Cast< IPalWorkerInterface>(Workerctor);
-		if (IWorkable && !IWorkable->GetPalJobComponent()->IsWorking())
+		IPalWorkable* IWorkable = Cast< IPalWorkable>(Workerctor);
+		if (IWorkable && IWorkable->IsWorkable())
 		{
 			break;
 		}
@@ -125,8 +125,8 @@ AActor* UPalWorkCommander::FindBestWorkerFor(EPalJobType JobType) const
 	for (TWeakObjectPtr<AActor> Workable: WorkableArray)
 	{
 		WorkableActor = Workable.Get();
-		IPalWorkable* IWorkable = Cast< IPalWorkable>(WorkableActor);
-		if(IWorkable && IWorkable->IsWorkable())
+		IPalWorkerInterface* IWorkable = Cast< IPalWorkerInterface>(WorkableActor);
+		if(IWorkable && IWorkable->IsCanWork())
 		{
 			break;
 		}
