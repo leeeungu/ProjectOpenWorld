@@ -23,26 +23,26 @@ class PROJECTOPENWORLD_API UGenerateMonsterComponent : public UGenerateWorldComp
 	GENERATED_BODY()
 protected:
 
-    UPROPERTY(EditAnywhere, Category = "Spawner")
-    TObjectPtr<UDataTable> SpawnerPlacementDataTable = nullptr;
-
-    /** 섹션 좌표 → 그 섹션에 속한 스폰 데이터 (DT 1회 순회로 빌드) */
-    TMap<FIntPoint, TArray<FPalSpawnerPlacementDatabaseRow>> SectionPlacementIndex{};
-
-    /** 섹션 좌표 → 현재 살아있는 스폰 캐릭터 (디스폰용) */
-    TMap<FIntPoint, TArray<TObjectPtr<ACharacter>>> SpawnedMonsterMap{};
-
-public:	
-	UGenerateMonsterComponent();
-
-	virtual void StartGenerateWorld(bool bEditor = false) override;
-	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) override;
-	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) override;
-protected:
-	virtual void BeginPlay() override;
-
-private:
-    void EnsureSectionIndexBuilt();
-
-    bool bIndexBuilt = false;
+//    UPROPERTY(EditAnywhere, Category = "Spawner")
+//    TObjectPtr<UDataTable> SpawnerPlacementDataTable = nullptr;
+//
+//    /** 섹션 좌표 → 그 섹션에 속한 스폰 데이터 (DT 1회 순회로 빌드) */
+//    TMap<FIntPoint, TArray<FPalSpawnerPlacementDatabaseRow>> SectionPlacementIndex{};
+//
+//    /** 섹션 좌표 → 현재 살아있는 스폰 캐릭터 (디스폰용) */
+//    TMap<FIntPoint, TArray<TObjectPtr<ACharacter>>> SpawnedMonsterMap{};
+//
+//public:	
+//	UGenerateMonsterComponent();
+//
+//	virtual void StartGenerateWorld(bool bEditor = false) override;
+//	virtual void NewGenerateWorld(const FGenerateSectionData& SectionData) override;
+//	virtual void DelGenerateWorld(const FGenerateSectionData& SectionData) override;
+//protected:
+//	virtual void BeginPlay() override;
+//
+//private:
+//    void EnsureSectionIndexBuilt();
+//
+//    bool bIndexBuilt = false;
 };
