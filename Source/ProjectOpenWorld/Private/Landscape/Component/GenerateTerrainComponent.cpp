@@ -1,6 +1,5 @@
 ﻿#include "Landscape/Component/GenerateTerrainComponent.h"
 #include "ProceduralMeshComponent.h"
-#include "NavigationSystem.h"
 #include "Components/ChildActorComponent.h"
 
 UGenerateTerrainComponent::UGenerateTerrainComponent() : Super()
@@ -67,7 +66,7 @@ void UGenerateTerrainComponent::NewGenerateWorld(const FGenerateSectionData& Sec
 		// 빈 UProceduralMeshComponent가 있으면 하나의 Section만 생성 및 NavOctree  갱신
 		GenerateTerrain->CreateMeshSection(0, *SectionData.Vertices, *SectionData.Triangles,
 			*SectionData.Normals, *SectionData.UVs, TArray<FColor>(),* SectionData.Tangents, true);
-		UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
+		//UNavigationSystemV1::UpdateComponentInNavOctree(*GenerateTerrain);
 		if (TerrainMaterial)
 		{
 			GenerateTerrain->SetMaterial(0, TerrainMaterial);

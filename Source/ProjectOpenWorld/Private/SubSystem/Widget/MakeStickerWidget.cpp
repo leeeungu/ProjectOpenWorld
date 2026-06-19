@@ -4,32 +4,32 @@
 #include "SubSystem/GPT/GPTInstanceSubsystem.h"
 #include "SubSystem/Actor/StickerDecalActor.h"
 
-void UMakeStickerWidget::OnRequestComplete_Implementation(UVaRestRequestJSON* Request)
-{
-	bReceivedRequest = true;
-	if (!GetOwningPlayer())
-			return;
-	UGameInstance* GameInstance = GetOwningPlayer()->GetGameInstance();
-	UGPTInstanceSubsystem* GPTInstance = GameInstance->GetSubsystem<UGPTInstanceSubsystem>();
-	if (GPTInstance)
-	{
-		UTexture2D* ResponseTexture = GPTInstance->GetResponseTexture(Request);
-		if (ResponseTexture && StickerTarget.IsValid())
-		{
-			StickerTarget->SetStickerImage(ResponseTexture);
-		}
-	}
-}
-
-void UMakeStickerWidget::OnRequestFail_Implementation(UVaRestRequestJSON* Request)
-{
-	bReceivedRequest = true;
-	UTexture2D* ResponseTexture{};
-	if (ResponseTexture && StickerTarget.IsValid())
-	{
-		StickerTarget->SetStickerImage(ResponseTexture);
-	}
-}
+//void UMakeStickerWidget::OnRequestComplete_Implementation(UVaRestRequestJSON* Request)
+//{
+//	bReceivedRequest = true;
+//	if (!GetOwningPlayer())
+//			return;
+//	UGameInstance* GameInstance = GetOwningPlayer()->GetGameInstance();
+//	UGPTInstanceSubsystem* GPTInstance = GameInstance->GetSubsystem<UGPTInstanceSubsystem>();
+//	if (GPTInstance)
+//	{
+//		UTexture2D* ResponseTexture = GPTInstance->GetResponseTexture(Request);
+//		if (ResponseTexture && StickerTarget.IsValid())
+//		{
+//			StickerTarget->SetStickerImage(ResponseTexture);
+//		}
+//	}
+//}
+//
+//void UMakeStickerWidget::OnRequestFail_Implementation(UVaRestRequestJSON* Request)
+//{
+//	bReceivedRequest = true;
+//	UTexture2D* ResponseTexture{};
+//	if (ResponseTexture && StickerTarget.IsValid())
+//	{
+//		StickerTarget->SetStickerImage(ResponseTexture);
+//	}
+//}
 
 bool UMakeStickerWidget::SetMainWidget()
 {
@@ -50,7 +50,7 @@ void UMakeStickerWidget::UnSetMainWidget()
 	GetOwningPlayer()->SetShowMouseCursor(false);
 }
 
-void UMakeStickerWidget::SetStickerTarget(AStickerDecalActor* Target)
+void UMakeStickerWidget::SetStickerTarget(TScriptInterface<IGPTResponseInterface> Target)
 {
 	StickerTarget = Target;
 }
@@ -65,7 +65,7 @@ void UMakeStickerWidget::SendRequestToGPT(const FText& Prompt, ETextCommit::Type
 	{
 		FGPTImageRequest RequestData{};
 		RequestData.Text = Prompt.ToString();
-		GPTInstance->SendGPTImageRequest(RequestData, this);
+		GPTInstance->SendGPTImageRequest(RequestData, StickerTarget.GetObject());
 		CloseWidget();
 	}
 }

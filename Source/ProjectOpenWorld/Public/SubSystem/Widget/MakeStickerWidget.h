@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -6,29 +6,29 @@
 #include "Player/Interface/MainWidgetInterface.h"
 #include "MakeStickerWidget.generated.h"
 
-class AStickerDecalActor;
-
-
+class IGPTResponseInterface;
 
 UCLASS()
-class PROJECTOPENWORLD_API UMakeStickerWidget : public UUserWidget, public IGPTResponseInterface, public IMainWidgetInterface
+class PROJECTOPENWORLD_API UMakeStickerWidget : public UUserWidget, 
+	public IMainWidgetInterface
+	//public IGPTResponseInterface, 
 {
 	GENERATED_BODY()
 protected:
 	UPROPERTY()
-	TWeakObjectPtr< AStickerDecalActor> StickerTarget{};
+	TScriptInterface< IGPTResponseInterface> StickerTarget{};
 
 	bool bReceivedRequest{ false };
 public:
 	// igptinterface
-	virtual void OnRequestComplete_Implementation(UVaRestRequestJSON* Request) override;
-	virtual void OnRequestFail_Implementation(UVaRestRequestJSON* Request) override;
+	//virtual void OnRequestComplete_Implementation(UVaRestRequestJSON* Request) override;
+	//virtual void OnRequestFail_Implementation(UVaRestRequestJSON* Request) override;
 
 	// imainwidgetinterface
 	virtual bool SetMainWidget() override;
 	virtual void UnSetMainWidget() override;
 
-	void SetStickerTarget(AStickerDecalActor* Target);
+	void SetStickerTarget(TScriptInterface<IGPTResponseInterface> Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Sticker")
 	void SendRequestToGPT(const FText& Prompt, ETextCommit::Type CommitMethod);
