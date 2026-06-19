@@ -9,7 +9,7 @@ class APalBaseMonster;
 class UNavigationInvokerComponent;
 
 UCLASS()
-class PROJECTOPENWORLD_API APalMonsterSpawner : public ANavMeshBoundsVolume
+class PROJECTOPENWORLD_API APalMonsterSpawner : public AActor
 {
     GENERATED_BODY()
 

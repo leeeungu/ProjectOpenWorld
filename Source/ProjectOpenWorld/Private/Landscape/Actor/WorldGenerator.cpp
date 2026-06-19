@@ -29,6 +29,10 @@ AWorldGenerator::AWorldGenerator() : AActor{}
 	SectionGenerator->BindGenerteComponent(SpawnerGenerator);
 	SpawnerGenerator->Initialize(RootComponent);
 
+	//GenerateNavBoundComponent = CreateDefaultSubobject<UGenerateNavBoundComponent>(TEXT("GenerateNavBoundComponent"));
+	//SectionGenerator->BindGenerteComponent(GenerateNavBoundComponent);
+	//GenerateNavBoundComponent->Initialize(RootComponent);
+
 	Tags.Add(FName("Ladnscape"));
 }
 

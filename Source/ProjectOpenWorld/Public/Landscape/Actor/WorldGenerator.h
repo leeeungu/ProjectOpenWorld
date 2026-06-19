@@ -10,6 +10,7 @@ class UGenerateTerrainComponent;
 class UGenerateFoliageComponent;
 class UGemerateStaticObjectComponent;
 class UGenerateSpawnerComponent;
+class UGenerateNavBoundComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API AWorldGenerator : public AActor
@@ -29,6 +30,8 @@ protected:
 	TObjectPtr<UGenerateSpawnerComponent> SpawnerGenerator{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
 	TObjectPtr<UGemerateStaticObjectComponent> StaticObjectGenerator{};
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Landscape Settings")
+	//TObjectPtr<UGenerateNavBoundComponent> GenerateNavBoundComponent{};
 	
 public:	
 	AWorldGenerator();

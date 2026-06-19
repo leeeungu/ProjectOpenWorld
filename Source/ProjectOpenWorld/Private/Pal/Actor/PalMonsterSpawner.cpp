@@ -5,13 +5,12 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Pal/Character/PalBaseMonster.h"
-
 #include "Components/BrushComponent.h"
 
 APalMonsterSpawner::APalMonsterSpawner() : Super{}
 {
     PrimaryActorTick.bCanEverTick = false;
-    //RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
     NavigationInvokerComp = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("NavigationInvokerComp"));
     NavigationInvokerComp->SetComponentTickEnabled(false);
 }
@@ -57,17 +56,19 @@ void APalMonsterSpawner::Teardown()
 {
     StopSpawnLoop();
 
-   /* if (!AliveMonsters.IsEmpty())
+    if (!AliveMonsters.IsEmpty())
     {
-        for (TObjectPtr<APalBaseMonster>& M : AliveMonsters)
+        TSet<TObjectPtr<APalBaseMonster>> Snapshot = MoveTemp(AliveMonsters);
+        AliveMonsters.Empty();  // MoveTemp가 빈 상태로 두지만 사후조건 명시적으로 보장
+
+        for (const TObjectPtr<APalBaseMonster>& Monster : Snapshot)
         {
-            if (IsValid(M))
+            if (IsValid(Monster))
             {
-                M->Destroy();
-                M = nullptr;
+                Monster->Destroy();
             }
         }
-    }*/
+    }
     AliveMonsters.Reset();
     TargetNum = 0;
 }
@@ -78,12 +79,12 @@ void APalMonsterSpawner::StartSpawnLoop()
 {
     if (!GetWorld()) 
         return;
-    GetBrushComponent()->Bounds.BoxExtent = FVector(StaticRadius, StaticRadius, StaticRadius);
-    UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-    if (GIsEditor && NavSys)
-    {
-        NavSys->OnNavigationBoundsUpdated(this);
-    }
+    //GetBrushComponent()->Bounds.BoxExtent = FVector(StaticRadius, StaticRadius, StaticRadius);
+    //UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    //if (GIsEditor && NavSys)
+    //{
+    //    NavSys->OnNavigationBoundsUpdated(this);
+    //}
     FActorSpawnParameters Params;
     Params.Owner = this;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;

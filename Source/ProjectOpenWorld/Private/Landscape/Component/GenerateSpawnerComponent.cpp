@@ -7,6 +7,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "Pal/Actor/PalMonsterSpawner.h"
+#include "Components/BrushComponent.h"
+#include "NavigationSystem.h"
+
+UWorld* FSpawnerQuadNode::TestWorld = nullptr;
 
 // ===== FSpawnerQuadNode =====
 void FSpawnerQuadNode::Subdivide(int32 InMaxDepth)
@@ -14,9 +18,12 @@ void FSpawnerQuadNode::Subdivide(int32 InMaxDepth)
     if (Depth >= InMaxDepth)
     { 
         bLeaf = true; 
+//#if WITH_EDITOR
+//        const float Q = HalfExtent;
+//        DrawDebugBox(TestWorld, FVector(Center.X, Center.Y, 0), FVector(Q, Q, Q), FQuat{}, FColor::Yellow, true);
+//#endif
         return; 
     }
-
     const float Q = HalfExtent * 0.5f;
     const FVector2D Off[4] = { {-Q,-Q}, {+Q,-Q}, {-Q,+Q}, {+Q,+Q} };
     for (int32 i = 0; i < 4; ++i)
@@ -24,13 +31,15 @@ void FSpawnerQuadNode::Subdivide(int32 InMaxDepth)
         Children[i] = MakeUnique<FSpawnerQuadNode>();
         Children[i]->Center = Center + Off[i];
         Children[i]->Depth = Depth + 1;
+        Children[i]->HalfExtent = Q;
         Children[i]->Subdivide(InMaxDepth);
     }
 }
 
 FSpawnerQuadNode* FSpawnerQuadNode::FindLeaf(const FVector2D& P)
 {
-    if (bLeaf) return this;
+    if (bLeaf) 
+        return this;
     const int32 ix = (P.X >= Center.X) ? 1 : 0;
     const int32 iy = (P.Y >= Center.Y) ? 1 : 0;
     FSpawnerQuadNode* Child = Children[iy * 2 + ix].Get();   // Off 순서와 일치
@@ -45,6 +54,7 @@ UGenerateSpawnerComponent::UGenerateSpawnerComponent()
 
 void UGenerateSpawnerComponent::BeginPlay()
 {
+    FSpawnerQuadNode::TestWorld = GetWorld();
     Super::BeginPlay();
     EnsureRowsCached();
 }
@@ -52,7 +62,10 @@ void UGenerateSpawnerComponent::BeginPlay()
 void UGenerateSpawnerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     if (GetWorld())
+    {
+        GetWorld()->GetTimerManager().PauseTimer(PollTimerHandle);
         GetWorld()->GetTimerManager().ClearTimer(PollTimerHandle);
+    }
     Super::EndPlay(EndPlayReason);
 }
 
@@ -98,8 +111,10 @@ void UGenerateSpawnerComponent::DelGenerateWorld(const FGenerateSectionData& Sec
 // ===== 셋업 =====
 void UGenerateSpawnerComponent::EnsureRowsCached()
 {
-    if (bRowsCached) return;
-    if (!HabitatDataTable) return;
+    if (bRowsCached) 
+        return;
+    if (!HabitatDataTable) 
+        return;
 
     CachedRows.Reset();
     TArray<FPalSpawnHabitatRow*> Rows;
@@ -131,14 +146,12 @@ void UGenerateSpawnerComponent::StartPollTimer()
 
 void UGenerateSpawnerComponent::OnPollTimer()
 {
-    if (LeafExtent <= 0.f) return;
-
     const FVector P = GetPlayerLocation();
-    const FIntPoint Leaf(FMath::FloorToInt(P.X / LeafExtent),
-        FMath::FloorToInt(P.Y / LeafExtent));
-    if (Leaf == LastPlayerLeaf)   // 리프 안에서의 이동은 무시 (변경 없음)
+
+    // 리프 격자가 아니라 실제 이동 거리로 게이트 (갱신 주기를 리프 크기와 분리)
+    if (FVector::DistSquared2D(P, LastReconcilePos) < FMath::Square(ReconcileMoveThreshold))
         return;
-    LastPlayerLeaf = Leaf;
+    LastReconcilePos = P;
 
     // ===== 플레이어 거리 기반 활성 (쿼드트리 range query) =====
     const FVector2D P2(P.X, P.Y);
@@ -152,13 +165,14 @@ void UGenerateSpawnerComponent::OnPollTimer()
 // ===== 후보 적재 (habitat 룰, 원본 동일) =====
 void UGenerateSpawnerComponent::BuildCandidatesForSection(const FGenerateSectionData& SectionData)
 {
-    if (CachedRows.IsEmpty()) return;
-    if (SectionTrees.Contains(SectionData.SectionID)) return;
-    if (!SectionData.Vertices || !SectionData.Normals) return;
-    if (!GeneratorSectionComponent) return;
+    if (CachedRows.IsEmpty() || SectionTrees.Contains(SectionData.SectionID))
+        return;
+    if (!SectionData.Vertices || !SectionData.Normals || !GeneratorSectionComponent)
+        return;
 
     const FVector SectionSize = GeneratorSectionComponent->GetSectionSize();
-    if (SectionSize.X <= 0.f) return;
+    if (SectionSize.X <= 0.f)
+        return;
 
     TUniquePtr<FSpawnerQuadNode> Root = MakeUnique<FSpawnerQuadNode>();
     Root->Center = FVector2D((SectionData.SectionID.X + 0.5f) * SectionSize.X,
@@ -176,28 +190,31 @@ void UGenerateSpawnerComponent::BuildCandidatesForSection(const FGenerateSection
 
     for (const FPalSpawnHabitatRow* Row : CachedRows)
     {
-        if (!Row) continue;
-        if (!Row->SpawnerDt.LoadSynchronous()) continue;
-
-        const int32 IntPart = FMath::FloorToInt(Row->SectionDensity);
-        const float FracPart = Row->SectionDensity - IntPart;
-        const int32 Tries = IntPart + (RS.FRand() < FracPart ? 1 : 0);
-
-        for (int32 i = 0; i < Tries; ++i)
+        if (Row && Row->SpawnerDt.LoadSynchronous())
         {
-            const int32 Idx = RS.RandRange(0, Verts.Num() - 1);
-            const FVector& V = Verts[Idx];
-            const FVector& N = Normals.IsValidIndex(Idx) ? Normals[Idx] : FVector::UpVector;
+            const int32 IntPart = FMath::FloorToInt(Row->SectionDensity);
+            const float FracPart = Row->SectionDensity - IntPart;
+            const int32 Tries = IntPart + (RS.FRand() < FracPart ? 1 : 0);
 
-            if (V.Z < Row->MinHeight || V.Z > Row->MaxHeight) continue;
-            const float SlopeDeg = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(N.Z, -1.f, 1.f)));
-            if (SlopeDeg > Row->MaxSlope) continue;
+            for (int32 i = 0; i < Tries; ++i)
+            {
+                const int32 Idx = RS.RandRange(0, Verts.Num() - 1);
+                const FVector& V = Verts[Idx];
+                const FVector& N = Normals.IsValidIndex(Idx) ? Normals[Idx] : FVector::UpVector;
 
-            FSpawnerSpec Spec;
-            Spec.Location = V;
-            Spec.Habitat = Row;
-            if (FSpawnerQuadNode* Leaf = Root->FindLeaf(FVector2D(V.X, V.Y)))
-                Leaf->Specs.Add(Spec);
+                if (V.Z >= Row->MinHeight && V.Z <= Row->MaxHeight)
+                {
+                    const float SlopeDeg = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(N.Z, -1.f, 1.f)));
+                    if (SlopeDeg <= Row->MaxSlope)
+                    {
+                        FSpawnerSpec Spec;
+                        Spec.Location = V;
+                        Spec.Habitat = Row;
+                        if (FSpawnerQuadNode* Leaf = Root->FindLeaf(FVector2D(V.X, V.Y)))
+                            Leaf->Specs.Add(Spec);
+                    }
+                }
+            }
         }
     }
 
@@ -209,9 +226,9 @@ void UGenerateSpawnerComponent::ReconcileNode(FSpawnerQuadNode* Node, const FVec
     if (!Node) 
         return;
 
-    if (!IsNodeWithinRadius(Node, P))   // 서브트리 AABB가 반경 밖 → 가지치기
+    if (!IsNodeWithinRadius(Node, P))
     {
-        DeactivateNode(Node);           // 활성 리프 있으면 끔 (없으면 즉시 반환)
+        DeactivateNode(Node);
         return;
     }
     if (Node->bLeaf)
@@ -234,11 +251,43 @@ bool UGenerateSpawnerComponent::IsNodeWithinRadius(const FSpawnerQuadNode* Node,
 // ===== 노드 활성/비활성 =====
 void UGenerateSpawnerComponent::ActivateNode(FSpawnerQuadNode* Node)
 {
-    if (!Node) return;
+    if (!Node) 
+        return;
     if (Node->bLeaf)
     {
-        if (Node->bActive) return;
+        if (Node->bActive) 
+            return;
         Node->bActive = true;
+        // 리프 중심에서 아래로 트레이스해 지형 표면 Z를 찾는다
+        const FVector2D C = Node->Center;
+        const FVector Start(C.X, C.Y, TraceStartZ);
+        const FVector End(C.X, C.Y, TraceEndZ);
+        FHitResult Hit;
+
+        GetWorld()->LineTraceSingleByChannel(Hit, Start, End, TerrainChannel, FCollisionQueryParams::DefaultQueryParam);
+        //return;   // 지형 못 맞힘(콜리전 아직?) → bActive 안 켜고 다음 reconcile에서 재시도
+        const FVector Loc(C.X, C.Y, Hit.ImpactPoint.Z );
+        // 스폰 시 ANavMeshBoundsVolume이 nav 시스템에 자동 등록 → 해당 영역 갱신
+        FTransform Trans{};
+        Trans.SetLocation(Loc);
+        const float Q = Node->HalfExtent;
+        FVector Size = FVector::One() * Q;
+        Size.Z = ZSize;
+        Trans.SetScale3D(Size);
+        Node->Volume = GetWorld()->SpawnActor<ANavMeshBoundsVolume>(NavBoundClass, Trans);
+//#if WITH_EDITOR
+//        DrawDebugBox(GetWorld(), Loc, Size, FQuat{}, FColor::Emerald, false, 5.0f);
+//#endif
+        if (Node->Volume)
+        {
+            Node->Volume->GetBrushComponent()->Bounds.BoxExtent = Size;
+            UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+            if (GIsEditor && NavSys)
+            {
+                NavSys->OnNavigationBoundsUpdated(Node->Volume);
+            }
+        }
+
         Node->ActiveSpawners.Reserve(Node->Specs.Num());
         for (const FSpawnerSpec& Spec : Node->Specs)
         {
@@ -254,14 +303,27 @@ void UGenerateSpawnerComponent::ActivateNode(FSpawnerQuadNode* Node)
 
 void UGenerateSpawnerComponent::DeactivateNode(FSpawnerQuadNode* Node)
 {
-    if (!Node) return;
+    if (!Node) 
+        return;
     if (Node->bLeaf)
     {
-        if (!Node->bActive) return;
+        if (!Node->bActive)
+            return;
         for (TObjectPtr<APalMonsterSpawner>& S : Node->ActiveSpawners)
-            if (S) ReleaseSpawner(S);
+        {
+            if (S)
+                ReleaseSpawner(S);
+        }
+
         Node->ActiveSpawners.Reset();
         Node->bActive = false;
+        if (Node->Volume)
+        {
+//#if WITH_EDITOR
+//            DrawDebugBox(GetWorld(), Node->Volume->GetActorLocation(), Node->Volume->GetActorScale3D(), FQuat{}, FColor::Red, false, 5.0f);
+//#endif
+            Node->Volume->Destroy();
+        }
         return;
     }
     for (int32 i = 0; i < 4; ++i)
