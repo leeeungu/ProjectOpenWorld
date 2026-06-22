@@ -100,6 +100,7 @@ void UPalFoliageInstanceComponent::ResetItemSpawnMap()
 			}
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("UPalFoliageInstanceComponent::ResetItemSpawnMap"));
 
 	if (bCanAddInstance)
 	{
@@ -294,7 +295,6 @@ void UPalFoliageInstanceComponent::OnHarvestEvent(FHarvestEventData EventData)
 	}
 	if (rCount <= 0)
 	{
-		
 		float ReSpawnTimeSec = 15;
 		if (UResourceEndEvent* ResourceEndEvent = Cast<UResourceEndEvent>(GetStaticMesh()->GetAssetUserDataOfClass(UResourceEndEvent::StaticClass())))
 		{
@@ -307,7 +307,7 @@ void UPalFoliageInstanceComponent::OnHarvestEvent(FHarvestEventData EventData)
 		GetOwner()->GetWorldTimerManager().SetTimer(TimerHandle,
 			this,
 			&UPalFoliageInstanceComponent::ResetItemSpawnMap,
-			0,
+			ReSpawnTimeSec,
 			false,
 			ReSpawnTimeSec);
 		RemoveInstance(EventData.Hit->Item);

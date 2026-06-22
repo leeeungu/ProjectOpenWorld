@@ -163,7 +163,18 @@ void UGenerateSpawnerComponent::OnPollTimer()
         ReconcileNode(Pair.Value.Get(), P2);
 
     if (bDebugDraw && GetWorld())
+    {
         DrawDebugSphere(GetWorld(), P, ActivationRadius, 24, FColor::Cyan, false, PollInterval, 0, 30.f);
+
+        for (const TPair<FIntPoint, TUniquePtr<FSpawnerQuadNode>>& Pair : SectionTrees)
+        {
+            if (IsNodeWithinRadius(Pair.Value.Get(), P2))
+            {
+                UE_LOG(LogTemp, Warning, TEXT("[Spawner] Tree Section=(%d,%d) Center=%s"),
+                    Pair.Key.X, Pair.Key.Y, *Pair.Value->Center.ToString());
+            }
+        }
+    }
 }
 
 // ===== 후보 적재 (habitat 룰, 원본 동일) =====
@@ -240,6 +251,7 @@ void UGenerateSpawnerComponent::ReconcileNode(FSpawnerQuadNode* Node, const FVec
         ActivateNode(Node);
         return;
     }
+
     for (int32 i = 0; i < 4; ++i)
         ReconcileNode(Node->Children[i].Get(), P);
 }
@@ -268,8 +280,8 @@ void UGenerateSpawnerComponent::ActivateNode(FSpawnerQuadNode* Node)
         const FVector End(C.X, C.Y, TraceEndZ);
         FHitResult Hit;
 
-        GetWorld()->LineTraceSingleByChannel(Hit, Start, End, TerrainChannel, FCollisionQueryParams::DefaultQueryParam);
-        //return;   // 지형 못 맞힘(콜리전 아직?) → bActive 안 켜고 다음 reconcile에서 재시도
+        if(!GetWorld()->LineTraceSingleByChannel(Hit, Start, End, TerrainChannel, FCollisionQueryParams::DefaultQueryParam))
+            return;   // 지형 못 맞힘(콜리전 아직?) → bActive 안 켜고 다음 reconcile에서 재시도
         const FVector Loc(C.X, C.Y, Hit.ImpactPoint.Z );
         // 스폰 시 ANavMeshBoundsVolume이 nav 시스템에 자동 등록 → 해당 영역 갱신
         FTransform Trans{};
@@ -286,7 +298,7 @@ void UGenerateSpawnerComponent::ActivateNode(FSpawnerQuadNode* Node)
         {
             Node->Volume->GetBrushComponent()->Bounds.BoxExtent = Size;
             UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-            if (GIsEditor && NavSys)
+            if (NavSys)
             {
                 NavSys->OnNavigationBoundsUpdated(Node->Volume);
             }
@@ -295,7 +307,8 @@ void UGenerateSpawnerComponent::ActivateNode(FSpawnerQuadNode* Node)
         Node->ActiveSpawners.Reserve(Node->Specs.Num());
         for (const FSpawnerSpec& Spec : Node->Specs)
         {
-            if (!Spec.Habitat || !Spec.Habitat->SpawnerDt.IsValid()) continue;
+            if (!Spec.Habitat || !Spec.Habitat->SpawnerDt.IsValid()) 
+                continue;
             if (APalMonsterSpawner* S = AcquireSpawner(Spec.Habitat->SpawnerDt.LoadSynchronous(), Spec.Location))
                 Node->ActiveSpawners.Add(S);
         }

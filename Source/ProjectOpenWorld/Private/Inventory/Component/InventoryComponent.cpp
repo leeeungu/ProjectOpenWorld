@@ -576,7 +576,6 @@ bool UInventoryComponent::SetEquipSlot(EItemSlotType SlotType, UBaseItem* NewIte
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	inventorySize = inventoryRow * inventoryCol;
 	inventoryArray.Init(FInventorySlot(), inventorySize);
 	for(int i =0 ; i < inventorySize; ++i)

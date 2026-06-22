@@ -30,10 +30,6 @@ ABasePlayerController::ABasePlayerController() : Super()
 void ABasePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	FInputModeGameAndUI InputMode;
-	InputMode.SetHideCursorDuringCapture(false);
-	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	SetInputMode(InputMode);
 	if (InventoryWidgetClass)
 	{
 		InventoryWidget = CreateWidget<UPlayerInventoryWidget>(this, InventoryWidgetClass);

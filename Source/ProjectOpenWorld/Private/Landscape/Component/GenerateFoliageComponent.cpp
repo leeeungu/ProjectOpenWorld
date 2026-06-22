@@ -50,20 +50,6 @@ void UGenerateFoliageComponent::BeginPlay()
 	bUpdateBackData = false;
 	bDelayUpdate = false;
 	EmpthyFoliageMeshData.Empty(false);
-	/*for (int i = 0; i < FoliageComponentCount; i++)
-	{
-		MakeMeshComponent();
-	}
-	for (int i = 0; i < FoliageMeshData.Num(); i++)
-	{
-		UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
-		if (FoliageCompoent)
-		{
-			FoliageCompoent->ClearInstances();
-			EmpthyFoliageMeshData.Add(FoliageCompoent);
-		}
-	}*/
-	//FoliageCount = FoliageComponentCount;
 }
 
 UFoliageInstancedStaticMeshComponent* UGenerateFoliageComponent::MakeMeshComponent()
@@ -301,18 +287,6 @@ void UGenerateFoliageComponent::FinishGenerateWorld()
 void UGenerateFoliageComponent::Initialize(USceneComponent* ParentComponent)
 {
 	Super::Initialize(ParentComponent);
-	return;
-	/*if (FoliageMeshData.IsValidIndex(FoliageComponentCount - 1))
-	{
-		for (int i = 0; i < FoliageComponentCount; i++)
-		{
-			UFoliageInstancedStaticMeshComponent* FoliageCompoent = FoliageMeshData[i];
-			if (FoliageCompoent)
-			{
-				FoliageCompoent->SetupAttachment(ParentComponent);
-			}
-		}
-	}*/
 }
 
 void FAsyncFoliageGenerater::Initialize()

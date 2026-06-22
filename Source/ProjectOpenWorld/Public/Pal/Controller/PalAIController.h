@@ -41,8 +41,4 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "PalAIController")
 	FORCEINLINE UPalAIMoveComponent* GetPalAIMoveComponent() const { return AIMoveComponent; }
-	
-	
-
-
 };
