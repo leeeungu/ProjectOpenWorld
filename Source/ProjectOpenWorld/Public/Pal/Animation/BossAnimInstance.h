@@ -15,9 +15,6 @@ protected:
 	TObjectPtr<ABossMonster> OwnerBoss{};
 	UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
 	bool bIsStunned{};
-	UPROPERTY(BlueprintReadOnly, Category = "PalAnim")
-	float StunDuration{};
-
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;

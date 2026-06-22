@@ -17,6 +17,5 @@ void UBossAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (OwnerBoss)
 	{
 		bIsStunned = OwnerBoss->IsStunned();
-		StunDuration = OwnerBoss->GetStunDuration();
 	}
 }

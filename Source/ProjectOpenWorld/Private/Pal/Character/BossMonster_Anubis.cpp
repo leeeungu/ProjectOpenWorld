@@ -36,6 +36,7 @@ void ABossMonster_Anubis::BeginPlay()
 
 void ABossMonster_Anubis::OnEndPattern(int32 Index)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("ABossMonster_Anubis::OnEndPattern"));
 	APalAIController* PalController = Cast<APalAIController>(GetController());
 	if (PalController)
 	{

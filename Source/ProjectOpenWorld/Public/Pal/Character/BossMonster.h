@@ -17,14 +17,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "BossPattern")
 	bool bStunned{};
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "BossPattern")
-	float StunDuration{};
-
-	float CurStunTime{};
-
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr <UPalMonsterInteractionComponent> MonsterInteractionComponent{};
-
+	FTimerHandle StunTimerHandle{};
 protected:
 	virtual void BeginPlay() override;
 
@@ -43,10 +38,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "BossState")
 	bool IsStunned() const { return bStunned; }
-
-	UFUNCTION(BlueprintPure, Category = "BossState")
-	float GetStunDuration() const { return StunDuration; }
-
 
 	virtual void Tick(float DeltaTime) override;
 
