@@ -245,6 +245,8 @@ public:
 	virtual bool DamagedCharacter_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 	virtual bool IsDead_Implementation() const override;
 	virtual bool KnockBackAttack_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
+	virtual bool LaunchAttack_Implementation(const TScriptInterface< IAttackInterface>& Other, FVector LaunchVelocity, bool bXYOverride, bool bZOverride) override;
+	
 	virtual bool HitReaction_Implementation(const TScriptInterface< IAttackInterface>& Other) override;
 
 	virtual float GetArchitectSpeed_Implementation() const override;
@@ -255,7 +257,7 @@ public:
 	virtual float GetResourceSpeed_Implementation() const override;
 	virtual void StartResource_Implementation(AResourceActor* ResourceActor) override;
 	virtual void StopResource_Implementation(AResourceActor* ResourceActor) override;
-	virtual void EndResource_Implementation(AResourceActor* ResourceActor) override;
+	virtual void EndResource_Implementation(AResourceActor* ResourceActor) override; 
 	
 	bool HasMainWidget() const;
 	bool AddToViewPort(TScriptInterface< IMainWidgetInterface> NewWidget);

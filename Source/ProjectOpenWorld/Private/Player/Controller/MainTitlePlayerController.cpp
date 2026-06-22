@@ -18,3 +18,15 @@ void AMainTitlePlayerController::BeginPlay()
 		}
 	}
 }
+
+void AMainTitlePlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	if (MainTitleWidget)
+	{
+		MainTitleWidget->RemoveFromParent();
+		SetShowMouseCursor(false);
+		UWidgetBlueprintLibrary::SetInputMode_GameOnly(this, true);
+		UGameplayStatics::SetViewportMouseCaptureMode(GetWorld(), EMouseCaptureMode::NoCapture);
+	}
+}

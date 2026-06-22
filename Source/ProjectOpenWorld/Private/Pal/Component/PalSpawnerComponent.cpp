@@ -68,12 +68,12 @@ void UPalSpawnerComponent::RemovePal(int32 Index)
 			APalBaseCreature* pCreature = Cast<APalBaseCreature>(Pre);
 			if (pCreature)
 			{
-				pCreature->HideCharacter();
 				if (pCreature)
 				{
 					pCreature->StopAnimMontage();
 					pCreature->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 				}
+				pCreature->HideCharacter();
 			}
 		}
 		OnContainerUpdated.Broadcast(Index, Pre);

@@ -10,6 +10,7 @@ namespace PalAIBB
     static const FName JobLocation(TEXT("JobLocation"));
     static const FName AttackDistance(TEXT("AttackDistance"));
     static const FName OwnerPlayer(TEXT("OwnerPlayer"));
+    static const FName bBossPattern(TEXT("bBossPattern"));
 }
 
 FName UPalAIBlackboardKeysLibrary::GetBBTargetActorKey() { return PalAIBB::TargetActor; }
@@ -19,3 +20,4 @@ FName UPalAIBlackboardKeysLibrary::GetBBJobType() { return PalAIBB::JobType; }
 FName UPalAIBlackboardKeysLibrary::GetBBJobTarget() { return PalAIBB::JobTarget; }
 FName UPalAIBlackboardKeysLibrary::GetBBJobLocation() { return PalAIBB::JobLocation; }
 FName UPalAIBlackboardKeysLibrary::GetBBOwnerPlayer() { return PalAIBB::OwnerPlayer; }
+FName UPalAIBlackboardKeysLibrary::GetBBBossPattern() { return PalAIBB::bBossPattern; }

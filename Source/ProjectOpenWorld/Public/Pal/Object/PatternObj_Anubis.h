@@ -6,6 +6,7 @@
 
 class ABossMonster_Anubis;
 class ABasePlayer;
+enum class EPlayerState : uint8;
 
 UENUM(BlueprintType)
 enum class EAnubisPatternType : uint8
@@ -35,6 +36,8 @@ protected:
 
 	int CurrentCount{};
 	float CurTime{};
+
+	EPlayerState PreState{};
 protected:
 	TObjectPtr<ABossMonster_Anubis> OwnerCharacter{};
 	TObjectPtr<ABasePlayer> TargetPlayer{};

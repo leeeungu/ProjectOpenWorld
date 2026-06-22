@@ -3,6 +3,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/ScrollBox.h"
 #include "Pal/Character/PalBaseCreature.h"
+#include "Pal/Component/PalSpawnerComponent.h"
 
 void UPalBoxSpawnWidget::NativeOnInitialized()
 {
@@ -22,6 +23,12 @@ void UPalBoxSpawnWidget::NativePreConstruct()
 	Super::NativePreConstruct();
 }
 
+void UPalBoxSpawnWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+}
+
 void UPalBoxSpawnWidget::UpdatePalSpawnInventory(int InventoryIndex, AActor* NewActor)
 {
 	if (SpawnBoxScrollBox)
@@ -35,6 +42,17 @@ void UPalBoxSpawnWidget::UpdatePalSpawnInventory(int InventoryIndex, AActor* New
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PalBoxSpawnWidget: SpawnInventoryVerticalBox is not bound"));
+	}
+}
+
+void UPalBoxSpawnWidget::UpdateSlots(UPalSpawnerComponent* Component)
+{
+	if (!Component || !SpawnBoxScrollBox)
+		return;
+	int32 SlotIndex = SpawnBoxScrollBox->GetChildrenCount();
+	for (int32 i = 0; i < SlotIndex; i++)
+	{
+		UpdatePalSpawnInventory(i, Component->GetPal(i));
 	}
 }
 

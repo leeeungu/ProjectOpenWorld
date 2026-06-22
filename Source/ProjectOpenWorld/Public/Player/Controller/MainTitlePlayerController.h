@@ -15,5 +15,6 @@ protected:
 	TObjectPtr<UUserWidget> MainTitleWidget{};
 
 	virtual void BeginPlay() override;
-	
+public:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };

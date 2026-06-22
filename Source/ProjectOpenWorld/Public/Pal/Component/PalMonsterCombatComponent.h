@@ -22,4 +22,7 @@ protected:
 public:
 	UFUNCTION()
 	void OnReceiveDamage(const FPalDamagePayload& DamagePayload);
+	void ResetTarget();
+
+	void SetCombatTarget(AActor* Target);
 };

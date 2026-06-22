@@ -401,9 +401,10 @@ void ABasePlayer::TryCaptureCreature_Implementation(TSubclassOf<APalBaseCharacte
 		APalBaseCreature* Pal = Cast<APalBaseCreature>(GetWorld()->SpawnActor(ActorClass.Get(), &Location));
 		if (Pal)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Creatyre Spawned"));
+			UE_LOG(LogTemp, Warning, TEXT("Create Spawned"));
 			PalStorageComponent->StorePal(FPalStoreInventoryData{ Pal,-1});
 			Pal->SetOwnerPlayer(this);
+			Pal->HideCharacter();
 		}
 	}
 }
@@ -459,11 +460,25 @@ bool ABasePlayer::KnockBackAttack_Implementation(const TScriptInterface<IAttackI
 {
 	if (!KnockBackAttack && !bDead)
 	{
-		PlayerAttackComponent->StopAttack();
-		PlayerAttackComponent->OnPlayerAttackEnd.AddUniqueDynamic(this, &ABasePlayer::KnockBackReset);
-		PlayerAttackComponent->Attack(EPlayerAttackType::KnockBack);
-		KnockBackAttack = true;
+		return true;
 	}
+	return false;
+}
+
+bool ABasePlayer::LaunchAttack_Implementation(const TScriptInterface<IAttackInterface>& Other, FVector LaunchVelocity, bool bXYOverride, bool bZOverride)
+{
+	if (KnockBackAttack || bDead)
+		return false;
+	KnockBackAttack = true;
+	FVector Dir = LaunchVelocity.GetSafeNormal();
+	if (!Dir.IsNearlyZero())
+	{
+		const float Yaw = (-Dir).Rotation().Yaw;
+		SetActorRotation(FRotator(0.f, Yaw, 0.f));
+	}
+	PlayerAttackComponent->StopAttack();
+	PlayerAttackComponent->OnPlayerAttackEnd.AddUniqueDynamic(this, &ABasePlayer::KnockBackReset);
+	PlayerAttackComponent->Attack(EPlayerAttackType::KnockBack);
 	return KnockBackAttack;
 }
 

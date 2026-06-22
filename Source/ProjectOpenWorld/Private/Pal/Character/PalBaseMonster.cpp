@@ -122,10 +122,16 @@ void APalBaseMonster::OnHPChanged(double PreCurrentStat, double CurrentStat)
 {
 	if (CurrentStat <= 0 && !GetWorldTimerManager().IsTimerActive(Deadhandle))
 	{
+		if (MonsterCombatComponent)
+		{
+			HitHandlerComponent->OnDamageTaken.RemoveAll(MonsterCombatComponent);
+			MonsterCombatComponent->ResetTarget();
+		}
 		if(AttackComponent)
 			AttackComponent->StopAttack();
 		if (GetMesh())
 		{
+			GetMesh()->GetAnimInstance()->Montage_Stop(0.0f);
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 			GetMesh()->SetSimulatePhysics(true);
 			if (HitHandlerComponent)

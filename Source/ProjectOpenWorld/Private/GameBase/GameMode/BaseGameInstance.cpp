@@ -57,7 +57,7 @@ void UBaseGameInstance::SetTargetLevel(TSoftObjectPtr<UWorld> newLevel)
 void UBaseGameInstance::OpenLoadedLevel()
 {
 	//UGameplayStatics::UnloadStreamLevelBySoftObjectPtr(GetWorld(), GetWorld()->GetCurrentLevel(), FLatentActionInfo{}, false);
-	UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TargetLevel);
+	UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TargetLevel, true);
 	TargetLevel = nullptr;
 	UE_LOG(LogTemp, Warning, TEXT("OpenLoadedLevel %d"), Count);
 	Count++;
@@ -75,21 +75,8 @@ void UBaseGameInstance::PalSaveTest(UObject* pWorldContext, const FString SlotNa
 		return;
 	UWorld* World = pWorldContext->GetWorld();
 
-	UPalSaveGame* Save = Cast<UPalSaveGame>(
-		UGameplayStatics::CreateSaveGameObject(UPalSaveGame::StaticClass()));
+	UPalSaveGame* Save = Cast<UPalSaveGame>(UGameplayStatics::CreateSaveGameObject(UPalSaveGame::StaticClass()));
 	Save->LevelName = World->GetMapName();
-
-	//TArray<AActor*> Savables;
-	//if (UWorld* World = GetWorld())
-	//{
-	//	for (TActorIterator<AActor> It(World); It; ++It)
-	//		Savables.Add(*It);
-	//}
-	//TArray<uint8> ByteData{};
-	//for (AActor* Actor : Savables)
-	//{
-	//	SerializeActor(Actor, ByteData);
-	//}
 
 	if (APawn* Pawn = UGameplayStatics::GetPlayerPawn(World, 0)) // PlayerState로 바꿔도 동일
 	{

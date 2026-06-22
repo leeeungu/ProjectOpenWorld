@@ -49,7 +49,7 @@ FName UPalAttackComponent::ResolveOwnerPalName() const
 void UPalAttackComponent::SetAttackDataTableFromSubsystem()
 {
 	const FName PalName = ResolveOwnerPalName();
-	if (PalName.IsNone())
+	if (PalName.IsNone() || AttackDataAsset)
 		return;   // PalBaseCharacter 아님(V1 등) → 기존 AttackDataAsset 유지
 
 	const FPalMonsterData* Row = nullptr;
@@ -80,7 +80,7 @@ void UPalAttackComponent::OnRegister()
 void UPalAttackComponent::ValidateAttackDataTableInEditor()
 {
 	const FName PalName = ResolveOwnerPalName();
-	if (PalName.IsNone())
+	if (PalName.IsNone() || AttackDataAsset)
 		return;
 
 	const FPalMonsterData* Row = nullptr;

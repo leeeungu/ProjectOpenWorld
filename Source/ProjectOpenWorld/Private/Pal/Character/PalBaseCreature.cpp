@@ -195,6 +195,7 @@ void APalBaseCreature::OnHPChanged(double PreCurrentStat, double CurrentStat)
 		AttackComponent->StopAttack();
 		if (GetMesh())
 		{
+			GetMesh()->GetAnimInstance()->Montage_Stop(0.0f);
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 			GetMesh()->SetSimulatePhysics(true);
 			FVector LaunchForce = FVector(0.f, 0.f, 500.f);

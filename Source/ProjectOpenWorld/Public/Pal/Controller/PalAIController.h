@@ -33,6 +33,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BB")
 	void SetBBEnum(FName BBKey, uint8 NewEnum);
 	UFUNCTION(BlueprintCallable, Category = "BB")
+	void SetBBBool(FName BBKey, bool NewValue);
+	UFUNCTION(BlueprintCallable, Category = "BB")
 	void ClearBBValue(FName BBKey);
 public:
 	APalAIController();

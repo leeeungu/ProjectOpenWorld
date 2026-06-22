@@ -19,6 +19,9 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void OnEndPattern(int32 Index);
+
 public:
 	ABossMonster_Anubis();
 
@@ -27,6 +30,10 @@ public:
 
 	UFUNCTION()
 	virtual void OnCustomModeDamaged(AActor* Other, float Damaage);
+
+
+	UFUNCTION()
+	void OnHPObserver(double PreCurrentStat, double CurrentStat);
 
 	void StartPatternWidget(int nCount);
 	void UpdatePatternWidget();

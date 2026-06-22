@@ -101,7 +101,7 @@ bool UBaseAnimInstance::PlayMontageQueue()
 void UBaseAnimInstance::StopMontageQueue()
 {
 	OnMontageEnd();
-	Montage_Stop(0.01f);
+	Montage_Stop(0.00f);
 }
 
 bool UBaseAnimInstance::CanPlayMontage()
@@ -113,6 +113,7 @@ void UBaseAnimInstance::OnMontageEnd()
 {
 	if (!bIsPlayingMontage)
 		return;
+	bIsPlayingMontage = false;
 	//UE_LOG(LogTemp, Warning, TEXT("%s UCharacterMontageComponent :: OnMontageEnd "), *GetName());
 	if (CurrentMontage)
 	{
@@ -126,7 +127,6 @@ void UBaseAnimInstance::OnMontageEnd()
 		}
 	}
 	MontageArray.Empty(false);
-	bIsPlayingMontage = false;
 	CurrentMontageIndex = 0;
 	CurrentMontage = nullptr;
 	LoopObject = nullptr;

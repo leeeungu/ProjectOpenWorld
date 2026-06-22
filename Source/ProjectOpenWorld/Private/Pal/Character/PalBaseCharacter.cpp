@@ -24,6 +24,8 @@ void APalBaseCharacter::HideCharacter()
 	StopAnimMontage();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 }
 
 void APalBaseCharacter::VisibleCharacter()
@@ -33,4 +35,5 @@ void APalBaseCharacter::VisibleCharacter()
 	SetActorTickEnabled(true);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }

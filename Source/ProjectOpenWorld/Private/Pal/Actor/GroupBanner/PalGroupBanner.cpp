@@ -29,7 +29,7 @@ void APalGroupBanner::SendFlagRequest(const FString& Prompt)
 	}
 	FGPTImageRequest RequestData{};
 	RequestData.Text = Prompt;
-	GPTInstance->SendGPTImageRequest(RequestData, this); // 스티커와 동일 송신 경로
+	GPTInstance->SendGPTImageRequest(RequestData, this);
 }
 
 void APalGroupBanner::OnRequestComplete_Implementation(UVaRestRequestJSON* Request)
@@ -112,9 +112,6 @@ void APalGroupBanner::SetFlagImage(UTexture2D* pImage)
 {
 	if (!pImage)
 		return;
-	// ── 여기부터 은구님 담당 영역 ──
-	// StickerDecalActor와 동일 패턴(다이내믹 머티리얼 인스턴스 + "Image" 파라미터),
-	// 단 데칼이 아니라 메시 머티리얼 대상. 전용 깃발 메시를 따로 둘 거면 이 컴포넌트만 교체.
 	UStaticMeshComponent* MeshComp = GetBuildingMeshComponent();
 	if (!MeshComp)
 		return;

@@ -22,7 +22,6 @@ public:
 	FOnDamageTaken OnDamageTaken{};
 
 	void TakeDamage(const FPalDamagePayload& Payload);
-
 	AActor* GetDamageInstigator() const { return DamageInstigator.Get(); }
 public:
 #if WITH_EDITOR

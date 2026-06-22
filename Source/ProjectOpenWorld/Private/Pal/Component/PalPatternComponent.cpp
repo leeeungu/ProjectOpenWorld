@@ -35,6 +35,7 @@ void UPalPatternComponent::StartPattern(uint8 PatternIndex)
 			PatternObj->InitializePattern(GetOwner(), TargetActor);
 			PatternObj->StartPattern();
 			PatternSet.Add(PatternObj);
+			OnPatternStart.Broadcast(PatternIndex);
 		}
 	}
 }
@@ -48,6 +49,7 @@ void UPalPatternComponent::EndPattern(uint8 PatternIndex)
 		{
 			PatternObj->EndPattern();
 			PatternSet.Remove(PatternObj);
+			OnPatternEnd.Broadcast(PatternIndex);
 		}
 	}
 }

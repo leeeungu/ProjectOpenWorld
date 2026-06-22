@@ -21,9 +21,22 @@ void UPalMonsterCombatComponent::OnReceiveDamage(const FPalDamagePayload& Damage
 {
 	if (DamagePayload.Instigator)
 	{
-		if (MonsterController)
-			MonsterController->SetTargetActor(DamagePayload.Instigator);
-		if (AIStateComponent)
-			AIStateComponent->SetState(EPalAIMonsterState::Combat);
+		SetCombatTarget(DamagePayload.Instigator);
 	}
+}
+
+void UPalMonsterCombatComponent::ResetTarget()
+{
+	if (MonsterController)
+		MonsterController->SetTargetActor(nullptr);
+	if (AIStateComponent)
+		AIStateComponent->SetState(EPalAIMonsterState::None);
+}
+
+void UPalMonsterCombatComponent::SetCombatTarget(AActor* Target)
+{
+	if (MonsterController)
+		MonsterController->SetTargetActor(Target);
+	if (AIStateComponent)
+		AIStateComponent->SetState(EPalAIMonsterState::Combat);
 }

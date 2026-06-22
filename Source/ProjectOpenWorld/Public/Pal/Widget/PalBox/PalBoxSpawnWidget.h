@@ -6,6 +6,7 @@
 
 class UScrollBox;
 class UPalBoxSpawnSlot;
+class UPalSpawnerComponent;
 
 UCLASS()
 class PROJECTOPENWORLD_API UPalBoxSpawnWidget : public UUserWidget
@@ -20,7 +21,10 @@ protected:
 public:
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;
+	virtual void NativeConstruct() override;
 	void UpdatePalSpawnInventory(int InventoryIndex, AActor* NewActor);
+
+	void UpdateSlots(UPalSpawnerComponent* Component);
 
 	void CreateSpawnSlotWidget(int SlotIndex);
 };

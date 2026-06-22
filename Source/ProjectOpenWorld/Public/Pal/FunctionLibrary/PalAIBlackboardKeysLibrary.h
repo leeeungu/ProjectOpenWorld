@@ -27,5 +27,8 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
     static FName GetBBOwnerPlayer();
+
+    UFUNCTION(BlueprintPure, Category = "PalAI|BBKeys")
+    static FName GetBBBossPattern();
     
 };

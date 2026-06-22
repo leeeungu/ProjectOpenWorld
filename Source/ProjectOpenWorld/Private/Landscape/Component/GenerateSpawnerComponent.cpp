@@ -10,7 +10,9 @@
 #include "Components/BrushComponent.h"
 #include "NavigationSystem.h"
 
+#if WITH_EDITORONLY_DATA
 UWorld* FSpawnerQuadNode::TestWorld = nullptr;
+#endif
 
 // ===== FSpawnerQuadNode =====
 void FSpawnerQuadNode::Subdivide(int32 InMaxDepth)
@@ -54,7 +56,9 @@ UGenerateSpawnerComponent::UGenerateSpawnerComponent()
 
 void UGenerateSpawnerComponent::BeginPlay()
 {
+#if WITH_EDITOR
     FSpawnerQuadNode::TestWorld = GetWorld();
+#endif
     Super::BeginPlay();
     EnsureRowsCached();
 }

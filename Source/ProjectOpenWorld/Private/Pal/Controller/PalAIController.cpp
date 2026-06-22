@@ -45,6 +45,14 @@ void APalAIController::SetBBEnum(FName BBKey, uint8 NewEnum)
 	}
 }
 
+void APalAIController::SetBBBool(FName BBKey, bool NewValue)
+{
+	if (GetBlackboardComponent())
+	{
+		GetBlackboardComponent()->SetValueAsBool(BBKey, NewValue);
+	}
+}
+
 void APalAIController::ClearBBValue(FName BBKey)
 {
 	if (GetBlackboardComponent())

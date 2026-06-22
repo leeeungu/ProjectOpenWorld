@@ -36,6 +36,8 @@ void UPalBoxWidget::NativeOnInitialized()
 void UPalBoxWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	if(PalBoxSpawnWidget && PalSpawnerComponent.IsValid())
+		PalBoxSpawnWidget->UpdateSlots(PalSpawnerComponent.Get());
 	//SetSelectedPanel(CurSelectedIndex);
 }
 
@@ -88,11 +90,7 @@ FReply UPalBoxWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEve
 void UPalBoxWidget::OnPalSelectedChanged(APalBaseCreature* SelectedPal)
 {
 	CurrentSelectedPal = SelectedPal;
-	//if(PalInfoWidget )
-	//	PalInfoWidget->SetPalCreature(CurrentSelectedPal.Get());
 }
-
-
 
 void UPalBoxWidget::OnPalSpawnInventoryChanged(int nIndex, AActor* Actor)
 {
@@ -108,7 +106,6 @@ TObjectPtr<APalBaseCreature>  UPalBoxWidget::GetPalInInventory(int Index) const
 void UPalBoxWidget::SetOwnerActor(AActor* NewOwner)
 {
 	Super::SetOwnerActor(NewOwner);
-
 }
 
 void UPalBoxWidget::SetStorageComponent(UPalStorageComponent* Storage)
@@ -129,6 +126,7 @@ void UPalBoxWidget::SetPalSpawnerComponent(UPalSpawnerComponent* Spawner)
 	PalSpawnerComponent = Spawner;
 	if (PalSpawnerComponent.IsValid())
 	{
+		PalBoxSpawnWidget->UpdateSlots(PalSpawnerComponent.Get());
 		PalSpawnerComponent->OnContainerUpdated.AddUniqueDynamic(this, &UPalBoxWidget::OnUpdateSpawnSlot);
 	}
 }

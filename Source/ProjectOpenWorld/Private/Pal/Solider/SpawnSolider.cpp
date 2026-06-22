@@ -2,6 +2,7 @@
 #include "Components/SplineComponent.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ASpawnSolider::ASpawnSolider() : AActor()
 {
@@ -33,6 +34,7 @@ void ASpawnSolider::BeginPlay()
 	for (uint8 i = 0; i < SpawnCount; ++i)
 	{
 		arSolider.Push(SpawnSolider());
+		arSolider[i]->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 		arSolider[i]->SetActorTickEnabled(false);
 		arSolider[i]->SetActorHiddenInGame(true);
 		arSolider[i]->SetActorEnableCollision(false);
@@ -63,6 +65,7 @@ void ASpawnSolider::OnInteractionEvent_Implementation(ACharacter* TargetMonster)
 	UE_LOG(LogTemp, Warning, TEXT("ASpawnSolider::OnInteractionEvent_Implementation Spawn Solider Count : %d"), SpawnCount);
 	for (uint8 i = 0; i < SpawnCount; ++i)
 	{
+		arSolider[i]->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_NavWalking);
 		arSolider[i]->SetActorTickEnabled(true);
 		arSolider[i]->SetActorHiddenInGame(false);
 		arSolider[i]->SetActorEnableCollision(true);

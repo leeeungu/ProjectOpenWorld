@@ -30,6 +30,7 @@ void UPatternObj_Anubis01::StartPattern()
 	PatternMoveDirection = FMath::VRand().GetSafeNormal2D();
 	if (TargetPlayer)
 	{
+		PreState = TargetPlayer->GetPlayerState();
 		TargetPlayer->ChangePlayerState(EPlayerState::TopDown); 
 	}
 	CurTime = 0.f;
@@ -78,7 +79,7 @@ void UPatternObj_Anubis01::EndPattern()
 	bIsPatternActive = false;
 	if (TargetPlayer)
 	{
-		TargetPlayer->ChangePlayerState(EPlayerState::Battle);
+		TargetPlayer->ChangePlayerState(PreState);
 	}
 	if (OwnerCharacter->GetMonsterInteractionComponent())
 		OwnerCharacter->GetMonsterInteractionComponent()->EndActiveInteraction();

@@ -6,12 +6,39 @@
 #include "Pal/Component/PalAttackComponent.h"
 #include "Pal/Widget/PatternWidget_Anubis.h"
 #include "GameBase/Component/StatComponent.h"
+#include "Pal/Component/PalMonsterCombatComponent.h"
+#include "Pal/Component/PalMonsterInteractionComponent.h"
+#include "Pal/Controller/PalAIController.h"
+#include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
 
 void ABossMonster_Anubis::BeginPlay()
 {
 	Super::BeginPlay();
 	//OnDamagedDelegate.AddUniqueDynamic(this, &ABossMonster_Anubis::OnCustomModeDamaged);
 	PatternWidget->SetVisibility(false);
+	if (GetWorld()->GetFirstPlayerController())
+	{
+		AActor* Target = GetWorld()->GetFirstPlayerController()->GetPawn();
+		if (MonsterCombatComponent)
+			MonsterCombatComponent->SetCombatTarget(Target);
+	}
+	if (StatComponent)
+	{
+		StatComponent->GetCurrentOnStatChanged(EStatusType::HP)->AddUniqueDynamic(this, &ABossMonster_Anubis::OnHPObserver);
+	}
+	if (PatternComponent)
+	{
+		PatternComponent->OnPatternEnd.AddUniqueDynamic(this, &ABossMonster_Anubis::OnEndPattern);
+	}
+}
+
+void ABossMonster_Anubis::OnEndPattern(int32 Index)
+{
+	APalAIController* PalController = Cast<APalAIController>(GetController());
+	if (PalController)
+	{
+		PalController->SetBBBool(UPalAIBlackboardKeysLibrary::GetBBBossPattern(), false);
+	}
 }
 
 ABossMonster_Anubis::ABossMonster_Anubis() : ABossMonster()
@@ -20,7 +47,7 @@ ABossMonster_Anubis::ABossMonster_Anubis() : ABossMonster()
 	// Script / Engine.SkeletalMesh'/Game/Pal/Model/Monster/Anubis/Mesh/SK_Anubis.SK_Anubis'
 	GetCapsuleComponent()->SetCapsuleHalfHeight(150.f);
 	GetCapsuleComponent()->SetCapsuleRadius(80.0f);
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/Pal/Model/Monster/Anubis/Mesh/SK_Anubis.SK_Anubis"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/Pal/Model/Monster/Anubis/Mesh/SK_Anubis.SK_Anubis"));
 	if (MeshAsset.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(MeshAsset.Object);
@@ -33,7 +60,7 @@ ABossMonster_Anubis::ABossMonster_Anubis() : ABossMonster()
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	GetCharacterMovement()->RotationRate.Yaw = 540.0f;
 	//Script/Engine.AnimBlueprint'/Game/Pal/Model/Monster/Anubis/Boss/ABP_Anubis_Boss.ABP_Anubis_Boss'
-	ConstructorHelpers::FClassFinder<UAnimInstance> AnimBPAsset(TEXT("/Game/Pal/Model/Monster/Anubis/Boss/ABP_Anubis_Boss.ABP_Anubis_Boss_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBPAsset(TEXT("/Game/Pal/Model/Monster/Anubis/Boss/ABP_Anubis_Boss.ABP_Anubis_Boss_C"));
 	if (AnimBPAsset.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(AnimBPAsset.Class);
@@ -58,12 +85,41 @@ void ABossMonster_Anubis::OnCustomModeDamaged(AActor* Other, float Damaage)
 	float HPRadio = StatComponent->GetStatPercent(EStatusType::HP);
 	if (HPRadio <= 0.5f && !bStartPattern)
 	{
+		APalAIController* PalController = Cast<APalAIController>(GetController());
+		if (PalController)
+		{
+			PalController->SetBBBool(UPalAIBlackboardKeysLibrary::GetBBBossPattern(), true);
+		}
 		bStartPattern = true;
 		AttackComponent->StopAttack();
 		AttackComponent->EndAttack();
 		AttackComponent->SetAttackData(ESubAttackType::Skill01);
 		AttackComponent->SetAttackTarget(Other);
 		AttackComponent->StartAttack();
+		PatternComponent->UpdatePatternCondition(0);
+	}
+}
+
+void ABossMonster_Anubis::OnHPObserver(double PreCurrentStat, double CurrentStat)
+{
+	float HPRadio = StatComponent->GetStatPercent(EStatusType::HP);
+	if (HPRadio <= 0.5f && !bStartPattern)
+	{
+		bStartPattern = true;
+		APalAIController* PalController = Cast<APalAIController>(GetController());
+		if (PalController)
+		{
+			PalController->SetBBBool(UPalAIBlackboardKeysLibrary::GetBBBossPattern(), true);
+		}
+	/*	AttackComponent->StopAttack();
+		AttackComponent->EndAttack();
+		AttackComponent->SetAttackData(ESubAttackType::Skill01);
+		if (GetWorld()->GetFirstPlayerController())
+		{
+			AActor* Target = GetWorld()->GetFirstPlayerController()->GetPawn();
+			AttackComponent->SetAttackTarget(Target);
+		}
+		AttackComponent->StartAttack();*/
 		PatternComponent->UpdatePatternCondition(0);
 	}
 }

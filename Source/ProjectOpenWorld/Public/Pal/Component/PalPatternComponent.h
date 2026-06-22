@@ -6,6 +6,8 @@
 
 class UPatternObj;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPatternEvent, int32, PatternID);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UPalPatternComponent : public UActorComponent
 {
@@ -23,6 +25,9 @@ public:
 	UPalPatternComponent();
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+
+	FOnPatternEvent OnPatternStart{};
+	FOnPatternEvent OnPatternEnd{};
 public:
 	UFUNCTION(BlueprintCallable, Category = "PalPattern")
 	void StartPattern(uint8 PatternIndex);

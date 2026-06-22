@@ -12,28 +12,21 @@ void UAttackObject_KnockBackDirection::AttackEvent(const FAttackEventContext& At
 {
 	// Character를 넉백 시키는 함수
 	const FHitResult& HitData = *AttContext.Hit;
+	if (!HitData.GetActor())
+		return;
 	AActor* AttackTarget = HitData.GetActor();
-	if (AttackTarget)
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
+	TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
+	TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
+	if (AttackTarget && OtherAttack && CauserCharacter && IAttackInterface::Execute_KnockBackAttack(HitData.GetActor(), AttackInterface))
 	{
-		ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
-		if (!CauserCharacter)
-			return;
-		TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
-		TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
-		if (OtherAttack && IAttackInterface::Execute_KnockBackAttack(HitData.GetActor(), AttackInterface))
-		{
-			return;
-		}
-		FVector Direction = KnockBackDirection;
-		Direction.Normalize();
+		FVector Direction = KnockBackDirection.GetSafeNormal();
 		if (!bIsWorldDirection && CauserCharacter->GetMesh())
 		{
-			Direction = CauserCharacter->GetActorRotation().RotateVector(Direction);
+			Direction = CauserCharacter->GetMesh()->GetComponentRotation().RotateVector(Direction);
 		}
 		FVector LaunchVelocity = Direction * KnockBackForce;
-		UPrimitiveComponent* TargetRootComponent = Cast<UPrimitiveComponent>(AttackTarget->GetRootComponent());
-
-		IAttackInterface::Execute_LaunchAttack(HitData.GetActor(), AttackInterface, LaunchVelocity, true,  true);
+		IAttackInterface::Execute_LaunchAttack(HitData.GetActor(), AttackInterface, LaunchVelocity, true, true);
 	}
 }
 
@@ -58,9 +51,10 @@ void UAttackObject_Impulse::AttackEvent(const FAttackEventContext& AttContext) c
 //void UAttackObject_Impulse::AttackEvent(USkeletalMeshComponent* AttackCauser, AActor* AttackTarget) const
 {
 	const FHitResult& HitData = *AttContext.Hit;
-	if (ACharacter* TargetCharacter = Cast<ACharacter>(HitData.GetActor()))
+	ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
+	ACharacter* TargetCharacter = Cast<ACharacter>(HitData.GetActor());
+	if (TargetCharacter && CauserCharacter)
 	{
-		ACharacter* CauserCharacter = Cast<ACharacter>(AttContext.Owner);
 		USkeletalMeshComponent* MeshComp = CauserCharacter->GetMesh();
 		FVector NewLocation = MeshComp->GetSocketLocation(SocketName) + MeshComp->GetComponentRotation().Quaternion() * SocketOffset;
 
@@ -69,19 +63,14 @@ void UAttackObject_Impulse::AttackEvent(const FAttackEventContext& AttContext) c
 
 		if (AttackRadius > 0)
 		{
-			// 거리 비율 계산 (Distance / AttackRadius의 제곱)
-			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
-
-			// 거리별 힘 계산 (비율을 반영)
-			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
-
 			// 힘 벡터 계산
+			float Ratio = FMath::Pow(Distance / AttackRadius, 2.0f);
+			float ForceMultiplier = FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f);
 			FVector LaunchDirection = (TargetCharacter->GetActorLocation() - NewLocation).GetSafeNormal();
-			//LaunchDirection.X *= 3;
-			//LaunchDirection.Y *= 3;
-			LaunchDirection.Z = abs(LaunchDirection.Z);
+			LaunchDirection.Z = FMath::Abs(LaunchDirection.Z);
 			LaunchDirection = LaunchDirection.GetSafeNormal();
 			FVector ImpulseForce = LaunchDirection * ForceMultiplier * MaxImpulseForce;
+
 			// 힘 적용
 			TScriptInterface<IAttackInterface> OtherAttack = TScriptInterface<IAttackInterface>(HitData.GetActor());
 			TScriptInterface<IAttackInterface> AttackInterface = TScriptInterface<IAttackInterface>(CauserCharacter);
@@ -145,16 +134,20 @@ void UAttackObject_KnockBackDirection::InitializeEvent(const FInitializeData& Da
 
 void UAttackObject_KnockBackDirection::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
 {
-	if (!DebugData.bFireInEditor || !AttContext.Owner)
+	USkeletalMeshComponent* MeshComp = Cast< USkeletalMeshComponent>(AttContext.SourceComp);
+	if (!DebugData.bFireInEditor || !AttContext.Owner || !AttContext.SourceComp || !MeshComp)
 		return;
+	FVector NewStart = AttContext.SourceComp->GetComponentLocation();
+	NewStart.Z = StartLocation.Z;
 	FVector Direction = KnockBackDirection;
 	Direction.Normalize();
-	if (!bIsWorldDirection)
+	double Radian = FMath::DegreesToRadians(90);
+	if (!bIsWorldDirection && MeshComp->GetNumComponentSpaceTransforms() > 0)
 	{
-		Direction = FRotator(0, 90, 0).RotateVector(Direction);
+		const FQuat RootLocalRot = MeshComp->BoneSpaceTransforms[0].GetRotation();
+		Direction = RootLocalRot.RotateVector(Direction);
 	}
-	DrawDebugDirectionalArrow(AttContext.Owner->GetWorld(), StartLocation, EndLocation + Direction * 100.f,
-		50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
+	DrawDebugDirectionalArrow(AttContext.Owner->GetWorld(), NewStart, NewStart + Direction * 100.0f, 50.f, DebugData.DebugColor, false, DebugData.DebugLifeTime, 0, 5.f);
 }
 
 void UAttackObject_Impulse::DebugAttackEvent(const FAttackEventContext& AttContext, FVector StartLocation, FVector EndLocation, const FCollisionShape& CollisionShape) const
