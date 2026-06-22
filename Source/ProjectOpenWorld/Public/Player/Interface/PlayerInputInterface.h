@@ -23,7 +23,8 @@ enum class EInputKeyType : uint8
 	Key2	,
 	Key3	,
 	KeyE	,
-	KeyTab	,	
+	KeyTab	,
+	InputMax,
 };
 
 class UInputAction;

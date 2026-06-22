@@ -9,6 +9,9 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Pal/Character/PalBaseMonster.h"
 #include "Pal/Character/BossMonster.h"
+#include "Internationalization/StringTableRegistry.h"
+#include "Internationalization/StringTableCore.h"
+#include "GameBase/FunctionLib/StringTableFunctionLibrary.h"	
 
 void UMonsterHpLayer::NativeOnInitialized()
 {
@@ -67,24 +70,28 @@ void UMonsterHpLayer::RegisterMonster(AActor* Target)
 		Name = C->GetPalName();
 		Level = C->GetMonsterLevel();
 		Stat = C->GetStatComponent();
-		if (ABossMonster* pBoss = Cast< ABossMonster>(Target))
+		FText MonsterName = FText::FromString(Name.ToString());
+		if (UStringTableFunctionLibrary::GetPalCharacterName(Name.ToString(), MonsterName))
 		{
-			BossHpWidget->InitializeHPWidget(Stat, Name, Level);
-			BossHpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			Entry->Widget = AcquireBar();
-			if (Entry->Widget)
+			if (ABossMonster* pBoss = Cast< ABossMonster>(Target))
 			{
-				if (UCanvasPanelSlot* CanvasSlot = BarCanvas->AddChildToCanvas(Entry->Widget))
+				BossHpWidget->InitializeHPWidget(Stat, Name, Level);
+				BossHpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+			else
+			{
+				Entry->Widget = AcquireBar();
+				if (Entry->Widget)
 				{
-					CanvasSlot->SetAutoSize(true);
-					CanvasSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+					if (UCanvasPanelSlot* CanvasSlot = BarCanvas->AddChildToCanvas(Entry->Widget))
+					{
+						CanvasSlot->SetAutoSize(true);
+						CanvasSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+					}
+					Entry->Widget->InitializeHPWidget(Stat, Name, Level);
+					Entry->Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+					return;
 				}
-				Entry->Widget->InitializeHPWidget(Stat, Name, Level);
-				Entry->Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				return;
 			}
 		}
 	}

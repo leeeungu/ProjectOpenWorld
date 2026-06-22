@@ -51,3 +51,13 @@ bool UStringTableFunctionLibrary::GetWeaponeNameFromStringTable(const FString& I
 	}
 	return true;
 }
+
+bool UStringTableFunctionLibrary::GetPalCharacterName(const FString& InKey, FText& Result)
+{
+	Result = FText::FromStringTable(GetPalCharacterNameStringTable(), InKey);
+	if (Result.ToString() == FStringTableEntry::GetPlaceholderSourceString())
+	{
+		return false;
+	}
+	return true;
+}

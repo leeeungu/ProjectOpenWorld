@@ -16,10 +16,10 @@ void UPatternObj_Anubis01::InitializePattern(AActor* OwnerActor, AActor* TargetA
 
 void UPatternObj_Anubis01::StartPattern()
 {
-	bool bError = !OwnerCharacter || !TargetPlayer;
-	if (!OwnerCharacter)
+	bool bError = !OwnerCharacter.IsValid() || !TargetPlayer.IsValid();
+	if (!OwnerCharacter.IsValid())
 		UE_LOG(LogTemp, Error, TEXT("UPatternObj_Anubis01::StartPattern OwnerCharacter is nullptr"));
-	if (!TargetPlayer)
+	if (!TargetPlayer.IsValid())
 		UE_LOG(LogTemp, Error, TEXT("UPatternObj_Anubis01::StartPattern TargetPlayer is nullptr"));
 
 	if (bError)
@@ -28,7 +28,7 @@ void UPatternObj_Anubis01::StartPattern()
 	OwnerCharacter->StartPatternWidget(PatternSolveCount);
 	OwnerCharacter->UseOrientRotationToMovement();
 	PatternMoveDirection = FMath::VRand().GetSafeNormal2D();
-	if (TargetPlayer)
+	if (TargetPlayer.IsValid())
 	{
 		PreState = TargetPlayer->GetPlayerState();
 		TargetPlayer->ChangePlayerState(EPlayerState::TopDown); 
@@ -66,23 +66,27 @@ void UPatternObj_Anubis01::UpdatePattern(float DeltaTime)
 		}
 	}
 	FRotator CurrentRotation = { 0, PatternRotateSpeedYaw * DeltaTime, 0 };
-	if(OwnerCharacter)
+	if(OwnerCharacter.IsValid())
 		OwnerCharacter->GetMesh()->AddRelativeRotation(CurrentRotation);
 }
 
 void UPatternObj_Anubis01::EndPattern()
 {
-	if (!OwnerCharacter || !TargetPlayer)
+	if (!OwnerCharacter.IsValid() || !TargetPlayer.IsValid())
 		return;
 	OwnerCharacter->EndPatternWidget();
 	OwnerCharacter->UseControllerDesiredRotation();
 	bIsPatternActive = false;
-	if (TargetPlayer)
+	if (TargetPlayer.IsValid())
 	{
 		TargetPlayer->ChangePlayerState(PreState);
 	}
 	if (OwnerCharacter->GetMonsterInteractionComponent())
 		OwnerCharacter->GetMonsterInteractionComponent()->EndActiveInteraction();
+	if (OwnerCharacter->GetMesh())
+	{
+		OwnerCharacter->GetMesh()->SetRelativeRotation(FRotator{0,-90,0});
+	}
 	OwnerCharacter = nullptr;
 	TargetPlayer = nullptr;
 }
@@ -97,16 +101,16 @@ void UPatternObj_Anubis01::UpdateCondition()
 	if (CurrentCount <= 0)
 	{
 		bIsPatternActive = false;
-		if (OwnerCharacter && OwnerCharacter.Get())
+		if (OwnerCharacter.IsValid() && OwnerCharacter.Get())
 		{
 			OwnerCharacter->GetMesh()->SetRelativeRotation(FRotator(0.f, -90.0f, 0.0f));
 			OwnerCharacter->SetStunned(StunDuration);
-			if (OwnerCharacter && OwnerCharacter.Get())
+			if (OwnerCharacter.IsValid() && OwnerCharacter.Get())
 			{
 				if (OwnerCharacter->GetMonsterInteractionComponent())
 					OwnerCharacter->GetMonsterInteractionComponent()->EndActiveInteraction();
 			}
-			if (OwnerCharacter && OwnerCharacter.Get())
+			if (OwnerCharacter.IsValid() && OwnerCharacter.Get())
 			{
 				if (OwnerCharacter->GetAttackComponent())
 					OwnerCharacter->GetAttackComponent()->StopAttack();

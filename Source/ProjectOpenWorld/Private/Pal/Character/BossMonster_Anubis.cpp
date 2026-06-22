@@ -8,8 +8,10 @@
 #include "GameBase/Component/StatComponent.h"
 #include "Pal/Component/PalMonsterCombatComponent.h"
 #include "Pal/Component/PalMonsterInteractionComponent.h"
+#include "Pal/Component/PalHitHandlerComponent.h"
 #include "Pal/Controller/PalAIController.h"
 #include "Pal/FunctionLibrary/PalAIBlackboardKeysLibrary.h"
+
 
 void ABossMonster_Anubis::BeginPlay()
 {

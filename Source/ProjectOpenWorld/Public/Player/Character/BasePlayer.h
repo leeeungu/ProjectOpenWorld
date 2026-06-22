@@ -115,6 +115,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AttackMontage")
 	TObjectPtr< UPlayerDetectCollision> PlayerDetectCollision{};
 	
+	UPROPERTY()
 	TMap<EInputKeyType, TScriptInterface<IPlayerInputInterface>> InputMapping{};
 
 	TSubclassOf<UPlayerGameOver> GameOverWidgetClass{};

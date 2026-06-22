@@ -38,4 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapone")
 	static bool GetWeaponeNameFromStringTable(const FString& InKey, FText& OutWeaponeName);
 
+
+	UFUNCTION(BlueprintCallable, Category = "PalCharacter")
+	/// Script / Engine.StringTable'/Game/Global/StringTable/ST_WeaponeName.ST_WeaponeName'
+	static FName GetPalCharacterNameStringTable() { return FName("/Game/Pal/StringTable/ST_PalName.ST_PalName"); }
+	UFUNCTION(BlueprintCallable, Category = "PalCharacter")
+	static bool GetPalCharacterName(const FString& InKey, FText& Result);
 };

@@ -172,7 +172,7 @@ void UPalAttackComponent::StartAttack()
 	if (bAttacking )
 		return;
 
-	if (CoolDownArray.IsValidIndex(Index) && CoolDownArray[Index])
+	/*if (CoolDownArray.IsValidIndex(Index) && CoolDownArray[Index])
 	{
 		FTimerHandle Handle{};
 		GetWorld()->GetTimerManager().SetTimer(Handle,
@@ -182,7 +182,8 @@ void UPalAttackComponent::StartAttack()
 			},
 			2, false, 2);
 	}
-	else
+	else*/
+	if (CoolDownArray.IsValidIndex(Index) && !CoolDownArray[Index])
 	{
 		CoolDownArray[Index] = true;
 
@@ -193,11 +194,9 @@ void UPalAttackComponent::StartAttack()
 		}
 		bAttacking = true;
 		FTimerHandle Handle{};
-		UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: CoolDown Start"), *GetOwner()->GetName());
 		GetWorld()->GetTimerManager().SetTimer(Handle,
 			[this, Index]()
 			{
-				UE_LOG(LogTemp, Log, TEXT("%s UPalAttackComponent :: CoolDown End"), *GetOwner()->GetName());
 				if (CoolDownArray.IsValidIndex(Index))
 				{
 					CoolDownArray[Index] = false;

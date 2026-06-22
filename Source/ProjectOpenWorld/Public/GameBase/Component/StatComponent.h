@@ -7,6 +7,8 @@
 
 struct FPalDamagePayload;
 struct FPalMonsterLevelData;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnStatChangedCom, EStatusType, StatType, double, PreCurrentStat, double, CurrentStat);
+
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTOPENWORLD_API UStatComponent : public UActorComponent
@@ -22,7 +24,10 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
-
+protected:
+	UPROPERTY(BlueprintAssignable)
+	FOnStatChangedCom OnStatCurrentChanged{};
+public:	
 	FOnStatChanged* GetCurrentOnStatChanged(EStatusType StatName);
 	FOnStatChanged* GetMaxOnStatChanged(EStatusType StatName);
 

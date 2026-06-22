@@ -15,6 +15,7 @@ protected:
 	TObjectPtr< UStatComponent> StatComponent{};
 	bool bIsHidden{};
 public:
+	UFUNCTION(BlueprintPure, Category = "Stat")
 	UStatComponent* GetStatComponent() const { return StatComponent; }
 	void UseControllerDesiredRotation();
 	void UseOrientRotationToMovement();

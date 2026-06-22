@@ -25,20 +25,16 @@ void UPlayerGameOver::NativeConstruct()
 	if (PlayerController)
 	{
 		PlayerController->SetShowMouseCursor(true);
-		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PlayerController, this, EMouseLockMode::DoNotLock, true);
+		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PlayerController, this, EMouseLockMode::DoNotLock, false);
 		//PlayerController->()
+		UGameplayStatics::SetViewportMouseCaptureMode(GetWorld(), EMouseCaptureMode::NoCapture);
 	}
 }
 
 void UPlayerGameOver::NativeDestruct()
 {
 	Super::NativeDestruct();
-	APlayerController* PlayerController = GetOwningPlayer();
-	if (PlayerController)
-	{
-		PlayerController->SetShowMouseCursor(false);
-		UWidgetBlueprintLibrary::SetInputMode_GameOnly(PlayerController, true);
-	}
+
 }
 
 bool UPlayerGameOver::SetMainWidget()
@@ -49,5 +45,11 @@ bool UPlayerGameOver::SetMainWidget()
 
 void UPlayerGameOver::UnSetMainWidget()
 {
+	APlayerController* PlayerController = GetOwningPlayer();
+	if (PlayerController)
+	{
+		PlayerController->SetShowMouseCursor(false);
+		UWidgetBlueprintLibrary::SetInputMode_GameOnly(PlayerController, true);
+	}
 	RemoveFromParent();
 }

@@ -39,8 +39,8 @@ protected:
 
 	EPlayerState PreState{};
 protected:
-	TObjectPtr<ABossMonster_Anubis> OwnerCharacter{};
-	TObjectPtr<ABasePlayer> TargetPlayer{};
+	TWeakObjectPtr<ABossMonster_Anubis> OwnerCharacter{};
+	TWeakObjectPtr<ABasePlayer> TargetPlayer{};
 public:
 	UPatternObj_Anubis01() = default;
 

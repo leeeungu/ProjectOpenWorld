@@ -8,15 +8,14 @@
 struct FInputActionValue;
 class APlayerController;
 class ABasePlayer;
-enum class EInputKeyType : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTOPENWORLD_API UPlayerMoveComponent : public UActorComponent, public IPlayerInputInterface
 {
 	GENERATED_BODY()
 private:
-	void (UPlayerMoveComponent::* MoveTriggeredFunc)(const FInputActionValue&) {};
 	void (UPlayerMoveComponent::* MoveStartedFunc)(const FInputActionValue&) {};
+	void (UPlayerMoveComponent::* MoveTriggeredFunc[(uint8)(EInputKeyType::InputMax)])(const FInputActionValue&) {};
 	void (UPlayerMoveComponent::* MoveReleasedFunc)(const FInputActionValue&) {};
 
 	TWeakObjectPtr<APlayerController> Controller{};

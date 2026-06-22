@@ -37,6 +37,8 @@
 #include "Pal/Component/PalStorageComponent.h"
 #include "Pal/Component/PalSpawnerComponent.h"
 #include "Pal/Character/PalBaseCreature.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "EngineUtils.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -284,10 +286,9 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 	case EPlayerState::TopDown:
 	{
 		TopDownMode = false;
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-		if (PlayerController)
+		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
 		{
-			PlayerController->SetShowMouseCursor(false);
+			_MainWidget->EndCursor();
 		}
 		InteractionComponent->SetInteractionable(true);
 		break;
@@ -339,10 +340,9 @@ void ABasePlayer::ChangePlayerState(EPlayerState NewState)
 		PlayerMoveComponent->SetTopDownMode();
 		BuildAssistComponent->EndBuilding();
 		InteractionComponent->SetInteractionable(false);
-		APlayerController* PlayerController = Cast<APlayerController>(GetController());
-		if (PlayerController)
+		if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
 		{
-			PlayerController->SetShowMouseCursor(true);
+			_MainWidget->StartCursor();
 		}
 		break;
 	}
@@ -740,16 +740,9 @@ void ABasePlayer::TriggerEvent(const FInputActionValue& Value, EInputKeyType Key
 		}
 		break;
 	case EInputKeyType::MouseR:
-		break;
 	case EInputKeyType::MouseL:
-	{
-
-		break;
-	}
 	case EInputKeyType::MouseWheel:
-		break;
 	case EInputKeyType::KeyB:
-		break;
 	case EInputKeyType::KeyTab:
 		break;
 	default:
@@ -902,12 +895,19 @@ void ABasePlayer::Restart()
 		if (PlayerAttackComponent)
 			PlayerAttackComponent->StopAttack();
 		EnableInput(Cast<APlayerController>(GetController()));
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 		if(CurrentPlayerState == EPlayerState::TopDown)
 		{
-			APlayerController* PlayerController = Cast<APlayerController>(GetController());
-			if (PlayerController)
+			if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
 			{
-				PlayerController->SetShowMouseCursor(true);
+				_MainWidget->StartCursor();
+			}
+		}
+		else
+		{
+			if (UMainUI* _MainWidget = Cast< UMainUI>(MainWidget))
+			{
+				_MainWidget->EndCursor();
 			}
 		}
 	}

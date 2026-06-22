@@ -38,6 +38,7 @@ double FStatusValue::AddValue(double DeltaValue)
 	{
 		OnChanged.Broadcast(PreValue, Value);
 	}
+	
 	return AddValue;
 }
 
@@ -131,7 +132,12 @@ void UStatComponent::SetCurrentStat(double Value, EStatusType StatName)
 	{
 		return;
 	}
+	double PreValue = Stat->CurrentStatValue.GetValue();
 	Stat->CurrentStatValue.SetValue(Value);
+	if (OnStatCurrentChanged.IsBound())
+	{
+		OnStatCurrentChanged.Broadcast(StatName, PreValue, Value);
+	}
 }
 
 void UStatComponent::SetMaxStat(double Value, EStatusType StatName)
@@ -142,6 +148,7 @@ void UStatComponent::SetMaxStat(double Value, EStatusType StatName)
 		return;
 	}
 	Stat->MaxStatValue.SetValue(Value);
+	
 }
 
 double UStatComponent::AddCurrentStat(double Value, EStatusType StatName)
@@ -151,7 +158,13 @@ double UStatComponent::AddCurrentStat(double Value, EStatusType StatName)
 	{
 		return 0.0f;
 	}
-	return Stat->CurrentStatValue.AddValue(Value);
+	double PreValue = Stat->CurrentStatValue.GetValue();
+	double Result = Stat->CurrentStatValue.AddValue(Value);
+	if (OnStatCurrentChanged.IsBound())
+	{
+		OnStatCurrentChanged.Broadcast(StatName, PreValue, PreValue - Result);
+	}
+	return Result;
 }
 
 double UStatComponent::AddMaxStat(double Value, EStatusType StatName)

@@ -1,4 +1,4 @@
-#include "Player/Component/PlayerMoveComponent.h"
+ï»¿#include "Player/Component/PlayerMoveComponent.h"
 #include "InputActionValue.h"
 #include "Player/Character/BasePlayer.h"
 
@@ -7,6 +7,8 @@ UPlayerMoveComponent::UPlayerMoveComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	bIsMoveable = true;
 	SetDefaultMove();
+	MoveTriggeredFunc[(uint8)EInputKeyType::MouseL] = &UPlayerMoveComponent::TriggerTopDownMode;
+	MoveTriggeredFunc[(uint8)EInputKeyType::WASD] = &UPlayerMoveComponent::TriggerDefault;
 }
 
 void UPlayerMoveComponent::BeginPlay()
@@ -51,11 +53,12 @@ void UPlayerMoveComponent::StartEvent(const FInputActionValue& Value, EInputKeyT
 void UPlayerMoveComponent::TriggerEvent(const FInputActionValue& Value, EInputKeyType KeyType)
 {
 	CurrentKeyType = KeyType;
-	if (!CheckFunction(MoveTriggeredFunc, TEXT("MoveTriggeredFunc")))
+	void (UPlayerMoveComponent:: * TriggeredFunc)(const FInputActionValue&) =  MoveTriggeredFunc[(uint8)KeyType];
+	if (!CheckFunction(TriggeredFunc, TEXT("MoveTriggeredFunc")))
 		return;
 	if (!IsMoveable())
 		return;
-	(this->*MoveTriggeredFunc)(Value);
+	(this->*TriggeredFunc)(Value);
 }
 
 void UPlayerMoveComponent::CompleteEvent(const FInputActionValue& Value, EInputKeyType KeyType)
@@ -70,8 +73,7 @@ void UPlayerMoveComponent::CompleteEvent(const FInputActionValue& Value, EInputK
 
 void UPlayerMoveComponent::SetTopDownMode()
 {
-	MoveTriggeredFunc = &UPlayerMoveComponent::TriggerTopDownMode;
-
+	//MoveTriggeredFunc = &UPlayerMoveComponent::TriggerTopDownMode;
 	if (Player.IsValid())
 	{
 		Player->SetInputInterface(EInputKeyType::WASD, nullptr);
@@ -81,7 +83,7 @@ void UPlayerMoveComponent::SetTopDownMode()
 
 void UPlayerMoveComponent::SetDefaultMove()
 {
-	MoveTriggeredFunc = &UPlayerMoveComponent::TriggerDefault;
+	//MoveTriggeredFunc = &UPlayerMoveComponent::TriggerDefault;
 	if (Player.IsValid())
 	{
 		Player->SetInputInterface(EInputKeyType::WASD, this);
@@ -91,7 +93,7 @@ void UPlayerMoveComponent::SetDefaultMove()
 
 void UPlayerMoveComponent::SetSwordMove()
 {
-	MoveTriggeredFunc = &UPlayerMoveComponent::TriggerSword;
+	//MoveTriggeredFunc = &UPlayerMoveComponent::TriggerSword;
 	if (Player.IsValid())
 	{
 		Player->SetInputInterface(EInputKeyType::WASD, this);
@@ -138,44 +140,36 @@ void UPlayerMoveComponent::TriggerTopDownMode(const FInputActionValue& Value)
 	if (Player->GetPlayerState() != EPlayerState::TopDown && CurrentKeyType != EInputKeyType::MouseL)
 		return;
 
-	// È­¸é¿¡¼­ Áö¸éÀ¸·Î À§Ä¡¸¦ pick ÇÏ°í ÀÌµ¿ ¹æÇâ °è»ê
-		float MouseX = 0.f, MouseY = 0.f;
-		// ¸¶¿ì½º ÁÂÇ¥ ¾ò±â
-		if (Controller->GetMousePosition(MouseX, MouseY))
+	// í™”ë©´ì—ì„œ ì§€ë©´ìœ¼ë¡œ ìœ„ì¹˜ë¥¼ pick í•˜ê³  ì´ë™ ë°©í–¥ ê³„ì‚°
+	float MouseX = 0.f, MouseY = 0.f;
+	// ë§ˆìš°ìŠ¤ ì¢Œí‘œ ì–»ê¸°
+	if (Controller->GetMousePosition(MouseX, MouseY))
+	{
+		FVector WorldOrigin, WorldDir;
+		if (Controller->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDir))
 		{
-			FVector WorldOrigin, WorldDir;
-			if (Controller->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDir))
+			const FVector TraceStart = WorldOrigin;
+			const FVector TraceEnd = WorldOrigin + WorldDir * 100000.0f;
+
+			FHitResult Hit;
+			FCollisionQueryParams Params(SCENE_QUERY_STAT(TopDownClick), true);
+			Params.AddIgnoredActor(Player.Get());
+
+			// ë°˜í™˜ê°’ ì²´í¬ â€” ë¹—ë‚˜ê°€ë©´ ì´ë™ ì²˜ë¦¬ ì•ˆ í•¨
+			if (GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params))
 			{
-				const FVector TraceStart = WorldOrigin;
-				const FVector TraceEnd = WorldOrigin + WorldDir * 100000.0f;
-
-				FHitResult Hit;
-				FCollisionQueryParams Params(SCENE_QUERY_STAT(TopDownClick), true);
-				Params.AddIgnoredActor(Player.Get());
-
-				GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params);
-				{
-					const FVector HitLocation = Hit.ImpactPoint;
-
-					FVector MoveDirection = (HitLocation - Player->GetActorLocation()).GetSafeNormal2D();
-
-					const FRotator Rotation = MoveDirection.Rotation();
-					const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-					const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-					const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-					// add movement 
-					Player->AddMovementInput(ForwardDirection, 6);
+				const FVector HitLocation = Hit.ImpactPoint;
+				const FVector MoveDirection = (HitLocation - Player->GetActorLocation()).GetSafeNormal2D();
+				Player->AddMovementInput(MoveDirection);
 
 #if ENABLE_DRAW_DEBUG
-					// µğ¹ö±× ½Ã°¢È­ (¿¡µğÅÍ/°³¹ß¿ë)
-					//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
-					//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
+				//// ë””ë²„ê·¸ ì‹œê°í™” (ì—ë””í„°/ê°œë°œìš©)
+				//DrawDebugSphere(GetWorld(), HitLocation, 16.f, 12, FColor::Green, false, 1.0f);
+				//DrawDebugLine(GetWorld(), TraceStart, HitLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 #endif
 
-				}
 			}
+		}
 	}
 }
 

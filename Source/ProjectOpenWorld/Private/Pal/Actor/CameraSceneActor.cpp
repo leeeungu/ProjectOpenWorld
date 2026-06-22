@@ -62,7 +62,7 @@ void ACameraSceneActor::OnInteractionStartEvent_Implementation(ACharacter* Targe
 
 		// 이 액터로 뷰 전환 (블렌드)
 		Controller->SetViewTargetWithBlend(this, FadeInTime, EViewTargetBlendFunction::VTBlend_EaseIn);
-		Controller->DisableInput(Controller);
+		//Controller->DisableInput(Controller);
 		// 카메라 컴포넌트 위치를 플레이어 위치로 맞춰 시작 (원하면 스플라인 시작점으로 설정)
 		FVector playerLocation = Player->GetActorLocation();
 		if (CameraComp)
@@ -93,7 +93,7 @@ void ACameraSceneActor::OnInteractionEndEvent_Implementation(ACharacter* TargetM
 		// 아니면 플레이어에게 복귀
 		//Controller->EndViewTarget(Controller);
 		AActor* TargetToRestore = PreviousViewTarget ? PreviousViewTarget : CachedPlayerCharacter;
-		CachedPlayerCharacter->EnableInput(Controller);
+		//CachedPlayerCharacter->EnableInput(Controller);
 		Controller->SetViewTargetWithBlend(TargetToRestore, FadeOutTime);
 	}
 }

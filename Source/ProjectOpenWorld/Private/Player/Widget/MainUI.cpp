@@ -3,6 +3,8 @@
 #include "Player/Widget/PlayerStatusProgress.h"
 #include "Pal/Widget/MonsterHpLayer.h"
 #include "Player/Widget/PlayerPalSpawnerWidget.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/Image.h"
 
 void UMainUI::ChangeWeapone(FName NewWeaponeID, EWeapone NewWeaponeType)
 {
@@ -52,6 +54,22 @@ void UMainUI::UnregisterMonster(AActor* Target)
 	MonsterHpLayer->UnregisterMonster(Target);
 }
 
+void UMainUI::StartCursor()
+{
+	if (CursorImage)
+	{
+		CursorImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void UMainUI::EndCursor()
+{
+	if (CursorImage)
+	{
+		CursorImage->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void UMainUI::RotateSelection(int32 Direction)
 {
 	if (PlayerPalSpawnerWidget)
@@ -67,4 +85,20 @@ int32 UMainUI::GetSelectedPal() const
 		return PlayerPalSpawnerWidget->GetSelectedPal();
 	}
 	return -1;
+}
+
+void UMainUI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC || !CursorImage)
+		return;
+
+	float MouseX = 0.f, MouseY = 0.f;
+	if (!PC->GetMousePosition(MouseX, MouseY))
+		return;
+
+	const float DPI = UWidgetLayoutLibrary::GetViewportScale(this);
+	CursorImage->SetRenderTranslation(FVector2D(MouseX / DPI, MouseY / DPI)); // Slot 타입 무관
 }
