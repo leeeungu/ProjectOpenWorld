@@ -30,8 +30,9 @@ void UPlayerEquipComponent::BeginPlay()
 
 	if (!WeaponMesh)
 	{
-		WeaponMesh = Cast<USkeletalMeshComponent>(
-			Player->AddComponentByClass(USkeletalMeshComponent::StaticClass(), false, FTransform::Identity, false));
+		WeaponMesh = Player->GetRightHandEquipComponent();
+		//Cast<USkeletalMeshComponent>(
+		//	Player->AddComponentByClass(USkeletalMeshComponent::StaticClass(), false, FTransform::Identity, false));
 	}
 
 	if (!WeaponMesh)

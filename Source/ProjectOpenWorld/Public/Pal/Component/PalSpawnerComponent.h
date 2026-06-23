@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Pal/Interface/PalSaveGameObject.h"
 #include "PalSpawnerComponent.generated.h"
 
 class AActor;
@@ -17,8 +18,18 @@ struct FContainerData
 	bool bSpawned{};
 };
 
+USTRUCT()
+struct FPalSpawnSaveData
+{
+	GENERATED_BODY()
+	UPROPERTY() int32          SlotIndex = -1;
+	UPROPERTY() FSoftClassPath PalClass {};   // 재생성할 팰 클래스
+	UPROPERTY() bool           bSpawned = false;
+	//UPROPERTY() TArray<uint8>  ByteData{};   // 팰 상태(스탯/레벨 등) 스냅샷
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PROJECTOPENWORLD_API UPalSpawnerComponent : public USceneComponent
+class PROJECTOPENWORLD_API UPalSpawnerComponent : public USceneComponent, public IPalSaveGameObject
 {
 	GENERATED_BODY()
 protected:
@@ -40,4 +51,10 @@ public:
 	void SwapSpawnedPals(int32 Src, int32 Dst);
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(SaveGame)
+	TArray<FPalSpawnSaveData> SavedSpawn{}; 
+public:
+	virtual void OnPreSave() override;
+	virtual void OnLoaded() override;
 };

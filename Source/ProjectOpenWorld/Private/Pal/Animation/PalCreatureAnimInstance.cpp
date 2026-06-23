@@ -16,8 +16,8 @@ void UPalCreatureAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UPalCreatureAnimInstance::OnChangeWorkCommand(const FPalWorkCommand& Job)
 {
-	if (CurrenJobType == Job.JobType)
-		return;
+	//if (CurrenJobType == Job.JobType)
+	//	return;
 	CurrenJobType = Job.JobType;
 	WorkAnimation = nullptr;
 	if(WorkAnim.Contains(CurrenJobType))

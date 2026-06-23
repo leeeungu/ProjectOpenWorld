@@ -73,7 +73,7 @@ FPalCommand UPalCommandFunctionLibrary::CommandAttack(AActor* pInstigator, AActo
 
 }
 
-FPalWorkCommand UPalCommandFunctionLibrary::WorkArchitecture(AActor* pInstigator, AActor* pTargetActor)
+FPalWorkCommand UPalCommandFunctionLibrary::WorkArchitecture(AActor* pInstigator, AActor* pTargetActor, FVector TargetLocation)
 {
 	if (!pTargetActor)
 		return FPalWorkCommand();
@@ -81,6 +81,7 @@ FPalWorkCommand UPalCommandFunctionLibrary::WorkArchitecture(AActor* pInstigator
 	Work.JobType = EPalJobType::Architecture;
 	Work.pTarget = pTargetActor;
 	Work.pInstigatorActor = pInstigator;
+	Work.TargetLocation = TargetLocation;
 	return Work;
 }
 
@@ -102,6 +103,15 @@ FPalWorkCommand UPalCommandFunctionLibrary::WorkMining(AActor* pInstigator, AAct
 	FPalWorkCommand Work{};
 	Work.JobType = EPalJobType::Mining;
 	Work.pTarget = pTargetActor;
+	Work.pInstigatorActor = pInstigator;
+	return Work;
+}
+
+FPalWorkCommand UPalCommandFunctionLibrary::WorkFoliage(AActor* pInstigator, FVector TargetLocation)
+{
+	FPalWorkCommand Work{};
+	Work.JobType = EPalJobType::Mining;
+	Work.TargetLocation = TargetLocation;
 	Work.pInstigatorActor = pInstigator;
 	return Work;
 }

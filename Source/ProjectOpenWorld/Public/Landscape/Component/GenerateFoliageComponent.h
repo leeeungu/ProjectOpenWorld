@@ -152,7 +152,7 @@ public:
 private:
 	void Initialize();
 	UPROPERTY()
-	TObjectPtr<UGenerateFoliageComponent> FoliageGenerater{};
+	TWeakObjectPtr<UGenerateFoliageComponent> FoliageGenerater{};
 
 	TSet<FIntPoint> DeleteArray{};
 	TMap<FIntPoint, UGenerateFoliageComponent::FoliageAddData> AddMap{};

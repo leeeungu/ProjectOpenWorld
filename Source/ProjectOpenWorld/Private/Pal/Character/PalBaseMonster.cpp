@@ -28,6 +28,8 @@ APalBaseMonster::APalBaseMonster() : Super()
 	GetMesh()->SetCanEverAffectNavigation(false);
 	//GetMesh()->bEnableUpdateRateOptimizations = true;
 	//GetMesh()->bDisplayDebugUpdateRateOptimizations = false;
+
+	GetCharacterMovement()->bUseRVOAvoidance = true;
 }
 
 void APalBaseMonster::InitializeLevel(int32 nLevel)

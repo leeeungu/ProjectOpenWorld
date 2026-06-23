@@ -25,5 +25,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Pal")
 	virtual FName GetPalName() const { return NAME_None; }
+	UFUNCTION(BlueprintPure, Category = "Pal")
 	bool GetIsHidden() const { return bIsHidden; }
 };

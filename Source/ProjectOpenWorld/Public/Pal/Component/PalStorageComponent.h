@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Pal/Interface/PalStoreInterface.h"
+#include "Pal/Interface/PalSaveGameObject.h"
 #include "PalStorageComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPalStoreChanged, int, ChangeIndex, AActor*, ChangedPal);
@@ -18,8 +19,16 @@ public:
 	int32 Index = -1;
 };
 
+USTRUCT()
+struct FPalStorageSaveData
+{
+	GENERATED_BODY()
+	UPROPERTY() int32          SlotIndex = -1;
+	UPROPERTY() FSoftClassPath PalClass {};
+	UPROPERTY() TArray<uint8>  ByteData{};
+};
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PROJECTOPENWORLD_API UPalStorageComponent : public UActorComponent
+class PROJECTOPENWORLD_API UPalStorageComponent : public UActorComponent, public IPalSaveGameObject
 {
 	GENERATED_BODY()
 protected:
@@ -56,4 +65,10 @@ public:
 	int GetInventorySize() const {return InventorySize;}
 	//void ShowAllSpawnedPals();
 	//void HideAllSpawnedPals();
+protected:
+	UPROPERTY(SaveGame)
+	TArray<FPalStorageSaveData> SavedStorage{};
+public:
+	virtual void OnPreSave() override;
+	virtual void OnLoaded() override;
 };

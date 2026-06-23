@@ -7,6 +7,7 @@
 
 class IPalWorkerInterface;
 class UPalWorkerInterface;
+class UActorComponent;
 
 UINTERFACE(MinimalAPI, Meta = (CannotImplementInterfaceInBlueprint))
 class UPalWorkable : public UInterface
@@ -28,5 +29,6 @@ public:
 	virtual EPalJobType GetWorkJobType() const { return EPalJobType::None; }
 	UFUNCTION(BlueprintCallable, Category = "Pal|Workable")
 	virtual  FPalWorkCommand GetWorkCommand(AActor* InstigatorActor, AActor* Target) const { return FPalWorkCommand{}; }
+	virtual  FPalWorkCommand GetWorkCommandComponent(AActor* InstigatorActor, UActorComponent* Target, int32 Index) const { return FPalWorkCommand{}; }
 	
 };

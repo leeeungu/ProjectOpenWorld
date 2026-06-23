@@ -67,6 +67,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static bool LoadFromSlot(UObject* pWorldContext, const FString& SlotName); // 수동/디버그용
 
+	static void SavePlayer(UObject* pWorldContext);
 private:
 	static TObjectPtr<UBaseGameInstance> Instance;
 	int32 UserIndex = 0;
@@ -87,10 +88,10 @@ private:
 	void OnPostLoadMap(UWorld* LoadedWorld);
 	// 실제 복원(폰/액터 준비 완료 후)
 	void ApplyLoad(UWorld* World, const FString& LevelSlot);
-
-	void SerializeActor(AActor* Actor, TArray<uint8>& OutBytes);
-	void DeserializeActor(AActor* Actor, const TArray<uint8>& InBytes);
-
+public:
+	static void SerializeActor(AActor* Actor, TArray<uint8>& OutBytes);
+	static void DeserializeActor(AActor* Actor, const TArray<uint8>& InBytes);
+private:
 	// 현재 맵이 빌딩 허용 레벨인지
 	bool IsBuildingLevel(UWorld* World) const;
 

@@ -39,6 +39,7 @@
 #include "Pal/Character/PalBaseCreature.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "EngineUtils.h"
+#include "GameBase/GameMode/BaseGameInstance.h"
 
 DEFINE_LOG_CATEGORY(LogBasePlayer);
 
@@ -123,6 +124,8 @@ ABasePlayer::ABasePlayer() : Super{}
 	PalSpawnerComponent = CreateDefaultSubobject<UPalSpawnerComponent>(TEXT("PalSpawnerComponent"));
 	PalSpawnerComponent->SetupAttachment(GetRootComponent());
 }
+
+
 
 void ABasePlayer::Tick(float DeltaTime)
 {
@@ -209,6 +212,18 @@ void ABasePlayer::BeginPlay()
 	{
 		Anim->OnFinishAnimSection.AddDynamic(this, &ABasePlayer::OnFinishAnimSection);
 	}
+}
+
+void ABasePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// PIE Stop / 종료 / 트래블 직전 — 폰이 아직 유효할 때 저장
+	if (EndPlayReason == EEndPlayReason::EndPlayInEditor   // PIE Stop
+		|| EndPlayReason == EEndPlayReason::Quit              // 빌드 종료
+		|| EndPlayReason == EEndPlayReason::LevelTransition)  // 맵 이동
+	{
+		UBaseGameInstance::SavePlayer(this);
+	}
+	Super::EndPlay(EndPlayReason);
 }
 
 void ABasePlayer::OnLevelUpEvent(int32 OldLevel, bool IsMaxLevel)

@@ -32,7 +32,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Search")
 	TMap<TWeakObjectPtr<AActor>, FWorkerData> WorkerRegister{};
-
+	TMap < TWeakObjectPtr<UActorComponent>, TSet<int32>> WorkableComRegister{};
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,12 +40,12 @@ protected:
 	void OnCreatureWorkFinished(AActor* WorkerActor);
 
 	/** Worker가 수행 가능한 JobType들을 순회하며 가장 적합한 Workable을 찾음 */
-	AActor* FindBestWorkableFor(EPalJobType JobType) const;
-	void RemoveWorkable(AActor* WorkableActor, EPalJobType JobType);
-
-	/** 특정 JobType을 처리할 수 있는 가장 가까운 Worker를 찾음 */
 	AActor* FindBestWorkerFor(EPalJobType JobType) const;
 	void RemoveWorker(AActor* WorkerActor);
+
+	/** 특정 JobType을 처리할 수 있는 가장 가까운 Worker를 찾음 */
+	AActor* FindBestWorkableFor(EPalJobType JobType) const;
+	void RemoveWorkable(AActor* WorkableActor, EPalJobType JobType);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -56,6 +56,9 @@ public:
 
 	void RegisterWorkable(AActor* WorkableActor);
 	void UnRegisterWorkable(AActor* WorkableActor);
+
+	void RegisterWorkableCom(UActorComponent* WorkableActor, int32 Index);
+	void UnRegisterWorkableCom(UActorComponent* WorkableActor, int32 Index);
 
 	UFUNCTION()
 	void OnBeginSearch(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

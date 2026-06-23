@@ -309,7 +309,7 @@ void FAsyncFoliageGenerater::DoWork()
 	{
 		TArray<FIntPoint> KeyArray{};
 		AddMap.GenerateKeyArray(KeyArray);
-		while (FoliageGenerater && !KeyArray.IsEmpty())
+		while (FoliageGenerater.IsValid() && !KeyArray.IsEmpty())
 		{
 			FIntPoint SectionID = KeyArray.Last();
 			FoliageAddData& AddData = *AddMap.Find(SectionID);
@@ -387,7 +387,7 @@ void FAsyncFoliageGenerater::DoWork()
 		}
 	);
 
-	if (FoliageGenerater)
+	if (FoliageGenerater.IsValid())
 	{
 		FoliageGenerater->bGeneratingFoliage = true;
 		FoliageGenerater->bUpdateBackData = true;

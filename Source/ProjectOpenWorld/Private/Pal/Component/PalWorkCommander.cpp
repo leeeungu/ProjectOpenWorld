@@ -78,6 +78,29 @@ void UPalWorkCommander::UnRegisterWorkable(AActor* WorkableActor)
 	}
 }
 
+void UPalWorkCommander::RegisterWorkableCom(UActorComponent* WorkableActor, int32 Index)
+{
+	if (TScriptInterface<IPalWorkable > Workable = WorkableActor)
+	{
+		TSet<int32>& ref = WorkableComRegister.FindOrAdd(WorkableActor);
+		ref.Add(Index);
+		Work();
+	}
+}
+
+
+void UPalWorkCommander::UnRegisterWorkableCom(UActorComponent* WorkableActor, int32 Index)
+{
+	if (TScriptInterface<IPalWorkable > Workable = WorkableActor)
+	{
+		TSet<int32>* ref = WorkableComRegister.Find(WorkableActor);
+		if (ref)
+		{
+			ref->Remove(Index);
+		}
+	}
+}
+
 void UPalWorkCommander::BeginPlay()
 {
 	Super::BeginPlay();
@@ -157,7 +180,7 @@ void UPalWorkCommander::Work()
 			UPalJobComponent* Com = Worker->GetPalJobComponent();
 			if (Workable->IsWorkable())
 			{
-				if (Com && Com->TryPushJob(Workable->GetWorkCommand(GetOwner(), WorkableActor)))
+				if (Com && Com->TryPushJob(Workable->GetWorkCommand(GetOwner(), Cast<AActor>(WorkableActor))))
 				{
 					//UE_LOG(LogTemp, Warning, TEXT("PalWorkCommander::OnCreatureWorkFinished %s"), *WorkerActor->GetName());
 					RemoveWorker(WorkerActor);
@@ -182,6 +205,7 @@ void UPalWorkCommander::OnBeginSearch(UPrimitiveComponent* OverlappedComponent, 
 		return;
 	RegisterWorker(OtherActor);
 	RegisterWorkable(OtherActor);
+	//RegisterWorkableCom(OtherComp, SweepResult.Item);
 }
 
 void UPalWorkCommander::OnEndSearch(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -190,4 +214,5 @@ void UPalWorkCommander::OnEndSearch(UPrimitiveComponent* OverlappedComponent, AA
 		return;
 	UnRegisterWorker(OtherActor);
 	UnRegisterWorkable(OtherActor);
+	//UnRegisterWorkableCom(OtherComp, OtherBodyIndex);
 }

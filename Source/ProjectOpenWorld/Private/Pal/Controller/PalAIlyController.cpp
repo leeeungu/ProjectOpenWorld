@@ -33,8 +33,8 @@ void APalAIlyController::OnPossess(APawn* InPawn)
 void APalAIlyController::OnJobAssigned(const FPalWorkCommand& Job)
 {
 	SetBBEnum(UPalAIBlackboardKeysLibrary::GetBBJobType(), (uint8)Job.JobType);
-	SetBBActor(UPalAIBlackboardKeysLibrary::GetBBJobTarget(), Job.pTarget.Get());
-	SetBBLocation(UPalAIBlackboardKeysLibrary::GetBBJobLocation(), Job.TargetLocation);
+	OnJobTargetChange(Job.pTarget.Get());
+	OnJobLocationChange(Job.TargetLocation);
 }
 
 void APalAIlyController::OnJobFinished(const FPalWorkCommand& Job, bool bSuccess)

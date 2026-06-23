@@ -1,7 +1,8 @@
 ﻿#include "Pal/Component/PalStorageComponent.h"
 #include "Pal/Character/PalBaseCreature.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Pal/Actor/PalBaseCamp.h"
+#include "GameBase/GameMode/BaseGameInstance.h"
+#include "Engine/World.h"
 
 UPalStorageComponent::UPalStorageComponent()
 {
@@ -12,19 +13,11 @@ void UPalStorageComponent::BeginPlay()
 {
 	UActorComponent::BeginPlay();
 	PalStorage.Init(nullptr, InventorySize);
-	//PalSpawned.Init(nullptr, SpawnSize);
 }
 
 void UPalStorageComponent::PalDead(AActor* DeadPal)
 {
-	//for (size_t i = 0; i < PalSpawned.Num(); i++)
-	//{
-	//	if (PalSpawned[i] == DeadPal)
-	//	{
-	//		DeSpawnPal(-1, i);
-	//		break;
-	//	}
-	//}
+
 }
 
 void UPalStorageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -105,5 +98,48 @@ void UPalStorageComponent::SwapStoredPals(int IndexA, int IndexB)
 		PalStorage[IndexB] = Temp;
 		OnPalStoreChanged.Broadcast(IndexA, PalStorage[IndexA]);
 		OnPalStoreChanged.Broadcast(IndexB, PalStorage[IndexB]);
+	}
+}
+
+void UPalStorageComponent::OnPreSave()
+{
+	SavedStorage.Reset();
+	for (int32 i = 0; i < PalStorage.Num(); ++i)
+	{
+		AActor* Pal = PalStorage[i];
+		if (!Pal)
+			continue;
+
+		FPalStorageSaveData Rec;
+		Rec.SlotIndex = i;
+		Rec.PalClass = FSoftClassPath(Pal->GetClass());
+		SavedStorage.Add(Rec);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("UPalStorageComponent::OnPreSave %s"), *GetOwner()->GetName());
+}
+
+void UPalStorageComponent::OnLoaded()
+{
+	UE_LOG(LogTemp, Warning, TEXT("UPalStorageComponent::OnLoaded %s"), *GetOwner()->GetName());
+	UWorld* World = GetWorld();
+	if (!World)
+		return;
+	if (PalStorage.Num() < InventorySize) 
+		PalStorage.Init(nullptr, InventorySize);
+
+	for (const FPalStorageSaveData& Rec : SavedStorage)
+	{
+		if (!PalStorage.IsValidIndex(Rec.SlotIndex))
+			continue;
+		UClass* Cls = Rec.PalClass.TryLoadClass<AActor>();
+		if (!Cls)
+			continue;
+
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AActor* NewPal = World->SpawnActor<AActor>(Cls, FTransform::Identity, Params);
+		if (!NewPal)
+			continue;
+		StorePal(FPalStoreInventoryData{ NewPal, Rec.SlotIndex });
 	}
 }

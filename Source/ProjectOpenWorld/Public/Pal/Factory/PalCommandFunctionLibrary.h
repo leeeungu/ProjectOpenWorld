@@ -34,11 +34,13 @@ public:
 
 
 	UFUNCTION(BlueprintPure, Category = "PalWork")
-	static FPalWorkCommand WorkArchitecture(AActor* pInstigator, AActor* pTargetActor);
+	static FPalWorkCommand WorkArchitecture(AActor* pInstigator, AActor* pTargetActor, FVector TargetLocation);
 	UFUNCTION(BlueprintPure, Category = "PalWork")
 	static FPalWorkCommand WorkTransport(AActor* pInstigator, AActor* pTargetActor, AActor* pDestination);
 	UFUNCTION(BlueprintPure, Category = "PalWork")
 	static FPalWorkCommand WorkMining(AActor* pInstigator, AActor* pTargetActor);
+	UFUNCTION(BlueprintPure, Category = "PalWork")
+	static FPalWorkCommand WorkFoliage(AActor* pInstigator, FVector TargetLocation);
 	UFUNCTION(BlueprintPure, Category = "PalWork")
 	static FPalWorkCommand WorkAttack(AActor* pInstigator, AActor* pTargetActor);
 };

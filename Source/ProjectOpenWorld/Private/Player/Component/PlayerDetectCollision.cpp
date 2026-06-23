@@ -34,13 +34,15 @@ void UPlayerDetectCollision::BeginPlay()
 {
 	Super::BeginPlay();
 	OwnerPlayer = Cast<ABasePlayer>(GetOwner());
-	OnComponentBeginOverlap.AddDynamic(this, &UPlayerDetectCollision::OnDetectBeginOverlap);
-	OnComponentEndOverlap.AddDynamic(this, &UPlayerDetectCollision::OnDetectEndOverlap);
+	OnComponentBeginOverlap.AddUniqueDynamic(this, &UPlayerDetectCollision::OnDetectBeginOverlap);
+	OnComponentEndOverlap.AddUniqueDynamic(this, &UPlayerDetectCollision::OnDetectEndOverlap);
 	for (const FOverlapInfo& OtherOverlap : OverlappingComponents)
 	{
 		UPrimitiveComponent* OtherComp = OtherOverlap.OverlapInfo.Component.Get();
 		AActor* const OtherActor = OtherComp->GetOwner();
-		if(OtherActor)
+		if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UPlayerDetectInterface::StaticClass()) && OwnerPlayer)
+		{
 			OnDetectChanged.Broadcast(OtherActor, true);
+		}
 	}
 }

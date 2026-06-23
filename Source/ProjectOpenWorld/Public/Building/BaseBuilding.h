@@ -32,7 +32,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Architecture")
 	TObjectPtr<UNavModifierComponent> NavModifier{};
-
+	FVector WorkLocation{};   // 트레이스 실패 시 폴백
 public:		
 	ABaseBuilding();
 

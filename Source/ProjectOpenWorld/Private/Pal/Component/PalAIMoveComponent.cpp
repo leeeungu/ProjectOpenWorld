@@ -45,7 +45,6 @@ void UPalAIMoveComponent::MoveCompleted(FAIRequestID RequestID, EPathFollowingRe
 		break;
 	case EPathFollowingResult::Aborted:
 		SetStatus(EPalMoveStatus::Idle);
-		break;
 	default:
 		SetStatus(EPalMoveStatus::Failed);
 		break;

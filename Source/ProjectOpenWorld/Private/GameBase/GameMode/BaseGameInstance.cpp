@@ -9,7 +9,6 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "EngineUtils.h"
-#include "Building/BaseBuilding.h"
 #include "Pal/Interface/PalSaveGameObject.h"
 
 TObjectPtr<UBaseGameInstance> UBaseGameInstance::Instance = nullptr;
@@ -162,14 +161,14 @@ void UBaseGameInstance::SaveCurrentWorld(UWorld* World)
 		return;
 
 	// 1) 플레이어 — 레벨 간 유지되므로 고정 슬롯(항상 저장)
-	{
+	/*{
 		UPalSaveGame* PlayerSave = Cast<UPalSaveGame>(UGameplayStatics::CreateSaveGameObject(UPalSaveGame::StaticClass()));
 		if (APawn* Pawn = UGameplayStatics::GetPlayerPawn(World, 0))
 		{
 			SerializeActor(Pawn, PlayerSave->PlayerByteData);
 		}
 		UGameplayStatics::SaveGameToSlot(PlayerSave, PlayerSlotName, UserIndex);
-	}
+	}*/
 
 	// 2) 빌딩 — 허용 레벨에서만 (보스 맵 등은 스킵)
 	if (!IsBuildingLevel(World))
@@ -178,17 +177,17 @@ void UBaseGameInstance::SaveCurrentWorld(UWorld* World)
 	UPalSaveGame* LevelSave = Cast<UPalSaveGame>(UGameplayStatics::CreateSaveGameObject(UPalSaveGame::StaticClass()));
 	LevelSave->LevelName = World->GetMapName();
 
-	for (TActorIterator<ABaseBuilding> It(World); It; ++It) // 포인터 보관 없이 그 자리에서 수집
+	TArray<AActor*> Existing;
+	for (TActorIterator<AActor> It(World); It; ++It)
 	{
-		ABaseBuilding* Building = *It;
-		if (!IsValid(Building))
-			continue;
-
-		FPalActorSaveData Record;
-		Record.ActorClass = FSoftClassPath(Building->GetClass());
-		Record.Transform = Building->GetActorTransform();
-		SerializeActor(Building, Record.ByteData); // 액터 OnPreSave + SaveGame 필드
-		LevelSave->SavedActors.Add(Record);
+		if (IsValid(*It) && It->Implements<UPalSaveGameObject>())
+		{
+			FPalActorSaveData Record;
+			Record.ActorClass = FSoftClassPath(It->GetClass());
+			Record.Transform = It->GetActorTransform();
+			SerializeActor(*It, Record.ByteData); // 액터 OnPreSave + SaveGame 필드
+			LevelSave->SavedActors.Add(Record);
+		}
 	}
 	UGameplayStatics::SaveGameToSlot(LevelSave, MakeLevelSlotName(World), UserIndex);
 	UE_LOG(LogTemp, Warning, TEXT("[Save] %s : Buildings=%d"), *LevelSave->LevelName, LevelSave->SavedActors.Num());
@@ -243,13 +242,13 @@ void UBaseGameInstance::ApplyLoad(UWorld* World, const FString& LevelSlot)
 		return;
 
 	// 안전 순회: 먼저 수집 후 파괴(Destroy 콜백 재진입 방지)
-	TArray<ABaseBuilding*> Existing;
-	for (TActorIterator<ABaseBuilding> It(World); It; ++It)
+	TArray<AActor*> Existing;
+	for (TActorIterator<AActor> It(World); It; ++It)
 	{
-		if (IsValid(*It))
+		if (IsValid(*It) && It->Implements<UPalSaveGameObject>())
 			Existing.Add(*It);
 	}
-	for (ABaseBuilding* Building : Existing)
+	for (AActor* Building : Existing)
 	{
 		if (IsValid(Building))
 			Building->Destroy();
@@ -262,7 +261,7 @@ void UBaseGameInstance::ApplyLoad(UWorld* World, const FString& LevelSlot)
 			continue;
 
 		FActorSpawnParameters Params;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		if (AActor* Spawned = World->SpawnActor<AActor>(Cls, Record.Transform, Params))
 			DeserializeActor(Spawned, Record.ByteData);
 	}
@@ -282,19 +281,16 @@ void UBaseGameInstance::SerializeActor(AActor* Actor, TArray<uint8>& OutBytes)
 	FObjectAndNameAsStringProxyArchive Ar(Writer, true);
 	Ar.ArIsSaveGame = true;
 
-	Actor->Serialize(Ar);                       // 액터 자신의 SaveGame 필드
-	// 컴포넌트(인벤토리 등)의 SaveGame 필드 — 저장/로드 순서 일치를 위해 이름순 정렬
+	Actor->Serialize(Ar);                     
 	TArray<UActorComponent*> Comps;
 	Actor->GetComponents(Comps);
+	UE_LOG(LogTemp, Warning, TEXT("[Load] %s : LoadActorComSize =%d"), *Actor->GetName(), Comps.Num());
 	Comps.Sort([](const UActorComponent& A, const UActorComponent& B) { return A.GetName() < B.GetName(); });
 	for (UActorComponent* Comp : Comps)
 	{
 		if (IPalSaveGameObject* Obj = Cast<IPalSaveGameObject>(Comp))
 		{
 			Obj->OnPreSave();
-		}
-		if (Comp && Comp->Implements<UPalSaveGameObject>())
-		{
 			Comp->Serialize(Ar);
 		}
 	}
@@ -316,10 +312,8 @@ void UBaseGameInstance::DeserializeActor(AActor* Actor, const TArray<uint8>& InB
 	{
 		if (Comp && Comp->Implements<UPalSaveGameObject>())
 		{
+			IPalSaveGameObject* Obj = Cast<IPalSaveGameObject>(Comp);
 			Comp->Serialize(Ar);
-		}
-		if (IPalSaveGameObject* Obj = Cast<IPalSaveGameObject>(Comp))
-		{
 			Obj->OnLoaded();
 		}
 	}
@@ -346,6 +340,25 @@ bool UBaseGameInstance::LoadFromSlot(UObject* pWorldContext, const FString& Slot
 		Instance->DeserializeActor(Pawn, Save->PlayerByteData);
 	}
 	return true;
+}
+
+void UBaseGameInstance::SavePlayer(UObject* pWorldContext)
+{
+	if (!Instance || !pWorldContext)
+		return;
+	UPalSaveGame* PlayerSave = Cast<UPalSaveGame>(UGameplayStatics::CreateSaveGameObject(UPalSaveGame::StaticClass()));
+	APawn* Pawn = Cast<APawn>(pWorldContext);
+	if (Pawn)
+	{
+		SerializeActor(Pawn, PlayerSave->PlayerByteData);
+	}
+	else if (UWorld* W = pWorldContext->GetWorld())
+	{
+		Pawn = UGameplayStatics::GetPlayerPawn(W, 0);
+		if (Pawn)
+			SerializeActor(Pawn, PlayerSave->PlayerByteData);
+	}
+	UGameplayStatics::SaveGameToSlot(PlayerSave, PlayerSlotName, Instance->UserIndex);
 }
 
 void UBaseGameInstance::PalSaveTest(UObject* pWorldContext, const FString SlotName)

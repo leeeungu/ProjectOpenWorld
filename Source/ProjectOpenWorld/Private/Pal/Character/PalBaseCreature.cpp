@@ -20,6 +20,8 @@ APalBaseCreature::APalBaseCreature() : Super{}
 	//InteractionComponent = CreateDefaultSubobject<UPalInteractionComponent>(TEXT("InteractionComponent"));
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking, 0);
+	GetCapsuleComponent()->SetCanEverAffectNavigation(false);
+	GetMesh()->SetCanEverAffectNavigation(false);
 
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
 	HitHandlerComponent = CreateDefaultSubobject<UPalHitHandlerComponent>(TEXT("HitHandlerComponent"));
@@ -27,6 +29,8 @@ APalBaseCreature::APalBaseCreature() : Super{}
 
 	JobToolComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PalToolMesh"));
 	JobToolComponent->SetupAttachment(GetMesh());
+
+//	GetCharacterMovement()->bUseRVOAvoidance = true;
 }
 
 void APalBaseCreature::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -160,6 +164,7 @@ void APalBaseCreature::OnWorkMeshChanged(UStaticMesh* NewMesh, FName SocketName,
 void APalBaseCreature::BeginPlay()
 {
 	Super::BeginPlay();
+	GetCapsuleComponent()->SetCanEverAffectNavigation(false);
 	if (HitHandlerComponent)
 	{
 		if (StatComponent)

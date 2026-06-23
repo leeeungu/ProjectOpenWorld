@@ -107,8 +107,11 @@ void UMonsterHpLayer::UnregisterMonster(AActor* Target)
 	}
 	if (ABossMonster* pBoss = Cast< ABossMonster>(Target))
 	{
-		BossHpWidget->InitializeHPWidget(nullptr, {}, 0);
-		BossHpWidget->SetVisibility(ESlateVisibility::Hidden);
+		if (IAttackInterface::Execute_IsDead(pBoss))
+		{
+			BossHpWidget->InitializeHPWidget(nullptr, {}, 0);
+			BossHpWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 }
 

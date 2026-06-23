@@ -12,7 +12,7 @@ UCLASS()
 class PROJECTOPENWORLD_API UPlayerDetectCollision : public USphereComponent
 {
 	GENERATED_BODY()
-
+protected:
 	TObjectPtr< ABasePlayer> OwnerPlayer{};
 public:
 	UPlayerDetectCollision();

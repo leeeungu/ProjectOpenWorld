@@ -28,7 +28,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr< USkeletalMeshComponent> PlayerMesh{};
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr< USkeletalMeshComponent> WeaponMesh{};
 
 	const UBaseItem* CurrentEquipItem{};

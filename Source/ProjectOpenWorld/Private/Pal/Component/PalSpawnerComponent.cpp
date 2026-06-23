@@ -2,6 +2,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Pal/Character/PalBaseCreature.h"
+#include "GameBase/GameMode/BaseGameInstance.h"
+#include "Engine/World.h"
 
 UPalSpawnerComponent::UPalSpawnerComponent()
 {
@@ -22,8 +24,65 @@ void UPalSpawnerComponent::SwapSpawnedPals(int32 Src, int32 Dst)
 void UPalSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	PalSpawned.Init({}, SpawnerSize);
+
+	UE_LOG(LogTemp, Warning, TEXT("UPalSpawnerComponent::OnLoaded %s"), *GetOwner()->GetName());
+}
+
+void UPalSpawnerComponent::OnPreSave()
+{
+	SavedSpawn.Reset();
+	for (int32 i = 0; i < PalSpawned.Num(); ++i)
 	{
+		AActor* Pal = PalSpawned[i].Pal;
+		if (!Pal)
+			continue;
+
+		FPalSpawnSaveData Rec;
+		Rec.SlotIndex = i;
+		Rec.PalClass = FSoftClassPath(Pal->GetClass());
+		Rec.bSpawned = PalSpawned[i].bSpawned;
+		//UBaseGameInstance::SerializeActor(Pal, Rec.ByteData);
+		SavedSpawn.Add(Rec);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("UPalSpawnerComponent::OnPreSave %s"), *GetOwner()->GetName());
+}
+
+void UPalSpawnerComponent::OnLoaded()
+{
+	UE_LOG(LogTemp, Warning, TEXT("UPalSpawnerComponent::OnLoaded %s"), *GetOwner()->GetName());
+	UWorld* World = GetWorld();
+	if (!World)
+		return;
+	if (PalSpawned.Num() < SpawnerSize)   // BeginPlay 누락 대비
 		PalSpawned.Init({}, SpawnerSize);
+
+	for (const FPalSpawnSaveData& Rec : SavedSpawn)
+	{
+		if (!PalSpawned.IsValidIndex(Rec.SlotIndex))
+			continue;
+		UClass* Cls = Rec.PalClass.TryLoadClass<AActor>();
+		if (!Cls)
+			continue;
+
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AActor* NewPal = World->SpawnActor<AActor>(Cls, GetComponentTransform(), Params);
+		if (!NewPal)
+			continue;
+
+		//UBaseGameInstance::DeserializeActor(NewPal, Rec.ByteData); // 팰 상태 복원
+
+		// 슬롯 직접 세팅(델리게이트 자동 스폰과 충돌 방지)
+		if (Rec.bSpawned)
+		{
+			StorePal(NewPal, Rec.SlotIndex);
+			SpawnPal(Rec.SlotIndex);
+		}
+		else if (APalBaseCreature* C = Cast<APalBaseCreature>(NewPal))
+		{
+			C->HideCharacter();
+		}
 	}
 }
 

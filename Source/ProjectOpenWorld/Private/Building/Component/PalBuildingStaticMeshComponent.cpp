@@ -8,11 +8,12 @@ UPalBuildingStaticMeshComponent::UPalBuildingStaticMeshComponent(const FObjectIn
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	//Script/Engine.Material'/Game/Building/Mesh/Material/M_BuildingMaking.M_BuildingMaking'
-	ConstructorHelpers::FObjectFinder< UMaterial> MakingMat(TEXT("/Game/Building/Mesh/Material/M_BuildingMaking.M_BuildingMaking"));
+	static ConstructorHelpers::FObjectFinder< UMaterial> MakingMat(TEXT("/Game/Building/Mesh/Material/M_BuildingMaking.M_BuildingMaking"));
 	if (MakingMat.Succeeded())
 	{
 		buildingMakingMat = MakingMat.Object;
 	}
+	SetCanEverAffectNavigation(false);
 }
 
 void UPalBuildingStaticMeshComponent::BeginPlay()
@@ -25,7 +26,7 @@ void UPalBuildingStaticMeshComponent::BeginPlay()
 	buildingTime = UBuildingDataSubsystem::GetPalBuildObjectRequiredBuildWorkAmountByName(Building->GetBuildingID());
 	if (buildingTime <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UPalBuildingStaticMeshComponent::BeginPlay BuildingID : %s , Time : %f"), *Building->GetBuildingID().ToString(), buildingTime);
+		//UE_LOG(LogTemp, Warning, TEXT("UPalBuildingStaticMeshComponent::BeginPlay BuildingID : %s , Time : %f"), *Building->GetBuildingID().ToString(), buildingTime);
 		buildingTime = 1.0f;
 	}
 	if (buildingMakingMat)
