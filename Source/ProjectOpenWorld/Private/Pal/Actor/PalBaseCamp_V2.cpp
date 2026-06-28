@@ -89,8 +89,10 @@ void APalBaseCamp_V2::OnInteractionStart_Implementation(ACharacter* pOther)
 						PalBoxWidget->SetPalSpawnerComponent(PalSpawnerComponent);
 						if (UPalItemInventoryWidget* PalItemInventoryWidget = PalBoxWidget->GetPalItemInventoryWidget())
 						{
-							PalInventory->OnSlotChanged.AddUniqueDynamic(PalItemInventoryWidget, &UPalItemInventoryWidget::OnUpdateSlot);
-							PalItemInventoryWidget->OnNativeDestruct.AddUObject(this, &APalBaseCamp_V2::OnDelActionWidget);
+							PalInventory->OnSlotChanged.AddUniqueDynamic(
+								PalItemInventoryWidget, &UPalItemInventoryWidget::OnUpdateSlot);
+							PalItemInventoryWidget->OnNativeDestruct.AddUObject(
+								this, &APalBaseCamp_V2::OnDelActionWidget);
 							PalItemInventoryWidget->OnWidgetOpen.AddUniqueDynamic(PalInventory, &UPalInventory::OnOpenUI);
 							PalItemInventoryWidget->OnSlotSwap.AddUniqueDynamic(PalInventory, &UPalInventory::OnSwapSlots);
 							PalItemInventoryWidget->OnSlotUpdate.AddUniqueDynamic(PalInventory, &UPalInventory::OnSlotUpdate);

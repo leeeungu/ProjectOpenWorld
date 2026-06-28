@@ -165,11 +165,6 @@ void UPalJobComponent::UnRegisterWorker()
 
 void UPalJobComponent::StartWorking()
 {
-    //if (!IsCommandStillValid(CurrentJob))
-    //{
-    //    WorkFinished(false);
-    //    return;
-    //}
     if (!bWorking && HasCurrentJob())
     {
         bWorking = true;
